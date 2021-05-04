@@ -12,7 +12,10 @@ Como todo bom nerd, sem nem mesmo a ideia ter sido completamente formada, a gent
 Esse repositório aqui foi criado no meio do Natal. Eu sei, é estranho, mas inspiração não tem data marcada... quando ela vem, eu preciso obedecer.
 
 ### 30/12/2020 - Primeira issue e a descoberta de algo importante
-Ao escrever a [issue de inception](https://github.com/filipedeschamps/tabnews.com.br/issues/1) do projeto, notamos algo **muito importante**: o TabNews será de grande valor para dois públicos:
+Ao escrever a [issue de inception](https://github.com/filipedeschamps/tabnews.com.br/issues/1) do projeto, notamos algo **muito importante**: o TabNews não irá consertar o problema de entregabilidade dos emails (o fato dele existir não fará os emails serem entregues como deveriam), mas ao mesmo tempo será de grande valor para dois públicos, **principalmente para o segundo**:
 
-1. Para quem trabalha e vive de programação ou tecnologia e quer consumir conteúdos a respeito
-2. E para quem quer criar esses conteúdos e até viver disso ao implementarmos **revenue share** para esses criadores.
+1. Para quem trabalha com tecnologia e precisa consumir conteúdos a respeito.
+2. Para quem trabalha com a criação de conteúdos sobre tecnologia **(ao implementarmos um modelo de revenue share para esses criadores)**.
+
+### 03/04/2021 - Revenue share
+Essa é a parte mais empolgante do projeto, até porque tanto eu quanto o Gustavo **não queremos ficar acima do sistema** e vamos participar do exato mesmo revenue share que todo mundo está participando, até para entender na pele o que está funcinando e o que deveria ser melhorado. Claro que em algum momento iremos implementar uma divisão de custos de servidor e manutenção do projeto, mas isso precisa ficar no futuro e somente após o modelo de revenue share estar funcionando para quem está criando conteúdo de fato (e por conteúdo entenda **notícias** ou **comentários** que adicionam valor).
