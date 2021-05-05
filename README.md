@@ -60,3 +60,7 @@ Esta é uma visão geral, mas de uma forma grosseira vou tentar resolver todo ba
   - Instância CI (???)
   - Instância Production (AWS / DigitalOcean)
   - Migration (node-pg-migrate)
+
+### 05/05/21 - Bootstrap do projeto
+
+Iniciei o código pela instalação das dependências que eu quero usar, configurei o Tailwind CSS e fiz um rabisco da home só para ver se os estilos estavam sendo aplicados com sucesso. Agora é questão de começar a fazer o draft da Home.
