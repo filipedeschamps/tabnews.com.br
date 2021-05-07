@@ -64,3 +64,7 @@ Esta é uma visão geral, mas de uma forma grosseira vou tentar resolver todo ba
 ### 05/05/21 - Bootstrap do projeto
 
 Iniciei o código pela instalação das dependências que eu quero usar, configurei o Tailwind CSS e fiz um rabisco da home só para ver se os estilos estavam sendo aplicados com sucesso. Agora é questão de começar a fazer o draft da Home.
+
+### 07/05/21 - Primeiro draft da lista de notícias
+
+Instalei o módulo `react-icons` e ta sendo uma experiência muito legal buscar e importar ícones. Terminei a primeira versão do draft da lista de notícias na Home, to super inseguro e não sei ainda se vai ficar legal um layout em tela cheia, ou um layout com largura fixa.
