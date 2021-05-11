@@ -69,8 +69,18 @@ Iniciei o código pela instalação das dependências que eu quero usar, configu
 
 Instalei o módulo `react-icons` e ta sendo uma experiência muito legal buscar e importar ícones. Terminei a primeira versão do draft da lista de notícias na Home, to super inseguro e não sei ainda se vai ficar legal um layout em tela cheia, ou um layout com largura fixa.
 
-![image](https://user-images.githubusercontent.com/4248081/117721685-05c56c80-b195-11eb-9d1f-3f853ed0ed55.png)
+![image](https://user-images.githubusercontent.com/4248081/117865517-e6891680-b24a-11eb-8ba8-fddd4f3f26de.png)
+
 
 ### 10/05/21 - Mudança de abordagem
 
 Tive um insight hoje: para aumentar as chances do TabNews dar certo, ele precisa ter o potencial de conseguir matar a Newsletter. Não que isso vai acontecer, mas é melhor você se **"autocanibalizar"** do que outra pessoa consiga e a direção que o layout estava tomando era de um site convencional. Isso me deixou pensando bastante, porque isso não "mexe o ponteiro" das pessoas. A Newsletter mexeu o ponteiro porque ela teve uma abordagem corajosa... ela tem uma postura que, ou vai deixar as pessoas satisfeitas ou insatisfeitas, mexendo para algum lado o ponteiro. Isso é importante em qualquer projeto. Então depois de pensar bastante, eu decidi tentar uma outra abordagem: ao invés de fazer o clássico item com título e conteúdo, usar o mesmo princípio das notícias sintetizadas e montar um site em cima disso. E sabe o que isso lembra? O Twitter... então a próxima abordagem vai ser tentar fazer um layout mais próximo do Twitter e tentar fazer o site ser um "Twitter de nicho" onde as notícias vão entrando de forma sintetizada, mas que possam ser expandidas nos comentários. E as mecânicas anteriores de TabCoins e XP continuam a mesma. Vamos ver se o negócio para em pé.
+
+
+### 11/05/21 - Está difícil de se autocanibalizar
+
+Por algum motivo, não estou conseguindo fazer a versão "site" dos conteúdos que são enviados na Newsletter ser tão gostoso de ler quanto nos emails. Será que o mindset de uma pessoa **lendo** um email, é diferente de uma pessoa **vendo** um site? Essas palavras são importantes, uma pessoa talves não vê um email, ela lê um email, e um site (a home pelo menos) a pessoa quer ver, e ver as informações de forma rápida para daí escolher o que ler. Bom, segue abaixo duas tentativas, e vou agora tentar algo próximo ao Hackernews.
+
+![image](https://user-images.githubusercontent.com/4248081/117865372-c194a380-b24a-11eb-9e7f-b0b4faec468a.png)
+
+![image](https://user-images.githubusercontent.com/4248081/117865400-c9ecde80-b24a-11eb-8f70-8352f16a778d.png)
