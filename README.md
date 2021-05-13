@@ -84,3 +84,9 @@ Por algum motivo, não estou conseguindo fazer a versão "site" dos conteúdos q
 ![image](https://user-images.githubusercontent.com/4248081/117865372-c194a380-b24a-11eb-9e7f-b0b4faec468a.png)
 
 ![image](https://user-images.githubusercontent.com/4248081/117865400-c9ecde80-b24a-11eb-8f70-8352f16a778d.png)
+
+### 13/05/21 - Guga e Renata tiveram excelentes ideias
+
+Nos últimos dias eu estava desenhando o layout abaixo, tentando encaixar na home tanto a lista de notícias quanto já aberta a notícia principal e apesar de que é uma ideia interessante de ser explorada, na avaliação do Guga o primeiro impacto ficou muito confuso, muita informação, e eu pessoalmente também não gosto de ler coisas na direita. De qualquer forma, ao mostrar o HackerNews para a Renata, ela falou que de fato uma coisa legal é ler de forma **linear** as notícias, e não há quebra de linha, o que de fato faz o scan das notícias ser muito rápido. E em cima disso, o @gustavodeschamps tocou em algo muito importante: **o valor dos comentários**. E de fato, eu e vocês devem fazem isso muitas vezes no YouTube, que é correr para os comentários para, até certo ponto, qualificar o conteúdo que a gente está prestes a consumir. Então na próxima tentativa de layout eu vou tentar fazer uma home mais HackerNews, e que já antecipe algums comentários, por exemplo, os mais votados.
+
+![image](https://user-images.githubusercontent.com/4248081/118160451-2c70e680-b3d3-11eb-9f6e-96cd1b579811.png)
