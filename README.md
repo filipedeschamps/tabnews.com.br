@@ -90,3 +90,15 @@ Por algum motivo, não estou conseguindo fazer a versão "site" dos conteúdos q
 Nos últimos dias eu estava desenhando o layout abaixo, tentando encaixar na home tanto a lista de notícias quanto já aberta a notícia principal e apesar de que é uma ideia interessante de ser explorada, na avaliação do Guga o primeiro impacto ficou muito confuso, muita informação, e eu pessoalmente também não gosto de ler coisas na direita. De qualquer forma, ao mostrar o HackerNews para a Renata, ela falou que de fato uma coisa legal é ler de forma **linear** as notícias, e não há quebra de linha, o que de fato faz o scan das notícias ser muito rápido. E em cima disso, o @gustavodeschamps tocou em algo muito importante: **o valor dos comentários**. E de fato, eu e vocês devem fazem isso muitas vezes no YouTube, que é correr para os comentários para, até certo ponto, qualificar o conteúdo que a gente está prestes a consumir. Então na próxima tentativa de layout eu vou tentar fazer uma home mais HackerNews, e que já antecipe algums comentários, por exemplo, os mais votados.
 
 ![image](https://user-images.githubusercontent.com/4248081/118160451-2c70e680-b3d3-11eb-9f6e-96cd1b579811.png)
+
+### 18/05/21 - Layout começando a ficar legal
+
+Esses últimos dias foram ótimos para estressar várias ideias e segue abaixo o print de todas, sendo que a última versão é o que mais está nos agradando. Ela possui um elemento importante que não estava presente nos outros layouts: **o ranking das notícias**. Isso traz uma ordem/classificação melhor para o cérebro, ao invés das notícias rankeadas, porém o único índice é a quantidade de TabNews (e a posição da notícia vai variar conforme a data de publicação dela). Próximo passo é fazer o layout de dentro da notícia.
+
+![image](https://user-images.githubusercontent.com/4248081/118731117-8ca9c300-b7ed-11eb-8724-dbe921e1c877.png)
+
+![image](https://user-images.githubusercontent.com/4248081/118731136-96332b00-b7ed-11eb-8b94-4835b294b108.png)
+
+![image](https://user-images.githubusercontent.com/4248081/118731162-a3e8b080-b7ed-11eb-83ba-dcf7229d0ffc.png)
+
+![image](https://user-images.githubusercontent.com/4248081/118731182-b1059f80-b7ed-11eb-9cc0-46559ddf9871.png)
