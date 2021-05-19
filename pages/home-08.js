@@ -217,9 +217,11 @@ function NewsList() {
               </a>
             </Link>
             <div className="flex-1 overflow-hidden">
-              <div className="text-base font-semibold leading-snug text-gray-900">
-                {news.title}
-              </div>
+              <Link href="/post-01">
+                <a className="inline-block text-base font-semibold leading-snug text-gray-900">
+                  {news.title}
+                </a>
+              </Link>
               <div className="text-xs tracking-tight text-gray-400 truncate">
                 {/* <IoChatbox className="w-3 h-3 mr-0.5 inline-block" /> */}
                 {getCommentsCount(news)} comentários | {news.date} |{" "}
