@@ -14,25 +14,25 @@ import { LoremIpsum } from "lorem-ipsum";
 
 export default function Home() {
   return (
-    <div>
-      <header className="pl-3 pr-3 m-auto max-w-7xl">
+    <div className="pl-3 pr-3">
+      <header className="m-auto max-w-7xl">
         <nav className="flex items-center justify-between pt-2 pb-2 mb-3 border-b-2 border-gray-200">
           <div className="flex items-center space-x-1 text-gray-800">
             <CgTab className="w-5 h-5" />
             <span className="text-sm font-medium">TabNews</span>
           </div>
           <div className="flex space-x-2">
-            <div className="flex items-center pt-1 pb-1 pl-2 pr-2 font-mono text-sm text-yellow-900 bg-yellow-400 rounded-lg">
-              <MdMonetizationOn className="w-4 h-4 mr-1" /> 0052
+            <div className="flex items-center pt-1 pb-1 pl-2 pr-2 font-mono text-sm text-gray-500 border border-gray-300 rounded-lg">
+              <MdMonetizationOn className="w-4 h-4 mr-1 text-yellow-400" /> 0052
             </div>
-            <div className="flex items-center pt-1 pb-1 pl-2 pr-2 font-mono text-sm text-blue-900 bg-blue-400 rounded-lg">
-              <MdAccountCircle className="w-4 h-4 mr-1" /> 1430
+            <div className="flex items-center pt-1 pb-1 pl-2 pr-2 font-mono text-sm text-gray-500 border border-gray-300 rounded-lg">
+              <MdAccountCircle className="w-4 h-4 mr-1 text-blue-500" /> 1430
             </div>
           </div>
         </nav>
       </header>
 
-      <div className="pl-3 pr-3 m-auto max-w-7xl">
+      <div className="m-auto max-w-7xl">
         <NewsList />
       </div>
     </div>
@@ -182,7 +182,7 @@ function NewsList() {
   });
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-4">
       {newsItems.map((news, index) => {
         function getCommentsCount(news) {
           return Math.round(news.coins * 0.2);
