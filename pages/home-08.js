@@ -15,7 +15,7 @@ import { LoremIpsum } from "lorem-ipsum";
 export default function Home() {
   return (
     <div>
-      <header className="container pl-3 pr-3 m-auto">
+      <header className="pl-3 pr-3 m-auto max-w-7xl">
         <nav className="flex items-center justify-between pt-2 pb-2 mb-3 border-b-2 border-gray-200">
           <div className="flex items-center space-x-1 text-gray-800">
             <CgTab className="w-5 h-5" />
@@ -32,7 +32,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <div className="container pl-3 pr-3 m-auto">
+      <div className="pl-3 pr-3 m-auto max-w-7xl">
         <NewsList />
       </div>
     </div>

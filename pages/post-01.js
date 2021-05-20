@@ -15,7 +15,7 @@ import { LoremIpsum } from "lorem-ipsum";
 export default function Home() {
   return (
     <div>
-      <header className="container pl-3 pr-3 m-auto">
+      <header className="pl-3 pr-3 m-auto max-w-7xl">
         <nav className="flex items-center justify-between pt-2 pb-2 mb-3 border-b-2 border-gray-200">
           <div className="flex items-center space-x-1 text-gray-800">
             <CgTab className="w-5 h-5" />
@@ -32,7 +32,7 @@ export default function Home() {
         </nav>
       </header>
 
-      <div className="container pl-3 pr-3 m-auto">
+      <div className="container pl-3 pr-3 m-auto mt-8">
         <Post />
       </div>
     </div>
@@ -41,10 +41,10 @@ export default function Home() {
 
 function Post() {
   return (
-    <div className="max-w-5xl m-auto">
+    <div className="max-w-4xl m-auto">
       <div className="flex font-sans">
         <Link href="#">
-          <a className="flex flex-col items-center self-start mt-2 mr-2 ">
+          <a className="flex flex-col items-center self-start mt-1 mr-2 ">
             <div className="w-12 pt-1 pb-1 text-sm font-bold text-center border border-gray-300 rounded-lg rounded-b-none">
               <MdMonetizationOn className="inline-block w-4 h-4 text-yellow-400 " />
             </div>
@@ -54,12 +54,13 @@ function Post() {
           </a>
         </Link>
         <div className="flex-1 overflow-hidden">
-          <h1 className="text-3xl font-semibold leading-snug text-gray-900">
+          <h1 className="text-3xl font-semibold text-gray-900">
             WhatsApp volta atrás e não vai mais desativar contas que não
             aceitarem nova política de privacidade
           </h1>
-          <div className="text-xs tracking-tight text-gray-400 truncate">
-            gustavodeschamps | 45 minutos atrás
+          <div className="text-xs text-gray-400 truncate">
+            <span className="font-semibold">gustavodeschamps</span> | 45 minutos
+            atrás
           </div>
 
           <p className="mt-4 text-gray-700">
@@ -92,8 +93,9 @@ function Post() {
           </a>
         </Link>
         <div className="flex-1 overflow-hidden">
-          <div className="text-xs tracking-tight text-gray-400 truncate">
-            filipedeschamps | 45 minutos atrás
+          <div className="text-xs text-gray-400 truncate">
+            <span className="font-semibold">filipedeschamps</span> | 45 minutos
+            atrás
           </div>
 
           <p className="text-gray-700">
@@ -125,8 +127,8 @@ function Post() {
           </a>
         </Link>
         <div className="flex-1 overflow-hidden">
-          <div className="text-xs tracking-tight text-gray-400 truncate">
-            arenata | 1 hora atrás
+          <div className="text-xs text-gray-400 truncate">
+            <span className="font-semibold">arenata</span> | 1 hora atrás
           </div>
 
           <p className="text-gray-700">
