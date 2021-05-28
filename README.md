@@ -18,7 +18,7 @@ Esse repositório aqui foi criado no meio do Natal. Eu sei, é estranho, mas ins
 
 Ao escrever a [issue de inception](https://github.com/filipedeschamps/tabnews.com.br/issues/1) do projeto, notamos algo **muito importante**: o TabNews não irá consertar o problema de entregabilidade dos emails (o fato dele existir não fará os emails serem entregues como deveriam, correto?), mas ao mesmo tempo será de grande valor para dois públicos, **principalmente para o segundo**:
 
-1. Para quem trabalha com tecnologia e precisa consumir conteúdos a respeito.
+1. Para quem trabalha com tecnologia e precisa consumir conteúdos com valor concreto.
 2. Para quem trabalha com a criação de conteúdos sobre tecnologia **(ao implementarmos um modelo de Revenue Share para esses criadores)**.
 
 ### 14/01/21 - Revenue Share
