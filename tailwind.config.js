@@ -2,27 +2,32 @@ const colors = require("tailwindcss/colors");
 
 module.exports = {
   mode: "jit",
-  purge: ["./pages/**/*.{js,ts,jsx,tsx}"],
-  darkMode: "media", // or 'media' or 'class'
+  purge: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class", // or 'media' or 'class'
   theme: {
     extend: {
       colors: {
         warmGray: colors.warmGray,
         darkTheme:{
-          background: "#06050A",
           primary: "#F3ECFF",
           secondary: "#787586",
-          positive: "#D3FBD8",
-          coin: {
-            primary: "#f5f495",
-            secondary: "#f5f4d5"
+          background: "#06050A",
+          green: {
+            200: "#D3FBD8"
+          },
+          yellow: {
+            200: "#f5f4d5",
+            400: "#f5f495"
           }
         }
       },
     },
   },
   variants: {
-    extend: {},
+    extend: {
+      backgroundColor: ['dark'],
+      textColor: ['dark']
+    },
   },
   plugins: [],
 };
