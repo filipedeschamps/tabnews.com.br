@@ -10,9 +10,11 @@
     "react-lorem-ipsum": "^1.4.9"
   },
   "devDependencies": {
+    "@types/react": "^17.0.9",
     "autoprefixer": "10.2.5",
     "postcss": "8.2.13",
-    "tailwindcss": "2.1.2"
+    "tailwindcss": "2.1.2",
+    "typescript": "^4.3.2"
   },
   "scripts": {
     "dev": "next dev",
