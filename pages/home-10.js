@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { CgTab } from "react-icons/cg";
 import { IoChatbox } from "react-icons/io5";
-import { BsArrowReturnRight } from "react-icons/bs";
-import { FaStar } from "react-icons/fa";
-import { VscCircleFilled } from "react-icons/vsc";
-import { MdStars } from "react-icons/md";
 import { MdAccountCircle } from "react-icons/md";
 import { MdMonetizationOn } from "react-icons/md";
-import { RiMoneyDollarCircleFill } from "react-icons/ri";
-
-import { username } from "react-lorem-ipsum";
-import { LoremIpsum } from "lorem-ipsum";
 
 const newsItems = [
   {
@@ -179,8 +171,8 @@ export default function Home() {
 
 const Post = ({ coins, title, comment, date, author }) => {
   return (
-    <div className="max-w-5xl m-auto flex flex-col mt-5 bg-gray-200">
-      <div className="font-sans flex flex-row items-center px-20 py-10 rounded-lg border border-gray-300">
+    <div className="max-w-5xl m-auto flex flex-col mt-5">
+      <div className="font-sans flex flex-row items-center px-20 py-10 rounded-lg border border-gray-300 bg-gray-200">
         <Link href="#">
           <a className="flex flex-col items-center mt-1 mr-20">
             <div className="w-12 pt-1 pb-1 text-sm font-bold text-center border border-gray-300 rounded-lg rounded-b-none">
