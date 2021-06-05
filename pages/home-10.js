@@ -155,8 +155,9 @@ export default function Home() {
       </header>
 
       <div className="mt-8">
-        {newsItems.map(({ title, comment, coins, date, author }) => (
+        {newsItems.map(({ title, comment, coins, date, author }, index) => (
           <Post
+            key={index}
             title={title}
             comment={comment}
             coins={coins}
