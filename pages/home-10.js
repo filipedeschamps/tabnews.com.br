@@ -4,6 +4,7 @@ import {
   FiSearch,
   FiChevronRight,
   FiClock,
+  FiMessageSquare,
 } from "react-icons/fi";
 import Head from "next/head";
 
@@ -209,8 +210,42 @@ const FeaturedNews = () => {
 const NewsCard = ({ data }) => {
   return (
     <div className="flex border-gray-100 border p-4 rounded-md mb-4">
-      <h3 className="font-bold text-xl">{data.title}</h3>
-      <time className="text-sm">Hoje às 18:30</time>
+      <div className="flex flex-col flex-1">
+        <div className="flex-1">
+          <h3 className="font-bold text-xl">{data.title}</h3>
+          <p className="text-gray-600 text-sm mt-1">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas
+            volutpat nisi sit amet tellus semper interdum. Nullam pharetra
+            semper tristique. Mauris rhoncus tempor sapien, dictum cursus ipsum.
+            Nam feugiat urna nunc, a iaculis eros scelerisque sit amet. Praesent
+            eu finibus velit
+          </p>
+        </div>
+        <footer className="flex items-center mt-4">
+          <time className="text-sm">{data.date}</time>
+          <div className="h-5 w-0 border-l border-gray-200 mx-4"></div>
+          <div className="flex items-center">
+            <div className="user-avatar">
+              <img
+                className="rounded-full h-5 w-5 mr-2 flex-shrink-0 "
+                src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
+                alt=""
+              />
+            </div>
+            <span className="user-name text-sm flex-1">@{data.author}</span>
+          </div>
+        </footer>
+      </div>
+      <div className="actions flex flex-col justify-center gap-4 ml-4 p-1">
+        <button type="button flex flex-col items-center">
+          <FiMessageSquare size={24} className="mb-1" />
+          <span className="text-sm">123</span>
+        </button>
+        <button type="button flex flex-col items-center">
+          <img src="/svg/tab-coin.svg" className="mb-1 h-6" />
+          <span className="text-sm">123</span>
+        </button>
+      </div>
     </div>
   );
 };
