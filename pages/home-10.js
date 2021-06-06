@@ -196,10 +196,19 @@ const FeaturedNews = () => {
   return (
     <div
       className="flex-1 flex flex-col justify-end rounded-md bg-gray-200 p-4"
-      style={{ height: 230 }}
+      style={{
+        height: 230,
+        background: `url(
+          "https://www12.senado.leg.br/noticias/materias/2020/06/16/stf-acata-defesa-do-senado-e-julga-constitucional-lei-da-terceirizacao/20190430_00384pf.jpg/@@images/image/imagem_materia"
+        ), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.85) 100%)`,
+        backgroundSize: "cover",
+        backgroundBlendMode: "darken",
+      }}
     >
-      <h3 className="font-bold text-3xl">STF teria sofrido ataque hacker</h3>
-      <time className="text-md flex items-center mt-2">
+      <h3 className="font-bold text-3xl text-white">
+        STF teria sofrido ataque hacker
+      </h3>
+      <time className="text-md flex items-center mt-2 text-white">
         <FiClock className="mr-2" />
         Hoje às 18:30
       </time>
