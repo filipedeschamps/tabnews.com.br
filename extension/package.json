@@ -1,0 +1,64 @@
+{
+  "private": true,
+  "name": "extension",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev:chrome": "cross-env NODE_ENV=development cross-env TARGET_BROWSER=chrome webpack --watch",
+    "dev:firefox": "cross-env NODE_ENV=development cross-env TARGET_BROWSER=firefox webpack --watch",
+    "dev:opera": "cross-env NODE_ENV=development cross-env TARGET_BROWSER=opera webpack --watch",
+    "build:chrome": "cross-env NODE_ENV=production cross-env TARGET_BROWSER=chrome webpack",
+    "build:firefox": "cross-env NODE_ENV=production cross-env TARGET_BROWSER=firefox webpack",
+    "build:opera": "cross-env NODE_ENV=production cross-env TARGET_BROWSER=opera webpack",
+    "build": "npm run build:chrome && npm run build:firefox && npm run build:opera"
+  },
+  "eslintConfig": {
+    "extends": "preact",
+    "ignorePatterns": [
+      "build/"
+    ]
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.14.1",
+    "@babel/preset-react": "^7.13.13",
+    "@fullhuman/postcss-purgecss": "^4.0.3",
+    "autoprefixer": "10.2.5",
+    "babel-loader": "^8.2.1",
+    "babel-plugin-module-resolver": "^4.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.3.1",
+    "cross-env": "^7.0.2",
+    "css-loader": "^5.0.1",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-preact-pure": "^2.0.0",
+    "eslint": "^6.0.1",
+    "eslint-config-preact": "^1.1.0",
+    "html-webpack-plugin": "^4.5.0",
+    "jest": "^24.9.0",
+    "jest-preset-preact": "^1.0.0",
+    "mini-css-extract-plugin": "^1.3.1",
+    "postcss": "8.2.13",
+    "postcss-loader": "^4.0.4",
+    "preact-cli": "^3.0.0",
+    "resolve-url-loader": "^3.1.2",
+    "sirv-cli": "1.0.3",
+    "tailwindcss": "2.1.2",
+    "webpack-cli": "^4.7.0",
+    "wext-manifest-loader": "^2.2.1",
+    "wext-manifest-webpack-plugin": "^1.2.1"
+  },
+  "dependencies": {
+    "preact": "^10.3.2",
+    "preact-render-to-string": "^5.1.4",
+    "preact-router": "^3.2.1",
+    "react-icons": "^4.2.0",
+    "next": "10.2.0"
+  },
+  "jest": {
+    "preset": "jest-preset-preact",
+    "setupFiles": [
+      "<rootDir>/tests/__mocks__/browserMocks.js",
+      "<rootDir>/tests/__mocks__/setupTests.js"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+    "manifest_version": 2,
+    "name": "Tabnews",
+    "version": "1.0.0",
+    "description": "Conteúdos para quem vive de programação e tecnologia.",
+    "author": "Filipe Deschamps",
+    "chrome_url_overrides" : {
+      "newtab": "index.html"
+    },
+    "optional_permissions": [
+      "topSites"
+    ],
+    "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+    "__firefox__content_security_policy": "object-src 'self'",
+    "web_accessible_resources": [
+        "index.html"
+    ],
+    "__prod__permissions": [
+      "storage",
+      "alarms"
+    ],
+    "__dev__permissions": [
+      "storage",
+      "alarms"
+    ],
+    "icons": {
+        "16": "icons/16.png",
+        "48": "icons/48.png",
+        "128": "icons/128.png"
+    },
+    "__chrome__offline_enabled": true
+}
