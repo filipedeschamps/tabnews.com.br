@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FiPlusSquare, FiSearch, FiChevronRight } from "react-icons/fi";
 
-const Layout: React.FC = ({ children }) => {
+const Layout = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(true);
 
   return (
@@ -42,7 +42,7 @@ const Layout: React.FC = ({ children }) => {
       </header>
 
       <div className="content flex">
-        <main className="ml-8 flex-1">{children}</main>
+        <main className="flex-1">{children}</main>
 
         <aside
           className="w-72 border-l p-4"
@@ -55,4 +55,37 @@ const Layout: React.FC = ({ children }) => {
   );
 };
 
-export default Layout;
+const FeaturedNews = () => {
+  return (
+    <div
+      className="flex-1 flex flex-col justify-end rounded-md bg-gray-200 p-4"
+      style={{ height: 230 }}
+    >
+      <h3 className="font-bold text-xl">STF teria sofrido ataque hacker</h3>
+      <time className="text-sm">Hoje às 18:30</time>
+    </div>
+  );
+};
+
+const HomePage = () => {
+  return (
+    <>
+      <Head>
+        <title>TabNews - Drops diários de notícias</title>
+      </Head>
+      <Layout>
+        <div className="container mx-auto">
+          <section className="featured flex gap-4 mt-8 mb-8">
+            <FeaturedNews />
+            <FeaturedNews />
+            <FeaturedNews />
+          </section>
+          <section className="trending-news"></section>
+          <aside></aside>
+        </div>
+      </Layout>
+    </>
+  );
+};
+
+export default HomePage;
