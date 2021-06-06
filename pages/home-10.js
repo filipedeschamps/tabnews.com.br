@@ -246,13 +246,13 @@ const NewsCard = ({ data }) => {
         </footer>
       </div>
       <div className="actions flex flex-col justify-center gap-4 ml-4 p-1">
-        <button type="button flex flex-col items-center">
+        <button type="button" className="flex flex-col items-center">
           <FiMessageSquare size={24} className="mb-1" />
           <span className="text-sm">123</span>
         </button>
-        <button type="button flex flex-col items-center">
+        <button type="button" className="flex flex-col items-center">
           <img src="/svg/tab-coin.svg" className="mb-1 h-6" />
-          <span className="text-sm">123</span>
+          <span className="text-sm">{data.coins}</span>
         </button>
       </div>
     </div>
