@@ -17,7 +17,7 @@ export default function NewsList() {
     <div className="flex flex-col space-y-8 w-full">
       {newsData.map((news, index) => {
         return (
-            <div className="w-full flex font-sans items-center justify-between rounded-lg">
+            <div className="w-full flex font-sans items-center justify-between rounded-lg" key={index}>
               <PillPosition index={index}/>
               {/* <PillCoin index={index} newsCoin={news.coins} /> */}
               <div className="flex flex-col flex-1 w-11/12">

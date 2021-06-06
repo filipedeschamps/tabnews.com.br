@@ -22,7 +22,7 @@ export default function NewsDetails({ newsAuthor, newsDate, newsTitle, index, ne
                 ? "text-2xl dark:text-darkTheme-yellow-400"
                 : "text-lg dark:text-darkTheme-primary"
               }
-                    `}>       
+                    `}>
               {newsTitle}
             </a>
           </Link>
@@ -41,35 +41,35 @@ export default function NewsDetails({ newsAuthor, newsDate, newsTitle, index, ne
           {!news.comment &&
             <div className="flex flex-col justify-between items-end">
               <div className="z-50 text-sm font-semibold w-min tracking-tight shadow-md text-lightTheme-secondary bg-gradient-to-r from-lightTheme-background-primary to-lightTheme-background-secondary py-2 px-4 rounded-lg rounded-tl-none rounded-br-none truncate dark:text-darkTheme-secondary">
-              {getCommentsCount(news)} comentários | {newsDate} |{" "}
-              {newsAuthor}
+                {getCommentsCount(news)} comentários | {newsDate} |{" "}
+                {newsAuthor}
               </div>
               <div className="flex items-center justify-end z-50 py-4 pr-4">
-              <svg width="0" height="0">
-              <linearGradient id="other-red-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
-                <stop stopColor="#121212" offset="0%" />
-                <stop stopColor="#ccd8e0" offset="100%" />
-              </linearGradient>
-            </svg>
-            <AiFillFire size={25} style={{ fill: "url(#other-red-gradient)" }} />
-                <PillCoin newsCoin={news.coins}/> 
+                <svg width="0" height="0">
+                  <linearGradient id="other-red-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+                    <stop stopColor="#121212" offset="0%" />
+                    <stop stopColor="#ccd8e0" offset="100%" />
+                  </linearGradient>
+                </svg>
+                <AiFillFire size={25} style={{ fill: "url(#other-red-gradient)" }} />
+                <PillCoin newsCoin={news.coins} />
               </div>
             </div>
           }
         </div>
-        <div className="flex justify-between pl-4 w-full z-50">
+        <div className="flex items-center justify-between pl-4 w-full z-50">
           <NewsMainComment newsComment={news.comment} />
-          {news.comment && 
-          <div className="flex items-center justify-end z-50 py-4 pr-4">
-            <svg width="0" height="0">
-              <linearGradient id="red-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
-                <stop stopColor="#EF4444" offset="0%" />
-                <stop stopColor="#FBBF24" offset="100%" />
-              </linearGradient>
-            </svg>
-            <AiFillFire size={25} style={{ fill: "url(#red-gradient)" }} />
-            <PillCoin newsCoin={news.coins}/> 
-          </div>}
+          {news.comment &&
+            <div className="flex items-center justify-end z-50 py-4 pr-4">
+              <svg width="0" height="0">
+                <linearGradient id="red-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <stop stopColor="#EF4444" offset="0%" />
+                  <stop stopColor="#FBBF24" offset="100%" />
+                </linearGradient>
+              </svg>
+              <AiFillFire size={25} style={{ fill: "url(#red-gradient)" }} />
+              <PillCoin newsCoin={news.coins} />
+            </div>}
         </div>
       </div>
     </div>
