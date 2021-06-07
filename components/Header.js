@@ -6,7 +6,7 @@ import ToggleButton from './ToggleButton'
 export default function Header() {
   return (
     <header className="m-auto pt-5 pb-8 z-0">
-      <nav className="relative rounded-lg flex items-center justify-between p-2 dark:border-darkTheme-secondary shadow-xl">
+      <nav className="relative rounded-lg flex items-center justify-between p-2 dark:border-darkTheme-secondary shadow-lg">
         <div className="absolute rounded-lg z-0 top-0 left-0 bg-lightTheme-primary opacity-40" style={{width: "100%", height:"100%"}}/>
         <div className="flex items-center space-x-1 text-gray-800 z-10">
           <CgTab className="w-7 h-7 dark:text-darkTheme-primary" />

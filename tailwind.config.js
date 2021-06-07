@@ -14,6 +14,7 @@ module.exports = {
           background: {
             primary: "#d8e1e8",
             secondary: "#ccd8e0",
+            third: "#86939c",
           },
           gradient: {
             primary: "#188ddb",
