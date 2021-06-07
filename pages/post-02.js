@@ -10,7 +10,7 @@ import { MdMonetizationOn } from "react-icons/md";
 import { RiMoneyDollarCircleFill } from "react-icons/ri";
 import { AiFillFire } from "react-icons/ai";
 import PillCoin from "../components/PillCoin";
-import { GiRank3 } from "react-icons/gi";
+import { GiRank3, GiRank1 } from "react-icons/gi";
 
 import { username } from "react-lorem-ipsum";
 import { LoremIpsum } from "lorem-ipsum";
@@ -184,23 +184,23 @@ function Post() {
                       <stop stopColor="#36689e" offset="100%" />
                     </linearGradient>
                   </svg>
-                  <GiRank3 size={30} style={{ fill: "url(#blue-gradient)" }} />
+                  <GiRank1 size={30} style={{ fill: "url(#blue-gradient)" }} />
                   <PillCoin newsCoin={1} />
                 </div>
                 <svg width="0" height="0">
                   <linearGradient
-                    id="red-gradient"
+                    id="black-gradient"
                     x1="100%"
                     y1="100%"
                     x2="0%"
                     y2="0%"
                   >
-                    <stop stopColor="#EF4444" offset="0%" />
-                    <stop stopColor="#FBBF24" offset="100%" />
+                    <stop stopColor="#121212" offset="0%" />
+                    <stop stopColor="#ccd8e0" offset="100%" />
                   </linearGradient>
                 </svg>
-                <AiFillFire size={25} style={{ fill: "url(#red-gradient)" }} />
-                <PillCoin newsCoin={1234} />
+                <AiFillFire size={25} style={{ fill: "url(#black-gradient)" }} />
+                <PillCoin newsCoin={123} />
               </div>
             </div>
           </div>
@@ -253,23 +253,23 @@ function Post() {
                       <stop stopColor="#36689e" offset="100%" />
                     </linearGradient>
                   </svg>
-                  <GiRank3 size={30} style={{ fill: "url(#blue-gradient)" }} />
+                  <GiRank1 size={30} style={{ fill: "url(#blue-gradient)" }} />
                   <PillCoin newsCoin={2} />
                 </div>
                 <svg width="0" height="0">
                   <linearGradient
-                    id="red-gradient"
+                    id="black-gradient"
                     x1="100%"
                     y1="100%"
                     x2="0%"
                     y2="0%"
                   >
-                    <stop stopColor="#EF4444" offset="0%" />
-                    <stop stopColor="#FBBF24" offset="100%" />
+                    <stop stopColor="#121212" offset="0%" />
+                    <stop stopColor="#ccd8e0" offset="100%" />
                   </linearGradient>
                 </svg>
-                <AiFillFire size={25} style={{ fill: "url(#red-gradient)" }} />
-                <PillCoin newsCoin={1234} />
+                <AiFillFire size={25} style={{ fill: "url(#black-gradient)" }} />
+                <PillCoin newsCoin={12} />
               </div>
             </div>
           </div>
