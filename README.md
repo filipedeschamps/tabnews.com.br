@@ -109,3 +109,8 @@ Esses últimos dias foram ótimos para estressar várias ideias e segue abaixo o
 Fazendo o layout de dentro da notícia, eu aproveitei para deixar o layout do TabCoins e XP mais discretos e próximos ao que aparece ao lado esquerdo de cada notícia e comentário. E um ponto importante desse layout é que o comentário possui o mesmo espaço e peso que o conteúdo da própria notícia. É importante ser assim, principalmente ter um espaço grande para a pessoa digitar o seu comentário (ter o mesmo espaço que a pessoa teve para criar a notícia principal), como em fóruns antigamente, para que a pessoa possa **trabalhar adequadamente** na criação do conteúdo. Note como o Facebook dá pouco espaço para colocar uma resposta, é um filete, é péssimo para criar conteúdos bem aprofundados e bem pensados. Próximo passo é começar a programar pra valer.
 
 ![image](https://user-images.githubusercontent.com/4248081/120021790-61b73000-bfa0-11eb-9fc1-8af0cfafed31.png)
+
+
+### 07/06/21 - PWA
+
+Na documentação oficial do Next.js existe um [FAQ](https://nextjs.org/docs/faq), nele podemos ver que exite uma pergunta falando sobre PWA. Seguindo o exemplo que eles fornecem, foi adicionado as configurações para liberar suporte a PWA para o projeto.

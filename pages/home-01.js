@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CgTab } from "react-icons/cg";
 import { RiMoneyDollarCircleFill } from "react-icons/ri";
+import Head from 'next/head'
 
 function NewsList() {
   const newsItems = [
@@ -93,6 +94,13 @@ function NewsList() {
 export default function Home() {
   return (
     <>
+    
+      <Head>
+        <meta name='theme-color' content='#ffffff' />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel='shortcut icon' href='/favicon.ico' />
+      </Head>
+
       <header className="border-b-2 border-gray-200">
         <nav className="flex items-center justify-between p-3">
           <div className="flex items-center space-x-1">
