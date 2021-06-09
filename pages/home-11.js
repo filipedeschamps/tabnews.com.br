@@ -8,6 +8,8 @@ import {
   FiSkipBack,
   FiPlay,
   FiDollarSign,
+  FiYoutube,
+  FiInfo,
 } from "react-icons/fi";
 import Head from "next/head";
 
@@ -208,7 +210,7 @@ const Layout = ({ children }) => {
         </div>
 
         <div className="player bg-gray-50 p-6 flex flex-col items-center rounded-md">
-          <div className="flex content-center items-center h-24">
+          <div className="flex justify-center items-center h-24">
             <h3 className="text-xl font-bold text-center">
               STF teria sofrido ataque hacker
             </h3>
@@ -329,9 +331,26 @@ const HomePage = () => {
             </section>
           </div>
           <aside className="col-span-3">
-            <div className="sticky top-20">
-              asdddddddddddddddddddddddddddddd asdddddd dddddddddddddddddddddddd
-              asddddddddddddddddddddddddddddd dasddddddddddd ddddddddddddddddddd
+            <div className="sticky top-20 flex justify-center w-full">
+              <div className="ad bg-gray-100 p-8 rounded-md flex justify-center items-center flex-col max-w-xs">
+                <img
+                  src="https://yt3.ggpht.com/ytc/AAUvwnjmOwHGXldA8NPXJ4vIFtA4334qT5fspJMPoM4p=s900-c-k-c0x00ffffff-no-rj"
+                  className="rounded-md w-3/5"
+                />
+                <h3 className="font-bold text-2xl mt-4">Filipe Deschamps</h3>
+                <p className="text-sm text-gray-600 text-center leading-5 mt-1">
+                  Vídeos sobre tecnologia e programação
+                </p>
+                <button className="bg-red-600 text-white flex items-center px-4 py-2 rounded-md mt-4">
+                  <FiYoutube size={20} className="mr-2" />
+                  <span>Inscrever-se</span>
+                </button>
+
+                <div className="flex items-center text-gray-500 mt-6">
+                  <FiInfo className="mr-1" size={16} />
+                  <span className="text-xs">Anúncio por Filipe Deschamps</span>
+                </div>
+              </div>
             </div>
           </aside>
         </div>
