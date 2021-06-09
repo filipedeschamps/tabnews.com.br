@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   FiPlusSquare,
   FiSearch,
-  FiChevronRight,
   FiClock,
   FiMessageSquare,
   FiSkipForward,
   FiSkipBack,
   FiPlay,
+  FiDollarSign,
 } from "react-icons/fi";
 import Head from "next/head";
 
@@ -142,8 +142,6 @@ const newsItems = [
 ];
 
 const Layout = ({ children }) => {
-  const [drawerOpen, setDrawerOpen] = useState(true);
-
   return (
     <>
       <header className="flex justify-between py-2 pl-8 border border-gray-100 items-center fixed top-0 left-0 bg-white w-full h-14">
@@ -176,7 +174,7 @@ const Layout = ({ children }) => {
             </div>
             <span className="user-name text-sm flex-1">@nomedeusuario</span>
 
-            <FiChevronRight size={22} />
+            {/* <FiChevronRight size={22} /> */}
           </div>
         </div>
       </header>
@@ -185,7 +183,30 @@ const Layout = ({ children }) => {
         className="w-72 border-l p-4 flex flex-col justify-between fixed top-14 right-0"
         style={{ height: "calc(100vh - 58px)" }}
       >
-        <div>a</div>
+        <div>
+          <div className="bg-purple-500  rounded-md p-6 flex items-center">
+            <FiDollarSign size={46} className="text-pink-200" />
+            <span className="text-pink-200 font-bold text-3xl ml-4">
+              860 T$
+            </span>
+          </div>
+
+          <div className="mt-6">
+            <h4 className="text-lg mb-2">últimas ações</h4>
+
+            {Array(5)
+              .fill(5)
+              .map(() => (
+                <div className="border rounded-md p-2 flex items-center border-gray-100 mt-2">
+                  <div className="p-2 bg-purple-100 rounded-full mr-2">
+                    <FiMessageSquare size={22} />
+                  </div>
+                  <span className="text-sm">comentou em um post</span>
+                </div>
+              ))}
+          </div>
+        </div>
+
         <div className="player bg-gray-50 p-6 flex flex-col items-center rounded-md">
           <div className="flex content-center items-center h-24">
             <h3 className="text-xl font-bold text-center">
