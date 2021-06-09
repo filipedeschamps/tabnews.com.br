@@ -143,7 +143,7 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      <header className="flex justify-between py-2 pl-8 border border-gray-100 items-center">
+      <header className="flex justify-between py-2 pl-8 border border-gray-100 items-center fixed top-0 left-0 bg-white w-full h-14">
         <div className="left-side">
           <div className="logo text-xl font-bold">TabNews</div>
         </div>
@@ -178,15 +178,17 @@ const Layout = ({ children }) => {
         </div>
       </header>
 
-      <div className="content flex">
-        <main className="flex-1">{children}</main>
+      <aside
+        className="w-72 border-l p-4 flex flex-col justify-between fixed top-14 right-0"
+        style={{ height: "calc(100vh - 58px)" }}
+      >
+        <div>a</div>
+        <div>a</div>
+      </aside>
 
-        <aside
-          className="w-72 border-l p-4"
-          style={{ height: "calc(100vh - 58px)" }}
-        >
-          teste
-        </aside>
+      <div className="content flex mt-14">
+        <main className="flex-1">{children}</main>
+        <div className="w-72"></div>
       </div>
     </>
   );
@@ -280,8 +282,10 @@ const HomePage = () => {
             </section>
           </div>
           <aside className="col-span-3">
-            asdddddddddddddddddddddddddddddd asdddddd dddddddddddddddddddddddd
-            asddddddddddddddddddddddddddddd dasddddddddddd ddddddddddddddddddd
+            <div className="sticky top-20">
+              asdddddddddddddddddddddddddddddd asdddddd dddddddddddddddddddddddd
+              asddddddddddddddddddddddddddddd dasddddddddddd ddddddddddddddddddd
+            </div>
           </aside>
         </div>
       </Layout>
