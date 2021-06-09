@@ -7,11 +7,11 @@ import {
   FiSkipForward,
   FiSkipBack,
   FiPlay,
-  FiDollarSign,
   FiYoutube,
   FiInfo,
 } from "react-icons/fi";
 import Head from "next/head";
+import TabCoinIcon from "../public/svg/tab-coin.svg";
 
 const newsItems = [
   {
@@ -187,7 +187,7 @@ const Layout = ({ children }) => {
       >
         <div>
           <div className="bg-purple-500  rounded-md p-6 flex items-center">
-            <FiDollarSign size={46} className="text-pink-200" />
+            <TabCoinIcon className="text-pink-200 h-16" />
             <span className="text-pink-200 font-bold text-3xl ml-4">
               860 T$
             </span>
@@ -298,11 +298,11 @@ const NewsCard = ({ data }) => {
       </div>
       <div className="actions flex flex-col justify-center gap-4 ml-4 p-1">
         <button type="button" className="flex flex-col items-center">
-          <FiMessageSquare size={24} className="mb-1" />
+          <FiMessageSquare size={22} className="mb-1" stroke-width="1.5" />
           <span className="text-sm">123</span>
         </button>
         <button type="button" className="flex flex-col items-center">
-          <img src="/svg/tab-coin.svg" className="mb-1 h-6" />
+          <TabCoinIcon className="mb-1 h-6" />
           <span className="text-sm">{data.coins}</span>
         </button>
       </div>
