@@ -5,6 +5,9 @@ import {
   FiChevronRight,
   FiClock,
   FiMessageSquare,
+  FiSkipForward,
+  FiSkipBack,
+  FiPlay,
 } from "react-icons/fi";
 import Head from "next/head";
 
@@ -158,7 +161,7 @@ const Layout = ({ children }) => {
             <FiSearch />
           </div>
 
-          <button className="border-none bg-purple-500 rounded-sm flex items-center text-white py-2 px-3">
+          <button className="border-none bg-purple-500 rounded-sm flex items-center text-white py-2 px-3 hover:bg-purple-600">
             <FiPlusSquare className="mr-2" />
             <span>Informar</span>
           </button>
@@ -183,7 +186,30 @@ const Layout = ({ children }) => {
         style={{ height: "calc(100vh - 58px)" }}
       >
         <div>a</div>
-        <div>a</div>
+        <div className="player bg-gray-50 p-6 flex flex-col items-center rounded-md">
+          <div className="flex content-center items-center h-24">
+            <h3 className="text-xl font-bold text-center">
+              STF teria sofrido ataque hacker
+            </h3>
+          </div>
+
+          <div className="mt-6">
+            <div className="w-full h-2 bg-gray-200 rounded-md mb-4">
+              <div className="w-3/5 h-2 bg-purple-600 rounded-md mb-4" />
+            </div>
+            <div className="flex gap-4">
+              <button className="rounded-full p-3 hover:bg-warmGray-200">
+                <FiSkipBack size={22} />
+              </button>
+              <button className="bg-purple-500 rounded-full p-3 hover:bg-purple-600">
+                <FiPlay size={22} color="#fff" />
+              </button>
+              <button className="rounded-full p-3 hover:bg-warmGray-200">
+                <FiSkipForward size={22} />
+              </button>
+            </div>
+          </div>
+        </div>
       </aside>
 
       <div className="content flex mt-14">
