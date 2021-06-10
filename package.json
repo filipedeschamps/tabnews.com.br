@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@svgr/webpack": "^5.5.0",
     "lorem-ipsum": "^2.0.3",
     "next": "10.2.0",
     "node-pg-migrate": "5.9.0",
