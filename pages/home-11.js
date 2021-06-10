@@ -138,7 +138,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <header className="flex flex-col items-center border-b border-gray-200">
-        <nav className="flex w-full max-w-5xl justify-between py-2 px-10">
+        <nav className="flex w-full max-w-5xl justify-between py-2 px-5 md:px-10 ">
           <div className="flex items-center space-x-1 text-gray-800">
             <CgTab className="w-6 h-6" />
             <span className="text-md font-medium">TabNews</span>
@@ -173,7 +173,7 @@ export default function Home() {
 const Post = ({ coins, title, comment, date, author }) => {
   return (
     <div className="max-w-5xl m-auto flex flex-col mt-5 px-4 md:px-0">
-      <div className="font-sans flex flex-row  px-5 md:px-10 lg:px-20  py-5 md:px-10 lg:px-20  rounded-lg border border-gray-300 bg-gray-200">
+      <div className="font-sans flex flex-row  px-5 md:px-10 lg:px-20 py-5 md:py-10 lg:py-10 rounded-lg border border-gray-300 bg-gray-200">
         <Link href="#">
           <a className="flex flex-col items-center mt-1 mr-5 md:mr-10 lg:mr-20">
             <div className="w-12 pt-1 pb-1 text-sm font-bold text-center border border-gray-300 rounded-lg rounded-b-none">
