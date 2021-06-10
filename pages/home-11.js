@@ -175,7 +175,7 @@ const Post = ({ coins, title, comment, date, author }) => {
     <div className="max-w-5xl m-auto flex flex-col mt-5 px-4 md:px-0">
       <div className="font-sans flex flex-row  px-5 md:px-10 lg:px-20  py-5 md:px-10 lg:px-20  rounded-lg border border-gray-300 bg-gray-200">
         <Link href="#">
-          <a className="flex flex-col items-center mt-1 mr-5 md:px-10 lg:px-20">
+          <a className="flex flex-col items-center mt-1 mr-5 md:mr-10 lg:mr-20">
             <div className="w-12 pt-1 pb-1 text-sm font-bold text-center border border-gray-300 rounded-lg rounded-b-none">
               <MdMonetizationOn className="inline-block w-4 h-4 text-yellow-400 " />
             </div>
