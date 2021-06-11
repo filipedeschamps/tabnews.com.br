@@ -175,7 +175,7 @@ const Post = ({ coins, title, comment, date, author }) => {
     <div className="max-w-5xl m-auto flex flex-col mt-5 px-4 md:px-0">
       <div className="font-sans flex flex-row  px-5 md:px-10 lg:px-20 py-5 md:py-10 lg:py-10 rounded-lg border border-gray-300 bg-gray-200">
         <Link href="#">
-          <a className="flex flex-col items-center mt-1 mr-5 md:mr-10 lg:mr-20">
+          <a className="flex flex-col items-center mt-1 mr-5 md:mr-10 lg:mr-20 hidden md:block">
             <div className="w-12 pt-1 pb-1 text-sm font-bold text-center border border-gray-300 rounded-lg rounded-b-none">
               <MdMonetizationOn className="inline-block w-4 h-4 text-yellow-400 " />
             </div>
@@ -189,10 +189,22 @@ const Post = ({ coins, title, comment, date, author }) => {
           <div className="text-xs text-gray-400 truncate mt-2">
             <span className="font-semibold">{author}</span> | {date}
           </div>
-
-          <p className="mt-4 text-gray-700">{comment}</p>
-          <div className="flex items-center mt-10 text-xs font-semibold text-gray-700 cursor-pointer">
-            <IoChatbox className="w-4 h-4 mr-1 text-yellow-400" /> Comentar
+          
+            <p className="mt-4 text-gray-700">{comment}</p>
+            <div class="flex items-center justify-between mt-5 md:mt-10">
+            <div className="flex items-center  text-xs font-semibold text-gray-700 cursor-pointer">
+              <IoChatbox className="w-4 h-4 mr-1 text-yellow-400" /> Comentar
+            </div>
+            <Link href="#">
+            <a className="flex flex-col items-center  md:mr-10 lg:mr-20 block md:hidden">
+              <div className="w-12 pt-1 pb-1 text-sm font-bold text-center border border-gray-300 rounded-lg rounded-b-none">
+                <MdMonetizationOn className="inline-block w-4 h-4 text-yellow-400 " />
+              </div>
+              <div className="w-12 pb-1 text-xs text-center pt-0.5 rounded-lg rounded-t-none bg-gray-300 text-gray-700">
+                {coins}
+              </div>
+            </a>
+          </Link>
           </div>
         </div>
       </div>
