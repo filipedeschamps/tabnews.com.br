@@ -1,6 +1,6 @@
 import getRepoInfo from "./get-repo-infos";
 import getCollaborators from "./get-collaborators";
-import getCollaboratorsUrl from "./clear-collaborators-url";
+import getCollaboratorsUrl from "./get-collaborators-url";
 import downloadCollaboratorsAvatar from "./download-collaborators-avatar";
 
 (function () {

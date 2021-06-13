@@ -8,7 +8,7 @@
     "node-fetch": "^2.6.1"
   },
   "scripts": {
-    "dev": "nodemon --exec babel-node ./src/index.js"
+    "dev": "AUTH_TOKEN=$SEUTOKENAQUI nodemon --exec babel-node ./src/index.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",

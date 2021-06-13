@@ -1,15 +1,17 @@
 const download = require("image-downloader");
 const path = require("path");
+const fs = require('fs');
 import fileExist from "./utils/fileExist";
 
 export default async function downloadCollaboratorsAvatar(collaborators = []) {
   const DEST_PATH = path.resolve(__dirname, "contents");
-
+  await fs.promises.mkdir(DEST_PATH)
   for (let { login, avatar_url } of collaborators) {
     const dest = `${DEST_PATH}/${login}.jpg`;
-
-    if (fileExist(dest)) continue;
-
+    if (fileExist(dest)) {
+      console.log('File Exists')
+      continue;
+    }
     try {
       await download.image({
         url: avatar_url,

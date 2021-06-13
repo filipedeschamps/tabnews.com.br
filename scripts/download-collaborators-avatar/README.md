@@ -7,6 +7,7 @@ Código simples escrito em JavaScript para realizar o download do avatar de todo
 
 2. Acesse o arquivo `credentials.js` e define o valor de `AUTH_TOKEN` para o seu token que foi gerado.
 3. Instale as depedências com `yarn` ou `npm install`.
-4. Execute o script `start`
+4. No arquivo package.json, substitua o valor `$SEUTOKENAQUI` no script dev pelo seu token gerado anteriormente.
+5. Execute o script `dev`
 
 O codígo foi desenvolvido o padrão de projeto **factory**, onde cada funcão é divida em uma arquivo separado e fabrica 
