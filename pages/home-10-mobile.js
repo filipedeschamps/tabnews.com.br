@@ -4,136 +4,7 @@ import { IoChatbox } from "react-icons/io5";
 import { BiSearch } from "react-icons/bi";
 import { MdAccountCircle } from "react-icons/md";
 import { MdMonetizationOn } from "react-icons/md";
-
-const newsItems = [
-  {
-    coins: "1132",
-    author: "gustavodeschamps",
-    title: "STF teria sofrido ataque hacker",
-    date: "45 minutos atrás",
-    comment:
-      "Já vivenciei situações assim, e o caos se instala ou não conforme o poder de alinhamento que o líder tem. Agora, algo que não se pode negligenciar é o nível de ego presente nas pessoas, pois isso atrapalha muito!",
-  },
-  {
-    coins: "954",
-    author: "filipedeschamps",
-    title:
-      "WhatsApp volta atrás e não vai mais desativar contas que não aceitarem nova política de privacidade",
-    date: "2 horas atrás",
-    comment:
-      "O que eu fico feliz com toda essa história é que quem está tocando essas mudanças dentro do Facebook não poderia esperar uma rejeição tão grande.",
-  },
-  {
-    coins: "430",
-    author: "arenata",
-    title:
-      "Reações nucleares estão sendo reativadas novamente em Chernobyl, 35 anos após acidente",
-    date: "1 minuto atrás",
-  },
-  {
-    coins: "122",
-    author: "gustavodeschamps",
-    title: "Alerta para golpe do WhatsApp voltado ao Dia das Mães",
-    date: "4 horas atrás",
-    comment: "Eu recebi um desses golpes, olha só essa imagem:",
-  },
-  {
-    coins: "59",
-    author: "gustavodeschamps",
-    title:
-      "Supermercado na Polônia vai testar IA para reduzir desperdício de alimentos",
-    date: "40 minutos atrás",
-    comment:
-      "Toda ferramenta pode ser usada para o mal e para o bem, e nesse caso, para o bem.",
-  },
-  {
-    coins: "201",
-    author: "gustavodeschamps",
-    title:
-      "Programa que conserta e doa computadores já entregou mais de 20 mil equipamentos",
-    date: "5 horas atrás",
-  },
-  {
-    coins: "83",
-    author: "gustavodeschamps",
-    title:
-      "Software pirata leva a ataque ransomware em instituto europeu de pesquisa biomolecular",
-    date: "12 horas atrás",
-  },
-  {
-    coins: "340",
-    author: "gustavodeschamps",
-    title: "Nova Iorque pode banir mineração de moedas digitais",
-    date: "13 horas atrás",
-  },
-  {
-    coins: "500",
-    author: "gustavodeschamps",
-    title:
-      "Starlink ameaça cortar internet de usuário após download ilegal de série de TV",
-    date: "15 horas atrás",
-  },
-  {
-    coins: "944",
-    author: "gustavodeschamps",
-    title: "STF teria sofrido ataque hacker",
-    date: "45 minutos atrás",
-  },
-  {
-    coins: "950",
-    author: "filipedeschamps",
-    title:
-      "WhatsApp volta atrás e não vai mais desativar contas que não aceitarem nova política de privacidade",
-    date: "2 horas atrás",
-  },
-  {
-    coins: "500",
-    author: "arenata",
-    title:
-      "Reações nucleares estão sendo reativadas novamente em Chernobyl, 35 anos após acidente",
-    date: "1 minuto atrás",
-  },
-  {
-    coins: "160",
-    author: "gustavodeschamps",
-    title: "Alerta para golpe do WhatsApp voltado ao Dia das Mães",
-    date: "4 horas atrás",
-  },
-  {
-    coins: "5",
-    author: "gustavodeschamps",
-    title:
-      "Supermercado na Polônia vai testar IA para reduzir desperdício de alimentos",
-    date: "40 minutos atrás",
-  },
-  {
-    coins: "201",
-    author: "gustavodeschamps",
-    title:
-      "Programa que conserta e doa computadores já entregou mais de 20 mil equipamentos",
-    date: "5 horas atrás",
-  },
-  {
-    coins: "83",
-    author: "gustavodeschamps",
-    title:
-      "Software pirata leva a ataque ransomware em instituto europeu de pesquisa biomolecular",
-    date: "12 horas atrás",
-  },
-  {
-    coins: "340",
-    author: "gustavodeschamps",
-    title: "Nova Iorque pode banir mineração de moedas digitais",
-    date: "13 horas atrás",
-  },
-  {
-    coins: "500",
-    author: "gustavodeschamps",
-    title:
-      "Starlink ameaça cortar internet de usuário após download ilegal de série de TV",
-    date: "15 horas atrás",
-  },
-];
+import newsItems from '../db/news.json';
 
 export default function Home() {
   return (
@@ -168,7 +39,7 @@ export default function Home() {
       </header>
 
       <div className="mt-12 md:mt-14">
-        {newsItems.map(({ title, comment, coins, date, author }, index) => (
+        {newsItems.map(({ title, comment, coins, date, author, comments }, index) => (
           <Post
             key={index}
             title={title}
@@ -176,6 +47,7 @@ export default function Home() {
             coins={coins}
             date={date}
             author={author}
+            comments={comments}
           />
         ))}
       </div>
@@ -183,7 +55,7 @@ export default function Home() {
   );
 }
 
-const Post = ({ coins, title, comment, date, author }) => {
+const Post = ({ coins, title, comment, date, author, comments }) => {
   return (
     <div className="max-w-5xl m-auto flex flex-col mt-5 px-4 md:px-4 lg:px-0">
       <div className="font-sans flex flex-row  px-5 md:px-10 lg:px-10 py-5 md:py-10 lg:py-10 rounded-lg border border-gray-300 bg-gray-100">
@@ -206,7 +78,7 @@ const Post = ({ coins, title, comment, date, author }) => {
             <p className="mt-4 text-gray-700">{comment}</p>
             <div className="flex items-center justify-between mt-5 md:mt-10">
             <div className="flex items-center  text-xs font-semibold text-gray-700 cursor-pointer">
-              <IoChatbox className="w-4 h-4 mr-1 text-yellow-400" /> Comentar
+              <IoChatbox className="w-4 h-4 mr-1 text-yellow-400" /> Ver todos os {comments} comentários
             </div>
             <Link href="#">
             <a className="flex flex-col items-center  md:mr-10 lg:mr-20 block md:hidden">
