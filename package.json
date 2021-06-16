@@ -1,18 +1,16 @@
 {
   "dependencies": {
-    "lorem-ipsum": "^2.0.3",
-    "next": "10.2.0",
+    "next": "11.0.0",
     "node-pg-migrate": "5.9.0",
     "pg": "8.6.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-icons": "^4.2.0",
-    "react-lorem-ipsum": "^1.4.9"
+    "react-icons": "4.2.0"
   },
   "devDependencies": {
-    "autoprefixer": "10.2.5",
-    "postcss": "8.2.13",
-    "tailwindcss": "2.1.2"
+    "autoprefixer": "10.2.6",
+    "postcss": "8.3.4",
+    "tailwindcss": "2.1.4"
   },
   "scripts": {
     "dev": "next dev",
@@ -23,7 +21,6 @@
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
   "version": "1.0.0",
-  "main": "postcss.config.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/filipedeschamps/tabnews.com.br.git"
