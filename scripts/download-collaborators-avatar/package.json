@@ -4,11 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "image-downloader": "^4.0.2",
     "node-fetch": "^2.6.1"
   },
   "scripts": {
-    "dev": "AUTH_TOKEN=$SEUTOKENAQUI nodemon --exec babel-node ./src/index.js"
+    "dev": "nodemon -r dotenv/config --exec babel-node ./src/index.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",
