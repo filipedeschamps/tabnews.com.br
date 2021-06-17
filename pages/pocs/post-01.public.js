@@ -9,9 +9,6 @@ import { MdAccountCircle } from "react-icons/md";
 import { MdMonetizationOn } from "react-icons/md";
 import { RiMoneyDollarCircleFill } from "react-icons/ri";
 
-import { username } from "react-lorem-ipsum";
-import { LoremIpsum } from "lorem-ipsum";
-
 export default function Home() {
   return (
     <div className="pl-3 pr-3">
