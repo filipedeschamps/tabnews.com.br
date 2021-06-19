@@ -16,7 +16,7 @@ export default function NewsDetails({ newsAuthor, newsDate, newsTitle, index, ne
         {!index && <div className="absolute w-full rounded-lg z-1 top-0 left-0 bg-gradient-to-r from-red-100 via-yellow-100 to-yellow-200 opacity-80" style={{ width: "100%", height: "100%" }} />}
         {!!index && <div className="absolute w-full rounded-lg z-0 top-0 left-0 bg-lightTheme-primary opacity-40" style={{ width: "100%", height: "100%" }} />}
         <div className="px-4 pr-0 w-full flex items-start justify-between">
-          <Link href="/post-01">
+          <Link href="/pocs/post-02">
             <a className={`py-2 mb-2 inline-block text-base font-semibold leading-snug text-lightTheme-secondary z-50 ${
               index === 0
                 ? "text-2xl dark:text-darkTheme-yellow-400"
