@@ -4,8 +4,6 @@ import { AiFillGithub } from "react-icons/ai";
 import teclado from './img/teclado.jpg';
 
 
-require('typeface-poppins')
-
 const members = [
   {
     "name": "Fernando Andrade",
@@ -241,6 +239,10 @@ export default function Home() {
   };
   return (
     <div className="flex flex-col">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins"
+        rel="stylesheet"
+      />
       <header className="flex flex-col  w-full bg-white items-center">
         <nav className="flex w-full max-w-5xl space-x-2 justify-between py-2 px-5 md:px-10 ">
           <div className="flex items-center space-x-1 text-gray-800">
