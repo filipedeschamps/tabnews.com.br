@@ -1,16 +1,13 @@
-import getRepoInfo from "./get-repo-infos";
-import getCollaborators from "./get-collaborators";
-import getCollaboratorsUrl from "./get-collaborators-url";
-import downloadCollaboratorsAvatar from "./download-collaborators-avatar";
+import getCollaborators from "./get-collaborators.js";
+import generateCollaboratorsJson from "./generate-collaborators-json.js";
+import downloadCollaboratorsAvatar from "./download-collaborators-avatar.js";
 
-(function () {
-  return Promise.resolve({
-    user: "filipedeschamps",
-    repo: "tabnews.com.br",
-  })
-    .then(getRepoInfo)
-    .then(getCollaboratorsUrl)
-    .then(getCollaborators)
-    .then(downloadCollaboratorsAvatar)
-    .catch((e) => console.error(e));
-})();
+async function start() {
+  const collaborators = await getCollaborators();
+  await generateCollaboratorsJson(collaborators);
+  await downloadCollaboratorsAvatar(collaborators);
+
+  console.log(`\n> Total collaborators: ${collaborators.length}`);
+}
+
+start();

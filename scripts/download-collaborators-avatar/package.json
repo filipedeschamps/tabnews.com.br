@@ -6,10 +6,10 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "image-downloader": "^4.0.2",
-    "node-fetch": "^2.6.1"
+    "octokit": "^1.0.6"
   },
   "scripts": {
-    "dev": "nodemon -r dotenv/config --exec babel-node ./src/index.js"
+    "dev": "nodemon -r dotenv/config --ignore src/contents --exec babel-node ./src/index.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",

@@ -1,9 +1,17 @@
-import get from "./utils/get";
-import { AUTH_TOKEN } from "./credentials";
+import { Octokit } from "octokit";
 
-export default async function getCollaborators(collaboratorsUrl) {
-  if (!collaboratorsUrl) {
-    throw new Error("An error occurred while trying to fetch the repository");
-  }
-  return get(collaboratorsUrl, AUTH_TOKEN);
+const octokit = new Octokit({
+  auth: process.env.AUTH_TOKEN,
+});
+
+export default async function getCollaborators() {
+  const collaborators = await octokit.paginate(
+    "GET /repos/{owner}/{repo}/collaborators",
+    {
+      owner: "filipedeschamps",
+      repo: "tabnews.com.br",
+    }
+  );
+
+  return collaborators;
 }
