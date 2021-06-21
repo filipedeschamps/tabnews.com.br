@@ -236,6 +236,9 @@ const members = [
 ]
 
 export default function Home() {
+  const poppinsFont = {
+    fontFamily: "Poppins"
+  };
   return (
     <div className="flex flex-col">
       <header className="flex flex-col  w-full bg-white items-center">
@@ -256,20 +259,20 @@ export default function Home() {
       </header>
       <section className="flex flex-col  w-full bg-white items-center  ">
         <div className="text-4xl flex-col w-full justify-center max-w-5xl pt-6 2xl:pt-8 pb-4 px-2">
-          <h1 className="text-center flex-row font-medium poppins pt-2 2xl:pt-4">Uma nova experiência está em construção</h1>
-          <div className="text-center flex-row  text-base poppins pt-2 2xl:pt-4">Não fique de fora dessa, informe seu e-mail no campo abaixo e seja notificado assim que realizarmos o lançamento.</div>
+          <h1 style={poppinsFont} className="text-center flex-row font-medium  pt-2 2xl:pt-4">Uma nova experiência está em construção</h1>
+          <div style={poppinsFont} className="text-center flex-row  text-base  pt-2 2xl:pt-4">Não fique de fora dessa, informe seu e-mail no campo abaixo e seja notificado assim que realizarmos o lançamento.</div>
           <div className="flex w-full justify-center pt-2 2xl:pt-4">
-            <form className="text-center self-center flex  text-base poppins py-2 px-2 pl-4  border max-w-md rounded-full" >
+            <form style={poppinsFont} className="text-center self-center flex  text-base  py-2 px-2 pl-4  border max-w-md rounded-full" >
               <input className="flex-1 w-auto m-l" type="text"  placeholder="Digite seu e-mail..." />
               <button className="flex-1 bg-blue-500 text-white px-6 py-2 rounded-full" type="submit">Enviar</button>
             </form>
           </div>
-          <h1 className="text-center text-blue-400 flex-row font-medium poppins pt-6 pb-0">Open Source À Vista 👀</h1>
+          <h1 style={poppinsFont} className="text-center text-blue-400 flex-row font-medium  pt-6 pb-0">Open Source À Vista 👀</h1>
          
         </div>
-        <div style={{backgroundImage: "url(" +  teclado + ")"}} className="w-full flex flex-col p-6  w-full items-center">
+        <div style={{backgroundImage: "url(" +  teclado.src + ")"}} className="w-full flex flex-col p-6  w-full items-center">
         <div className="text-4xl flex-col w-full justify-center max-w-5xl pt-2 xl:pt-2 2xl:pt-6 px-2 ">
-          <div className="flex-row poppins text-center text-2xl">Criado por uma comunidade amante de tecnologia e boa informação</div>
+          <div style={poppinsFont} className="flex-row  text-center text-2xl">Criado por uma comunidade amante de tecnologia e boa informação</div>
           </div>
           <div className="max-w-5xl m-auto mt-5 px-0 flex flex-wrap justify-between w-full ">
             {members.map(
