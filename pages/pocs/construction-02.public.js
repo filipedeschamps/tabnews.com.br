@@ -50,10 +50,10 @@ export default function Page() {
             pessoas brutalmente exatas e empáticas,{" "}
             <strong>simultaneamente</strong>, onde o termômetro para entender se
             isso está sendo aplicado é simples: as pessoas estão se{" "}
-            <strong>afastando</strong> ou se <strong>aproximando</strong>? E as{" "}
+            <strong>afastando</strong> ou se <strong>aproximando</strong>? As{" "}
             <strong>{collaborators.length}</strong> pessoas listadas abaixo se
             aproximaram no <strong>Dia 0</strong> deste projeto para apoiar a
-            sua criação, incluindo colocando a mão na massa:
+            sua criação, inclusive colocando a mão na massa:
           </div>
         </div>
 
