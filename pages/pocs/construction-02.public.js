@@ -40,9 +40,6 @@ export default function Page() {
         }
 
         .avatar:hover img {
-         -moz-transform: scale(2);
-         -webkit-transform: scale(2);
-         transform: scale(2);
          display: block;
          margin-left: auto;
          margin-right: auto 
