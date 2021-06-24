@@ -13,12 +13,23 @@ export default function Page() {
 
   useEffect(() => {
     setShuffledCollaborators(shuffle(collaborators));
-    setConfettiWidth(window.innerWidth);
-    setConfettiHeight(window.innerHeight);
+    function handleResize() {
+      setConfettiWidth(window.innerWidth);
+      setConfettiHeight(window.innerHeight);
+    }
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <>
+      <style>{`
+        body
+        {
+          overflow-x: hidden;
+        }
+      `}</style>
       <Head>
         <title>TabNews: Onde tudo começou ("git init")</title>
         <meta
