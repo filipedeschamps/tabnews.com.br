@@ -25,26 +25,28 @@ export default function Page() {
   return (
     <>
       <style>{`
-        body
-        {
+        body {
           overflow-x: hidden;
         }
+        .avatar {
+         transition: all .2s ease-in-out; 
+         }
+         
+        .avatar:hover {
+         -moz-transform: scale(2.2);
+         -webkit-transform: scale(2.2);
+         transform: scale(2.2);
+         z-index: 100;
+        }
 
-      .avatar:hover {
-        -moz-transform: scale(2.2);
-        -webkit-transform: scale(2.2);
-        transform: scale(2.2);
-        z-index: 100;
-      }
-
-      .avatar:hover img {
-        -moz-transform: scale(2);
-        -webkit-transform: scale(2);
-        transform: scale(2);
-        display: block;
-        margin-left: auto;
-        margin-right: auto 
-      }
+        .avatar:hover img {
+         -moz-transform: scale(2);
+         -webkit-transform: scale(2);
+         transform: scale(2);
+         display: block;
+         margin-left: auto;
+         margin-right: auto 
+        }
       `}</style>
       <Head>
         <title>TabNews: Onde tudo começou ("git init")</title>
