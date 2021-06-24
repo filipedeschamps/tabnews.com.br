@@ -45,7 +45,6 @@ export default function Page() {
         margin-left: auto;
         margin-right: auto 
       }
- 
       `}</style>
       <Head>
         <title>TabNews: Onde tudo começou ("git init")</title>
@@ -133,8 +132,6 @@ export default function Page() {
             .collaborators-grid {
                 grid-template-columns: repeat(25, minmax(0, 1fr));
             }
-         
-
       `}</style>
     </>
   );
