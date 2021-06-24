@@ -72,11 +72,9 @@ Instalei o módulo `react-icons` e ta sendo uma experiência muito legal buscar 
 
 ![image](https://user-images.githubusercontent.com/4248081/117865517-e6891680-b24a-11eb-8ba8-fddd4f3f26de.png)
 
-
 ### 10/05/21 - Mudança de abordagem
 
 Tive um insight hoje: para aumentar as chances do TabNews dar certo, ele precisa ter o potencial de conseguir **matar a Newsletter**. Não que isso vá acontecer, mas é melhor você se **"autocanibalizar"** do que outra pessoa consiga e a direção que o layout estava tomando era de um site convencional. Isso me deixou pensando bastante, porque isso não "mexe o ponteiro" das pessoas. A Newsletter mexeu o ponteiro porque ela teve uma abordagem **corajosa**... ela tem uma postura que, ou vai deixar as pessoas satisfeitas ou insatisfeitas, mexendo para algum lado o ponteiro. Isso é importante em qualquer projeto. Então depois de pensar bastante, eu decidi tentar uma outra abordagem: ao invés de fazer o clássico item com título e conteúdo, usar o mesmo princípio das notícias sintetizadas e montar um site em cima disso. E sabe o que isso lembra? O Twitter... então a próxima abordagem vai ser tentar fazer um layout mais próximo do Twitter e tentar fazer o site ser um "Twitter de nicho" onde as notícias vão entrando de forma sintetizada, mas que possam ser expandidas nos comentários. E as mecânicas anteriores de TabCoins e XP continuam a mesma. Vamos ver se o negócio para em pé.
-
 
 ### 11/05/21 - Está difícil de se autocanibalizar
 
@@ -109,3 +107,51 @@ Esses últimos dias foram ótimos para estressar várias ideias e segue abaixo o
 Fazendo o layout de dentro da notícia, eu aproveitei para deixar o layout do TabCoins e XP mais discretos e próximos ao que aparece ao lado esquerdo de cada notícia e comentário. E um ponto importante desse layout é que o comentário possui o mesmo espaço e peso que o conteúdo da própria notícia. É importante ser assim, principalmente ter um espaço grande para a pessoa digitar o seu comentário (ter o mesmo espaço que a pessoa teve para criar a notícia principal), como em fóruns antigamente, para que a pessoa possa **trabalhar adequadamente** na criação do conteúdo. Note como o Facebook dá pouco espaço para colocar uma resposta, é um filete, é péssimo para criar conteúdos bem aprofundados e bem pensados. Próximo passo é começar a programar pra valer.
 
 ![image](https://user-images.githubusercontent.com/4248081/120021790-61b73000-bfa0-11eb-9fc1-8af0cfafed31.png)
+
+## 28/05/21 - Convite feito aos Membros da Turma
+
+Nessa sexta-feira, dentro do vídeo exclusivo `#54` para os Membros da Turma eu fiz o convite para, quem tiver interesse, deixar nos comentários o seu nome de usuário do Github que eu irei fazer o convite aqui para esse repositório (que neste momento está privado). A turma é sempre muito empolgada e eu sei que irão participar, mas eu não sei quantos e qual vai ser o resultado disso, vamos ver.
+
+## 04/06/21 - WOW
+
+**107 pessoas** pediram acesso ao repositório, enviei convite para todo mundo e **82 já aceitaram**. E nesse pequeno espaço de tempo, **muitas contribuições** já foram feitas, desde layouts no Figma, até implementações concretas no repositório e nas provas de conceito, como por exemplo Dark Mode. Fora isso, ótimas discussões já começaram a aparecer nas issues, o que é perfeito para pensar e ver as situações de outros ângulos.
+
+![image](https://user-images.githubusercontent.com/4248081/123183286-1d576c80-d446-11eb-9fea-363d5b5825e3.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123183178-d6697700-d445-11eb-9f3f-c6cccb3b842a.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123183464-71fae780-d446-11eb-90cf-20592dad1212.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123183481-7d4e1300-d446-11eb-90df-d957e3cc16f2.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123183605-b7b7b000-d446-11eb-9393-01dd85748d00.png)
+
+## 11/06/21 - Muitas novas contribuições
+
+Repositório pegou fogo nos últimos dias, muita coisa legal aconteceu!!! Eu esperava que a Turma ia participar, mas não esperava tantas pessoas trazendo tanta energia boa. Eu vou colocar o print de algumas contribuições nesse meio tempo e o fantástico é que **tudo** está acontecendo por dentro desse repositório e ficando registrado para sempre. Quem sabe um dia esse repositório seja congelado no [GitHub Arctic Code Vault](https://www.youtube.com/watch?v=fzI9FNjXQ0o).
+
+![image](https://user-images.githubusercontent.com/4248081/123184246-25181080-d448-11eb-8d88-3aceb040b3c1.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123184265-2fd2a580-d448-11eb-8b0e-aede0a727538.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123184461-96f05a00-d448-11eb-916d-ab931f35c5de.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123184502-ad96b100-d448-11eb-8d2d-7b2827058c6c.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123184988-c81d5a00-d449-11eb-8b6e-34767a93a514.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123185024-dbc8c080-d449-11eb-9ae6-803a00bb8332.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123185059-edaa6380-d449-11eb-9a5a-5569bbb62c0e.png)
+
+## 15/06/21 - Milestones e Lives
+
+Nem tudo num projeto é tecnologia, e uma coisa importante que eu gostaria que a turma vivenciasse com o desenvolvimento TabNews é o poder das **pequenas conquistas e comemorações** e como isso consegue construir projetos grandes ao longo do tempo. Com isso em mente e juntando com a sugestão de outros membros sobre Lives, eu organizei uma série de [Milestones](https://github.com/filipedeschamps/tabnews.com.br/milestones?direction=asc&sort=title) e para cada uma nós iremos fazer uma **Live de inauguração** para conversarmos sobre o que pode ser desenvolvido, e depois uma outra **Live de encerramento** para comemorarmos, onde nessa Live de encerramento nós iremos inclusive **fechar a última issue** que precisa ser fechada e **fazer o último deploy** que precisa ser feito. E [essa primeira Live de abertura](https://www.youtube.com/watch?v=vdXjOf6JA38) da [Milestone 0](https://github.com/filipedeschamps/tabnews.com.br/milestone/1) foi simplesmente **sensacional**, tanto por ter uma dinâmica diferente de qualquer outra live já feita no canal, quanto por termos conversado coisas muito importantes como **prazo** e se iríamos utilizar isso nas Milestones. Em resumo, iremos colocar prazo para fazer o cérebro conseguir _"ver marcadores"_ num campo infinito que é o tempo, e usar esses marcadores como **referência** para sentir o tempo passar. Do contrário, sem esses marcadores, o cérebro perde sua referência e a única que fica é a **quantidade** de trabalho a ser feito (por exemplo: issues abertas/fechadas), o que também é uma outra marcação interessante, mas que sozinha pode estagnar. Então nós definimos como objetivo tentar concluir a [Milestone 0](https://github.com/filipedeschamps/tabnews.com.br/milestone/1) até o dia 25 de Junho que é uma **sexta-feira**, ou seja, iremos fazer o deploy final da Milestone naquele dia da semana proibído 😂 Mas isso que é massa de um projeto nesse estágio, dá para mexer nas coisas sem medo e eu tenho certeza que, para quem é iniciante, vai fazer muita diferença ver essas coisas acontecendo na frente delas. Inclusive a gente deletou o domínio do tabnews.com.br e derrubou o site para testar uma configuração de redirecionamento da Vercel, foi **muito** legal ter todo mundo junto pra acompanhar o negócio quebrando e depois sendo consertado.
+
+![image](https://user-images.githubusercontent.com/4248081/123185814-9c9b6f00-d44b-11eb-9774-1b4f326b3b20.png)
+
+![image](https://user-images.githubusercontent.com/4248081/123187260-a672a180-d44e-11eb-96d8-578fce29967e.png)
+
+## 24/06/21 - Cross collaboration
+
+Hoje já estamos com **224 pessoas** dentro do repositório e **muitas contribuições** aconteceram nesse meio tempo. Depois da Live de inauguração da Milestone 0, a turma atacou as issues, como por exemplo [essa em que bolamos várias idéias para a página "Em Construção"](https://github.com/filipedeschamps/tabnews.com.br/issues/23), e idéias extras sobre [fakenews](https://github.com/filipedeschamps/tabnews.com.br/issues/27), [internacionalização](https://github.com/filipedeschamps/tabnews.com.br/issues/35) e [acessibilidade](https://github.com/filipedeschamps/tabnews.com.br/issues/43). Só que algo **especial** aconteceu [nesse Pull Request](https://github.com/filipedeschamps/tabnews.com.br/pull/45) onde implemento uma sugestão para a página de "Em construção", olha que interessante: eu fiz uma implementação, o Membro [@rhandrade](https://github.com/rhandrade) encontrou e isolou um bug, e outro Membro [@rodrigoKulb](https://github.com/rodrigoKulb) implementou um fix... e foi tudo **muito rápido**. E eu pessoalmente achei especial porque se eu tivesse sozinho nesse repositório, nada disso teria acontecido. Eu sinceramente espero que esse repositório do TabNews abra mais oportunidades assim para trabalharmos juntos, cada um conseguindo observar e participar em algum ponto do serviço. Se conseguirmos manter essas coisas acontecendo, no longo prazo iremos construir algo **realmente especial**. Bom, a Live de encerramento e comemoração da Milestone 0 supostamente irá acontecer amanhã, vamos ver como vai ser... eu to empolgado e queria que fosse hoje já!!!
