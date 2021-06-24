@@ -29,6 +29,23 @@ export default function Page() {
         {
           overflow-x: hidden;
         }
+
+      .avatar:hover {
+        -moz-transform: scale(2.2);
+        -webkit-transform: scale(2.2);
+        transform: scale(2.2);
+        z-index: 100;
+      }
+
+      .avatar:hover img {
+        -moz-transform: scale(2);
+        -webkit-transform: scale(2);
+        transform: scale(2);
+        display: block;
+        margin-left: auto;
+        margin-right: auto 
+      }
+ 
       `}</style>
       <Head>
         <title>TabNews: Onde tudo começou ("git init")</title>
@@ -116,6 +133,8 @@ export default function Page() {
             .collaborators-grid {
                 grid-template-columns: repeat(25, minmax(0, 1fr));
             }
+         
+
       `}</style>
     </>
   );
