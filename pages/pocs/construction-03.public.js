@@ -32,6 +32,7 @@ export default function Page() {
         }
         .avatar {
          transition: all .2s ease-in-out; 
+         position: relative;
          }
          
         .avatar:hover {
@@ -48,17 +49,19 @@ export default function Page() {
         }
 
         .label-username{
-          background-color: #4169E1 !important;
           width: 100%;
-          height: 1rem;
           display: flex;
           align-items: center;
           justify-content: center;
+          position: absolute;
+          background-color: #4169E1 !important;
+          bottom: -1rem;
+          height: 1rem;
         }
 
         .label-username span{
           color: #fff;
-          font-size: 0.5rem;
+          font-size: 0.3rem;
         }
       `}</style>
       <Head>
@@ -107,7 +110,7 @@ export default function Page() {
                 key={username} 
                 className="avatar"                     
                 onMouseEnter={() => setDisplayUserName({ username })}
-                onMouseLeave={() => setDisplayUserName({ })}
+                onMouseLeave={() => setDisplayUserName({ username })}
               >
                 <a
                   href={`https://github.com/${username}`}
