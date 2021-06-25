@@ -14,8 +14,8 @@ export default function Page() {
   useEffect(() => {
     setShuffledCollaborators(shuffle(collaborators));
     function handleResize() {
-      setConfettiWidth(window.innerWidth);
-      setConfettiHeight(window.innerHeight);
+      setConfettiWidth(window.screen.width);
+      setConfettiHeight(window.screen.height);
     }
     window.addEventListener("resize", handleResize);
     handleResize();
