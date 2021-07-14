@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "next": "11.0.0",
+    "next": "11.0.1",
     "node-pg-migrate": "5.9.0",
     "pg": "8.6.0",
     "react": "17.0.2",
