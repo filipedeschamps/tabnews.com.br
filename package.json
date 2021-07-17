@@ -30,7 +30,7 @@
     "news"
   ],
   "author": "Filipe Deschamps",
-  "license": "GPL-3.0",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/filipedeschamps/tabnews.com.br/issues"
   },
