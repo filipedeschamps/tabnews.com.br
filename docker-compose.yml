@@ -1,0 +1,17 @@
+version: "3.4"
+services:
+
+  postgres:
+    image: postgres:13.3-alpine
+    ports:
+      - 5432:5432
+    expose:
+      - "5432"
+    network_mode: host
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./docker/entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: tabnews
+      POSTGRES_PASSWORD: tabnews
+      POSTGRES_DB: tabnews
