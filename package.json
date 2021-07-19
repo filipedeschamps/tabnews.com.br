@@ -10,14 +10,16 @@
   },
   "devDependencies": {
     "autoprefixer": "10.2.6",
+    "concurrently": "6.2.0",
     "postcss": "8.3.4",
     "tailwindcss": "2.1.4"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently -n docker,next -k \"npm:services\" \"npm run next\"",
+    "next": "next dev",
+    "services": "docker-compose -f docker-compose.development.yml up",
     "build": "next build",
-    "start": "next start",
-    "migrate": "node-pg-migrate"
+    "start": "next start"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
