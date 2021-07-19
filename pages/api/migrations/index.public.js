@@ -1,10 +1,7 @@
-import databaseFactory from "infra/database.js";
-import migratorFactory from "models/migrator.js";
+import migratorFactory from "infra/migrator.js";
 
 export default async function Migrations(request, response) {
-  const database = databaseFactory();
-  const databaseClient = await database.getNewConnectionClient();
-  const migrator = migratorFactory({ databaseClient: databaseClient });
+  const migrator = migratorFactory();
 
   try {
     if (request.method === "GET") {
@@ -22,7 +19,5 @@ export default async function Migrations(request, response) {
     return response.status(405).json({ error: "Method Not Allowed" });
   } catch (error) {
     return response.status(500).json(error);
-  } finally {
-    databaseClient.end();
   }
 }
