@@ -9,8 +9,10 @@
     "react-icons": "4.2.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.14.7",
     "autoprefixer": "10.2.6",
     "concurrently": "6.2.0",
+    "jest": "^27.0.6",
     "postcss": "8.3.4",
     "tailwindcss": "2.1.4"
   },
@@ -19,7 +21,9 @@
     "next": "next dev",
     "services": "docker-compose -f docker-compose.development.yml up",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
@@ -36,5 +40,11 @@
   "bugs": {
     "url": "https://github.com/filipedeschamps/tabnews.com.br/issues"
   },
-  "homepage": "https://tabnews.com.br"
+  "homepage": "https://www.tabnews.com.br/",
+  "jest": {
+    "moduleDirectories": [
+      "node_modules",
+      "."
+    ]
+  }
 }
