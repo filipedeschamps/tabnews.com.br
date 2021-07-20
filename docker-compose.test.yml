@@ -1,0 +1,9 @@
+version: "2.4"
+services:
+  postgres_test:
+    container_name: "postgres-test"
+    image: "postgres:13.3-alpine"
+    env_file:
+      - .env.test
+    ports:
+      - "54321:5432"

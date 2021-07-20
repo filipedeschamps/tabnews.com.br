@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "0.21.1",
     "next": "11.0.1",
     "node-pg-migrate": "5.9.0",
     "pg": "8.6.0",
@@ -9,19 +10,22 @@
     "react-icons": "4.2.0"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.14.7",
+    "@babel/preset-env": "7.14.7",
     "autoprefixer": "10.2.6",
     "concurrently": "6.2.0",
-    "jest": "^27.0.6",
+    "dotenv": "10.0.0",
+    "jest": "27.0.6",
+    "kill-port": "1.6.1",
     "postcss": "8.3.4",
-    "tailwindcss": "2.1.4"
+    "tailwindcss": "2.1.4",
+    "wait-on": "6.0.0"
   },
   "scripts": {
     "dev": "concurrently -n docker,next -k \"npm:services\" \"npm run next\"",
     "next": "next dev",
     "services": "docker-compose -f docker-compose.development.yml up",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 8080",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -45,6 +49,14 @@
     "moduleDirectories": [
       "node_modules",
       "."
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/.next"
+    ],
+    "testTimeout": 60000,
+    "slowTestThreshold": 40000,
+    "setupFiles": [
+      "dotenv/config"
     ]
   }
 }

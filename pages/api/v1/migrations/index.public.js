@@ -6,17 +6,22 @@ export default async function Migrations(request, response) {
   try {
     if (request.method === "GET") {
       const pendingMigrations = await migrator.listPendingMigrations();
-      return response.json(pendingMigrations);
+      return response.status(200).json(pendingMigrations);
     }
 
     if (request.method === "POST") {
       const migratedMigrations = await migrator.runPendingMigrations();
-      return response.json(migratedMigrations);
+
+      if (migratedMigrations.length > 0) {
+        return response.status(201).json(migratedMigrations);
+      }
+
+      return response.status(200).json(migratedMigrations);
     }
 
     // TODO: create a pattern with Custom Errors.
     // Do not rely on this response right now.
-    return response.status(405).json({ error: "Method Not Allowed" });
+    return response.status(404).json({ error: "Not Found" });
   } catch (error) {
     return response.status(500).json(error);
   }
