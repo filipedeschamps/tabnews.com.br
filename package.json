@@ -2,7 +2,7 @@
   "dependencies": {
     "axios": "0.21.1",
     "next": "11.0.1",
-    "node-pg-migrate": "5.9.0",
+    "node-pg-migrate": "5.10.0",
     "pg": "8.6.0",
     "react": "17.0.2",
     "react-confetti": "6.0.1",
@@ -11,13 +11,13 @@
   },
   "devDependencies": {
     "@babel/preset-env": "7.14.7",
-    "autoprefixer": "10.2.6",
+    "autoprefixer": "10.3.1",
     "concurrently": "6.2.0",
     "dotenv": "10.0.0",
     "jest": "27.0.6",
     "kill-port": "1.6.1",
-    "postcss": "8.3.4",
-    "tailwindcss": "2.1.4",
+    "postcss": "8.3.5",
+    "tailwindcss": "2.2.4",
     "wait-on": "6.0.0"
   },
   "scripts": {
