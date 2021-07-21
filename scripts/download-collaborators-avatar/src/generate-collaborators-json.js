@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-export default function (collaborators) {
+export default function generateCollboratorsJson(collaborators) {
   const collaboratorsLogin = collaborators.map((collaborator) => {
     return collaborator.login;
   });

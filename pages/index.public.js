@@ -115,7 +115,7 @@ export default function Page() {
                 <a
                   href={`https://github.com/${username}`}
                   target="_blank"
-                  rel="noopener"
+                  rel="noreferrer"
                 >
                   <Image
                     src={collaboratorAvatar}
