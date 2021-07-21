@@ -1,4 +1,4 @@
-import waitOn from "wait-on";
+import killTree from "tree-kill";
 import childProcess from "child_process";
 const spawn = childProcess.spawn;
 
@@ -25,22 +25,10 @@ export default function localDockerComposeFactory() {
     const resourceToCheckAvailability = "tcp:localhost:54321";
 
     localDockerComposeProcess = await startLocalDockerCompose();
-
-    return waitOn({
-      resources: [resourceToCheckAvailability],
-    });
   }
 
   async function stop() {
-    return new Promise((resolve, reject) => {
-      localDockerComposeProcess.kill();
-      localDockerComposeProcess.on("close", (exitCode) => {
-        if (exitCode === 0) {
-          return resolve();
-        }
-        return reject(exitCode);
-      });
-    });
+    killTree(localDockerComposeProcess.pid);
   }
 
   return {

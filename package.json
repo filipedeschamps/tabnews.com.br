@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "axios": "0.21.1",
     "next": "11.0.1",
     "node-pg-migrate": "5.10.0",
     "pg": "8.6.0",
@@ -12,22 +11,23 @@
   "devDependencies": {
     "@babel/preset-env": "7.14.7",
     "autoprefixer": "10.3.1",
+    "axios": "0.19.0",
     "concurrently": "6.2.0",
     "dotenv": "10.0.0",
     "jest": "27.0.6",
     "kill-port": "1.6.1",
     "postcss": "8.3.5",
     "tailwindcss": "2.2.4",
-    "wait-on": "6.0.0"
+    "tree-kill": "1.2.2"
   },
   "scripts": {
-    "dev": "concurrently -n docker,next -k \"npm:services\" \"npm run next\"",
+    "dev": "concurrently -n docker,next -k \"npm:services:up\" \"npm run next\"",
     "next": "next dev",
-    "services": "docker-compose -f docker-compose.development.yml up",
+    "services:up": "docker-compose -f docker-compose.development.yml up",
     "build": "next build",
     "start": "next start -p 8080",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --runInBand --forceExit",
+    "test:watch": "jest --runInBand --watch"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
@@ -53,7 +53,7 @@
     "modulePathIgnorePatterns": [
       "<rootDir>/.next"
     ],
-    "testTimeout": 60000,
+    "testTimeout": 120000,
     "slowTestThreshold": 40000,
     "setupFiles": [
       "dotenv/config"
