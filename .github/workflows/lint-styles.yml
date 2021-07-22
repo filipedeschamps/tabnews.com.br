@@ -1,9 +1,9 @@
-name: Lint
+name: Lint Styles
 
 on: [push, pull_request]
 
 jobs:
-  lint:
+  lint-styles:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
