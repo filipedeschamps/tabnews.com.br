@@ -11,7 +11,6 @@
   "devDependencies": {
     "@babel/preset-env": "7.14.7",
     "autoprefixer": "10.3.1",
-    "axios": "0.19.0",
     "concurrently": "6.2.0",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "10.0.0",
@@ -19,16 +18,15 @@
     "eslint-config-next": "11.0.1",
     "eslint-config-prettier": "8.3.0",
     "jest": "27.0.6",
-    "kill-port": "1.6.1",
     "postcss": "8.3.5",
     "prettier": "2.3.2",
-    "tailwindcss": "2.2.4",
-    "tree-kill": "1.2.2"
+    "tailwindcss": "2.2.4"
   },
   "scripts": {
-    "dev": "concurrently -n docker,next -k \"npm:services:up\" \"npm run next\"",
+    "dev": "npm run services:dev:up && npm run next && npm run services:dev:stop",
     "next": "next dev",
-    "services:up": "docker-compose -f docker-compose.development.yml up",
+    "services:dev:up": "docker-compose -f infra/docker-compose.development.yml up -d",
+    "services:dev:stop": "docker-compose -f infra/docker-compose.development.yml stop",
     "build": "next build",
     "start": "next start -p 8080",
     "test": "jest --runInBand --forceExit",
