@@ -1,9 +1,10 @@
+const { join, resolve } = require("path");
 import databaseFactory from "infra/database.js";
 import migrationRunner from "node-pg-migrate";
 
 export default function Migrator() {
   const defaultConfigurations = {
-    dir: "./infra/migrations",
+    dir: join(resolve("."), "infra", "migrations"),
     direction: "up",
     migrationsTable: "migrations",
     verbose: false,
