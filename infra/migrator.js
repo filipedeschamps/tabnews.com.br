@@ -6,12 +6,12 @@ export default function Migrator() {
     dir: "./infra/migrations",
     direction: "up",
     migrationsTable: "migrations",
-    verbose: true,
+    verbose: false,
   };
 
   async function listPendingMigrations() {
     const database = databaseFactory();
-    const databaseClient = await database.getNewConnectionClient();
+    const databaseClient = await database.getNewConnectedClient();
     const pendingMigrations = await migrationRunner({
       ...defaultConfigurations,
       dbClient: databaseClient,
@@ -25,7 +25,7 @@ export default function Migrator() {
 
   async function runPendingMigrations() {
     const database = databaseFactory();
-    const databaseClient = await database.getNewConnectionClient();
+    const databaseClient = await database.getNewConnectedClient();
 
     const migratedMigrations = await migrationRunner({
       ...defaultConfigurations,

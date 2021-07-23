@@ -14,7 +14,7 @@ export default function DatabaseFactory() {
     return results;
   }
 
-  async function getNewConnectionClient() {
+  async function getNewConnectedClient() {
     // When manually creating a new connection like this,
     // you need to make sure to close it afterward
     // with the .end() method.
@@ -23,6 +23,7 @@ export default function DatabaseFactory() {
 
   return {
     query,
-    getNewConnectionClient,
+    getNewConnectedClient,
+    pool,
   };
 }
