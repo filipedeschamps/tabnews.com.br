@@ -1,10 +1,10 @@
 version: "2.4"
 services:
-  postgres:
-    container_name: "postgres"
+  postgres_dev:
+    container_name: "postgres-dev"
     image: "postgres:13.3-alpine"
     env_file:
-      - .env.development
+      - ../.env
     ports:
       - "54320:5432"
     volumes:

@@ -23,6 +23,7 @@ export default async function Migrations(request, response) {
     // Do not rely on this response right now.
     return response.status(404).json({ error: "Not Found" });
   } catch (error) {
-    return response.status(500).json(error);
+    console.log(error);
+    return response.status(500).json({ error: error.message });
   }
 }
