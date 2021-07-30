@@ -11,6 +11,7 @@ beforeAll(async () => {
 
 describe("[e2e] First GET to /api/v1/migrations", () => {
   test("should list all pending migrations", async () => {
+    console.log("MEMBROS DA TURMA SAO MASSA");
     const numberOfMigrationFiles = numberOfFilesInFolder("./infra/migrations");
 
     const pendingMigrationsResponse = await fetch(
