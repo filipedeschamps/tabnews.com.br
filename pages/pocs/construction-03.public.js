@@ -16,8 +16,13 @@ export default function Page() {
     setShuffledCollaborators(shuffle(collaborators));
 
     function handleResize() {
+<<<<<<< HEAD
       setConfettiWidth(window.screen.width);
       setConfettiHeight(window.screen.height);
+=======
+      setConfettiWidth(window.innerWidth);
+      setConfettiHeight(window.innerHeight);
+>>>>>>> 8916eb6 (Adição de username ao passar o mouse)
     }
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -32,7 +37,10 @@ export default function Page() {
         }
         .avatar {
          transition: all .2s ease-in-out; 
+<<<<<<< HEAD
          position: relative;
+=======
+>>>>>>> 8916eb6 (Adição de username ao passar o mouse)
          }
          
         .avatar:hover {
@@ -49,6 +57,7 @@ export default function Page() {
         }
 
         .label-username{
+<<<<<<< HEAD
           width: 100%;
           display: flex;
           align-items: center;
@@ -57,11 +66,23 @@ export default function Page() {
           background-color: #4169E1 !important;
           bottom: -1rem;
           height: 1rem;
+=======
+          background-color: #4169E1 !important;
+          width: 100%;
+          height: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+>>>>>>> 8916eb6 (Adição de username ao passar o mouse)
         }
 
         .label-username span{
           color: #fff;
+<<<<<<< HEAD
           font-size: 0.3rem;
+=======
+          font-size: 0.5rem;
+>>>>>>> 8916eb6 (Adição de username ao passar o mouse)
         }
       `}</style>
       <Head>
@@ -110,7 +131,11 @@ export default function Page() {
                 key={username} 
                 className="avatar"                     
                 onMouseEnter={() => setDisplayUserName({ username })}
+<<<<<<< HEAD
                 onMouseLeave={() => setDisplayUserName({ username })}
+=======
+                onMouseLeave={() => setDisplayUserName({ })}
+>>>>>>> 8916eb6 (Adição de username ao passar o mouse)
               >
                 <a
                   href={`https://github.com/${username}`}
