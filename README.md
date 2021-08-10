@@ -2,17 +2,10 @@
 
 ## Diário
 
-### Antes de 17/10/20 - Um grande problema
+### [Antes de 17/10/20 - Um grande problema](pages/init/diary/2020-10-17-Antes-de-17-10-20-Um-grande-problema.md)
+### [17/10/20 - Registro do domínio](pages/init/diary/2020-10-17-Registro-do-domínio.md)
+### [25/12/20 - Criação do repositório](pages/init/diary/2020-12-20-Criação-do-repositório.md)
 
-Tenho uma [Newsletter](https://filipedeschamps.com.br/newsletter) gratuita que faço com meu irmão [Gustavo Deschamps](https://github.com/gustavodeschamps), onde apesar de ter uma aceitação [muito acima do que a gente esperava](https://youtu.be/Jau0Rn_ADxo), ao mesmo tempo é um material que dá **muito trabalho** para ser produzido e ficamos **extremamente frustrados** quando, por exemplo, um mesmo provedor de email decide entregar esse material para alguns usuários, mas não para outros, e sem padrão algum. E por conta disso, decidimos criar o **TabNews** para resolver esse problema, mas **spoiler alert**, não resolve, continue lendo para entender.
-
-### 17/10/20 - Registro do domínio
-
-Como todo bom nerd, sem nem mesmo a ideia ter sido completamente formada, a gente foi lá e comprou o domínio [tabnews.com.br](https://tabnews.com.br). Numa breve conversa, chegamos numa ideia de um site que fique atualizado e trazendo **notícias** (news) em tempo-real para que a pessoa deixe ele aberto numa **aba** (tab) no navegador, e com isso o Gustavo sugeriu o nome **TabNews**. O engraçado é que toda hora a gente tentava fugir desse nome, mas a gente não conseguia, é muito simples de entender, decorar e escrever.
-
-### 25/12/20 - Criação do repositório
-
-Esse repositório aqui foi criado no meio do Natal. Eu sei, é estranho, mas inspiração não tem data marcada... quando ela vem, eu preciso obedecer.
 
 ### 30/12/20 - Primeira issue e a descoberta de algo importante
 
