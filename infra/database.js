@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 
-export default function DatabaseFactory() {
+const DatabaseFactory = () => {
   const poolConfiguration = {
     user: process.env.POSTGRES_USER,
     host: process.env.POSTGRES_HOST,
@@ -40,3 +40,8 @@ export default function DatabaseFactory() {
     pool,
   };
 }
+
+const instance = DatabaseFactory();
+Object.freeze(instance);
+
+export default instance;
