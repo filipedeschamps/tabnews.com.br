@@ -1,18 +1,19 @@
 # tabnews.com.br
 
+## **Novidades!**
+**[30/07/21 - Milestone 1 (ENCERRAMENTO)](pages/init/diary/2021-07-30.md)**
+
 ## Diário
 
-### [Antes de 17/10/20 - Um grande problema](pages/init/diary/2020-10-17-Antes-de-17-10-20-Um-grande-problema.md)
-### [17/10/20 - Registro do domínio](pages/init/diary/2020-10-17-Registro-do-domínio.md)
-### [25/12/20 - Criação do repositório](pages/init/diary/2020-12-20-Criação-do-repositório.md)
-
-
-### 30/12/20 - Primeira issue e a descoberta de algo importante
-
-Ao escrever a [issue de inception](https://github.com/filipedeschamps/tabnews.com.br/issues/1) do projeto, notamos algo **muito importante**: o TabNews não irá consertar o problema de entregabilidade dos emails (o fato dele existir não fará os emails serem entregues como deveriam, correto?), mas ao mesmo tempo será de grande valor para dois públicos, **principalmente para o segundo**:
-
-1. Para quem trabalha com tecnologia e precisa consumir conteúdos com valor concreto.
-2. Para quem trabalha com a criação de conteúdos sobre tecnologia **(ao implementarmos um modelo de Revenue Share para esses criadores)**.
+- [Antes de 17/10/20 - Um grande problema](pages/init/diary/2020-10-16.md)
+- [17/10/20 - Registro do domínio](pages/init/diary/2020-10-17.md)
+- [25/12/20 - Criação do repositório](pages/init/diary/2020-12-25.md)
+- [30/12/20 - Primeira issue e a descoberta de algo importante](pages/init/diary/2020-12-30.md)
+.  
+.  
+.  
+.
+- [30/07/21 - Milestone 1 (ENCERRAMENTO)](pages/init/diary/2021-07-30.md)
 
 ### 14/01/21 - Revenue Share
 
