@@ -35,8 +35,12 @@ export default function orchestratorFactory() {
   }
 
   async function dropAllTables() {
-    await database.query("drop schema public cascade; create schema public;");
-    await database.pool.end();
+    const databaseClient = await database.getNewConnectedClient();
+    await databaseClient.query(
+      "drop schema public cascade; create schema public;"
+    );
+
+    await databaseClient.end()
   }
 
   return {
