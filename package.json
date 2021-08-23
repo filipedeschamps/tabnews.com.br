@@ -19,6 +19,7 @@
     "eslint": "7.31.0",
     "eslint-config-next": "11.0.1",
     "eslint-config-prettier": "8.3.0",
+    "husky": "^7.0.1",
     "jest": "27.0.6",
     "postcss": "8.3.5",
     "prettier": "2.3.2",
@@ -36,9 +37,11 @@
     "test:ci": "jest --runInBand",
     "lint": "npm run lint:next && npm run lint:prettier && npm run lint:update-diary",
     "lint:next": "next lint --dir .",
+    "lint:prettier": "prettier --check '**/*.{js,jsx,ts,tsx}'",
     "lint:update-diary": "node scripts/update-diary.js --check",
     "commit": "cz",
-    "update-diary": "node scripts/update-diary.js"
+    "update-diary": "node scripts/update-diary.js",
+    "prepare": "husky install"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",

@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+node scripts/update-diary.js --check || {
+    echo ""
+    echo "README files were updated."
+    echo "Running 'git add pages/init/diary/ README.md'..."
+    git add pages/init/diary/ README.md
+    echo "Check staged files and repeat the commit"
+}

@@ -9,6 +9,7 @@
 
 ## Índice de entradas
 
+- [30/07/21 - Milestone 1 (ENCERRAMENTO)](2021-07-31.md)
 - [30/07/21 - Milestone 1 (ENCERRAMENTO)](2021-07-30.md)
 - [25/06/21 - Milestone 0 (ENCERRAMENTO)](2021-06-25.md)
 - [24/06/21 - Cross collaboration](2021-06-24.md)
