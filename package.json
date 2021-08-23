@@ -34,10 +34,11 @@
     "test": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand' && npm run services:stop",
     "test:watch": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watch' && npm run services:stop",
     "test:ci": "jest --runInBand",
-    "lint": "npm run lint:next && npm run lint:prettier",
+    "lint": "npm run lint:next && npm run lint:prettier && npm run lint:update-diary",
     "lint:next": "next lint --dir .",
-    "lint:prettier": "prettier --check '**/*.{js,jsx,ts,tsx}'",
-    "commit": "cz"
+    "lint:update-diary": "node scripts/update-diary.js --check",
+    "commit": "cz",
+    "update-diary": "node scripts/update-diary.js"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
