@@ -1,5 +1,5 @@
 const { join, resolve } = require("path");
-import databaseFactory from "infra/database.js";
+import database from "infra/database.js";
 import migrationRunner from "node-pg-migrate";
 
 export default function Migrator() {
@@ -11,7 +11,6 @@ export default function Migrator() {
   };
 
   async function listPendingMigrations() {
-    const database = databaseFactory();
     const databaseClient = await database.getNewConnectedClient();
     const pendingMigrations = await migrationRunner({
       ...defaultConfigurations,
@@ -25,7 +24,6 @@ export default function Migrator() {
   }
 
   async function runPendingMigrations() {
-    const database = databaseFactory();
     const databaseClient = await database.getNewConnectedClient();
 
     const migratedMigrations = await migrationRunner({
