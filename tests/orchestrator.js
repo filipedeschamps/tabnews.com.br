@@ -1,6 +1,6 @@
 import fetch from "cross-fetch";
 import retry from "async-retry";
-import databaseFactory from "infra/database.js";
+import database from "infra/database.js";
 
 export default function orchestratorFactory() {
   const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
@@ -24,7 +24,6 @@ export default function orchestratorFactory() {
     async function waitForDatabase() {
       return await retry(
         async () => {
-          const database = databaseFactory();
           const connection = await database.getNewConnectedClient();
           await connection.end();
         },
@@ -36,9 +35,12 @@ export default function orchestratorFactory() {
   }
 
   async function dropAllTables() {
-    const database = databaseFactory();
-    await database.query("drop schema public cascade; create schema public;");
-    await database.pool.end();
+    const databaseClient = await database.getNewConnectedClient();
+    await databaseClient.query(
+      "drop schema public cascade; create schema public;"
+    );
+
+    await databaseClient.end();
   }
 
   return {
