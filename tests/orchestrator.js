@@ -40,7 +40,7 @@ export default function orchestratorFactory() {
       "drop schema public cascade; create schema public;"
     );
 
-    await databaseClient.end()
+    await databaseClient.end();
   }
 
   return {

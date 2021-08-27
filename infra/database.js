@@ -1,4 +1,3 @@
-
 import { Pool } from "pg";
 
 const poolConfiguration = {
@@ -20,7 +19,7 @@ if (["test", "development"].includes(process.env.NODE_ENV) || process.env.CI) {
 const pool = new Pool(poolConfiguration);
 
 async function query(query, params) {
-  return await pool.query(query, params);;
+  return await pool.query(query, params);
 }
 
 async function getNewConnectedClient() {
@@ -33,8 +32,8 @@ async function getNewConnectedClient() {
 const instance = {
   query,
   getNewConnectedClient,
-}
+};
 
-Object.freeze(instance)
+Object.freeze(instance);
 
 export default instance;
