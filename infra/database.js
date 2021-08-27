@@ -29,11 +29,7 @@ async function getNewConnectedClient() {
   return await pool.connect();
 }
 
-const instance = {
+export default Object.freeze({
   query,
   getNewConnectedClient,
-};
-
-Object.freeze(instance);
-
-export default instance;
+});
