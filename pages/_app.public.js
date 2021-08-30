@@ -1,5 +1,5 @@
-import "./css/globals.css";
-import Head from "next/head";
+import './css/globals.css';
+import Head from 'next/head';
 
 function MyApp({ Component, pageProps }) {
   // TODO: Refactor font to download from our domain
