@@ -16,7 +16,7 @@ jobs:
           node-version: "14"
       - run: npm ci
       - run: npm run build
-      - run: npm start & npm run test:ci
+      - run: npm start & jest --runInBand
 
       - name: Stop containers
         if: always()
