@@ -33,7 +33,6 @@
     "start": "next start",
     "test": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand' && npm run services:stop",
     "test:watch": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watch' && npm run services:stop",
-    "test:ci": "jest --runInBand",
     "lint": "npm run lint:next && npm run lint:prettier",
     "lint:next": "next lint --dir .",
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",
