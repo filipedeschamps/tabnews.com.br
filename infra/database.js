@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool } from 'pg';
 
 const poolConfiguration = {
   user: process.env.POSTGRES_USER,
@@ -12,7 +12,7 @@ const poolConfiguration = {
 };
 
 // https://github.com/filipedeschamps/tabnews.com.br/issues/84
-if (["test", "development"].includes(process.env.NODE_ENV) || process.env.CI) {
+if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
   delete poolConfiguration.ssl;
 }
 

@@ -1,10 +1,10 @@
-const download = require("image-downloader");
-const path = require("path");
-const fs = require("fs");
-import fileExist from "./utils/fileExist";
+const download = require('image-downloader');
+const path = require('path');
+const fs = require('fs');
+import fileExist from './utils/fileExist';
 
 export default async function downloadCollaboratorsAvatar(collaborators = []) {
-  const DEST_PATH = path.resolve(__dirname, "contents");
+  const DEST_PATH = path.resolve(__dirname, 'contents');
 
   if (!fileExist(DEST_PATH)) {
     await fs.promises.mkdir(DEST_PATH);
@@ -24,10 +24,7 @@ export default async function downloadCollaboratorsAvatar(collaborators = []) {
       });
       console.log(`${login} avatar successfully downloaded!`);
     } catch (error) {
-      console.error(
-        `There was an error trying to download the avatar from ${login}.`,
-        err
-      );
+      console.error(`There was an error trying to download the avatar from ${login}.`, err);
     }
   }
 }
