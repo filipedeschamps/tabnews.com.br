@@ -37,7 +37,8 @@
     "lint:next": "next lint --dir .",
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix && prettier --write '**/*.{json,js,jsx,ts,tsx}'",
-    "commit": "cz"
+    "commit": "cz",
+    "migrate": "node-pg-migrate -m infra/migrations/"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
