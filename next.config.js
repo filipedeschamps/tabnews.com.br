@@ -3,5 +3,5 @@ module.exports = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: { nftTracing: true }
+  experimental: { nftTracing: true },
 };
