@@ -12,29 +12,38 @@ export default function Migrator() {
 
   async function listPendingMigrations() {
     const databaseClient = await database.getNewConnectedClient();
-    const pendingMigrations = await migrationRunner({
-      ...defaultConfigurations,
-      dbClient: databaseClient,
-      dryRun: true,
-    });
 
-    await databaseClient.end();
+    try {
+      const pendingMigrations = await migrationRunner({
+        ...defaultConfigurations,
+        dbClient: databaseClient,
+        dryRun: true,
+      });
 
-    return pendingMigrations;
+      return pendingMigrations;
+    } catch (error) {
+      throw error;
+    } finally {
+      await databaseClient.end();
+    }
   }
 
   async function runPendingMigrations() {
     const databaseClient = await database.getNewConnectedClient();
 
-    const migratedMigrations = await migrationRunner({
-      ...defaultConfigurations,
-      dbClient: databaseClient,
-      dryRun: false,
-    });
+    try {
+      const migratedMigrations = await migrationRunner({
+        ...defaultConfigurations,
+        dbClient: databaseClient,
+        dryRun: false,
+      });
 
-    await databaseClient.end();
-
-    return migratedMigrations;
+      return migratedMigrations;
+    } catch (error) {
+      throw error;
+    } finally {
+      await databaseClient.end();
+    }
   }
 
   return {

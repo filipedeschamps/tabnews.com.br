@@ -2,6 +2,7 @@
   "dependencies": {
     "cross-fetch": "3.1.4",
     "next": "11.1.2",
+    "next-connect": "0.10.2",
     "node-pg-migrate": "5.10.0",
     "pg": "8.7.1",
     "react": "17.0.2",
@@ -32,7 +33,7 @@
     "build": "next build",
     "start": "next start",
     "test": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand' && npm run services:stop",
-    "test:watch": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watch' && npm run services:stop",
+    "test:watch": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watchAll' && npm run services:stop",
     "lint": "npm run lint:next && npm run lint:prettier",
     "lint:next": "next lint --dir .",
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",

@@ -65,9 +65,12 @@ describe('[e2e] Second GET to /api/v1/migrations', () => {
 
 describe('[e2e] PUT to /api/v1/migrations', () => {
   test('should return 404', async () => {
-    const putMigrations = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
+    const putMigrationsResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
       method: 'put',
     });
-    expect(putMigrations.status).toEqual(404);
+    const putMigrationsBody = await putMigrationsResponse.json();
+
+    expect(putMigrationsResponse.status).toEqual(404);
+    expect(putMigrationsBody.error).toEqual('Not Found');
   });
 });
