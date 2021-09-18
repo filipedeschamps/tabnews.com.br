@@ -1,8 +1,17 @@
-/* creating the user table */
-
 exports.up = (pgm) => {
+
+    pgm.createExtension("uuid-ossp", {
+        ifNotExists: true,
+        schema: 'public'
+    });
+
     pgm.createTable('users', {
-        id: 'serial',
+        id: {
+            type: 'uuid',
+            default: pgm.func('uuid_generate_v4()'),
+            notNull: true,
+            primaryKey: true
+        },
         name: { type: 'string', length: 128, notNull: true },
         email: { type: 'string', length: 255, notNull: true, unique: true },
         password: { type: 'string', length: 255, notNull: true },
