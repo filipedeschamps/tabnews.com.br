@@ -2,10 +2,9 @@ import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
 import migratorFactory from 'infra/migrator.js';
 
-import AppError from 'infra/errors/app-error';
+import BaseError from 'infra/errors/base-error';
 
 const migrator = migratorFactory();
-const uuidMaker = uuidFactory();
 
 export default nextConnect({
   attachParams: true,
@@ -60,9 +59,8 @@ async function onNoMatchHandler(request, response) {
 
 function onErrorHandler(error, req, res, next) {
   console.log('traceId: ', traceId, 'error: ', error);
-  if (error instanceof AppError) {
+  if (error instanceof BaseError) {
     error.traceId(req.traceId);
     return res.status(error.code).json(error);
   }
-  return res.status(500).json({ error: 'Internal Server Error' });
 }

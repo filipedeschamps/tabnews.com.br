@@ -1,4 +1,4 @@
-export default class AppError {
+export default class BaseError {
   constructor({ code, message, action, type, errors }) {
     this.code = code;
     this.message = message;
