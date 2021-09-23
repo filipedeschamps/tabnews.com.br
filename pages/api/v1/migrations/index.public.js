@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
+import { v4 as uuid } from 'uuid';
 import migratorFactory from 'infra/migrator.js';
-import uuidFactory from 'infra/uuid.js';
 
 import AppError from 'infra/errors/app-error';
 
@@ -20,7 +20,7 @@ export default nextConnect({
 
 async function traceHandler(request, response, next) {
   // Inclui um traceId para toda request que passa pelo servidor
-  request.traceId = uuidMaker.makeUuid();
+  request.traceId = uuid();
   next();
 }
 
@@ -59,9 +59,10 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, req, res, next) {
+  console.log('traceId: ', traceId, 'error: ', error);
   if (error instanceof AppError) {
     error.traceId(req.traceId);
     return res.status(error.code).json(error);
   }
-  return res.status(500).json({ error: error.message });
+  return res.status(500).json({ error: 'Internal Server Error' });
 }
