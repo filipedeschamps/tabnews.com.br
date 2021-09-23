@@ -1,17 +1,26 @@
 import nextConnect from 'next-connect';
 import migratorFactory from 'infra/migrator.js';
+import uuidFactory from 'infra/uuid.js';
 
 const migrator = migratorFactory();
+const uuidMaker = uuidFactory();
 
 export default nextConnect({
   attachParams: true,
   onNoMatch: onNoMatchHandler,
   onError: onErrorHandler,
 })
+  .use(traceHandler)
   .use(authenticationHandler)
   .use(authorizationHandler)
   .get(getHandler)
   .post(postHandler);
+
+async function traceHandler(request, response, next) {
+  // Inclui um traceId para toda request que passa pelo servidor
+  request.traceId = uuidMaker.makeUuid();
+  next();
+}
 
 async function authenticationHandler(request, response, next) {
   // TODO: implement authentication
@@ -48,6 +57,7 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, req, res, next) {
+  console.log('traceId: ', req.traceId);
   console.log(error);
   res.status(500).json({ error: error.message });
 }
