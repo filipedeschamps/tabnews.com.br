@@ -1,8 +1,13 @@
-export default function AppError({ message, action, type, errors }) {
-  return {
-    message,
-    action,
-    type,
-    errors
+export default class AppError {
+  constructor({ code, message, action, type, errors }) {
+    this.code = code;
+    this.message = message;
+    this.action = action;
+    this.type = type;
+    this.errors = errors;
+  }
+
+  traceId(traceId) {
+    this.traceId = traceId;
   }
 }
