@@ -2,7 +2,7 @@ import nextConnect from 'next-connect';
 import migratorFactory from 'infra/migrator.js';
 import uuidFactory from 'infra/uuid.js';
 
-import AppError from '../domain/errors/app-error';
+import AppError from 'infra/errors/app-error';
 
 const migrator = migratorFactory();
 const uuidMaker = uuidFactory();
