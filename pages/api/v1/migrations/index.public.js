@@ -1,5 +1,8 @@
 import nextConnect from 'next-connect';
+import { v4 as uuid } from 'uuid';
 import migratorFactory from 'infra/migrator.js';
+
+import BaseError from 'infra/errors/base-error';
 
 const migrator = migratorFactory();
 
@@ -8,10 +11,17 @@ export default nextConnect({
   onNoMatch: onNoMatchHandler,
   onError: onErrorHandler,
 })
+  .use(traceHandler)
   .use(authenticationHandler)
   .use(authorizationHandler)
   .get(getHandler)
   .post(postHandler);
+
+async function traceHandler(request, response, next) {
+  // Inclui um traceId para toda request que passa pelo servidor
+  request.traceId = uuid();
+  next();
+}
 
 async function authenticationHandler(request, response, next) {
   // TODO: implement authentication
@@ -48,6 +58,9 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, req, res, next) {
-  console.log(error);
-  res.status(500).json({ error: error.message });
+  console.log('traceId: ', traceId, 'error: ', error);
+  if (error instanceof BaseError) {
+    error.traceId(req.traceId);
+    return res.status(error.code).json(error);
+  }
 }
