@@ -1,0 +1,41 @@
+import fetch from 'cross-fetch';
+import { version as uuidVersion } from 'uuid';
+import { validate as uuidValidate } from 'uuid';
+import orchestratorFactory from 'tests/orchestrator.js';
+
+const orchestrator = orchestratorFactory();
+
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
+  await orchestrator.dropAllTables();
+});
+
+describe('[e2e] do a GET request to /api/v1/status', () => {
+  test('should be able to execute all health-indicators', async () => {
+    const serverStatusResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/status`);
+    const serverStatusBody = await serverStatusResponse.json();
+
+    expect(serverStatusResponse.status).toEqual(200);
+    expect(serverStatusBody.updated_at).toBeDefined();
+    expect(serverStatusBody.dependencies.database).toEqual(
+      expect.objectContaining({ status: 'healthy', opened_connections: 1 })
+    );
+  });
+});
+
+describe('[e2e] do a PUT request to /api/v1/status', () => {
+  test('should return a 404 response', async () => {
+    const putStatusResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/status`, {
+      method: 'put',
+    });
+    const putStatusBody = await putStatusResponse.json();
+
+    expect(putStatusResponse.status).toEqual(404);
+    expect(putStatusBody.statusCode).toEqual(404);
+    expect(putStatusBody.stack).toBeUndefined();
+    expect(uuidVersion(putStatusBody.errorId)).toEqual(4);
+    expect(uuidValidate(putStatusBody.errorId)).toEqual(true);
+    expect(uuidVersion(putStatusBody.requestId)).toEqual(4);
+    expect(uuidValidate(putStatusBody.requestId)).toEqual(true);
+  });
+});
