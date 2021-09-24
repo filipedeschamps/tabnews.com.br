@@ -1,4 +1,6 @@
 import fetch from 'cross-fetch';
+import { version as uuidVersion } from 'uuid';
+import { validate as uuidValidate } from 'uuid';
 import orchestratorFactory from 'tests/orchestrator.js';
 import numberOfFilesInFolder from 'tests/numberOfFilesInFolder.js';
 
@@ -71,6 +73,16 @@ describe('[e2e] PUT to /api/v1/migrations', () => {
     const putMigrationsBody = await putMigrationsResponse.json();
 
     expect(putMigrationsResponse.status).toEqual(404);
-    expect(putMigrationsBody.error).toEqual('Not Found');
+    expect(putMigrationsBody.name).toEqual('NotFoundError');
+    expect(putMigrationsBody.message).toEqual('Não foi possível encontrar este recurso no sistema.');
+    expect(putMigrationsBody.action).toEqual(
+      'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.'
+    );
+    expect(uuidVersion(putMigrationsBody.errorId)).toEqual(4);
+    expect(uuidValidate(putMigrationsBody.errorId)).toEqual(true);
+    expect(uuidVersion(putMigrationsBody.requestId)).toEqual(4);
+    expect(uuidValidate(putMigrationsBody.requestId)).toEqual(true);
+    expect(putMigrationsBody.statusCode).toEqual(404);
+    expect(putMigrationsBody.stack).toBeUndefined();
   });
 });
