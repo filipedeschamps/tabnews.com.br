@@ -8,7 +8,8 @@
     "react": "17.0.2",
     "react-confetti": "6.0.1",
     "react-dom": "17.0.2",
-    "react-icons": "4.2.0"
+    "react-icons": "4.2.0",
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "@babel/preset-env": "7.15.4",

@@ -1,5 +1,7 @@
 import nextConnect from 'next-connect';
+import { v4 as uuid } from 'uuid';
 import migratorFactory from 'infra/migrator.js';
+import { InternalServerError, NotFoundError } from '/errors';
 
 const migrator = migratorFactory();
 
@@ -8,10 +10,16 @@ export default nextConnect({
   onNoMatch: onNoMatchHandler,
   onError: onErrorHandler,
 })
+  .use(injectRequestId)
   .use(authenticationHandler)
   .use(authorizationHandler)
   .get(getHandler)
   .post(postHandler);
+
+async function injectRequestId(request, response, next) {
+  request.id = uuid();
+  next();
+}
 
 async function authenticationHandler(request, response, next) {
   // TODO: implement authentication
@@ -40,14 +48,14 @@ async function postHandler(request, response) {
   return response.status(200).json(migratedMigrations);
 }
 
-// TODO: create a pattern with Custom Errors.
-// Do not rely on this responses right now.
-
 async function onNoMatchHandler(request, response) {
-  return response.status(404).json({ error: 'Not Found' });
+  const errorObject = new NotFoundError({ requestId: request.id });
+  console.log(errorObject);
+  return response.status(errorObject.statusCode).json(errorObject);
 }
 
-function onErrorHandler(error, req, res, next) {
-  console.log(error);
-  res.status(500).json({ error: error.message });
+function onErrorHandler(error, request, response) {
+  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
+  console.error(errorObject);
+  return response.status(errorObject.statusCode).json(errorObject);
 }
