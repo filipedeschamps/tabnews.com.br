@@ -15,7 +15,7 @@ export default nextConnect({
     .use(authorizationHandler)
     .get(getHandler)
     .post(postHandler)
-
+    .delete(deleteHandler)
 
 async function injectRequestId(request, response, next) {
     request.id = uuid();
@@ -35,21 +35,29 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-    const userList = await user.getUsers();
-    return response.status(200).json(userList);
+    const returnUser = await user.getUser(request.query.id);
+    return response.status(200).json(returnUser);
 }
 
 async function postHandler(request, response) {
-    const returnIdUser = await user.createUser(request.body);
-    return response.status(200).json(returnIdUser);
+    const returnUser = await user.updateUser(request.query.id, request.body);
+    return response.status(200).json(returnUser);
 }
+
+async function deleteHandler(request, response) {
+    const returnUser = await user.deleteUser(request.query.id)
+    return response.status(200).json(returnUser);
+}
+
 
 async function onNoMatchHandler(request, response) {
     const errorObject = new NotFoundError({ requestId: request.id });
+    console.log(errorObject);
     return response.status(errorObject.statusCode).json(errorObject);
 }
 
 function onErrorHandler(error, request, response) {
     const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
+    console.error(errorObject);
     return response.status(errorObject.statusCode).json(errorObject);
 }
