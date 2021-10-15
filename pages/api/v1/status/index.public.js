@@ -3,28 +3,25 @@ import { formatISO } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import { NotFoundError, InternalServerError } from 'errors';
 
-import BaseError from 'infra/errors/base-error';
+import healthFactory from 'model/health';
 
-import healthCheckerFactory from 'infra/health-checker';
-
-const healthCheker = healthCheckerFactory();
+const health = healthFactory()
 
 export default nextConnect({
   attachParams: true,
   onNoMatch: onNoMatchHandler,
   onError: onErrorHandler,
 })
-  .use(traceHandler)
+  .use(injectRequestId)
   .get(getHandler);
 
-function traceHandler(request, _, next) {
-  // Inclui um traceId para toda request que passa pelo servidor
-  request.traceId = uuid();
+async function injectRequestId(request, response, next) {
+  request.id = uuid();
   next();
 }
 
 async function getHandler(request, response) {
-  const checkedDependencies = await healthCheker.doHealthCheck();
+  const checkedDependencies = await health.getDependencies();
 
   return response.status(200).json({
     updated_at: formatISO(Date.now()),
@@ -33,13 +30,13 @@ async function getHandler(request, response) {
 }
 
 async function onNoMatchHandler(request, response) {
-  return response.status(404).json({ error: 'Not Found' });
+  const errorObject = new NotFoundError({ requestId: request.id });
+  console.log(errorObject);
+  return response.status(errorObject.statusCode).json(errorObject);
 }
 
-function onErrorHandler(error, req, res, next) {
-  console.log('traceId: ', traceId, 'error: ', error);
-  if (error instanceof BaseError) {
-    error.traceId(req.traceId);
-    return res.status(error.code).json(error);
-  }
+function onErrorHandler(error, request, response) {
+  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
+  console.error(errorObject);
+  return response.status(errorObject.statusCode).json(errorObject);
 }

@@ -83,9 +83,6 @@ describe('[e2e] PUT to /api/v1/migrations', () => {
     expect(uuidVersion(putMigrationsBody.requestId)).toEqual(4);
     expect(uuidValidate(putMigrationsBody.requestId)).toEqual(true);
     expect(putMigrationsBody.statusCode).toEqual(404);
-<<<<<<< HEAD
     expect(putMigrationsBody.stack).toBeUndefined();
-=======
->>>>>>> feat: finishes standardization of error handling
   });
 });
