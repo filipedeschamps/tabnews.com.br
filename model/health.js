@@ -32,7 +32,8 @@ export default function Health() {
     let result;
     try {
       const openConnectionsResult = await database.query(
-        'SELECT sum(numbackends) as opened_connections FROM pg_stat_database'
+        'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
+        [process.env.POSTGRES_DB]
       );
       const { opened_connections } = openConnectionsResult.rows[0];
 
