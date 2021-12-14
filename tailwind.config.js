@@ -1,13 +1,12 @@
 const colors = require('tailwindcss/colors');
 
 module.exports = {
-  mode: 'jit',
-  purge: ['./pages/**/*.{js,ts,jsx,tsx}'],
+  content: ['./pages/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class', // or 'media' or 'class'
   theme: {
     extend: {
       colors: {
-        warmGray: colors.warmGray,
+        stone: colors.stone,
         lightTheme: {
           primary: '#f7f8f8',
           secondary: '#121212',
@@ -42,12 +41,6 @@ module.exports = {
           },
         },
       },
-    },
-  },
-  variants: {
-    extend: {
-      backgroundColor: ['dark'],
-      textColor: ['dark'],
     },
   },
   plugins: [],
