@@ -1,7 +1,8 @@
 # tabnews.com.br
 
 ## **Últimas atualizações!**
-**[30/07/21 - Milestone 1 (ENCERRAMENTO)](pages/init/diary/2021-07-30.md)**
+
+**[15/12/21 - Reorganizando tudo para conseguir voltar 👍](pages/init/diary/2021-12-15.md)**
 
 ## Diário
 
@@ -28,3 +29,4 @@
 - [24/06/21 - Cross collaboration](pages/init/diary/2021-06-24.md)
 - [25/06/21 - Milestone 0 (ENCERRAMENTO)](pages/init/diary/2021-06-25.md)
 - [30/07/21 - Milestone 1 (ENCERRAMENTO)](pages/init/diary/2021-07-30.md)
+- [15/12/21 - Reorganizando tudo para conseguir voltar 👍](pages/init/diary/2021-12-15.md)
