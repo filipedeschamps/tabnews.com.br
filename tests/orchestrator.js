@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch';
 import retry from 'async-retry';
 import database from 'infra/database.js';
+import migratorFactory from 'infra/migrator.js';
 
 export default function orchestratorFactory() {
   const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
@@ -41,9 +42,22 @@ export default function orchestratorFactory() {
     await databaseClient.end();
   }
 
+  async function dropAllTables() {
+    const databaseClient = await database.getNewConnectedClient();
+    await databaseClient.query('drop schema public cascade; create schema public;');
+
+    await databaseClient.end();
+  }
+
+  async function runPendingMigrations() {
+    const migrator = migratorFactory();
+    await migrator.runPendingMigrations();
+  }
+
   return {
     waitForAllServices,
     dropAllTables,
+    runPendingMigrations,
     webserverUrl,
   };
 }
