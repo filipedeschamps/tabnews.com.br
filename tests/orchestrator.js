@@ -14,7 +14,7 @@ export default function orchestratorFactory() {
       return await retry(
         async () => {
           // TODO: change this for a `/status` endpoint
-          await fetch(`${webserverUrl}/api/v1/migrations`);
+          await fetch(`${webserverUrl}/api/v1/status`);
         },
         {
           retries: 100,
