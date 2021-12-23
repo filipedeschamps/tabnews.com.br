@@ -8,16 +8,35 @@ exports.up = (pgm) => {
     },
 
     // For comparison, GitHub uses a maximum of 39 characters
-    username: { type: 'string', length: 30, notNull: true, unique: true },
+    username: {
+      type: 'varchar(30)',
+      notNull: true,
+      unique: true,
+    },
 
     // Why 254 in length? https://stackoverflow.com/a/1199238
-    email: { type: 'string', length: 254, notNull: true, unique: true },
+    email: {
+      type: 'varchar(254)',
+      length: 254,
+      notNull: true,
+      unique: true,
+    },
 
     // Why 72 in length? https://security.stackexchange.com/a/39851
-    password: { type: 'string', length: 72, notNull: true },
+    password: {
+      type: 'varchar(72)',
+      notNull: true,
+    },
 
-    created_at: { type: 'timestamp', default: pgm.func("(now() at time zone 'utc')") },
-    updated_at: { type: 'timestamp', default: pgm.func("(now() at time zone 'utc')") },
+    created_at: {
+      type: 'timestamp',
+      default: pgm.func("(now() at time zone 'utc')"),
+    },
+
+    updated_at: {
+      type: 'timestamp',
+      default: pgm.func("(now() at time zone 'utc')"),
+    },
   });
 };
 

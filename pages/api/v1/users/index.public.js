@@ -2,54 +2,80 @@ import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
 import userFactory from 'models/user.js';
 import { InternalServerError, NotFoundError } from '/errors';
-
-const user = userFactory();
+import { ValidationError } from 'errors/index.js';
 
 export default nextConnect({
-        attachParams: true,
-        onNoMatch: onNoMatchHandler,
-        onError: onErrorHandler,
-    })
-    .use(injectRequestId)
-    .use(authenticationHandler)
-    .use(authorizationHandler)
-    .get(getHandler)
-    .post(postHandler)
-
+  attachParams: true,
+  onNoMatch: onNoMatchHandler,
+  onError: onErrorHandler,
+})
+  .use(injectRequestId)
+  .use(authenticationHandler)
+  .use(authorizationHandler)
+  .get(getHandler)
+  .post(postHandler);
 
 async function injectRequestId(request, response, next) {
-    request.id = uuid();
-    next();
+  request.id = uuid();
+  next();
 }
 
 async function authenticationHandler(request, response, next) {
-    // TODO: implement authentication
-    console.log('Trying to authenticate');
-    next();
+  // TODO: implement authentication
+  console.log('Trying to authenticate');
+  next();
 }
 
 async function authorizationHandler(request, response, next) {
-    // TODO: implement authorization
-    console.log('Trying to authorize');
-    next();
+  // TODO: implement authorization
+  console.log('Trying to authorize');
+  next();
 }
 
 async function getHandler(request, response) {
-    const userList = await user.getUsers();
-    return response.status(200).json(userList);
+  const user = userFactory();
+  const userList = await user.findAll();
+  return response.status(200).json(userList);
 }
 
 async function postHandler(request, response) {
-    const returnIdUser = await user.createUser(request.body);
-    return response.status(200).json(returnIdUser);
+  const user = userFactory();
+  const userData = {
+    username: request.body.username,
+    email: request.body.email,
+    password: request.body.password,
+  };
+  const newUser = await user.create(userData);
+
+  const responseBody = {
+    id: newUser.id,
+    username: newUser.username,
+    email: newUser.email,
+    created_at: newUser.created_at,
+    updated_at: newUser.updated_at,
+  };
+
+  return response.status(200).json(responseBody);
 }
 
 async function onNoMatchHandler(request, response) {
-    const errorObject = new NotFoundError({ requestId: request.id });
-    return response.status(errorObject.statusCode).json(errorObject);
+  const errorObject = new NotFoundError({ requestId: request.id });
+  return response.status(errorObject.statusCode).json(errorObject);
 }
 
 function onErrorHandler(error, request, response) {
-    const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
-    return response.status(errorObject.statusCode).json(errorObject);
+  if (error instanceof ValidationError) {
+    // TODO: "requestId" and "errorId" should be snake case
+    return response.status(error.statusCode).json({ ...error, requestId: request.id });
+  }
+
+  const errorObject = new InternalServerError({
+    requestId: request.id,
+    errorId: error.errorId,
+    stack: error.stack,
+  });
+
+  console.error(errorObject);
+
+  return response.status(errorObject.statusCode).json(errorObject);
 }

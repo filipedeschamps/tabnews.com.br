@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "cross-fetch": "3.1.4",
+    "joi": "17.5.0",
     "next": "12.0.7",
     "next-connect": "0.11.0",
     "node-pg-migrate": "6.0.0",
