@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { DatabaseError } from 'errors/index.js';
 
 const poolConfiguration = {
   user: process.env.POSTGRES_USER,
@@ -19,7 +20,13 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
 const pool = new Pool(poolConfiguration);
 
 async function query(query, params) {
-  return await pool.query(query, params);
+  try {
+    return await pool.query(query, params);
+  } catch (error) {
+    const errorObject = new DatabaseError({ message: error.message, stack: new Error().stack });
+    console.error(errorObject);
+    throw errorObject;
+  }
 }
 
 async function getNewConnectedClient() {
