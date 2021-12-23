@@ -49,8 +49,7 @@ async function postHandler(request, response) {
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id });
-  console.log(errorObject);
+  const errorObject = new NotFoundError({ requestId: request.id, stack: new Error().stack });
   return response.status(errorObject.statusCode).json(errorObject);
 }
 
