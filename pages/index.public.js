@@ -1,10 +1,10 @@
-import Head from "next/head";
-import Image from "next/image";
-import Confetti from "react-confetti";
-import { useState, useEffect } from "react";
+import Head from 'next/head';
+import Image from 'next/image';
+import Confetti from 'react-confetti';
+import { useState, useEffect } from 'react';
 
-import { CgTab } from "react-icons/cg";
-import collaborators from "./init/collaborators.json";
+import { CgTab } from 'react-icons/cg';
+import collaborators from './init/collaborators.json';
 
 export default function Page() {
   const [shuffledCollaborators, setShuffledCollaborators] = useState([]);
@@ -19,9 +19,9 @@ export default function Page() {
       setConfettiWidth(window.screen.width);
       setConfettiHeight(window.screen.height);
     }
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     handleResize();
-    return () => window.removeEventListener("resize", handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
@@ -68,8 +68,7 @@ export default function Page() {
         <title>TabNews: Onde tudo começou ("git init")</title>
         <meta
           name="description"
-          content="Estamos neste exato momento construindo um novo local na internet para quem trabalha com tecnologia e precisa consumir conteúdos com valor concreto."
-        ></meta>
+          content="Estamos neste exato momento construindo um novo local na internet para quem trabalha com tecnologia e precisa consumir conteúdos com valor concreto."></meta>
       </Head>
 
       <Confetti
@@ -89,16 +88,13 @@ export default function Page() {
           </div>
 
           <div className="text-gray-700 text-base mt-6 pl-4 pr-4">
-            Estamos neste exato momento construindo um novo local na internet
-            para quem <strong>trabalha com tecnologia</strong> e precisa
-            consumir conteúdos com <strong>valor concreto</strong>. Somos
-            pessoas brutalmente exatas e empáticas,{" "}
-            <strong>simultaneamente</strong>, onde o termômetro para entender se
-            isso está sendo aplicado é simples: as pessoas estão se{" "}
-            <strong>afastando</strong> ou se <strong>aproximando</strong>? As{" "}
-            <strong>{collaborators.length}</strong> pessoas listadas abaixo se
-            aproximaram no <strong>Dia 0</strong> deste projeto para apoiar a
-            sua criação, inclusive colocando a mão na massa:
+            Estamos neste exato momento construindo um novo local na internet para quem{' '}
+            <strong>trabalha com tecnologia</strong> e precisa consumir conteúdos com <strong>valor concreto</strong>.
+            Somos pessoas brutalmente exatas e empáticas, <strong>simultaneamente</strong>, onde o termômetro para
+            entender se isso está sendo aplicado é simples: as pessoas estão se <strong>afastando</strong> ou se{' '}
+            <strong>aproximando</strong>? As <strong>{collaborators.length}</strong> pessoas listadas abaixo se
+            aproximaram no <strong>Dia 0</strong> deste projeto para apoiar a sua criação, inclusive colocando a mão na
+            massa:
           </div>
         </div>
 
@@ -110,17 +106,9 @@ export default function Page() {
                 key={username}
                 className="avatar"
                 onMouseEnter={() => setDisplayUserName({ username })}
-                onMouseLeave={() => setDisplayUserName({ username })}
-              >
-                <a
-                  href={`https://github.com/${username}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Image
-                    src={collaboratorAvatar}
-                    alt={`Colaborador ${username}`}
-                  />
+                onMouseLeave={() => setDisplayUserName({ username })}>
+                <a href={`https://github.com/${username}`} target="_blank" rel="noreferrer">
+                  <Image src={collaboratorAvatar} alt={`Colaborador ${username}`} />
                 </a>
                 {displayUserName.username === username && (
                   <div className="label-username">
@@ -133,8 +121,7 @@ export default function Page() {
         </div>
 
         <div className="max-w-4xl m-auto text-center text-gray-700 mt-6 pl-4 pr-4">
-          Esta página é um arquivo histórico e foi publicada em{" "}
-          <strong>25 de Junho de 2021</strong>.
+          Esta página é um arquivo histórico e foi publicada em <strong>25 de Junho de 2021</strong>.
         </div>
       </div>
       <style jsx>{`

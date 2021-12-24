@@ -1,29 +1,61 @@
-import migratorFactory from "infra/migrator.js";
+import nextConnect from 'next-connect';
+import { v4 as uuid } from 'uuid';
+import migratorFactory from 'infra/migrator.js';
+import { InternalServerError, NotFoundError } from '/errors';
 
-export default async function Migrations(request, response) {
-  const migrator = migratorFactory();
+const migrator = migratorFactory();
 
-  try {
-    if (request.method === "GET") {
-      const pendingMigrations = await migrator.listPendingMigrations();
-      return response.status(200).json(pendingMigrations);
-    }
+export default nextConnect({
+  attachParams: true,
+  onNoMatch: onNoMatchHandler,
+  onError: onErrorHandler,
+})
+  .use(injectRequestId)
+  .use(authenticationHandler)
+  .use(authorizationHandler)
+  .get(getHandler)
+  .post(postHandler);
 
-    if (request.method === "POST") {
-      const migratedMigrations = await migrator.runPendingMigrations();
+async function injectRequestId(request, response, next) {
+  request.id = uuid();
+  next();
+}
 
-      if (migratedMigrations.length > 0) {
-        return response.status(201).json(migratedMigrations);
-      }
+async function authenticationHandler(request, response, next) {
+  // TODO: implement authentication
+  console.log('Trying to authenticate');
+  next();
+}
 
-      return response.status(200).json(migratedMigrations);
-    }
+async function authorizationHandler(request, response, next) {
+  // TODO: implement authorization
+  console.log('Trying to authorize');
+  next();
+}
 
-    // TODO: create a pattern with Custom Errors.
-    // Do not rely on this response right now.
-    return response.status(404).json({ error: "Not Found" });
-  } catch (error) {
-    console.log(error);
-    return response.status(500).json({ error: error.message });
+async function getHandler(request, response) {
+  const pendingMigrations = await migrator.listPendingMigrations();
+  return response.status(200).json(pendingMigrations);
+}
+
+async function postHandler(request, response) {
+  const migratedMigrations = await migrator.runPendingMigrations();
+
+  if (migratedMigrations.length > 0) {
+    return response.status(201).json(migratedMigrations);
   }
+
+  return response.status(200).json(migratedMigrations);
+}
+
+async function onNoMatchHandler(request, response) {
+  const errorObject = new NotFoundError({ requestId: request.id });
+  console.log(errorObject);
+  return response.status(errorObject.statusCode).json(errorObject);
+}
+
+function onErrorHandler(error, request, response) {
+  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
+  console.error(errorObject);
+  return response.status(errorObject.statusCode).json(errorObject);
 }
