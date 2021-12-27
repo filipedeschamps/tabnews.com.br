@@ -22,13 +22,11 @@ async function injectRequestId(request, response, next) {
 
 async function authenticationHandler(request, response, next) {
   // TODO: implement authentication
-  console.log('Trying to authenticate');
   next();
 }
 
 async function authorizationHandler(request, response, next) {
   // TODO: implement authorization
-  console.log('Trying to authorize');
   next();
 }
 
@@ -45,6 +43,7 @@ async function postHandler(request, response) {
     email: request.body.email,
     password: request.body.password,
   };
+
   const newUser = await user.create(userData);
 
   const responseBody = {

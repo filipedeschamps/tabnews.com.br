@@ -23,13 +23,11 @@ async function injectRequestId(request, response, next) {
 
 async function authenticationHandler(request, response, next) {
   // TODO: implement authentication
-  console.log('Trying to authenticate');
   next();
 }
 
 async function authorizationHandler(request, response, next) {
   // TODO: implement authorization
-  console.log('Trying to authorize');
   next();
 }
 
