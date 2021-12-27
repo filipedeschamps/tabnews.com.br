@@ -13,7 +13,6 @@ export default function orchestratorFactory() {
     async function waitForWebServer() {
       return await retry(
         async () => {
-          // TODO: change this for a `/status` endpoint
           await fetch(`${webserverUrl}/api/v1/status`);
         },
         {
