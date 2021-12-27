@@ -27,42 +27,13 @@ export default function User() {
   async function create(userData) {
     try {
       // TODO: Should we coerce and transform the data? Example: "email" to lowercase
-      await validate(userData);
+      await validatePostSchema(userData);
+      await validateUniqueUsername(userData.username);
+      await validateUniqueEmail(userData.email);
       const newUser = await queryDatabase(userData);
       return newUser;
     } catch (error) {
       throw error;
-    }
-
-    async function validate(userData) {
-      const schema = Joi.object({
-        username: Joi.string().alphanum().min(3).max(30).required().messages({
-          'string.base': `"username" deve ser do tipo "string".`,
-          'string.alphanum': `"username" deve conter apenas caracteres alfanuméricos.`,
-          'string.empty': `"username" não pode estar em branco.`,
-          'string.min': `"username" deve ter no mínimo {#limit} caracteres.`,
-          'string.max': `"username" deve ter no máximo {#limit} caracteres.`,
-          'any.required': `"username" é um campo obrigatório.`,
-        }),
-        password: Joi.string().min(8).max(72).required().messages({
-          'string.base': `"password" deve ser do tipo "string".`,
-          'string.empty': `"password" não pode estar em branco.`,
-          'string.min': `"password" deve ter no mínimo {#limit} caracteres.`,
-          'string.max': `"password" deve ter no máximo {#limit} caracteres.`,
-          'any.required': `"password" é um campo obrigatório.`,
-        }),
-        email: Joi.string().email().required().messages({
-          'string.base': `"email" deve ser do tipo "string".`,
-          'string.empty': `"email" não pode estar em branco.`,
-          'string.email': `"email" deve conter um email válido.`,
-          'any.required': `"email" é um campo obrigatório.`,
-        }),
-      });
-
-      const { error } = schema.validate(userData);
-      if (error) {
-        throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
-      }
     }
 
     async function queryDatabase(data) {
@@ -96,6 +67,69 @@ export default function User() {
       return (await query).rowCount;
     } catch (error) {
       throw error;
+    }
+  }
+
+  async function validatePostSchema(userData) {
+    const schema = Joi.object({
+      username: Joi.string().alphanum().min(3).max(30).required().messages({
+        'any.required': `"username" é um campo obrigatório.`,
+        'string.empty': `"username" não pode estar em branco.`,
+        'string.base': `"username" deve ser do tipo String.`,
+        'string.alphanum': `"username" deve conter apenas caracteres alfanuméricos.`,
+        'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
+        'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
+      }),
+      email: Joi.string().email().min(7).max(254).required().messages({
+        'any.required': `"email" é um campo obrigatório.`,
+        'string.empty': `"email" não pode estar em branco.`,
+        'string.base': `"email" deve ser do tipo String.`,
+        'string.email': `"email" deve conter um email válido.`,
+      }),
+      password: Joi.string().min(8).max(72).required().messages({
+        'any.required': `"password" é um campo obrigatório.`,
+        'string.empty': `"password" não pode estar em branco.`,
+        'string.base': `"password" deve ser do tipo String.`,
+        'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
+        'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
+      }),
+    });
+
+    const { error } = schema.validate(userData);
+    if (error) {
+      throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
+    }
+  }
+
+  async function validateUniqueUsername(username) {
+    const query = {
+      text: 'SELECT username FROM users WHERE username = $1',
+      values: [username],
+    };
+
+    const results = await database.query(query);
+
+    if (results.rowCount > 0) {
+      throw new ValidationError({
+        message: `O username "${username}" já está sendo usado.`,
+        stack: new Error().stack,
+      });
+    }
+  }
+
+  async function validateUniqueEmail(email) {
+    const query = {
+      text: 'SELECT email FROM users WHERE email = $1',
+      values: [email],
+    };
+
+    const results = await database.query(query);
+
+    if (results.rowCount > 0) {
+      throw new ValidationError({
+        message: `O email "${email}" já está sendo usado.`,
+        stack: new Error().stack,
+      });
     }
   }
 
