@@ -1,9 +1,9 @@
 import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
-import migratorFactory from 'infra/migrator.js';
+import userFactory from 'models/user.js';
 import { InternalServerError, NotFoundError } from '/errors';
 
-const migrator = migratorFactory();
+const user = userFactory();
 
 export default nextConnect({
   attachParams: true,
@@ -14,7 +14,8 @@ export default nextConnect({
   .use(authenticationHandler)
   .use(authorizationHandler)
   .get(getHandler)
-  .post(postHandler);
+  .post(postHandler)
+  .delete(deleteHandler);
 
 async function injectRequestId(request, response, next) {
   request.id = uuid();
@@ -32,22 +33,22 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const pendingMigrations = await migrator.listPendingMigrations();
-  return response.status(200).json(pendingMigrations);
+  const returnUser = await user.getUser(request.query.id);
+  return response.status(200).json(returnUser);
 }
 
 async function postHandler(request, response) {
-  const migratedMigrations = await migrator.runPendingMigrations();
+  const returnUser = await user.updateUser(request.query.id, request.body);
+  return response.status(200).json(returnUser);
+}
 
-  if (migratedMigrations.length > 0) {
-    return response.status(201).json(migratedMigrations);
-  }
-
-  return response.status(200).json(migratedMigrations);
+async function deleteHandler(request, response) {
+  const returnUser = await user.deleteUser(request.query.id);
+  return response.status(200).json(returnUser);
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id, stack: new Error().stack });
+  const errorObject = new NotFoundError({ requestId: request.id });
   return response.status(errorObject.statusCode).json(errorObject);
 }
 
