@@ -2,6 +2,8 @@
 
 ## **Últimas atualizações!**
 
+**[28/12/21 - POST / Create do User](pages/init/diary/2021-12-28.md)**
+
 **[15/12/21 - Reorganizando tudo para conseguir voltar 👍](pages/init/diary/2021-12-15.md)**
 
 ## Diário
@@ -30,3 +32,4 @@
 - [25/06/21 - Milestone 0 (ENCERRAMENTO)](pages/init/diary/2021-06-25.md)
 - [30/07/21 - Milestone 1 (ENCERRAMENTO)](pages/init/diary/2021-07-30.md)
 - [15/12/21 - Reorganizando tudo para conseguir voltar 👍](pages/init/diary/2021-12-15.md)
+- [28/12/21 - POST / Create do User](pages/init/diary/2021-12-28.md)

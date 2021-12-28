@@ -1,9 +1,8 @@
 import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
-import migratorFactory from 'infra/migrator.js';
+import userFactory from 'models/user.js';
 import { InternalServerError, NotFoundError } from '/errors';
-
-const migrator = migratorFactory();
+import { ValidationError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -32,27 +31,50 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const pendingMigrations = await migrator.listPendingMigrations();
-  return response.status(200).json(pendingMigrations);
+  const user = userFactory();
+  const userList = await user.findAll();
+  return response.status(200).json(userList);
 }
 
 async function postHandler(request, response) {
-  const migratedMigrations = await migrator.runPendingMigrations();
+  const user = userFactory();
+  const userData = {
+    username: request.body.username,
+    email: request.body.email,
+    password: request.body.password,
+  };
 
-  if (migratedMigrations.length > 0) {
-    return response.status(201).json(migratedMigrations);
-  }
+  const newUser = await user.create(userData);
 
-  return response.status(200).json(migratedMigrations);
+  const responseBody = {
+    id: newUser.id,
+    username: newUser.username,
+    email: newUser.email,
+    created_at: newUser.created_at,
+    updated_at: newUser.updated_at,
+  };
+
+  return response.status(200).json(responseBody);
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id, stack: new Error().stack });
+  const errorObject = new NotFoundError({ requestId: request.id });
   return response.status(errorObject.statusCode).json(errorObject);
 }
 
 function onErrorHandler(error, request, response) {
-  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
+  if (error instanceof ValidationError) {
+    // TODO: "requestId" and "errorId" should be snake case
+    return response.status(error.statusCode).json({ ...error, requestId: request.id });
+  }
+
+  const errorObject = new InternalServerError({
+    requestId: request.id,
+    errorId: error.errorId,
+    stack: error.stack,
+  });
+
   console.error(errorObject);
+
   return response.status(errorObject.statusCode).json(errorObject);
 }

@@ -31,7 +31,6 @@ async function getHandler(request, response) {
 
 async function onNoMatchHandler(request, response) {
   const errorObject = new NotFoundError({ requestId: request.id });
-  console.log(errorObject);
   return response.status(errorObject.statusCode).json(errorObject);
 }
 

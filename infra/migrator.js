@@ -7,7 +7,7 @@ export default function Migrator() {
     dir: join(resolve('.'), 'infra', 'migrations'),
     direction: 'up',
     migrationsTable: 'migrations',
-    verbose: false,
+    log: () => {},
   };
 
   async function listPendingMigrations() {
