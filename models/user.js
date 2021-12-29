@@ -1,6 +1,6 @@
 import database from 'infra/database.js';
 import Joi from 'joi';
-import { ValidationError } from 'errors/index.js';
+import { ValidationError, NotFoundError } from 'errors/index.js';
 
 export default function User() {
   async function findAll() {
@@ -15,22 +15,33 @@ export default function User() {
     }
   }
 
-  async function getUser(id) {
-    try {
-      const query = database.query('SELECT * FROM users WHERE id = $1', [id]);
-      return (await query).rows;
-    } catch (error) {
-      throw error;
+  async function findOneByUsername(username) {
+    const query = {
+      text: 'SELECT * FROM users WHERE LOWER(username) = LOWER($1) LIMIT 1;',
+      values: [username],
+    };
+
+    const results = await database.query(query);
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: `O username "${username}" não foi encontrado no sistema.`,
+        action: 'Verifique se o "username" está digitado corretamente.',
+        stack: new Error().stack,
+      });
     }
+
+    return results.rows[0];
   }
 
   async function create(userData) {
     try {
-      // TODO: Should we coerce and transform the data? Example: "email" to lowercase
       await validatePostSchema(userData);
-      await validateUniqueUsername(userData.username);
-      await validateUniqueEmail(userData.email);
-      const newUser = await queryDatabase(userData);
+
+      const coercedUserData = coerceUserData(userData);
+      await validateUniqueUsername(coercedUserData.username);
+      await validateUniqueEmail(coercedUserData.email);
+      const newUser = await queryDatabase(coercedUserData);
       return newUser;
     } catch (error) {
       throw error;
@@ -103,7 +114,7 @@ export default function User() {
 
   async function validateUniqueUsername(username) {
     const query = {
-      text: 'SELECT username FROM users WHERE username = $1',
+      text: 'SELECT username FROM users WHERE LOWER(username) = LOWER($1)',
       values: [username],
     };
 
@@ -119,7 +130,7 @@ export default function User() {
 
   async function validateUniqueEmail(email) {
     const query = {
-      text: 'SELECT email FROM users WHERE email = $1',
+      text: 'SELECT email FROM users WHERE LOWER(email) = LOWER($1)',
       values: [email],
     };
 
@@ -133,10 +144,20 @@ export default function User() {
     }
   }
 
+  function coerceUserData(userData) {
+    const coercedUserData = userData;
+
+    if (coercedUserData.email) {
+      coercedUserData.email = userData.email.toString().toLowerCase();
+    }
+
+    return coercedUserData;
+  }
+
   return {
     create,
     findAll,
-    getUser,
+    findOneByUsername,
     updateUser,
     deleteUser,
   };

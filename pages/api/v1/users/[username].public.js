@@ -1,7 +1,7 @@
 import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
 import userFactory from 'models/user.js';
-import { InternalServerError, NotFoundError } from '/errors';
+import { InternalServerError, NotFoundError, ValidationError } from '/errors';
 
 const user = userFactory();
 
@@ -33,8 +33,8 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const returnUser = await user.getUser(request.query.id);
-  return response.status(200).json(returnUser);
+  const userObject = await user.findOneByUsername(request.query.username);
+  return response.status(200).json(userObject);
 }
 
 async function postHandler(request, response) {
@@ -53,7 +53,17 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, request, response) {
-  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
+  if (error instanceof ValidationError || error instanceof NotFoundError) {
+    return response.status(error.statusCode).json({ ...error, requestId: request.id });
+  }
+
+  const errorObject = new InternalServerError({
+    requestId: request.id,
+    errorId: error.errorId,
+    stack: error.stack,
+  });
+
   console.error(errorObject);
+
   return response.status(errorObject.statusCode).json(errorObject);
 }
