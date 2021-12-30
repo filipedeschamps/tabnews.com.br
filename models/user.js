@@ -72,15 +72,6 @@ export default function User() {
     }
   }
 
-  async function deleteUser(id) {
-    try {
-      const query = database.query('DELETE FROM public.users WHERE id= $1', [id]);
-      return (await query).rowCount;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async function validatePostSchema(userData) {
     const schema = Joi.object({
       username: Joi.string().alphanum().min(3).max(30).required().messages({
@@ -159,6 +150,5 @@ export default function User() {
     findAll,
     findOneByUsername,
     updateUser,
-    deleteUser,
   };
 }

@@ -14,8 +14,7 @@ export default nextConnect({
   .use(authenticationHandler)
   .use(authorizationHandler)
   .get(getHandler)
-  .post(postHandler)
-  .delete(deleteHandler);
+  .post(postHandler);
 
 async function injectRequestId(request, response, next) {
   request.id = uuid();
@@ -39,11 +38,6 @@ async function getHandler(request, response) {
 
 async function postHandler(request, response) {
   const returnUser = await user.updateUser(request.query.id, request.body);
-  return response.status(200).json(returnUser);
-}
-
-async function deleteHandler(request, response) {
-  const returnUser = await user.deleteUser(request.query.id);
   return response.status(200).json(returnUser);
 }
 
