@@ -106,7 +106,7 @@ describe('POST /api/v1/users', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toEqual(200);
+      expect(response.status).toEqual(201);
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('uniqueUserName');

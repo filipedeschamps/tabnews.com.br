@@ -54,7 +54,7 @@ async function postHandler(request, response) {
     updated_at: newUser.updated_at,
   };
 
-  return response.status(200).json(responseBody);
+  return response.status(201).json(responseBody);
 }
 
 async function onNoMatchHandler(request, response) {
