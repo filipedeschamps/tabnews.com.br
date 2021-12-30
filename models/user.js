@@ -6,7 +6,7 @@ export default function User() {
   async function findAll() {
     try {
       const query = {
-        text: 'SELECT * FROM users',
+        text: 'SELECT * FROM users;',
       };
       const results = await database.query(query);
       return results.rows;
@@ -38,16 +38,16 @@ export default function User() {
     try {
       await validatePostSchema(userData);
 
-      const coercedUserData = coerceUserData(userData);
-      await validateUniqueUsername(coercedUserData.username);
-      await validateUniqueEmail(coercedUserData.email);
-      const newUser = await queryDatabase(coercedUserData);
+      const validUserData = coerceUserData(userData);
+      await validateUniqueUsername(validUserData.username);
+      await validateUniqueEmail(validUserData.email);
+      const newUser = await insertIntoDatabase(validUserData);
       return newUser;
     } catch (error) {
       throw error;
     }
 
-    async function queryDatabase(data) {
+    async function insertIntoDatabase(data) {
       const { username, email, password } = data;
 
       const query = {
@@ -63,7 +63,7 @@ export default function User() {
     const { name, email, password } = data;
     try {
       const query = database.query(
-        "UPDATE users SET name = $1, email = $2, password  = $3, updated_at = timezone('utc'::text, now()) WHERE id = $4 ",
+        "UPDATE users SET name = $1, email = $2, password  = $3, updated_at = timezone('utc'::text, now()) WHERE id = $4;",
         [name, email, password, id]
       );
       return (await query).rows;
