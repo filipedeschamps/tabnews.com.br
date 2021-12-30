@@ -22,70 +22,121 @@ describe('GET /api/v1/users', () => {
     });
   });
 
-  describe('GET /api/v1/users/:username', () => {
-    describe('if "username" does not exists', () => {
-      test('should return a NotFound error', async () => {
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/donotexist`);
-        const responseBody = await response.json();
-
-        expect(response.status).toEqual(404);
-        expect(responseBody.name).toEqual('NotFoundError');
-        expect(responseBody.message).toEqual('O username "donotexist" não foi encontrado no sistema.');
-        expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-        expect(uuidVersion(responseBody.errorId)).toEqual(4);
-        expect(uuidValidate(responseBody.errorId)).toEqual(true);
-        expect(uuidVersion(responseBody.requestId)).toEqual(4);
-        expect(uuidValidate(responseBody.requestId)).toEqual(true);
+  describe('with two users in database', () => {
+    test('should return an array with two users', async () => {
+      const user1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'user1',
+          email: 'user1@gmail.com',
+          password: 'validpassword',
+        }),
       });
+
+      const user2Response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'user2',
+          email: 'user2@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+      expect(responseBody.length).toEqual(2);
+
+      expect(uuidVersion(responseBody[0].id)).toEqual(4);
+      expect(uuidValidate(responseBody[0].id)).toEqual(true);
+      expect(responseBody[0].username).toEqual('user1');
+      expect(responseBody[0].email).toEqual('user1@gmail.com');
+      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
+      expect(responseBody[0]).not.toHaveProperty('password');
+
+      expect(uuidVersion(responseBody[1].id)).toEqual(4);
+      expect(uuidValidate(responseBody[1].id)).toEqual(true);
+      expect(responseBody[1].username).toEqual('user2');
+      expect(responseBody[1].email).toEqual('user2@gmail.com');
+      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
+      expect(responseBody[1]).not.toHaveProperty('password');
     });
+  });
+});
 
-    describe('if "username" does exists (same uppercase letters)', () => {
-      test('should return the user object', async () => {
-        const userCreatedResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: 'userNameToBeFound',
-            email: 'userEmail@gmail.com',
-            password: 'validpassword',
-          }),
-        });
+describe('GET /api/v1/users/:username', () => {
+  describe('if "username" does not exists', () => {
+    test('should return a NotFound error', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/donotexist`);
+      const responseBody = await response.json();
 
-        const userFindResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/userNameToBeFound`);
-        const userFindResponseBody = await userFindResponse.json();
-
-        expect(userFindResponse.status).toEqual(200);
-        expect(uuidVersion(userFindResponseBody.id)).toEqual(4);
-        expect(uuidValidate(userFindResponseBody.id)).toEqual(true);
-        expect(userFindResponseBody.username).toEqual('userNameToBeFound');
-        expect(userFindResponseBody.email).toEqual('useremail@gmail.com');
-      });
+      expect(response.status).toEqual(404);
+      expect(responseBody.name).toEqual('NotFoundError');
+      expect(responseBody.message).toEqual('O username "donotexist" não foi encontrado no sistema.');
+      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
+      expect(uuidVersion(responseBody.errorId)).toEqual(4);
+      expect(uuidValidate(responseBody.errorId)).toEqual(true);
+      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(uuidValidate(responseBody.requestId)).toEqual(true);
     });
-    describe('if "username" does exists (different uppercase letters)', () => {
-      test('should return the user object', async () => {
-        const userCreatedResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: 'userNameToBeFoundCAPS',
-            email: 'userEmailToBeFoundCAPS@gmail.com',
-            password: 'validpassword',
-          }),
-        });
+  });
 
-        const userFindResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/usernametobefoundcaps`);
-        const userFindResponseBody = await userFindResponse.json();
-
-        expect(userFindResponse.status).toEqual(200);
-        expect(uuidVersion(userFindResponseBody.id)).toEqual(4);
-        expect(uuidValidate(userFindResponseBody.id)).toEqual(true);
-        expect(userFindResponseBody.username).toEqual('userNameToBeFoundCAPS');
-        expect(userFindResponseBody.email).toEqual('useremailtobefoundcaps@gmail.com');
+  describe('if "username" does exists (same uppercase letters)', () => {
+    test('should return the user object', async () => {
+      const userCreatedResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'userNameToBeFound',
+          email: 'userEmail@gmail.com',
+          password: 'validpassword',
+        }),
       });
+
+      const userFindResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/userNameToBeFound`);
+      const userFindResponseBody = await userFindResponse.json();
+
+      expect(userFindResponse.status).toEqual(200);
+      expect(uuidVersion(userFindResponseBody.id)).toEqual(4);
+      expect(uuidValidate(userFindResponseBody.id)).toEqual(true);
+      expect(userFindResponseBody.username).toEqual('userNameToBeFound');
+      expect(userFindResponseBody.email).toEqual('useremail@gmail.com');
+    });
+  });
+
+  describe('if "username" does exists (different uppercase letters)', () => {
+    test('should return the user object', async () => {
+      const userCreatedResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'userNameToBeFoundCAPS',
+          email: 'userEmailToBeFoundCAPS@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const userFindResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/usernametobefoundcaps`);
+      const userFindResponseBody = await userFindResponse.json();
+
+      expect(userFindResponse.status).toEqual(200);
+      expect(uuidVersion(userFindResponseBody.id)).toEqual(4);
+      expect(uuidValidate(userFindResponseBody.id)).toEqual(true);
+      expect(userFindResponseBody.username).toEqual('userNameToBeFoundCAPS');
+      expect(userFindResponseBody.email).toEqual('useremailtobefoundcaps@gmail.com');
     });
   });
 });

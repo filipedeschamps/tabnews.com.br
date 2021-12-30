@@ -33,7 +33,15 @@ async function authorizationHandler(request, response, next) {
 async function getHandler(request, response) {
   const user = userFactory();
   const userList = await user.findAll();
-  return response.status(200).json(userList);
+  const responseBody = userList.map((user) => ({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  }));
+
+  return response.status(200).json(responseBody);
 }
 
 async function postHandler(request, response) {

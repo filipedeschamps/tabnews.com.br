@@ -6,7 +6,7 @@ export default function User() {
   async function findAll() {
     try {
       const query = {
-        text: 'SELECT * FROM users;',
+        text: 'SELECT * FROM users ORDER BY created_at ASC;',
       };
       const results = await database.query(query);
       return results.rows;
