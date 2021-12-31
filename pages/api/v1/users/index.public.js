@@ -45,14 +45,10 @@ async function getHandler(request, response) {
 }
 
 async function postHandler(request, response) {
-  const user = userFactory();
-  const userData = {
-    username: request.body.username,
-    email: request.body.email,
-    password: request.body.password,
-  };
+  const postedUserData = request.body;
 
-  const newUser = await user.create(userData);
+  const user = userFactory();
+  const newUser = await user.create(postedUserData);
 
   const responseBody = {
     id: newUser.id,

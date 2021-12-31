@@ -3,8 +3,6 @@ import { v4 as uuid } from 'uuid';
 import userFactory from 'models/user.js';
 import { InternalServerError, NotFoundError, ValidationError } from '/errors';
 
-const user = userFactory();
-
 export default nextConnect({
   attachParams: true,
   onNoMatch: onNoMatchHandler,
@@ -14,7 +12,7 @@ export default nextConnect({
   .use(authenticationHandler)
   .use(authorizationHandler)
   .get(getHandler)
-  .post(postHandler);
+  .patch(patchHandler);
 
 async function injectRequestId(request, response, next) {
   request.id = uuid();
@@ -32,13 +30,28 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
+  const user = userFactory();
+
   const userObject = await user.findOneByUsername(request.query.username);
   return response.status(200).json(userObject);
 }
 
-async function postHandler(request, response) {
-  const returnUser = await user.updateUser(request.query.id, request.body);
-  return response.status(200).json(returnUser);
+async function patchHandler(request, response) {
+  const username = request.query.username;
+  const postedUserData = request.body;
+
+  const user = userFactory();
+  const updatedUser = await user.update(username, postedUserData);
+
+  const responseBody = {
+    id: updatedUser.id,
+    username: updatedUser.username,
+    email: updatedUser.email,
+    created_at: updatedUser.created_at,
+    updated_at: updatedUser.updated_at,
+  };
+
+  return response.status(200).json(responseBody);
 }
 
 async function onNoMatchHandler(request, response) {

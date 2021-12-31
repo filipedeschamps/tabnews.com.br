@@ -34,11 +34,9 @@ export default function User() {
     return results.rows[0];
   }
 
-  async function create(userData) {
+  async function create(postedUserData) {
     try {
-      await validatePostSchema(userData);
-
-      const validUserData = coerceUserData(userData);
+      const validUserData = await validatePostSchema(postedUserData);
       await validateUniqueUsername(validUserData.username);
       await validateUniqueEmail(validUserData.email);
       const newUser = await insertIntoDatabase(validUserData);
@@ -59,22 +57,9 @@ export default function User() {
     }
   }
 
-  async function updateUser(id, data) {
-    const { name, email, password } = data;
-    try {
-      const query = database.query(
-        "UPDATE users SET name = $1, email = $2, password  = $3, updated_at = timezone('utc'::text, now()) WHERE id = $4;",
-        [name, email, password, id]
-      );
-      return (await query).rows;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async function validatePostSchema(userData) {
+  async function validatePostSchema(postedUserData) {
     const schema = Joi.object({
-      username: Joi.string().alphanum().min(3).max(30).required().messages({
+      username: Joi.string().alphanum().min(3).max(30).trim().required().messages({
         'any.required': `"username" é um campo obrigatório.`,
         'string.empty': `"username" não pode estar em branco.`,
         'string.base': `"username" deve ser do tipo String.`,
@@ -82,13 +67,13 @@ export default function User() {
         'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
         'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
       }),
-      email: Joi.string().email().min(7).max(254).required().messages({
+      email: Joi.string().email().min(7).max(254).lowercase().trim().required().messages({
         'any.required': `"email" é um campo obrigatório.`,
         'string.empty': `"email" não pode estar em branco.`,
         'string.base': `"email" deve ser do tipo String.`,
         'string.email': `"email" deve conter um email válido.`,
       }),
-      password: Joi.string().min(8).max(72).required().messages({
+      password: Joi.string().min(8).max(72).trim().required().messages({
         'any.required': `"password" é um campo obrigatório.`,
         'string.empty': `"password" não pode estar em branco.`,
         'string.base': `"password" deve ser do tipo String.`,
@@ -97,10 +82,79 @@ export default function User() {
       }),
     });
 
-    const { error } = schema.validate(userData);
+    const { error, value } = schema.validate(postedUserData, { stripUnknown: true });
+
     if (error) {
       throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
     }
+
+    return value;
+  }
+
+  async function update(username, postedUserData) {
+    const validPostedUserData = await validatePatchSchema(postedUserData);
+    const currentUser = await findOneByUsername(username);
+
+    if ('username' in validPostedUserData) {
+      await validateUniqueUsername(validPostedUserData.username);
+    }
+
+    if ('email' in validPostedUserData) {
+      await validateUniqueEmail(validPostedUserData.email);
+    }
+
+    const newUser = { ...currentUser, ...validPostedUserData };
+
+    try {
+      const query = {
+        text: `UPDATE users SET
+                username = $1,
+                email = $2,
+                password = $3,
+                updated_at = (now() at time zone 'utc')
+                WHERE username = $4
+                RETURNING *;`,
+        values: [newUser.username, newUser.email, newUser.password, currentUser.username],
+      };
+
+      const results = await database.query(query);
+      return results.rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // TODO: Verify if it's interesting the idea of merging
+  // the POST and PATCH schema since (for now) the only
+  // differences are the .required() validations and messages.
+  async function validatePatchSchema(userData) {
+    const schema = Joi.object({
+      username: Joi.string().alphanum().min(3).max(30).trim().messages({
+        'string.base': `"username" deve ser do tipo String.`,
+        'string.alphanum': `"username" deve conter apenas caracteres alfanuméricos.`,
+        'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
+        'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
+      }),
+      email: Joi.string().email().min(7).max(254).lowercase().trim().messages({
+        'string.base': `"email" deve ser do tipo String.`,
+        'string.email': `"email" deve conter um email válido.`,
+      }),
+      password: Joi.string().min(8).max(72).trim().messages({
+        'any.required': `"password" é um campo obrigatório.`,
+        'string.empty': `"password" não pode estar em branco.`,
+        'string.base': `"password" deve ser do tipo String.`,
+        'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
+        'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
+      }),
+    });
+
+    const { error, value } = schema.validate(userData, { stripUnknown: true });
+
+    if (error) {
+      throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
+    }
+
+    return value;
   }
 
   async function validateUniqueUsername(username) {
@@ -138,7 +192,7 @@ export default function User() {
   function coerceUserData(userData) {
     const coercedUserData = userData;
 
-    if (coercedUserData.email) {
+    if ('email' in userData) {
       coercedUserData.email = userData.email.toString().toLowerCase();
     }
 
@@ -149,6 +203,6 @@ export default function User() {
     create,
     findAll,
     findOneByUsername,
-    updateUser,
+    update,
   };
 }
