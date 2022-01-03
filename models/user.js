@@ -130,12 +130,14 @@ export default function User() {
   async function validatePatchSchema(userData) {
     const schema = Joi.object({
       username: Joi.string().alphanum().min(3).max(30).trim().messages({
+        'string.empty': `"username" não pode estar em branco.`,
         'string.base': `"username" deve ser do tipo String.`,
         'string.alphanum': `"username" deve conter apenas caracteres alfanuméricos.`,
         'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
         'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
       }),
       email: Joi.string().email().min(7).max(254).lowercase().trim().messages({
+        'string.empty': `"email" não pode estar em branco.`,
         'string.base': `"email" deve ser do tipo String.`,
         'string.email': `"email" deve conter um email válido.`,
       }),

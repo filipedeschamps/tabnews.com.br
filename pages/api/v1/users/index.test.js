@@ -100,8 +100,8 @@ describe('POST /api/v1/users', () => {
     });
   });
 
-  describe('with unique and valid data, and a unknown key', () => {
-    test('should return the created user', async () => {
+  describe('with unique and valid data, and an unknown key', () => {
+    test('should return the created user without this unknown key', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
