@@ -28,13 +28,16 @@ exports.up = (pgm) => {
       notNull: true,
     },
 
+    // Why "with timezone"? https://stackoverflow.com/a/20713587
     created_at: {
-      type: 'timestamp',
+      type: 'timestamp with time zone',
+      notNull: true,
       default: pgm.func("(now() at time zone 'utc')"),
     },
 
     updated_at: {
-      type: 'timestamp',
+      type: 'timestamp with time zone',
+      notNull: true,
       default: pgm.func("(now() at time zone 'utc')"),
     },
   });

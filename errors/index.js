@@ -27,10 +27,10 @@ export class InternalServerError extends BaseError {
 }
 
 export class NotFoundError extends BaseError {
-  constructor({ requestId, errorId, stack }) {
+  constructor({ message, action, requestId, errorId, stack }) {
     super({
-      message: 'Não foi possível encontrar este recurso no sistema.',
-      action: 'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.',
+      message: message || 'Não foi possível encontrar este recurso no sistema.',
+      action: action || 'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.',
       statusCode: 404,
       requestId: requestId,
       errorId: errorId,
@@ -48,11 +48,11 @@ export class DatabaseError extends BaseError {
   }
 }
 export class ValidationError extends BaseError {
-  constructor({ message, stack }) {
+  constructor({ message, stack, statusCode }) {
     super({
       message: message,
       action: 'Ajuste os dados enviados e tente novamente.',
-      statusCode: 400,
+      statusCode: statusCode || 400,
       stack: stack,
     });
   }

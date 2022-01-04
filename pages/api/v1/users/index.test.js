@@ -21,6 +21,56 @@ describe('GET /api/v1/users', () => {
       expect(responseBody).toEqual([]);
     });
   });
+
+  describe('with two users in database', () => {
+    test('should return an array with two users', async () => {
+      const user1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'user1',
+          email: 'user1@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const user2Response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'user2',
+          email: 'user2@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+      expect(responseBody.length).toEqual(2);
+
+      expect(uuidVersion(responseBody[0].id)).toEqual(4);
+      expect(uuidValidate(responseBody[0].id)).toEqual(true);
+      expect(responseBody[0].username).toEqual('user1');
+      expect(responseBody[0].email).toEqual('user1@gmail.com');
+      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
+      expect(responseBody[0]).not.toHaveProperty('password');
+
+      expect(uuidVersion(responseBody[1].id)).toEqual(4);
+      expect(uuidValidate(responseBody[1].id)).toEqual(true);
+      expect(responseBody[1].username).toEqual('user2');
+      expect(responseBody[1].email).toEqual('user2@gmail.com');
+      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
+      expect(responseBody[1]).not.toHaveProperty('password');
+    });
+  });
 });
 
 describe('POST /api/v1/users', () => {
@@ -33,32 +83,86 @@ describe('POST /api/v1/users', () => {
         },
         body: JSON.stringify({
           username: 'uniqueUserName',
-          email: 'validemail@gmail.com',
+          email: 'validemailCAPS@gmail.com',
           password: 'validpassword',
         }),
       });
 
       const responseBody = await response.json();
-      expect(response.status).toEqual(200);
+      expect(response.status).toEqual(201);
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('uniqueUserName');
-      expect(responseBody.email).toEqual('validemail@gmail.com');
+      expect(responseBody.email).toEqual('validemailcaps@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
     });
   });
 
-  describe('with "username" duplicated ', () => {
-    test('should return a validation error', async () => {
+  describe('with unique and valid data, and an unknown key', () => {
+    test('should return the created user without this unknown key', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'postWithUnknownKey',
+          email: 'postWithUnknownKey@gmail.com',
+          password: 'validpassword',
+          unknownKey: 'unknownValue',
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(201);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidValidate(responseBody.id)).toEqual(true);
+      expect(responseBody.username).toEqual('postWithUnknownKey');
+      expect(responseBody.email).toEqual('postwithunknownkey@gmail.com');
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('unknownKey');
+    });
+  });
+
+  describe('with unique and valid data, but with "untrimmed" values', () => {
+    test('should return the created user with trimmed values', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'extraSpaceInTheEnd ',
+          email: ' space.in.the.beggining@gmail.com',
+          password: 'validpassword ',
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(201);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidValidate(responseBody.id)).toEqual(true);
+      expect(responseBody.username).toEqual('extraSpaceInTheEnd');
+      expect(responseBody.email).toEqual('space.in.the.beggining@gmail.com');
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody).not.toHaveProperty('password');
+    });
+  });
+
+  describe('with "username" duplicated exactly (same uppercase letters)', () => {
+    test('should return a ValidationError', async () => {
       const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: 'userNameWillBeDuplicated',
+          username: 'SaMeUPPERCASE',
           email: 'email01@gmail.com',
           password: 'validpassword',
         }),
@@ -70,7 +174,7 @@ describe('POST /api/v1/users', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: 'userNameWillBeDuplicated',
+          username: 'SaMeUPPERCASE',
           email: 'email02@gmail.com',
           password: 'validpassword',
         }),
@@ -79,7 +183,45 @@ describe('POST /api/v1/users', () => {
       const secondResponseBody = await secondResponse.json();
       expect(secondResponse.status).toEqual(400);
       expect(secondResponseBody.name).toEqual('ValidationError');
-      expect(secondResponseBody.message).toEqual('O username "userNameWillBeDuplicated" já está sendo usado.');
+      expect(secondResponseBody.message).toEqual('O username "SaMeUPPERCASE" já está sendo usado.');
+      expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(secondResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(secondResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(secondResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(secondResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "username" duplicated (different uppercase letters)', () => {
+    test('should return a ValidationError', async () => {
+      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'DIFFERENTuppercase',
+          email: 'email03@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'differentUPPERCASE',
+          email: 'email04@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const secondResponseBody = await secondResponse.json();
+      expect(secondResponse.status).toEqual(400);
+      expect(secondResponseBody.name).toEqual('ValidationError');
+      expect(secondResponseBody.message).toEqual('O username "differentUPPERCASE" já está sendo usado.');
       expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(secondResponseBody.errorId)).toEqual(4);
       expect(uuidValidate(secondResponseBody.errorId)).toEqual(true);
@@ -89,7 +231,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "username" missing', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -114,7 +256,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "username" with an empty string', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -140,7 +282,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "username" that\'s not a String', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -166,7 +308,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "username" containing non alphanumeric characters', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -192,7 +334,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "username" too short', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -218,7 +360,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "username" too long', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -243,8 +385,8 @@ describe('POST /api/v1/users', () => {
     });
   });
 
-  describe('with "email" duplicated ', () => {
-    test('should return a validation error', async () => {
+  describe('with "email" duplicated (same uppercase letters)', () => {
+    test('should return a ValidationError', async () => {
       const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -281,8 +423,46 @@ describe('POST /api/v1/users', () => {
     });
   });
 
+  describe('with "email" duplicated (different uppercase letters)', () => {
+    test('should return a ValidationError', async () => {
+      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'willTryToReuseEmail111',
+          email: 'CAPS@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'willTryToReuseEmail222',
+          email: 'caps@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const secondResponseBody = await secondResponse.json();
+      expect(secondResponse.status).toEqual(400);
+      expect(secondResponseBody.name).toEqual('ValidationError');
+      expect(secondResponseBody.message).toEqual('O email "caps@gmail.com" já está sendo usado.');
+      expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(secondResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(secondResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(secondResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(secondResponseBody.requestId)).toEqual(true);
+    });
+  });
+
   describe('with "email" missing', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -307,7 +487,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "email" with an empty string', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -333,7 +513,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "email" that\'s not a String', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -359,7 +539,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "email" with invalid format', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -385,7 +565,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "password" missing', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -410,7 +590,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "password" with an empty string', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -436,7 +616,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "password" that\'s not a String', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -462,7 +642,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "password" too short', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -488,7 +668,7 @@ describe('POST /api/v1/users', () => {
   });
 
   describe('with "password" too long', () => {
-    test('should return a validation error', async () => {
+    test('should return a ValidationError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
