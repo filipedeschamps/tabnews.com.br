@@ -191,16 +191,6 @@ export default function User() {
     }
   }
 
-  function coerceUserData(userData) {
-    const coercedUserData = userData;
-
-    if ('email' in userData) {
-      coercedUserData.email = userData.email.toString().toLowerCase();
-    }
-
-    return coercedUserData;
-  }
-
   return {
     create,
     findAll,
