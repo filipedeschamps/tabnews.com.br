@@ -2,9 +2,11 @@
 
 ## **Últimas atualizações!**
 
-**[28/12/21 - POST / Create do User](pages/init/diary/2021-12-28.md)**
+**[07/01/22 - Passwordless](pages/init/diary/2022-01-07.md)**
 
-**[15/12/21 - Reorganizando tudo para conseguir voltar 👍](pages/init/diary/2021-12-15.md)**
+**[04/01/22 - Finalização do User](pages/init/diary/2022-01-04.md)**
+
+**[28/12/21 - POST / Create do User](pages/init/diary/2021-12-28.md)**
 
 ## Diário
 
@@ -33,3 +35,5 @@
 - [30/07/21 - Milestone 1 (ENCERRAMENTO)](pages/init/diary/2021-07-30.md)
 - [15/12/21 - Reorganizando tudo para conseguir voltar 👍](pages/init/diary/2021-12-15.md)
 - [28/12/21 - POST / Create do User](pages/init/diary/2021-12-28.md)
+- [04/01/22 - Finalização do User](pages/init/diary/2022-01-04.md)
+- [07/01/22 - Passwordless](pages/init/diary/2022-01-07.md)
