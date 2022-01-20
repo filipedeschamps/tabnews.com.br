@@ -32,7 +32,6 @@ describe('GET /api/v1/users', () => {
         body: JSON.stringify({
           username: 'user1',
           email: 'user1@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -44,7 +43,6 @@ describe('GET /api/v1/users', () => {
         body: JSON.stringify({
           username: 'user2',
           email: 'user2@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -60,7 +58,6 @@ describe('GET /api/v1/users', () => {
       expect(responseBody[0].email).toEqual('user1@gmail.com');
       expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
-      expect(responseBody[0]).not.toHaveProperty('password');
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
       expect(uuidValidate(responseBody[1].id)).toEqual(true);
@@ -68,7 +65,6 @@ describe('GET /api/v1/users', () => {
       expect(responseBody[1].email).toEqual('user2@gmail.com');
       expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
-      expect(responseBody[1]).not.toHaveProperty('password');
     });
   });
 });
@@ -84,7 +80,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'uniqueUserName',
           email: 'validemailCAPS@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -96,7 +91,6 @@ describe('POST /api/v1/users', () => {
       expect(responseBody.email).toEqual('validemailcaps@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody).not.toHaveProperty('password');
     });
   });
 
@@ -110,7 +104,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'postWithUnknownKey',
           email: 'postWithUnknownKey@gmail.com',
-          password: 'validpassword',
           unknownKey: 'unknownValue',
         }),
       });
@@ -123,7 +116,6 @@ describe('POST /api/v1/users', () => {
       expect(responseBody.email).toEqual('postwithunknownkey@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('unknownKey');
     });
   });
@@ -138,7 +130,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'extraSpaceInTheEnd ',
           email: ' space.in.the.beggining@gmail.com',
-          password: 'validpassword ',
         }),
       });
 
@@ -150,7 +141,6 @@ describe('POST /api/v1/users', () => {
       expect(responseBody.email).toEqual('space.in.the.beggining@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody).not.toHaveProperty('password');
     });
   });
 
@@ -164,7 +154,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'SaMeUPPERCASE',
           email: 'email01@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -176,7 +165,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'SaMeUPPERCASE',
           email: 'email02@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -202,7 +190,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'DIFFERENTuppercase',
           email: 'email03@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -214,7 +201,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'differentUPPERCASE',
           email: 'email04@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -239,7 +225,6 @@ describe('POST /api/v1/users', () => {
         },
         body: JSON.stringify({
           email: 'valid@email.com',
-          password: 'validpassword123',
         }),
       });
 
@@ -265,7 +250,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: '',
           email: 'valid@email.com',
-          password: 'validpassword123',
         }),
       });
 
@@ -291,7 +275,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 12345,
           email: 'valid@email.com',
-          password: 'validpassword123',
         }),
       });
 
@@ -317,7 +300,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'invalid!user_name',
           email: 'valid@email.com',
-          password: 'validpassword123',
         }),
       });
 
@@ -343,7 +325,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'ab',
           email: 'valid@email.com',
-          password: 'validpassword123',
         }),
       });
 
@@ -369,7 +350,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'userNameTooLooooooooooooooooooooooooooog',
           email: 'valid@email.com',
-          password: 'validpassword123',
         }),
       });
 
@@ -395,7 +375,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'anotherUserName111',
           email: 'email.will.be.duplicated@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -407,7 +386,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'anotherUserName222',
           email: 'email.will.be.duplicated@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -433,7 +411,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'willTryToReuseEmail111',
           email: 'CAPS@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -445,7 +422,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'willTryToReuseEmail222',
           email: 'caps@gmail.com',
-          password: 'validpassword',
         }),
       });
 
@@ -470,7 +446,6 @@ describe('POST /api/v1/users', () => {
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
-          password: 'validpassword123',
         }),
       });
 
@@ -496,7 +471,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'notUsedUserName',
           email: '',
-          password: 'validpassword123',
         }),
       });
 
@@ -522,7 +496,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'notUsedUserName',
           email: 12345,
-          password: 'validpassword123',
         }),
       });
 
@@ -548,7 +521,6 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'notUsedUserName',
           email: 'not.used.email@gmail.com@what',
-          password: 'validpassword123',
         }),
       });
 
@@ -556,135 +528,6 @@ describe('POST /api/v1/users', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"email" deve conter um email válido.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-    });
-  });
-
-  describe('with "password" missing', () => {
-    test('should return a ValidationError', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'notUsedUserName',
-          email: 'notusedemail@gmail.com',
-        }),
-      });
-
-      const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-    });
-  });
-
-  describe('with "password" with an empty string', () => {
-    test('should return a ValidationError', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'notUsedUserName',
-          email: 'notusedemail@gmail.com',
-          password: '',
-        }),
-      });
-
-      const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-    });
-  });
-
-  describe('with "password" that\'s not a String', () => {
-    test('should return a ValidationError', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'notUsedUserName',
-          email: 'notusedemail@gmail.com',
-          password: 123456,
-        }),
-      });
-
-      const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-    });
-  });
-
-  describe('with "password" too short', () => {
-    test('should return a ValidationError', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'notUsedUserName',
-          email: 'notusedemail@gmail.com',
-          password: '123',
-        }),
-      });
-
-      const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" deve conter no mínimo 8 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-    });
-  });
-
-  describe('with "password" too long', () => {
-    test('should return a ValidationError', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'notUsedUserName',
-          email: 'notusedemail@gmail.com',
-          password: 'password.to.loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong',
-        }),
-      });
-
-      const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" deve conter no máximo 72 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
