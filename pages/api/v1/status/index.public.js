@@ -3,7 +3,7 @@ import { formatISO } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import { NotFoundError, InternalServerError } from 'errors';
 
-import healthFactory from 'model/health';
+import healthFactory from 'models/health';
 
 const health = healthFactory();
 

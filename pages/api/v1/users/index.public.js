@@ -33,18 +33,22 @@ async function authorizationHandler(request, response, next) {
 async function getHandler(request, response) {
   const user = userFactory();
   const userList = await user.findAll();
-  return response.status(200).json(userList);
+  const responseBody = userList.map((user) => ({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  }));
+
+  return response.status(200).json(responseBody);
 }
 
 async function postHandler(request, response) {
-  const user = userFactory();
-  const userData = {
-    username: request.body.username,
-    email: request.body.email,
-    password: request.body.password,
-  };
+  const postedUserData = request.body;
 
-  const newUser = await user.create(userData);
+  const user = userFactory();
+  const newUser = await user.create(postedUserData);
 
   const responseBody = {
     id: newUser.id,
@@ -54,7 +58,7 @@ async function postHandler(request, response) {
     updated_at: newUser.updated_at,
   };
 
-  return response.status(200).json(responseBody);
+  return response.status(201).json(responseBody);
 }
 
 async function onNoMatchHandler(request, response) {

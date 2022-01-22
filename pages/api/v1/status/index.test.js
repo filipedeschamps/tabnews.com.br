@@ -17,9 +17,8 @@ describe('[e2e] do a GET request to /api/v1/status', () => {
 
     expect(serverStatusResponse.status).toEqual(200);
     expect(serverStatusBody.updated_at).toBeDefined();
-    expect(serverStatusBody.dependencies.database).toEqual(
-      expect.objectContaining({ status: 'healthy', opened_connections: 1 })
-    );
+    expect(serverStatusBody.dependencies.database.status).toEqual('healthy');
+    expect(serverStatusBody.dependencies.database.opened_connections).toBeGreaterThan(0);
   });
 });
 
