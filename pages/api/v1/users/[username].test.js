@@ -38,6 +38,7 @@ describe('GET /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'userNameToBeFound',
           email: 'userEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -65,6 +66,7 @@ describe('GET /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'userNameToBeFoundCAPS',
           email: 'userEmailToBeFoundCAPS@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -93,6 +95,7 @@ describe('PATCH /api/v1/users/:username', () => {
         },
         body: JSON.stringify({
           email: 'donotexistpatch@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -119,6 +122,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'patchWithUnknownKey',
           email: 'patchWithUnknownKey@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -145,6 +149,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(responseBody.email).toEqual('patchwithunknownkeynew@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('unknownKey');
     });
   });
@@ -159,6 +164,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'willpatchwithextraspace',
           email: 'willpatchwithextraspace@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -172,6 +178,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'extraSpaceInTheEnd ',
           email: ' space.in.the.beggining@gmail.com',
+          password: 'validpassword ',
         }),
       });
 
@@ -184,6 +191,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(responseBody.email).toEqual('space.in.the.beggining@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody).not.toHaveProperty('password');
     });
   });
 
@@ -197,6 +205,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'CURRENTusername',
           email: 'CURRENTusername@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -222,6 +231,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(patchUserResponseBody.email).toEqual('currentusername@gmail.com');
       expect(Date.parse(patchUserResponseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(patchUserResponseBody.updated_at)).not.toEqual(NaN);
+      expect(patchUserResponseBody).not.toHaveProperty('password');
     });
   });
 
@@ -235,6 +245,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'firstUserPatch',
           email: 'firstUserPatch@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -246,6 +257,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'secondUserPatch',
           email: 'secondUserPatch@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -282,6 +294,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'DIFFERENTuppercaseletters',
           email: 'DIFFERENTuppercaseletters@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -293,6 +306,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'randomuser23y2876487',
           email: 'randomuser23y2876487@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -329,6 +343,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emptyString',
           email: 'emptyString@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -365,6 +380,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'NumberUser',
           email: 'NumberUser@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -401,6 +417,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'validuserwithnoalphanumeric',
           email: 'validuserwithnoalphanumeric@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -437,6 +454,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'correctLengthUser',
           email: 'correctLengthUser@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -473,6 +491,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'willbetoolong',
           email: 'willbetoolong@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -509,6 +528,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'currentusernameemail',
           email: 'CURRENTemail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -531,6 +551,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(patchUserResponseBody.email).toEqual('newemail@gmail.com');
       expect(Date.parse(patchUserResponseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(patchUserResponseBody.updated_at)).not.toEqual(NaN);
+      expect(patchUserResponseBody).not.toHaveProperty('password');
     });
   });
 
@@ -544,6 +565,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'firstUserPatchEmail',
           email: 'firstUserPatchEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -555,6 +577,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'secondUserPatchEmail',
           email: 'secondUserPatchEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -591,6 +614,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emailDIFFERENTuppercase1',
           email: 'emailDIFFERENTuppercase1@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -602,6 +626,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emailDIFFERENTuppercase2',
           email: 'emailDIFFERENTuppercase2@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -641,6 +666,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emptyStringEmail',
           email: 'emptyStringEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -677,6 +703,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'NumberEmail',
           email: 'NumberEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -713,6 +740,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'validuserwithnoalphanumeric',
           email: 'validuserwithnoalphanumeric@gmail.com',
+          password: 'validpassword',
         }),
       });
 

@@ -22,6 +22,12 @@ exports.up = (pgm) => {
       unique: true,
     },
 
+    // Why 72 in length? https://security.stackexchange.com/a/39851
+    password: {
+      type: 'varchar(72)',
+      notNull: true,
+    },
+
     // Why "with timezone"? https://stackoverflow.com/a/20713587
     created_at: {
       type: 'timestamp with time zone',
