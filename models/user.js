@@ -46,11 +46,11 @@ export default function User() {
     }
 
     async function insertIntoDatabase(data) {
-      const { username, email } = data;
+      const { username, email, password } = data;
 
       const query = {
-        text: 'INSERT INTO users (username, email) VALUES($1, $2) RETURNING *;',
-        values: [username, email],
+        text: 'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *;',
+        values: [username, email, password],
       };
       const results = await database.query(query);
       return results.rows[0];
@@ -72,6 +72,13 @@ export default function User() {
         'string.empty': `"email" não pode estar em branco.`,
         'string.base': `"email" deve ser do tipo String.`,
         'string.email': `"email" deve conter um email válido.`,
+      }),
+      password: Joi.string().min(8).max(72).trim().required().messages({
+        'any.required': `"password" é um campo obrigatório.`,
+        'string.empty': `"password" não pode estar em branco.`,
+        'string.base': `"password" deve ser do tipo String.`,
+        'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
+        'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
       }),
     });
 
@@ -103,10 +110,11 @@ export default function User() {
         text: `UPDATE users SET
                 username = $1,
                 email = $2,
+                password = $3,
                 updated_at = (now() at time zone 'utc')
-                WHERE username = $3
+                WHERE username = $4
                 RETURNING *;`,
-        values: [newUser.username, newUser.email, currentUser.username],
+        values: [newUser.username, newUser.email, newUser.password, currentUser.username],
       };
 
       const results = await database.query(query);
@@ -132,6 +140,13 @@ export default function User() {
         'string.empty': `"email" não pode estar em branco.`,
         'string.base': `"email" deve ser do tipo String.`,
         'string.email': `"email" deve conter um email válido.`,
+      }),
+      password: Joi.string().min(8).max(72).trim().messages({
+        'any.required': `"password" é um campo obrigatório.`,
+        'string.empty': `"password" não pode estar em branco.`,
+        'string.base': `"password" deve ser do tipo String.`,
+        'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
+        'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
       }),
     });
 
