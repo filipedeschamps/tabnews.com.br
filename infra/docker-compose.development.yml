@@ -1,14 +1,23 @@
-version: "2.4"
+version: '2.4'
 services:
   postgres_dev:
-    container_name: "postgres-dev"
-    image: "postgres:13.3-alpine"
+    container_name: 'postgres-dev'
+    image: 'postgres:13.3-alpine'
     env_file:
       - ../.env
     ports:
-      - "54320:5432"
+      - '54320:5432'
     volumes:
       - postgres_data:/data/postgres
     restart: unless-stopped
+  mailcatcher:
+    container_name: mailcatcher
+    image: sj26/mailcatcher
+    expose:
+      - 1025
+      - 1080
+    ports:
+      - 1025:1025
+      - 1080:1080
 volumes:
   postgres_data:
