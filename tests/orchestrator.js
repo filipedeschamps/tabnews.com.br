@@ -41,16 +41,30 @@ export default function orchestratorFactory() {
     await databaseClient.end();
   }
 
-  async function dropAllTables() {
-    const databaseClient = await database.getNewConnectedClient();
-    await databaseClient.query('drop schema public cascade; create schema public;');
-
-    await databaseClient.end();
-  }
-
   async function runPendingMigrations() {
     const migrator = migratorFactory();
     await migrator.runPendingMigrations();
+  }
+
+  async function deleteAllEmails() {
+    await fetch(`${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}/messages`, {
+      method: 'DELETE',
+    });
+  }
+
+  async function getLastEmail() {
+    const emailListResponse = await fetch(`${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}/messages`);
+    const emailList = await emailListResponse.json();
+
+    const lastEmailItem = emailList.at(-1);
+
+    const emailHtmlResponse = await fetch(
+      `${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}/messages/${lastEmailItem.id}.html`
+    );
+    const emailHtml = await emailHtmlResponse.text();
+    lastEmailItem.html = emailHtml;
+
+    return lastEmailItem;
   }
 
   return {
@@ -58,5 +72,7 @@ export default function orchestratorFactory() {
     dropAllTables,
     runPendingMigrations,
     webserverUrl,
+    deleteAllEmails,
+    getLastEmail,
   };
 }
