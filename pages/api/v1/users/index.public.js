@@ -45,6 +45,7 @@ async function getHandler(request, response) {
 }
 
 async function postHandler(request, response) {
+  // TODO: extract properties from postedUserData
   const postedUserData = request.body;
 
   const user = userFactory();

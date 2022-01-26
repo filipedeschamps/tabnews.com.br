@@ -33,7 +33,16 @@ async function getHandler(request, response) {
   const user = userFactory();
 
   const userObject = await user.findOneByUsername(request.query.username);
-  return response.status(200).json(userObject);
+
+  const responseBody = {
+    id: userObject.id,
+    username: userObject.username,
+    email: userObject.email,
+    created_at: userObject.created_at,
+    updated_at: userObject.updated_at,
+  };
+
+  return response.status(200).json(responseBody);
 }
 
 async function patchHandler(request, response) {
