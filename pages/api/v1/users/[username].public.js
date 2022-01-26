@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
-import userFactory from 'models/user.js';
+import user from 'models/user.js';
 import { InternalServerError, NotFoundError, ValidationError } from '/errors';
 
 export default nextConnect({
@@ -30,8 +30,6 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const user = userFactory();
-
   const userObject = await user.findOneByUsername(request.query.username);
 
   const responseBody = {
@@ -49,7 +47,6 @@ async function patchHandler(request, response) {
   const username = request.query.username;
   const postedUserData = request.body;
 
-  const user = userFactory();
   const updatedUser = await user.update(username, postedUserData);
 
   const responseBody = {

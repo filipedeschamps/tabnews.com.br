@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 import { v4 as uuid } from 'uuid';
-import userFactory from 'models/user.js';
+import user from 'models/user.js';
 import { InternalServerError, NotFoundError } from '/errors';
 import { ValidationError } from 'errors/index.js';
 
@@ -31,7 +31,6 @@ async function authorizationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const user = userFactory();
   const userList = await user.findAll();
   const responseBody = userList.map((user) => ({
     id: user.id,
@@ -48,7 +47,6 @@ async function postHandler(request, response) {
   // TODO: extract properties from postedUserData
   const postedUserData = request.body;
 
-  const user = userFactory();
   const newUser = await user.create(postedUserData);
 
   const responseBody = {
