@@ -42,7 +42,7 @@ export default function Health() {
         opened_connections: parseInt(opened_connections),
       };
     } catch (err) {
-      console.error('database dependency might be down: ', err);
+      console.error(err);
 
       result = {
         status: 'unhealthy',
