@@ -2,9 +2,8 @@ import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
 import orchestratorFactory from 'tests/orchestrator.js';
-import userFactory from 'models/user.js';
+import user from 'models/user.js';
 import password from 'models/password.js';
-const user = userFactory();
 
 const orchestrator = orchestratorFactory();
 

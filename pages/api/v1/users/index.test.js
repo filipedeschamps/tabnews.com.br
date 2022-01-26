@@ -2,7 +2,7 @@ import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
 import orchestratorFactory from 'tests/orchestrator.js';
-import userFactory from 'models/user.js';
+import user from 'models/user.js';
 import password from 'models/password.js';
 
 const orchestrator = orchestratorFactory();
@@ -91,7 +91,6 @@ describe('POST /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      const user = userFactory();
       const createdUser = await user.findOneByUsername('uniqueUserName');
       const passwordsMatch = await password.compare('validpassword', createdUser.password);
       const wrongPasswordMatch = await password.compare('wrongpassword', createdUser.password);
