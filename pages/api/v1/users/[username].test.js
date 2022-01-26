@@ -2,6 +2,9 @@ import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
 import orchestratorFactory from 'tests/orchestrator.js';
+import userFactory from 'models/user.js';
+import password from 'models/password.js';
+const user = userFactory();
 
 const orchestrator = orchestratorFactory();
 
@@ -53,6 +56,7 @@ describe('GET /api/v1/users/:username', () => {
       expect(userCreatedResponseBody.id).toEqual(userFindResponseBody.id);
       expect(userFindResponseBody.username).toEqual('userNameToBeFound');
       expect(userFindResponseBody.email).toEqual('useremail@gmail.com');
+      expect(userFindResponseBody).not.toHaveProperty('password');
     });
   });
 
@@ -759,6 +763,201 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(patchUserResponse.status).toEqual(400);
       expect(patchUserResponseBody.name).toEqual('ValidationError');
       expect(patchUserResponseBody.message).toEqual('"email" deve conter um email válido.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" with valid format', () => {
+    test('should return the user', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'passwordWillBeUpdated',
+          email: 'validnewpassword@gmail.com',
+          password: 'oldValidPassword',
+        }),
+      });
+
+      const createdUserObject = await user.findOneByUsername('passwordWillBeUpdated');
+      const oldValidPasswordMatch = await password.compare('oldValidPassword', createdUserObject.password);
+      expect(oldValidPasswordMatch).toEqual(true);
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/passwordWillBeUpdated`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: 'newValidPassword',
+        }),
+      });
+
+      const patchedUserObject = await user.findOneByUsername('passwordWillBeUpdated');
+      const newValidPasswordMatch = await password.compare('newValidPassword', patchedUserObject.password);
+      const wrongPasswordMatch = await password.compare('oldValidPassword', patchedUserObject.password);
+      expect(newValidPasswordMatch).toEqual(true);
+      expect(wrongPasswordMatch).toEqual(false);
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(200);
+      expect(uuidVersion(patchUserResponseBody.id)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.id)).toEqual(true);
+      expect(patchUserResponseBody.username).toEqual('passwordWillBeUpdated');
+      expect(patchUserResponseBody.email).toEqual('validnewpassword@gmail.com');
+      expect(Date.parse(patchUserResponseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(patchUserResponseBody.updated_at)).not.toEqual(NaN);
+      expect(patchUserResponseBody).not.toHaveProperty('password');
+    });
+  });
+
+  describe('with "password" with an empty string', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordEmptyString',
+          email: 'patchPasswordEmptyString@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordEmptyString`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '',
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" não pode estar em branco.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" that\'s not a String', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordNotString',
+          email: 'patchPasswordNotString@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordNotString`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: 123456,
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" deve ser do tipo String.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" too short', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordTooShort',
+          email: 'patchPasswordTooShort@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordTooShort`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '1234567',
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" deve conter no mínimo 8 caracteres.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" too long', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordTooLong',
+          email: 'patchPasswordTooLong@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordTooLong`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '73characterssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" deve conter no máximo 72 caracteres.');
       expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
       expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);

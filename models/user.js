@@ -1,6 +1,7 @@
 import database from 'infra/database.js';
 import Joi from 'joi';
 import { ValidationError, NotFoundError } from 'errors/index.js';
+import password from 'models/password.js';
 
 export default function User() {
   async function findAll() {
@@ -39,6 +40,8 @@ export default function User() {
       const validUserData = await validatePostSchema(postedUserData);
       await validateUniqueUsername(validUserData.username);
       await validateUniqueEmail(validUserData.email);
+      await hashPassword(validUserData);
+
       const newUser = await insertIntoDatabase(validUserData);
       return newUser;
     } catch (error) {
@@ -73,6 +76,7 @@ export default function User() {
         'string.base': `"email" deve ser do tipo String.`,
         'string.email': `"email" deve conter um email válido.`,
       }),
+      // Why 72 in max length? https://security.stackexchange.com/a/39851
       password: Joi.string().min(8).max(72).trim().required().messages({
         'any.required': `"password" é um campo obrigatório.`,
         'string.empty': `"password" não pode estar em branco.`,
@@ -101,6 +105,10 @@ export default function User() {
 
     if ('email' in validPostedUserData) {
       await validateUniqueEmail(validPostedUserData.email);
+    }
+
+    if ('password' in validPostedUserData) {
+      await hashPassword(validPostedUserData);
     }
 
     const newUser = { ...currentUser, ...validPostedUserData };
@@ -189,6 +197,11 @@ export default function User() {
         stack: new Error().stack,
       });
     }
+  }
+
+  async function hashPassword(userObject) {
+    userObject.password = await password.hash(userObject.password);
+    return userObject;
   }
 
   return {

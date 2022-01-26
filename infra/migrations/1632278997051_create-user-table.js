@@ -22,9 +22,9 @@ exports.up = (pgm) => {
       unique: true,
     },
 
-    // Why 72 in length? https://security.stackexchange.com/a/39851
+    // Why 60 varchar? https://forums.phpfreaks.com/topic/293405-recommended-sql-datatype-for-bcrypt-hash/#comment-1500831
     password: {
-      type: 'varchar(72)',
+      type: 'varchar(60)',
       notNull: true,
     },
 

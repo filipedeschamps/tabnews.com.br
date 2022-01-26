@@ -2,6 +2,8 @@ import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
 import orchestratorFactory from 'tests/orchestrator.js';
+import userFactory from 'models/user.js';
+import password from 'models/password.js';
 
 const orchestrator = orchestratorFactory();
 
@@ -87,8 +89,13 @@ describe('POST /api/v1/users', () => {
           password: 'validpassword',
         }),
       });
-
       const responseBody = await response.json();
+
+      const user = userFactory();
+      const createdUser = await user.findOneByUsername('uniqueUserName');
+      const passwordsMatch = await password.compare('validpassword', createdUser.password);
+      const wrongPasswordMatch = await password.compare('wrongpassword', createdUser.password);
+
       expect(response.status).toEqual(201);
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
@@ -97,6 +104,8 @@ describe('POST /api/v1/users', () => {
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
+      expect(passwordsMatch).toBe(true);
+      expect(wrongPasswordMatch).toBe(false);
     });
   });
 
@@ -651,7 +660,7 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'notUsedUserName',
           email: 'notusedemail@gmail.com',
-          password: '123',
+          password: '1234567',
         }),
       });
 
@@ -677,7 +686,7 @@ describe('POST /api/v1/users', () => {
         body: JSON.stringify({
           username: 'notUsedUserName',
           email: 'notusedemail@gmail.com',
-          password: 'password.to.loooooooooooooooooooooooooooooooooooooooooooooooooooooooooong',
+          password: '73characterssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         }),
       });
 
