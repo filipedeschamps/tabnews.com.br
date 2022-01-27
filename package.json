@@ -3,7 +3,7 @@
     "bcryptjs": "2.4.3",
     "cross-fetch": "3.1.5",
     "joi": "17.5.0",
-    "next": "12.0.8",
+    "next": "12.0.9",
     "next-connect": "0.11.0",
     "node-pg-migrate": "6.2.1",
     "nodemailer": "6.7.2",
