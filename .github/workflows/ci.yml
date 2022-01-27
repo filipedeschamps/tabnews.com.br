@@ -1,4 +1,4 @@
-name: CI - Tests & Lint
+name: CI
 
 on: [pull_request]
 
