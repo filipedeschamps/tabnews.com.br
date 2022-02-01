@@ -14,16 +14,16 @@ async function waitForAllServices() {
   async function waitForWebServer() {
     return await retry(
       async (bail, tries) => {
-        if (tries >= 10) {
-          console.log(`> Trying to connect to Webserver #${tries}`);
+        if (tries >= 25) {
+          console.log(`> Trying to connect to Webserver #${tries}. Are you running the server with "npm run dev"?`);
         }
         await fetch(`${webserverUrl}/api/v1/status`);
       },
       {
-        retries: 25,
-        minTimeout: 1,
+        retries: 50,
+        minTimeout: 10,
         maxTimeout: 1000,
-        factor: 1,
+        factor: 1.1,
       }
     );
   }
@@ -31,17 +31,17 @@ async function waitForAllServices() {
   async function waitForDatabase() {
     return await retry(
       async (bail, tries) => {
-        if (tries >= 10) {
-          console.log(`> Trying to connect to Database #${tries}`);
+        if (tries >= 25) {
+          console.log(`> Trying to connect to Database #${tries}. Are you running the Postgres container?`);
         }
         const connection = await database.getNewConnectedClient();
         await connection.end();
       },
       {
-        retries: 25,
-        minTimeout: 1,
+        retries: 50,
+        minTimeout: 10,
         maxTimeout: 1000,
-        factor: 1,
+        factor: 1.1,
       }
     );
   }
@@ -49,16 +49,16 @@ async function waitForAllServices() {
   async function waitForEmailService() {
     return await retry(
       async (bail, tries) => {
-        if (tries >= 10) {
-          console.log(`> Trying to connect to Email Service #${tries}`);
+        if (tries >= 25) {
+          console.log(`> Trying to connect to Email Service #${tries}, Are you running the MailCatcher container?`);
         }
         await fetch(emailServiceUrl);
       },
       {
-        retries: 25,
-        minTimeout: 1,
+        retries: 50,
+        minTimeout: 10,
         maxTimeout: 1000,
-        factor: 1,
+        factor: 1.1,
       }
     );
   }
