@@ -1,18 +1,14 @@
-import database from 'infra/database.js';
 import Joi from 'joi';
+import database from 'infra/database.js';
+import authentication from 'models/authentication.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
-import password from 'models/password.js';
 
 async function findAll() {
-  try {
-    const query = {
-      text: 'SELECT * FROM users ORDER BY created_at ASC;',
-    };
-    const results = await database.query(query);
-    return results.rows;
-  } catch (error) {
-    throw error;
-  }
+  const query = {
+    text: 'SELECT * FROM users ORDER BY created_at ASC;',
+  };
+  const results = await database.query(query);
+  return results.rows;
 }
 
 async function findOneByUsername(username) {
@@ -34,25 +30,44 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
-async function create(postedUserData) {
-  try {
-    const validUserData = await validatePostSchema(postedUserData);
-    await validateUniqueUsername(validUserData.username);
-    await validateUniqueEmail(validUserData.email);
-    await hashPassword(validUserData);
+async function findOneById(userId) {
+  const query = {
+    text: 'SELECT * FROM users WHERE id = $1 LIMIT 1;',
+    values: [userId],
+  };
 
-    const newUser = await insertIntoDatabase(validUserData);
-    return newUser;
-  } catch (error) {
-    throw error;
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O id "${userId}" não foi encontrado no sistema.`,
+      action: 'Verifique se o "id" está digitado corretamente.',
+      stack: new Error().stack,
+    });
   }
 
-  async function insertIntoDatabase(data) {
-    const { username, email, password } = data;
+  return results.rows[0];
+}
 
+async function create(postedUserData) {
+  const validUserData = await validatePostSchema(postedUserData);
+  await validateUniqueUsername(validUserData.username);
+  await validateUniqueEmail(validUserData.email);
+  await hashPasswordInObject(validUserData);
+
+  const defaultValues = {
+    features: ['read:activation_token'],
+  };
+
+  const finalValues = { ...validUserData, ...defaultValues };
+
+  const newUser = await runInsertQuery(finalValues);
+  return newUser;
+
+  async function runInsertQuery(finalValues) {
     const query = {
-      text: 'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *;',
-      values: [username, email, password],
+      text: 'INSERT INTO users (username, email, password, features) VALUES($1, $2, $3, $4) RETURNING *;',
+      values: [finalValues.username, finalValues.email, finalValues.password, finalValues.features],
     };
     const results = await database.query(query);
     return results.rows[0];
@@ -94,6 +109,9 @@ async function validatePostSchema(postedUserData) {
   return value;
 }
 
+// TODO: Refactor the interface of this function
+// and the code inside to make it more future proof
+// and to accept update using "userId".
 async function update(username, postedUserData) {
   const validPostedUserData = await validatePatchSchema(postedUserData);
   const currentUser = await findOneByUsername(username);
@@ -107,27 +125,34 @@ async function update(username, postedUserData) {
   }
 
   if ('password' in validPostedUserData) {
-    await hashPassword(validPostedUserData);
+    await hashPasswordInObject(validPostedUserData);
   }
 
-  const newUser = { ...currentUser, ...validPostedUserData };
+  const userWithUpdatedValues = { ...currentUser, ...validPostedUserData };
 
-  try {
+  const updatedUser = await runUpdateQuery(currentUser, userWithUpdatedValues);
+  return updatedUser;
+
+  async function runUpdateQuery(currentUser, userWithUpdatedValues) {
     const query = {
       text: `UPDATE users SET
-                username = $1,
-                email = $2,
-                password = $3,
-                updated_at = (now() at time zone 'utc')
-                WHERE username = $4
-                RETURNING *;`,
-      values: [newUser.username, newUser.email, newUser.password, currentUser.username],
+                  username = $1,
+                  email = $2,
+                  password = $3,
+                  updated_at = (now() at time zone 'utc')
+                  WHERE
+                    id = $4
+                  RETURNING *;`,
+      values: [
+        userWithUpdatedValues.username,
+        userWithUpdatedValues.email,
+        userWithUpdatedValues.password,
+        currentUser.id,
+      ],
     };
 
     const results = await database.query(query);
     return results.rows[0];
-  } catch (error) {
-    throw error;
   }
 }
 
@@ -154,6 +179,9 @@ async function validatePatchSchema(userData) {
       'string.base': `"password" deve ser do tipo String.`,
       'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
       'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
+    }),
+    features: Joi.array().items(Joi.string()).messages({
+      'array.base': `"features" deve ser do tipo Array.`,
     }),
   });
 
@@ -198,14 +226,52 @@ async function validateUniqueEmail(email) {
   }
 }
 
-async function hashPassword(userObject) {
-  userObject.password = await password.hash(userObject.password);
+async function hashPasswordInObject(userObject) {
+  userObject.password = await authentication.hashPassword(userObject.password);
   return userObject;
 }
 
-export default {
+async function removeFeatures(userId, features) {
+  let lastUpdatedUser;
+
+  // TODO: Refactor this function to use a single query
+  for (const feature of features) {
+    const query = {
+      text: `UPDATE users SET
+                 features = array_remove(features, $1),
+                 updated_at = (now() at time zone 'utc')
+             WHERE id = $2
+            RETURNING *;`,
+      values: [feature, userId],
+    };
+
+    const results = await database.query(query);
+    lastUpdatedUser = results.rows[0];
+  }
+
+  return lastUpdatedUser;
+}
+
+async function addFeatures(userId, features) {
+  const query = {
+    text: `UPDATE users SET
+               features = array_cat(features, $1),
+               updated_at = (now() at time zone 'utc')
+           WHERE id = $2
+          RETURNING *;`,
+    values: [features, userId],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
+export default Object.freeze({
   create,
   findAll,
   findOneByUsername,
+  findOneById,
   update,
-};
+  removeFeatures,
+  addFeatures,
+});

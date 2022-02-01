@@ -24,7 +24,11 @@ async function query(query, params) {
   try {
     return await pool.query(query, params);
   } catch (error) {
-    const errorObject = new DatabaseError({ message: error.message, stack: new Error().stack });
+    const errorObject = new DatabaseError({
+      message: error.message,
+      context: { query },
+      stack: new Error().stack,
+    });
     console.error(errorObject);
     throw errorObject;
   }
@@ -34,7 +38,19 @@ async function getNewConnectedClient() {
   // When manually creating a new connection like this,
   // you need to make sure to close it afterward
   // with the .end() method.
-  return await pool.connect();
+  try {
+    return await pool.connect();
+  } catch (error) {
+    const errorObject = new DatabaseError({
+      message: error.message,
+      context: {
+        explanation: 'Trying to get manually new Connection Client in "getNewConnectedClient()"',
+      },
+      stack: new Error().stack,
+    });
+    console.error(errorObject);
+    throw errorObject;
+  }
 }
 
 export default Object.freeze({

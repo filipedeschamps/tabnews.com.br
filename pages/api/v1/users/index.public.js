@@ -1,34 +1,16 @@
 import nextConnect from 'next-connect';
-import { v4 as uuid } from 'uuid';
+import controller from 'models/controller.js';
 import user from 'models/user.js';
-import { InternalServerError, NotFoundError } from '/errors';
-import { ValidationError } from 'errors/index.js';
+import activation from 'models/activation.js';
 
 export default nextConnect({
   attachParams: true,
-  onNoMatch: onNoMatchHandler,
-  onError: onErrorHandler,
+  onNoMatch: controller.onNoMatchHandler,
+  onError: controller.onErrorHandler,
 })
-  .use(injectRequestId)
-  .use(authenticationHandler)
-  .use(authorizationHandler)
+  .use(controller.injectRequestId)
   .get(getHandler)
   .post(postHandler);
-
-async function injectRequestId(request, response, next) {
-  request.id = uuid();
-  next();
-}
-
-async function authenticationHandler(request, response, next) {
-  // TODO: implement authentication
-  next();
-}
-
-async function authorizationHandler(request, response, next) {
-  // TODO: implement authorization
-  next();
-}
 
 async function getHandler(request, response) {
   const userList = await user.findAll();
@@ -36,6 +18,7 @@ async function getHandler(request, response) {
     id: user.id,
     username: user.username,
     email: user.email,
+    features: user.features,
     created_at: user.created_at,
     updated_at: user.updated_at,
   }));
@@ -44,40 +27,34 @@ async function getHandler(request, response) {
 }
 
 async function postHandler(request, response) {
-  // TODO: extract properties from postedUserData
-  const postedUserData = request.body;
+  const clientPostedData = request.body;
 
-  const newUser = await user.create(postedUserData);
+  const authorizedValuesFromClient = await extractAuthorizedValuesFromClient(clientPostedData);
+  const newUser = await user.create(authorizedValuesFromClient);
+  await activation.sendActivationEmailToUser(newUser);
+  const authorizedValuesToReturn = await extractAuthorizedValuesToReturn(newUser);
+  return response.status(201).json(authorizedValuesToReturn);
 
-  const responseBody = {
-    id: newUser.id,
-    username: newUser.username,
-    email: newUser.email,
-    created_at: newUser.created_at,
-    updated_at: newUser.updated_at,
-  };
+  async function extractAuthorizedValuesFromClient(clientPostedData) {
+    const unprivilegedValues = {
+      username: clientPostedData.username,
+      email: clientPostedData.email,
+      password: clientPostedData.password,
+    };
 
-  return response.status(201).json(responseBody);
-}
-
-async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id });
-  return response.status(errorObject.statusCode).json(errorObject);
-}
-
-function onErrorHandler(error, request, response) {
-  if (error instanceof ValidationError) {
-    // TODO: "requestId" and "errorId" should be snake case
-    return response.status(error.statusCode).json({ ...error, requestId: request.id });
+    return unprivilegedValues;
   }
 
-  const errorObject = new InternalServerError({
-    requestId: request.id,
-    errorId: error.errorId,
-    stack: error.stack,
-  });
+  async function extractAuthorizedValuesToReturn(user) {
+    const publicValues = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      features: user.features,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+    };
 
-  console.error(errorObject);
-
-  return response.status(errorObject.statusCode).json(errorObject);
+    return publicValues;
+  }
 }

@@ -16,12 +16,12 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
 
 const transporter = nodemailer.createTransport(transporterConfiguration);
 
-async function send({ from, to, subject, html }) {
+async function send({ from, to, subject, text }) {
   const mailOptions = {
     from: from,
     to: to,
     subject: subject,
-    html: html,
+    text: text,
   };
 
   await transporter.sendMail(mailOptions);

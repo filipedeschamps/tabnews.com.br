@@ -1,9 +1,10 @@
 {
   "dependencies": {
     "bcryptjs": "2.4.3",
+    "cookie": "0.4.1",
     "cross-fetch": "3.1.5",
-    "joi": "17.5.0",
-    "next": "12.0.8",
+    "joi": "17.6.0",
+    "next": "12.0.10",
     "next-connect": "0.11.0",
     "node-pg-migrate": "6.2.1",
     "nodemailer": "6.7.2",
@@ -12,6 +13,7 @@
     "react-confetti": "6.0.1",
     "react-dom": "17.0.2",
     "react-icons": "4.3.1",
+    "set-cookie-parser": "2.4.8",
     "uuid": "8.3.2"
   },
   "devDependencies": {
@@ -20,14 +22,14 @@
     "autoprefixer": "10.4.2",
     "concurrently": "7.0.0",
     "cz-conventional-changelog": "3.3.0",
-    "dotenv": "14.3.0",
-    "eslint": "8.7.0",
-    "eslint-config-next": "12.0.8",
+    "dotenv": "15.0.0",
+    "eslint": "8.8.0",
+    "eslint-config-next": "12.0.10",
     "eslint-config-prettier": "8.3.0",
     "jest": "27.4.7",
     "postcss": "8.4.5",
     "prettier": "2.5.1",
-    "tailwindcss": "3.0.16"
+    "tailwindcss": "3.0.18"
   },
   "scripts": {
     "dev": "npm run services:up && npm run next && npm run services:stop",
@@ -44,7 +46,8 @@
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix && prettier --write '**/*.{json,js,jsx,ts,tsx}'",
     "commit": "cz",
-    "migrate": "node-pg-migrate -m infra/migrations/"
+    "migration:create": "node-pg-migrate create",
+    "migration:run": "node-pg-migrate -m infra/migrations/"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
