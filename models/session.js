@@ -26,6 +26,18 @@ function setSessionIdCookie(sessionId, response) {
   ]);
 }
 
+// TODO: mark session as invalid also in Database.
+function clearSessionIdCookie(response) {
+  response.setHeader('Set-Cookie', [
+    cookie.serialize('session_id', 'invalid', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: -1,
+    }),
+  ]);
+}
+
 async function findOneValidById(sessionId) {
   const query = {
     text: `SELECT * FROM sessions WHERE id = $1 AND expires_at > now();`,
@@ -96,6 +108,7 @@ async function renew(sessionId, response) {
 export default Object.freeze({
   create,
   setSessionIdCookie,
+  clearSessionIdCookie,
   findOneValidById,
   findOneById,
   findOneValidFromRequest,

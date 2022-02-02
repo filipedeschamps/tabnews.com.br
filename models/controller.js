@@ -1,4 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
+import session from 'models/session.js';
 
 import {
   InternalServerError,
@@ -19,12 +20,12 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, request, response) {
-  if (
-    error instanceof ValidationError ||
-    error instanceof NotFoundError ||
-    error instanceof ForbiddenError ||
-    error instanceof UnauthorizedError
-  ) {
+  if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
+    return response.status(error.statusCode).json({ ...error, requestId: request.id });
+  }
+
+  if (error instanceof UnauthorizedError) {
+    session.clearSessionIdCookie(response);
     return response.status(error.statusCode).json({ ...error, requestId: request.id });
   }
 
