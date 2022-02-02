@@ -52,7 +52,6 @@ describe('GET /api/v1/users/[username].public.js', () => {
       expect(uuidValidate(userFindResponseBody.id)).toEqual(true);
       expect(userCreatedResponseBody.id).toEqual(userFindResponseBody.id);
       expect(userFindResponseBody.username).toEqual('userNameToBeFound');
-      expect(userFindResponseBody.email).toEqual('useremail@gmail.com');
       expect(userFindResponseBody).not.toHaveProperty('password');
     });
   });
@@ -81,7 +80,6 @@ describe('GET /api/v1/users/[username].public.js', () => {
       expect(uuidValidate(userFindResponseBody.id)).toEqual(true);
       expect(userCreatedResponseBody.id).toEqual(userFindResponseBody.id);
       expect(userFindResponseBody.username).toEqual('userNameToBeFoundCAPS');
-      expect(userFindResponseBody.email).toEqual('useremailtobefoundcaps@gmail.com');
     });
   });
 });

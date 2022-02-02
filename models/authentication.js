@@ -20,7 +20,7 @@ async function injectAnonymousOrUser(request, response, next) {
   }
 
   const anonymousUser = {
-    features: ['create:session'],
+    features: ['create:session', 'read:user'],
   };
 
   if (request.context) {

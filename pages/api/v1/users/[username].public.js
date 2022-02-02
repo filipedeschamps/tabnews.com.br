@@ -1,6 +1,8 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import user from 'models/user.js';
+import authentication from 'models/authentication.js';
+import authorization from 'models/authorization.js';
 
 export default nextConnect({
   attachParams: true,
@@ -8,21 +10,16 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
-  .get(getHandler)
+  .get(authentication.injectAnonymousOrUser, authorization.canRequest('read:user'), getHandler)
   .patch(patchHandler);
 
 async function getHandler(request, response) {
-  const userObject = await user.findOneByUsername(request.query.username);
+  const userTryingToGet = request.context.user;
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
 
-  const responseBody = {
-    id: userObject.id,
-    username: userObject.username,
-    email: userObject.email,
-    created_at: userObject.created_at,
-    updated_at: userObject.updated_at,
-  };
+  const authorizedValuesToReturn = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
-  return response.status(200).json(responseBody);
+  return response.status(200).json(authorizedValuesToReturn);
 }
 
 async function patchHandler(request, response) {
