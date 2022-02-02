@@ -12,7 +12,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
-  .get(authentication.injectAuthenticatedUser, getHandler)
+  .get(authentication.injectUserUsingSession, getHandler)
   .post(postHandler);
 
 async function getHandler(request, response) {

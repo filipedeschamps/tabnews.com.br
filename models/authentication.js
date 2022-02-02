@@ -12,7 +12,7 @@ async function comparePasswords(providedPassword, passwordHash) {
   return await password.compare(providedPassword, passwordHash);
 }
 
-async function injectAuthenticatedUser(request, response, next) {
+async function injectUserUsingSession(request, response, next) {
   const sessionObject = await session.findOneValidFromRequest(request);
   const userObject = await user.findOneById(sessionObject.user_id);
   checkIfUserCanReadSession(userObject);
@@ -42,6 +42,6 @@ function parseSetCookies(response) {
 export default Object.freeze({
   hashPassword,
   comparePasswords,
-  injectAuthenticatedUser,
+  injectUserUsingSession,
   parseSetCookies,
 });
