@@ -1,6 +1,12 @@
 import { ValidationError } from 'errors/index.js';
 
-const availableFeatures = ['read:activation_token', 'create:session', 'read:session', 'create:post', 'create:comment'];
+const availableFeatures = new Set([
+  'read:activation_token',
+  'create:session',
+  'read:session',
+  'create:post',
+  'create:comment',
+]);
 
 function can(user, feature, resourceObject) {
   let authorized = false;
@@ -42,7 +48,7 @@ function validateFeature(feature) {
     });
   }
 
-  if (!availableFeatures.includes(feature)) {
+  if (!availableFeatures.has(feature)) {
     throw new ValidationError({
       message: `A "feature" enviada não está disponível na lista de features existentes.`,
       action: `Contate o suporte informado o campo "errorId".`,
