@@ -16,7 +16,7 @@ export default nextConnect({
   .post(postHandler);
 
 async function getHandler(request, response) {
-  const authenticatedUser = request.user;
+  const authenticatedUser = request.context.user;
   const authorizedValuesToReturn = extractAuthorizedValuesToReturn(authenticatedUser);
 
   return response.status(200).json(authorizedValuesToReturn);

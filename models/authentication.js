@@ -18,7 +18,13 @@ async function injectUserUsingSession(request, response, next) {
   checkIfUserCanReadSession(userObject);
   await session.renew(sessionObject.id, response);
 
-  request.user = userObject;
+  if (request.context) {
+    request.context.user = userObject;
+  } else {
+    request.context = {
+      user: userObject,
+    };
+  }
 
   return next();
 
