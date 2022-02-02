@@ -13,7 +13,7 @@ async function comparePasswords(providedPassword, passwordHash) {
 }
 
 async function injectAuthenticatedUser(request, response, next) {
-  const sessionObject = await session.findOneFromRequest(request);
+  const sessionObject = await session.findOneValidFromRequest(request);
   const userObject = await user.findOneById(sessionObject.user_id);
   checkIfUserCanReadSession(userObject);
   await session.renew(sessionObject.id, response);

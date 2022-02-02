@@ -46,7 +46,7 @@ async function findOneById(sessionId) {
   return results.rows[0];
 }
 
-async function findOneFromRequest(request) {
+async function findOneValidFromRequest(request) {
   const sessionId = request.cookies?.session_id;
 
   if (!sessionId) {
@@ -98,6 +98,6 @@ export default Object.freeze({
   setSessionIdCookie,
   findOneValidById,
   findOneById,
-  findOneFromRequest,
+  findOneValidFromRequest,
   renew,
 });
