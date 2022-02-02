@@ -2,6 +2,7 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import user from 'models/user.js';
 import activation from 'models/activation.js';
+import authorization from 'models/authorization.js';
 
 export default nextConnect({
   attachParams: true,

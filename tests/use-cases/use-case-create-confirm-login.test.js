@@ -17,6 +17,7 @@ beforeAll(async () => {
 describe('Use case: From Create Account to Use Session (all successfully)', () => {
   let postUserResponseBody;
   let activationUrl;
+  let postSessionResponseBody;
   let parsedCookies;
 
   test('Create account (successfully)', async () => {
@@ -99,17 +100,20 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
       }),
     });
 
-    const postSessionResponseBody = await postSessionResponse.json();
+    postSessionResponseBody = await postSessionResponse.json();
 
     expect(postSessionResponse.status).toEqual(201);
-    expect(postSessionResponseBody.session_id.length).toEqual(96);
+    expect(postSessionResponseBody.id.length).toEqual(96);
+    expect(Date.parse(postSessionResponseBody.expires_at)).not.toEqual(NaN);
+    expect(Date.parse(postSessionResponseBody.created_at)).not.toEqual(NaN);
+    expect(Date.parse(postSessionResponseBody.updated_at)).not.toEqual(NaN);
 
-    const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.session_id);
+    const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.id);
     expect(sessionObjectInDatabase.user_id).toEqual(postUserResponseBody.id);
 
     parsedCookies = authentication.parseSetCookies(postSessionResponse);
     expect(parsedCookies.session_id.name).toEqual('session_id');
-    expect(parsedCookies.session_id.value).toEqual(postSessionResponseBody.session_id);
+    expect(parsedCookies.session_id.value).toEqual(postSessionResponseBody.id);
     expect(parsedCookies.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
     expect(parsedCookies.session_id.path).toEqual('/');
     expect(parsedCookies.session_id.httpOnly).toEqual(true);
@@ -126,17 +130,13 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     const getSessionResponseBody = await getSessionResponse.json();
 
     expect(getSessionResponse.status).toEqual(200);
-    expect(getSessionResponseBody.id).toEqual(postUserResponseBody.id);
-    expect(getSessionResponseBody.username).toEqual(postUserResponseBody.username);
-    expect(getSessionResponseBody.email).toEqual(postUserResponseBody.email);
-    expect(getSessionResponseBody.features).toEqual([
-      'create:session',
-      'read:session',
-      'create:post',
-      'create:comment',
-    ]);
+    expect(getSessionResponseBody.id).toEqual(postSessionResponseBody.id);
+    expect(getSessionResponseBody.id.length).toEqual(96);
+    expect(Date.parse(getSessionResponseBody.expires_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.updated_at)).not.toEqual(NaN);
-    expect(getSessionResponseBody).not.toHaveProperty('password');
+    expect(getSessionResponseBody.expires_at > postSessionResponseBody.expires_at).toBe(true);
+    expect(getSessionResponseBody.created_at === postSessionResponseBody.created_at).toBe(true);
+    expect(getSessionResponseBody.updated_at > postSessionResponseBody.updated_at).toBe(true);
   });
 });

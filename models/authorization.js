@@ -8,20 +8,69 @@ const availableFeatures = new Set([
   'create:comment',
 ]);
 
-function can(user, feature, resourceObject) {
-  let authorized = false;
-
+function can(user, feature, resource) {
   validateUser(user);
   validateFeature(feature);
+
+  let authorized = false;
 
   if (user.features.includes(feature)) {
     authorized = true;
   }
 
   // TODO: Implement double check of features
-  // using resourceObject.
+  // using resource.
 
   return authorized;
+}
+
+function filterInput(user, feature, resource) {
+  validateUser(user);
+  validateFeature(feature);
+  validateResource(resource);
+
+  let filteredValues = {};
+
+  if (feature === 'create:session' && can(user, feature, resource)) {
+    filteredValues = {
+      username: resource.username,
+      password: resource.password,
+    };
+  }
+
+  return filteredValues;
+}
+
+function filterOutput(user, feature, resource) {
+  validateUser(user);
+  validateFeature(feature);
+  validateResource(resource);
+
+  let filteredValues = {};
+
+  if (feature === 'read:session' && can(user, feature, resource)) {
+    if (user.id === resource.user_id) {
+      filteredValues = {
+        id: resource.id,
+        expires_at: resource.expires_at,
+        created_at: resource.created_at,
+        updated_at: resource.updated_at,
+      };
+    }
+  }
+
+  if (feature === 'create:session' && can(user, feature, resource)) {
+    if (user.id === resource.user_id) {
+      filteredValues = {
+        id: resource.id,
+        expires_at: resource.expires_at,
+        created_at: resource.created_at,
+        updated_at: resource.updated_at,
+      };
+    }
+  }
+
+  return filteredValues;
 }
 
 function validateUser(user) {
@@ -56,6 +105,17 @@ function validateFeature(feature) {
   }
 }
 
+function validateResource(resource) {
+  if (!resource) {
+    throw new ValidationError({
+      message: `Nenhum "resource" foi especificado para a ação de filtro.`,
+      action: `Contate o suporte informado o campo "errorId".`,
+    });
+  }
+}
+
 export default Object.freeze({
   can,
+  filterOutput,
+  filterInput,
 });
