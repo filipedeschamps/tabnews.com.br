@@ -26,7 +26,9 @@ async function query(query, params) {
   } catch (error) {
     const errorObject = new DatabaseError({
       message: error.message,
-      context: { query },
+      context: {
+        query: query.text,
+      },
       stack: new Error().stack,
     });
     console.error(errorObject);

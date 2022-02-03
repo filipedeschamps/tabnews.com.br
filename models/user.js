@@ -55,19 +55,13 @@ async function create(postedUserData) {
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
 
-  const defaultValues = {
-    features: ['read:activation_token'],
-  };
-
-  const finalValues = { ...validUserData, ...defaultValues };
-
-  const newUser = await runInsertQuery(finalValues);
+  const newUser = await runInsertQuery(validUserData);
   return newUser;
 
-  async function runInsertQuery(finalValues) {
+  async function runInsertQuery(validUserData) {
     const query = {
-      text: 'INSERT INTO users (username, email, password, features) VALUES($1, $2, $3, $4) RETURNING *;',
-      values: [finalValues.username, finalValues.email, finalValues.password, finalValues.features],
+      text: 'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *;',
+      values: [validUserData.username, validUserData.email, validUserData.password],
     };
     const results = await database.query(query);
     return results.rows[0];

@@ -30,7 +30,7 @@ exports.up = (pgm) => {
     features: {
       type: 'varchar[]',
       notNull: true,
-      default: '{}',
+      default: `{"read:activation_token"}`,
     },
 
     // Why "with timezone"? https://stackoverflow.com/a/20713587
