@@ -18,7 +18,7 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
   let postUserResponseBody;
   let activationUrl;
   let postSessionResponseBody;
-  let parsedCookies;
+  let parsedCookiesFromPost;
 
   test('Create account (successfully)', async () => {
     const postUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
@@ -103,7 +103,9 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     postSessionResponseBody = await postSessionResponse.json();
 
     expect(postSessionResponse.status).toEqual(201);
-    expect(postSessionResponseBody.id.length).toEqual(96);
+    expect(postSessionResponseBody.token.length).toEqual(96);
+    expect(uuidVersion(postSessionResponseBody.id)).toEqual(4);
+    expect(uuidValidate(postSessionResponseBody.id)).toEqual(true);
     expect(Date.parse(postSessionResponseBody.expires_at)).not.toEqual(NaN);
     expect(Date.parse(postSessionResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(postSessionResponseBody.updated_at)).not.toEqual(NaN);
@@ -111,19 +113,19 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.id);
     expect(sessionObjectInDatabase.user_id).toEqual(postUserResponseBody.id);
 
-    parsedCookies = authentication.parseSetCookies(postSessionResponse);
-    expect(parsedCookies.session_id.name).toEqual('session_id');
-    expect(parsedCookies.session_id.value).toEqual(postSessionResponseBody.id);
-    expect(parsedCookies.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-    expect(parsedCookies.session_id.path).toEqual('/');
-    expect(parsedCookies.session_id.httpOnly).toEqual(true);
+    parsedCookiesFromPost = authentication.parseSetCookies(postSessionResponse);
+    expect(parsedCookiesFromPost.session_id.name).toEqual('session_id');
+    expect(parsedCookiesFromPost.session_id.value).toEqual(postSessionResponseBody.token);
+    expect(parsedCookiesFromPost.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
+    expect(parsedCookiesFromPost.session_id.path).toEqual('/');
+    expect(parsedCookiesFromPost.session_id.httpOnly).toEqual(true);
   });
 
   test('Use session (successfully)', async () => {
     const getSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
       method: 'get',
       headers: {
-        cookie: `session_id=${parsedCookies.session_id.value}`,
+        cookie: `session_id=${parsedCookiesFromPost.session_id.value}`,
       },
     });
 
@@ -131,12 +133,22 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
 
     expect(getSessionResponse.status).toEqual(200);
     expect(getSessionResponseBody.id).toEqual(postSessionResponseBody.id);
-    expect(getSessionResponseBody.id.length).toEqual(96);
+    expect(getSessionResponseBody.token).toEqual(postSessionResponseBody.token);
+    expect(uuidVersion(getSessionResponseBody.id)).toEqual(4);
+    expect(uuidValidate(getSessionResponseBody.id)).toEqual(true);
+    expect(getSessionResponseBody.token.length).toEqual(96);
     expect(Date.parse(getSessionResponseBody.expires_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.updated_at)).not.toEqual(NaN);
     expect(getSessionResponseBody.expires_at > postSessionResponseBody.expires_at).toBe(true);
     expect(getSessionResponseBody.created_at === postSessionResponseBody.created_at).toBe(true);
     expect(getSessionResponseBody.updated_at > postSessionResponseBody.updated_at).toBe(true);
+
+    const parsedCookiesFromGet = authentication.parseSetCookies(getSessionResponse);
+    expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
+    expect(parsedCookiesFromGet.session_id.value).toEqual(parsedCookiesFromPost.session_id.value);
+    expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
+    expect(parsedCookiesFromGet.session_id.path).toEqual('/');
+    expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
   });
 });

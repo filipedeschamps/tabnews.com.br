@@ -25,12 +25,12 @@ async function getHandler(request, response) {
 
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
-  const unsecureValuesFromClient = request.body;
+  const insecureValuesFromClient = request.body;
 
   const authorizedValuesFromInput = authorization.filterInput(
     userTryingToCreateSession,
     'create:session',
-    unsecureValuesFromClient
+    insecureValuesFromClient
   );
 
   const storedUserTryingToCreateSession = await user.findOneByUsername(authorizedValuesFromInput.username);
@@ -67,7 +67,7 @@ async function postHandler(request, response) {
 
   async function createSessionAndSetCookies(userId, response) {
     const sessionObject = await session.create(userId);
-    session.setSessionIdCookie(sessionObject.id, response);
+    session.setSessionIdCookieInResponse(sessionObject.token, response);
     return sessionObject;
   }
 }

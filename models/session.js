@@ -5,8 +5,9 @@ import { UnauthorizedError } from 'errors/index.js';
 
 async function create(userId) {
   const sessionToken = crypto.randomBytes(48).toString('hex');
+
   const query = {
-    text: `INSERT INTO sessions (id, user_id, expires_at)
+    text: `INSERT INTO sessions (token, user_id, expires_at)
                VALUES($1, $2, now() + interval '30 days') RETURNING *;`,
     values: [sessionToken, userId],
   };
@@ -15,9 +16,9 @@ async function create(userId) {
   return results.rows[0];
 }
 
-function setSessionIdCookie(sessionId, response) {
+function setSessionIdCookieInResponse(sessionToken, response) {
   response.setHeader('Set-Cookie', [
-    cookie.serialize('session_id', sessionId, {
+    cookie.serialize('session_id', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
@@ -38,10 +39,10 @@ function clearSessionIdCookie(response) {
   ]);
 }
 
-async function findOneValidById(sessionId) {
+async function findOneValidByToken(sessionToken) {
   const query = {
-    text: `SELECT * FROM sessions WHERE id = $1 AND expires_at > now();`,
-    values: [sessionId],
+    text: `SELECT * FROM sessions WHERE token = $1 AND expires_at > now();`,
+    values: [sessionToken],
   };
 
   const results = await database.query(query);
@@ -59,16 +60,16 @@ async function findOneById(sessionId) {
 }
 
 async function findOneValidFromRequest(request) {
-  const sessionId = request.cookies?.session_id;
+  const sessionToken = request.cookies?.session_id;
 
-  if (!sessionId) {
+  if (!sessionToken) {
     throw new UnauthorizedError({
       message: `Usuário não possui sessão ativa.`,
       action: `Verifique se este usuário está logado.`,
     });
   }
 
-  const sessionObject = await findOneValidById(sessionId);
+  const sessionObject = await findOneValidByToken(sessionToken);
 
   if (!sessionObject) {
     throw new UnauthorizedError({
@@ -81,14 +82,9 @@ async function findOneValidFromRequest(request) {
 }
 
 async function renew(sessionId, response) {
-  renewSessionCookieInResponse(sessionId, response);
   const sessionObjectRenewed = await renewObjectInDatabase(sessionId);
-
+  setSessionIdCookieInResponse(sessionObjectRenewed.token, response);
   return sessionObjectRenewed;
-
-  function renewSessionCookieInResponse(sessionId, response) {
-    setSessionIdCookie(sessionId, response);
-  }
 
   async function renewObjectInDatabase(sessionId) {
     const query = {
@@ -107,9 +103,9 @@ async function renew(sessionId, response) {
 
 export default Object.freeze({
   create,
-  setSessionIdCookie,
+  setSessionIdCookieInResponse,
   clearSessionIdCookie,
-  findOneValidById,
+  findOneValidByToken,
   findOneById,
   findOneValidFromRequest,
   renew,

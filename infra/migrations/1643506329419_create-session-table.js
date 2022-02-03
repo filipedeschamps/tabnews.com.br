@@ -1,10 +1,15 @@
 exports.up = (pgm) => {
   pgm.createTable('sessions', {
     id: {
-      type: 'varchar',
+      type: 'uuid',
       default: pgm.func('uuid_generate_v4()'),
       notNull: true,
       primaryKey: true,
+    },
+
+    token: {
+      type: 'varchar(96)',
+      notNull: true,
     },
 
     user_id: {

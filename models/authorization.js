@@ -56,6 +56,7 @@ function filterOutput(user, feature, resource) {
     if (user.id && resource.user_id && user.id === resource.user_id) {
       filteredValues = {
         id: resource.id,
+        token: resource.token,
         expires_at: resource.expires_at,
         created_at: resource.created_at,
         updated_at: resource.updated_at,
@@ -67,6 +68,7 @@ function filterOutput(user, feature, resource) {
     if (user.id && resource.user_id && user.id === resource.user_id) {
       filteredValues = {
         id: resource.id,
+        token: resource.token,
         expires_at: resource.expires_at,
         created_at: resource.created_at,
         updated_at: resource.updated_at,
