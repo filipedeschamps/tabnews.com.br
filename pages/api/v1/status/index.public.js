@@ -21,9 +21,15 @@ async function injectRequestId(request, response, next) {
 }
 
 async function getHandler(request, response) {
+  let statusCode = 200;
+
   const checkedDependencies = await health.getDependencies();
 
-  return response.status(200).json({
+  if (checkedDependencies.database.status === 'unhealthy') {
+    statusCode = 503;
+  }
+
+  return response.status(statusCode).json({
     updated_at: formatISO(Date.now()),
     dependencies: checkedDependencies,
   });

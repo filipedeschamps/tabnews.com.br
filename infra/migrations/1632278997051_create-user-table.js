@@ -22,6 +22,12 @@ exports.up = (pgm) => {
       unique: true,
     },
 
+    // Why 60 varchar? https://forums.phpfreaks.com/topic/293405-recommended-sql-datatype-for-bcrypt-hash/#comment-1500831
+    password: {
+      type: 'varchar(60)',
+      notNull: true,
+    },
+
     // Why "with timezone"? https://stackoverflow.com/a/20713587
     created_at: {
       type: 'timestamp with time zone',

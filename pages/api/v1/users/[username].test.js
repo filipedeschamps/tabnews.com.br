@@ -2,6 +2,8 @@ import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
 import orchestratorFactory from 'tests/orchestrator.js';
+import user from 'models/user.js';
+import password from 'models/password.js';
 
 const orchestrator = orchestratorFactory();
 
@@ -38,6 +40,7 @@ describe('GET /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'userNameToBeFound',
           email: 'userEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -52,6 +55,7 @@ describe('GET /api/v1/users/:username', () => {
       expect(userCreatedResponseBody.id).toEqual(userFindResponseBody.id);
       expect(userFindResponseBody.username).toEqual('userNameToBeFound');
       expect(userFindResponseBody.email).toEqual('useremail@gmail.com');
+      expect(userFindResponseBody).not.toHaveProperty('password');
     });
   });
 
@@ -65,6 +69,7 @@ describe('GET /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'userNameToBeFoundCAPS',
           email: 'userEmailToBeFoundCAPS@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -93,6 +98,7 @@ describe('PATCH /api/v1/users/:username', () => {
         },
         body: JSON.stringify({
           email: 'donotexistpatch@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -119,6 +125,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'patchWithUnknownKey',
           email: 'patchWithUnknownKey@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -145,6 +152,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(responseBody.email).toEqual('patchwithunknownkeynew@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('unknownKey');
     });
   });
@@ -159,6 +167,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'willpatchwithextraspace',
           email: 'willpatchwithextraspace@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -172,6 +181,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'extraSpaceInTheEnd ',
           email: ' space.in.the.beggining@gmail.com',
+          password: 'validpassword ',
         }),
       });
 
@@ -184,6 +194,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(responseBody.email).toEqual('space.in.the.beggining@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody).not.toHaveProperty('password');
     });
   });
 
@@ -197,6 +208,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'CURRENTusername',
           email: 'CURRENTusername@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -222,6 +234,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(patchUserResponseBody.email).toEqual('currentusername@gmail.com');
       expect(Date.parse(patchUserResponseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(patchUserResponseBody.updated_at)).not.toEqual(NaN);
+      expect(patchUserResponseBody).not.toHaveProperty('password');
     });
   });
 
@@ -235,6 +248,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'firstUserPatch',
           email: 'firstUserPatch@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -246,6 +260,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'secondUserPatch',
           email: 'secondUserPatch@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -282,6 +297,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'DIFFERENTuppercaseletters',
           email: 'DIFFERENTuppercaseletters@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -293,6 +309,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'randomuser23y2876487',
           email: 'randomuser23y2876487@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -329,6 +346,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emptyString',
           email: 'emptyString@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -365,6 +383,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'NumberUser',
           email: 'NumberUser@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -401,6 +420,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'validuserwithnoalphanumeric',
           email: 'validuserwithnoalphanumeric@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -437,6 +457,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'correctLengthUser',
           email: 'correctLengthUser@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -473,6 +494,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'willbetoolong',
           email: 'willbetoolong@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -509,6 +531,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'currentusernameemail',
           email: 'CURRENTemail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -531,6 +554,7 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(patchUserResponseBody.email).toEqual('newemail@gmail.com');
       expect(Date.parse(patchUserResponseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(patchUserResponseBody.updated_at)).not.toEqual(NaN);
+      expect(patchUserResponseBody).not.toHaveProperty('password');
     });
   });
 
@@ -544,6 +568,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'firstUserPatchEmail',
           email: 'firstUserPatchEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -555,6 +580,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'secondUserPatchEmail',
           email: 'secondUserPatchEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -591,6 +617,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emailDIFFERENTuppercase1',
           email: 'emailDIFFERENTuppercase1@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -602,6 +629,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emailDIFFERENTuppercase2',
           email: 'emailDIFFERENTuppercase2@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -641,6 +669,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'emptyStringEmail',
           email: 'emptyStringEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -677,6 +706,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'NumberEmail',
           email: 'NumberEmail@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -713,6 +743,7 @@ describe('PATCH /api/v1/users/:username', () => {
         body: JSON.stringify({
           username: 'validuserwithnoalphanumeric',
           email: 'validuserwithnoalphanumeric@gmail.com',
+          password: 'validpassword',
         }),
       });
 
@@ -731,6 +762,201 @@ describe('PATCH /api/v1/users/:username', () => {
       expect(patchUserResponse.status).toEqual(400);
       expect(patchUserResponseBody.name).toEqual('ValidationError');
       expect(patchUserResponseBody.message).toEqual('"email" deve conter um email válido.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" with valid format', () => {
+    test('should return the user', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'passwordWillBeUpdated',
+          email: 'validnewpassword@gmail.com',
+          password: 'oldValidPassword',
+        }),
+      });
+
+      const createdUserObject = await user.findOneByUsername('passwordWillBeUpdated');
+      const oldValidPasswordMatch = await password.compare('oldValidPassword', createdUserObject.password);
+      expect(oldValidPasswordMatch).toEqual(true);
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/passwordWillBeUpdated`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: 'newValidPassword',
+        }),
+      });
+
+      const patchedUserObject = await user.findOneByUsername('passwordWillBeUpdated');
+      const newValidPasswordMatch = await password.compare('newValidPassword', patchedUserObject.password);
+      const wrongPasswordMatch = await password.compare('oldValidPassword', patchedUserObject.password);
+      expect(newValidPasswordMatch).toEqual(true);
+      expect(wrongPasswordMatch).toEqual(false);
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(200);
+      expect(uuidVersion(patchUserResponseBody.id)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.id)).toEqual(true);
+      expect(patchUserResponseBody.username).toEqual('passwordWillBeUpdated');
+      expect(patchUserResponseBody.email).toEqual('validnewpassword@gmail.com');
+      expect(Date.parse(patchUserResponseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(patchUserResponseBody.updated_at)).not.toEqual(NaN);
+      expect(patchUserResponseBody).not.toHaveProperty('password');
+    });
+  });
+
+  describe('with "password" with an empty string', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordEmptyString',
+          email: 'patchPasswordEmptyString@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordEmptyString`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '',
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" não pode estar em branco.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" that\'s not a String', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordNotString',
+          email: 'patchPasswordNotString@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordNotString`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: 123456,
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" deve ser do tipo String.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" too short', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordTooShort',
+          email: 'patchPasswordTooShort@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordTooShort`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '1234567',
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" deve conter no mínimo 8 caracteres.');
+      expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
+      expect(uuidVersion(patchUserResponseBody.requestId)).toEqual(4);
+      expect(uuidValidate(patchUserResponseBody.requestId)).toEqual(true);
+    });
+  });
+
+  describe('with "password" too long', () => {
+    test('should return a ValidationError', async () => {
+      const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'patchPasswordTooLong',
+          email: 'patchPasswordTooLong@gmail.com',
+          password: 'validpassword',
+        }),
+      });
+
+      const patchUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/patchPasswordTooLong`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: '73characterssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        }),
+      });
+
+      const patchUserResponseBody = await patchUserResponse.json();
+
+      expect(patchUserResponse.status).toEqual(400);
+      expect(patchUserResponseBody.name).toEqual('ValidationError');
+      expect(patchUserResponseBody.message).toEqual('"password" deve conter no máximo 72 caracteres.');
       expect(patchUserResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(patchUserResponseBody.errorId)).toEqual(4);
       expect(uuidValidate(patchUserResponseBody.errorId)).toEqual(true);
