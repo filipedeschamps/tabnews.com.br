@@ -42,6 +42,7 @@ async function injectUserUsingSession(request, response, next) {
     throw new ForbiddenError({
       message: `Você não possui permissão para executar esta ação.`,
       action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".`,
+      errorUniqueCode: 'MODEL:AUTHENTICATION:INJECT_USER_USING_SESSION:USER_CANT_READ_SESSION',
     });
   }
 

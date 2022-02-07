@@ -24,6 +24,7 @@ async function findOneByUsername(username) {
       message: `O username "${username}" não foi encontrado no sistema.`,
       action: 'Verifique se o "username" está digitado corretamente.',
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
     });
   }
 
