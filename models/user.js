@@ -11,6 +11,8 @@ async function findAll() {
   return results.rows;
 }
 
+//TODO: validate and filter single inputs like
+// this one.
 async function findOneByUsername(username) {
   const query = {
     text: 'SELECT * FROM users WHERE LOWER(username) = LOWER($1) LIMIT 1;',

@@ -12,8 +12,9 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
-  .get(authentication.injectUserUsingSession, getHandler)
-  .post(authentication.injectAnonymousOrUser, postHandler);
+  .use(authentication.injectAnonymousOrUser)
+  .get(authorization.canRequest('read:session'), getHandler)
+  .post(authorization.canRequest('create:session'), postHandler);
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
@@ -35,8 +36,6 @@ async function postHandler(request, response) {
 
   const storedUserTryingToCreateSession = await user.findOneByUsername(authorizedValuesFromInput.username);
 
-  await checkIfPasswordsMatch(authorizedValuesFromInput.password, storedUserTryingToCreateSession.password);
-
   if (!authorization.can(storedUserTryingToCreateSession, 'create:session')) {
     throw new ForbiddenError({
       message: `Você não possui permissão para fazer login.`,
@@ -44,7 +43,9 @@ async function postHandler(request, response) {
     });
   }
 
-  const sessionObject = await createSessionAndSetCookies(storedUserTryingToCreateSession.id, response);
+  await authentication.comparePasswords(authorizedValuesFromInput.password, storedUserTryingToCreateSession.password);
+
+  const sessionObject = await authentication.createSessionAndSetCookies(storedUserTryingToCreateSession.id, response);
 
   const authorizedValuesToReturn = authorization.filterOutput(
     storedUserTryingToCreateSession,
@@ -53,21 +54,4 @@ async function postHandler(request, response) {
   );
 
   return response.status(201).json(authorizedValuesToReturn);
-
-  async function checkIfPasswordsMatch(providedPassword, storedPassword) {
-    const passwordMatches = await authentication.comparePasswords(providedPassword, storedPassword);
-
-    if (!passwordMatches) {
-      throw new UnauthorizedError({
-        message: `A senha informada não confere com a senha do usuário.`,
-        action: `Verifique se a senha informada está correta e tente novamente.`,
-      });
-    }
-  }
-
-  async function createSessionAndSetCookies(userId, response) {
-    const sessionObject = await session.create(userId);
-    session.setSessionIdCookieInResponse(sessionObject.token, response);
-    return sessionObject;
-  }
 }

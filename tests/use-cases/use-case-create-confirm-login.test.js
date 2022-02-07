@@ -6,6 +6,7 @@ import user from 'models/user.js';
 import authentication from 'models/authentication';
 import activation from 'models/activation.js';
 import session from 'models/session.js';
+import password from 'models/password.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -46,10 +47,7 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     expect(postUserResponseBody).not.toHaveProperty('password');
 
     const createdUserInDatabase = await user.findOneByUsername('RegularRegistrationFlow');
-    const passwordsMatch = await authentication.comparePasswords(
-      'RegularRegistrationFlowPassword',
-      createdUserInDatabase.password
-    );
+    const passwordsMatch = await password.compare('RegularRegistrationFlowPassword', createdUserInDatabase.password);
 
     expect(passwordsMatch).toBe(true);
   });

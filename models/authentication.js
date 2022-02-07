@@ -10,7 +10,15 @@ async function hashPassword(unhashedPassword) {
 }
 
 async function comparePasswords(providedPassword, passwordHash) {
-  return await password.compare(providedPassword, passwordHash);
+  const passwordMatches = await password.compare(providedPassword, passwordHash);
+
+  if (!passwordMatches) {
+    throw new UnauthorizedError({
+      message: `A senha informada não confere com a senha do usuário.`,
+      action: `Verifique se a senha informada está correta e tente novamente.`,
+      errorUniqueCode: 'MODEL:AUTHENTICATION:COMPARE_PASSWORDS:PASSWORD_MISMATCH',
+    });
+  }
 }
 
 async function injectAnonymousOrUser(request, response, next) {
@@ -68,10 +76,16 @@ function parseSetCookies(response) {
   return parsedCookies;
 }
 
+async function createSessionAndSetCookies(userId, response) {
+  const sessionObject = await session.create(userId);
+  session.setSessionIdCookieInResponse(sessionObject.token, response);
+  return sessionObject;
+}
+
 export default Object.freeze({
   hashPassword,
   comparePasswords,
-  injectUserUsingSession,
   injectAnonymousOrUser,
   parseSetCookies,
+  createSessionAndSetCookies,
 });
