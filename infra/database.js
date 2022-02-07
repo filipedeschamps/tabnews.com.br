@@ -29,6 +29,7 @@ async function query(query, params) {
       context: {
         query: query.text,
       },
+      errorUniqueCode: 'INFRA:DATABASE:QUERY',
       stack: new Error().stack,
     });
     console.error(errorObject);
@@ -45,9 +46,7 @@ async function getNewConnectedClient() {
   } catch (error) {
     const errorObject = new DatabaseError({
       message: error.message,
-      context: {
-        explanation: 'Trying to get manually new Connection Client in "getNewConnectedClient()"',
-      },
+      errorUniqueCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
       stack: new Error().stack,
     });
     console.error(errorObject);
