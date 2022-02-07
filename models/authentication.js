@@ -23,8 +23,8 @@ async function comparePasswords(providedPassword, passwordHash) {
 
 async function injectAnonymousOrUser(request, response, next) {
   if (request.cookies?.session_id) {
-    await injectUserUsingSession(request, response, next);
-    return;
+    await injectUserUsingSession(request, response);
+    return next();
   }
 
   const anonymousUser = {
@@ -42,7 +42,7 @@ async function injectAnonymousOrUser(request, response, next) {
   return next();
 }
 
-async function injectUserUsingSession(request, response, next) {
+async function injectUserUsingSession(request, response) {
   const sessionObject = await session.findOneValidFromRequest(request);
   const userObject = await user.findOneById(sessionObject.user_id);
 
@@ -65,8 +65,6 @@ async function injectUserUsingSession(request, response, next) {
       session: sessionRenewed,
     };
   }
-
-  return next();
 }
 
 //TODO: this should be here or inside the session model?
