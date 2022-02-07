@@ -15,11 +15,12 @@ export default nextConnect({
 
 async function getHandler(request, response) {
   const userTryingToGet = request.context.user;
+  // TODO: Insecure value from the request must be filtered before being used.
   const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
 
-  const authorizedValuesToReturn = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
-  return response.status(200).json(authorizedValuesToReturn);
+  return response.status(200).json(secureOutputValues);
 }
 
 async function patchHandler(request, response) {

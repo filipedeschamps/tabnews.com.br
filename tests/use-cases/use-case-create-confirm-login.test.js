@@ -41,7 +41,7 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     expect(uuidValidate(postUserResponseBody.id)).toEqual(true);
     expect(postUserResponseBody.username).toEqual('RegularRegistrationFlow');
     expect(postUserResponseBody.email).toEqual('regularregistrationflow@gmail.com');
-    expect(postUserResponseBody.features).toEqual(['read:activation_token']);
+    expect(postUserResponseBody.features).toEqual(['read:activation_token', 'read:user']);
     expect(Date.parse(postUserResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(postUserResponseBody.updated_at)).not.toEqual(NaN);
     expect(postUserResponseBody).not.toHaveProperty('password');
@@ -75,6 +75,7 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     expect(activationLinkResponseBody.id).toEqual(postUserResponseBody.id);
     expect(activationLinkResponseBody.username).toEqual(postUserResponseBody.username);
     expect(activationLinkResponseBody.features).toEqual([
+      'read:user',
       'create:session',
       'read:session',
       'create:post',

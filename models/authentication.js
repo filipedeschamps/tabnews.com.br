@@ -28,7 +28,7 @@ async function injectAnonymousOrUser(request, response, next) {
   }
 
   const anonymousUser = {
-    features: ['create:session', 'read:user'],
+    features: ['read:activation_token', 'create:session', 'read:user', 'create:user', 'read:users'],
   };
 
   if (request.context) {

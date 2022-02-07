@@ -1,10 +1,9 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import session from 'models/session.js';
 import user from 'models/user';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
+import { ForbiddenError } from '/errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -19,39 +18,33 @@ export default nextConnect({
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
   const sessionObject = request.context.session;
-  const authorizedValuesToReturn = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
 
-  return response.status(200).json(authorizedValuesToReturn);
+  const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
+
+  return response.status(200).json(secureOutputValues);
 }
 
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
-  const insecureValuesFromClient = request.body;
+  const insecureInputValues = request.body;
 
-  const authorizedValuesFromInput = authorization.filterInput(
-    userTryingToCreateSession,
-    'create:session',
-    insecureValuesFromClient
-  );
+  const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
 
-  const storedUserTryingToCreateSession = await user.findOneByUsername(authorizedValuesFromInput.username);
+  const storedUser = await user.findOneByUsername(secureInputValues.username);
 
-  if (!authorization.can(storedUserTryingToCreateSession, 'create:session')) {
+  if (!authorization.can(storedUser, 'create:session')) {
     throw new ForbiddenError({
       message: `Você não possui permissão para fazer login.`,
       action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "create:session".`,
+      errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
     });
   }
 
-  await authentication.comparePasswords(authorizedValuesFromInput.password, storedUserTryingToCreateSession.password);
+  await authentication.comparePasswords(secureInputValues.password, storedUser.password);
 
-  const sessionObject = await authentication.createSessionAndSetCookies(storedUserTryingToCreateSession.id, response);
+  const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
 
-  const authorizedValuesToReturn = authorization.filterOutput(
-    storedUserTryingToCreateSession,
-    'create:session',
-    sessionObject
-  );
+  const secureOutputValues = authorization.filterOutput(storedUser, 'create:session', sessionObject);
 
-  return response.status(201).json(authorizedValuesToReturn);
+  return response.status(201).json(secureOutputValues);
 }

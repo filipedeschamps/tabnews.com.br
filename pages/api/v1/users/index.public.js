@@ -2,6 +2,8 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import user from 'models/user.js';
 import activation from 'models/activation.js';
+import authentication from 'models/authentication.js';
+import authorization from 'models/authorization.js';
 
 export default nextConnect({
   attachParams: true,
@@ -9,52 +11,29 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
-  .get(getHandler)
-  .post(postHandler);
+  .use(authentication.injectAnonymousOrUser)
+  .get(authorization.canRequest('read:users'), getHandler)
+  .post(authorization.canRequest('create:user'), postHandler);
 
 async function getHandler(request, response) {
-  const userList = await user.findAll();
-  const responseBody = userList.map((user) => ({
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    features: user.features,
-    created_at: user.created_at,
-    updated_at: user.updated_at,
-  }));
+  const userTryingToList = request.context.user;
 
-  return response.status(200).json(responseBody);
+  const userList = await user.findAll();
+
+  const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:users', userList);
+
+  return response.status(200).json(secureOutputValues);
 }
 
 async function postHandler(request, response) {
-  const clientPostedData = request.body;
+  const userTryingToCreate = request.context.user;
+  const insecureInputValues = request.body;
+  const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
 
-  const authorizedValuesFromClient = await extractAuthorizedValuesFromClient(clientPostedData);
-  const newUser = await user.create(authorizedValuesFromClient);
+  const newUser = await user.create(secureInputValues);
   await activation.sendActivationEmailToUser(newUser);
-  const authorizedValuesToReturn = await extractAuthorizedValuesToReturn(newUser);
-  return response.status(201).json(authorizedValuesToReturn);
 
-  async function extractAuthorizedValuesFromClient(clientPostedData) {
-    const unprivilegedValues = {
-      username: clientPostedData.username,
-      email: clientPostedData.email,
-      password: clientPostedData.password,
-    };
+  const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 
-    return unprivilegedValues;
-  }
-
-  async function extractAuthorizedValuesToReturn(user) {
-    const publicValues = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      features: user.features,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
-    };
-
-    return publicValues;
-  }
+  return response.status(201).json(secureOutputValues);
 }

@@ -10,6 +10,9 @@ const availableFeatures = new Set([
   'create:comment',
 
   'read:user',
+  'create:user',
+
+  'read:users',
 ]);
 
 function can(user, feature, resource) {
@@ -38,6 +41,14 @@ function filterInput(user, feature, resource) {
   if (feature === 'create:session' && can(user, feature, resource)) {
     filteredValues = {
       username: resource.username,
+      password: resource.password,
+    };
+  }
+
+  if (feature === 'create:user' && can(user, feature, resource)) {
+    filteredValues = {
+      username: resource.username,
+      email: resource.email,
       password: resource.password,
     };
   }
@@ -80,6 +91,7 @@ function filterOutput(user, feature, resource) {
     filteredValues = {
       id: resource.id,
       username: resource.username,
+      features: resource.features,
       created_at: resource.created_at,
       updated_at: resource.updated_at,
     };
@@ -87,6 +99,16 @@ function filterOutput(user, feature, resource) {
     if (user.id && resource.id && user.id === resource.id) {
       filteredValues.email = resource.email;
     }
+  }
+
+  if (feature === 'read:users' && can(user, feature, resource)) {
+    filteredValues = resource.map((user) => ({
+      id: user.id,
+      username: user.username,
+      features: user.features,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+    }));
   }
 
   return filteredValues;
