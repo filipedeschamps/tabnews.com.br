@@ -71,6 +71,12 @@ async function create(postedUserData) {
   }
 }
 
+function createAnonymous() {
+  return {
+    features: ['read:activation_token', 'create:session', 'read:user', 'create:user', 'read:users'],
+  };
+}
+
 async function validatePostSchema(postedUserData) {
   const schema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).trim().required().messages({
@@ -271,4 +277,5 @@ export default Object.freeze({
   update,
   removeFeatures,
   addFeatures,
+  createAnonymous,
 });

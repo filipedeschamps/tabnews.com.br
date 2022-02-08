@@ -23,46 +23,38 @@ async function comparePasswords(providedPassword, passwordHash) {
 
 async function injectAnonymousOrUser(request, response, next) {
   if (request.cookies?.session_id) {
-    await injectUserUsingSession(request, response);
+    await injectAuthenticatedUser(request, response);
+    return next();
+  } else {
+    injectAnonymousUser(request);
     return next();
   }
 
-  const anonymousUser = {
-    features: ['read:activation_token', 'create:session', 'read:user', 'create:user', 'read:users'],
-  };
+  async function injectAuthenticatedUser(request, response) {
+    const sessionObject = await session.findOneValidFromRequest(request);
+    const userObject = await user.findOneById(sessionObject.user_id);
 
-  if (request.context) {
-    request.context.user = anonymousUser;
-  } else {
-    request.context = {
-      user: anonymousUser,
-    };
-  }
+    if (!authorization.can(userObject, 'read:session')) {
+      throw new ForbiddenError({
+        message: `Você não possui permissão para executar esta ação.`,
+        action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".`,
+        errorUniqueCode: 'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
+      });
+    }
 
-  return next();
-}
+    const sessionRenewed = await session.renew(sessionObject.id, response);
 
-async function injectUserUsingSession(request, response) {
-  const sessionObject = await session.findOneValidFromRequest(request);
-  const userObject = await user.findOneById(sessionObject.user_id);
-
-  if (!authorization.can(userObject, 'read:session')) {
-    throw new ForbiddenError({
-      message: `Você não possui permissão para executar esta ação.`,
-      action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".`,
-      errorUniqueCode: 'MODEL:AUTHENTICATION:INJECT_USER_USING_SESSION:USER_CANT_READ_SESSION',
-    });
-  }
-
-  const sessionRenewed = await session.renew(sessionObject.id, response);
-
-  if (request.context) {
-    request.context.user = userObject;
-    request.context.session = sessionRenewed;
-  } else {
     request.context = {
       user: userObject,
       session: sessionRenewed,
+    };
+  }
+
+  function injectAnonymousUser(request) {
+    const anonymousUser = user.createAnonymous();
+
+    request.context = {
+      user: anonymousUser,
     };
   }
 }
