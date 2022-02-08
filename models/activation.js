@@ -50,6 +50,10 @@ function getActivationUrl(tokenId) {
     webserverHost = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
   }
 
+  if (['preview'].includes(process.env.VERCEL_ENV)) {
+    webserverHost = `https://${process.env.VERCEL_URL}`;
+  }
+
   const activationUrl = `${webserverHost}/api/v1/activate/${tokenId}`;
   return activationUrl;
 }
