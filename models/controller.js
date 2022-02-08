@@ -34,6 +34,7 @@ function onErrorHandler(error, request, response) {
     errorId: error.errorId,
     stack: error.stack,
     statusCode: error.statusCode,
+    errorUniqueCode: error.errorUniqueCode,
   });
 
   console.error(errorObject);

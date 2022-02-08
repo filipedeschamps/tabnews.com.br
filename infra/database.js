@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { DatabaseError } from 'errors/index.js';
+import { ServiceError } from 'errors/index.js';
 
 const poolConfiguration = {
   user: process.env.POSTGRES_USER,
@@ -24,7 +24,7 @@ async function query(query, params) {
   try {
     return await pool.query(query, params);
   } catch (error) {
-    const errorObject = new DatabaseError({
+    const errorObject = new ServiceError({
       message: error.message,
       context: {
         query: query.text,
@@ -44,7 +44,7 @@ async function getNewConnectedClient() {
   try {
     return await pool.connect();
   } catch (error) {
-    const errorObject = new DatabaseError({
+    const errorObject = new ServiceError({
       message: error.message,
       errorUniqueCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
       stack: new Error().stack,

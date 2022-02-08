@@ -43,11 +43,11 @@ export class NotFoundError extends BaseError {
   }
 }
 
-export class DatabaseError extends BaseError {
-  constructor({ message, stack, context, statusCode, errorUniqueCode }) {
+export class ServiceError extends BaseError {
+  constructor({ message, action, stack, context, statusCode, errorUniqueCode }) {
     super({
-      message: message,
-      action: 'Verifique se os dados enviados ao banco respeitam os tipos e tamanhos das colunas.',
+      message: message || 'Serviço indisponível no momento.',
+      action: action || 'Verifique se o serviço está disponível.',
       stack: stack,
       statusCode: statusCode || 503,
       context: context,
