@@ -3,7 +3,7 @@ import session from 'models/session.js';
 import user from 'models/user.js';
 import authorization from 'models/authorization.js';
 import password from 'models/password.js';
-import { ForbiddenError } from 'errors/index.js';
+import { ForbiddenError, UnauthorizedError } from 'errors/index.js';
 
 async function hashPassword(unhashedPassword) {
   return await password.hash(unhashedPassword);
