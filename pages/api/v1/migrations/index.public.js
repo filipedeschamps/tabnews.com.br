@@ -1,35 +1,15 @@
 import nextConnect from 'next-connect';
-import { v4 as uuid } from 'uuid';
-import migratorFactory from 'infra/migrator.js';
-import { InternalServerError, NotFoundError } from '/errors';
-
-const migrator = migratorFactory();
+import controller from 'models/controller.js';
+import migrator from 'infra/migrator.js';
 
 export default nextConnect({
   attachParams: true,
-  onNoMatch: onNoMatchHandler,
-  onError: onErrorHandler,
+  onNoMatch: controller.onNoMatchHandler,
+  onError: controller.onErrorHandler,
 })
-  .use(injectRequestId)
-  .use(authenticationHandler)
-  .use(authorizationHandler)
+  .use(controller.injectRequestId)
   .get(getHandler)
   .post(postHandler);
-
-async function injectRequestId(request, response, next) {
-  request.id = uuid();
-  next();
-}
-
-async function authenticationHandler(request, response, next) {
-  // TODO: implement authentication
-  next();
-}
-
-async function authorizationHandler(request, response, next) {
-  // TODO: implement authorization
-  next();
-}
 
 async function getHandler(request, response) {
   const pendingMigrations = await migrator.listPendingMigrations();
@@ -44,15 +24,4 @@ async function postHandler(request, response) {
   }
 
   return response.status(200).json(migratedMigrations);
-}
-
-async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id, stack: new Error().stack });
-  return response.status(errorObject.statusCode).json(errorObject);
-}
-
-function onErrorHandler(error, request, response) {
-  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
-  console.error(errorObject);
-  return response.status(errorObject.statusCode).json(errorObject);
 }

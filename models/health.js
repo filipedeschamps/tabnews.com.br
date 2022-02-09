@@ -1,58 +1,54 @@
 import database from 'infra/database';
 
-export default function Health() {
-  async function getDependencies() {
-    const dependenciesHandlersToCheck = [
-      {
-        name: 'database',
-        handler: checkDatabaseDependency,
-      },
-    ];
+async function getDependencies() {
+  const dependenciesHandlersToCheck = [
+    {
+      name: 'database',
+      handler: checkDatabaseDependency,
+    },
+  ];
 
-    const promises = dependenciesHandlersToCheck.map(async ({ name, handler }) => {
-      const dependencyResult = await handler();
+  const promises = dependenciesHandlersToCheck.map(async ({ name, handler }) => {
+    const dependencyResult = await handler();
 
-      return {
-        name,
-        result: dependencyResult,
-      };
-    });
+    return {
+      name,
+      result: dependencyResult,
+    };
+  });
 
-    const checkedDependencies = await Promise.all(promises);
+  const checkedDependencies = await Promise.all(promises);
 
-    // group dependencies by name
-    return checkedDependencies.reduce((accumulator, currentDependency) => {
-      accumulator[currentDependency.name] = currentDependency.result;
+  // group dependencies by name
+  return checkedDependencies.reduce((accumulator, currentDependency) => {
+    accumulator[currentDependency.name] = currentDependency.result;
 
-      return accumulator;
-    }, {});
-  }
-
-  async function checkDatabaseDependency() {
-    let result;
-    try {
-      const openConnectionsResult = await database.query(
-        'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
-        [process.env.POSTGRES_DB]
-      );
-      const { opened_connections } = openConnectionsResult.rows[0];
-
-      result = {
-        status: 'healthy',
-        opened_connections: parseInt(opened_connections),
-      };
-    } catch (err) {
-      console.error(err);
-
-      result = {
-        status: 'unhealthy',
-      };
-    }
-
-    return result;
-  }
-
-  return {
-    getDependencies,
-  };
+    return accumulator;
+  }, {});
 }
+
+async function checkDatabaseDependency() {
+  let result;
+  try {
+    const openConnectionsResult = await database.query(
+      'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
+      [process.env.POSTGRES_DB]
+    );
+    const { opened_connections } = openConnectionsResult.rows[0];
+
+    result = {
+      status: 'healthy',
+      opened_connections: parseInt(opened_connections),
+    };
+  } catch (error) {
+    result = {
+      status: 'unhealthy',
+    };
+  }
+
+  return result;
+}
+
+export default Object.freeze({
+  getDependencies,
+});
