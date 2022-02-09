@@ -26,6 +26,8 @@ async function getHandler(request, response) {
 
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
+
+  // TODO: Validate the requirement of "username" and "password".
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
