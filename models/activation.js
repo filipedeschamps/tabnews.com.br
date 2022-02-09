@@ -31,13 +31,13 @@ async function sendActivationEmailToUser(user) {
       to: user.email,
       subject: 'Ative seu cadastro no TabNews',
       text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
-  
-  ${activationUrl}
-  
-  Caso você não tenha feito essa requisição, ignore esse email.
-          
-  Atenciosamente,
-  Equipe TabNews`,
+
+${activationUrl}
+
+Caso você não tenha feito essa requisição, ignore esse email.
+        
+Atenciosamente,
+Equipe TabNews`,
     });
   }
 }
