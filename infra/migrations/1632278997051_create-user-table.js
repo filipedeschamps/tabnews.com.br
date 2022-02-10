@@ -17,7 +17,6 @@ exports.up = (pgm) => {
     // Why 254 in length? https://stackoverflow.com/a/1199238
     email: {
       type: 'varchar(254)',
-      length: 254,
       notNull: true,
       unique: true,
     },
@@ -26,6 +25,12 @@ exports.up = (pgm) => {
     password: {
       type: 'varchar(60)',
       notNull: true,
+    },
+
+    features: {
+      type: 'varchar[]',
+      notNull: true,
+      default: `{"read:activation_token","read:user","read:users"}`,
     },
 
     // Why "with timezone"? https://stackoverflow.com/a/20713587

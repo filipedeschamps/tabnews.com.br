@@ -1,10 +1,8 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
-import orchestratorFactory from 'tests/orchestrator.js';
+import orchestrator from 'tests/orchestrator.js';
 import numberOfFilesInFolder from 'tests/numberOfFilesInFolder.js';
-
-const orchestrator = orchestratorFactory();
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

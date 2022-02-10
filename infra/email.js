@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+import { ServiceError } from 'errors/index.js';
 
 const transporterConfiguration = {
   host: process.env.EMAIL_SMTP_HOST,
@@ -16,15 +17,27 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
 
 const transporter = nodemailer.createTransport(transporterConfiguration);
 
-async function send({ from, to, subject, html }) {
+async function send({ from, to, subject, text }) {
   const mailOptions = {
     from: from,
     to: to,
     subject: subject,
-    html: html,
+    text: text,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    const errorObject = new ServiceError({
+      message: error.message,
+      action: 'Verifique se o serviço de emails está disponível.',
+      stack: error.stack,
+      context: mailOptions,
+      errorUniqueCode: 'INFRA:EMAIl:SEND',
+    });
+    console.error(errorObject);
+    throw errorObject;
+  }
 }
 
 export default Object.freeze({

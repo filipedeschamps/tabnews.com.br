@@ -1,46 +1,26 @@
 import nextConnect from 'next-connect';
-import { v4 as uuid } from 'uuid';
+import controller from 'models/controller.js';
 import user from 'models/user.js';
-import { InternalServerError, NotFoundError, ValidationError } from '/errors';
+import authentication from 'models/authentication.js';
+import authorization from 'models/authorization.js';
 
 export default nextConnect({
   attachParams: true,
-  onNoMatch: onNoMatchHandler,
-  onError: onErrorHandler,
+  onNoMatch: controller.onNoMatchHandler,
+  onError: controller.onErrorHandler,
 })
-  .use(injectRequestId)
-  .use(authenticationHandler)
-  .use(authorizationHandler)
-  .get(getHandler)
+  .use(controller.injectRequestId)
+  .get(authentication.injectAnonymousOrUser, authorization.canRequest('read:user'), getHandler)
   .patch(patchHandler);
 
-async function injectRequestId(request, response, next) {
-  request.id = uuid();
-  next();
-}
-
-async function authenticationHandler(request, response, next) {
-  // TODO: implement authentication
-  next();
-}
-
-async function authorizationHandler(request, response, next) {
-  // TODO: implement authorization
-  next();
-}
-
 async function getHandler(request, response) {
-  const userObject = await user.findOneByUsername(request.query.username);
+  const userTryingToGet = request.context.user;
+  // TODO: Insecure value from the request must be filtered before being used.
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
 
-  const responseBody = {
-    id: userObject.id,
-    username: userObject.username,
-    email: userObject.email,
-    created_at: userObject.created_at,
-    updated_at: userObject.updated_at,
-  };
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
-  return response.status(200).json(responseBody);
+  return response.status(200).json(secureOutputValues);
 }
 
 async function patchHandler(request, response) {
@@ -58,25 +38,4 @@ async function patchHandler(request, response) {
   };
 
   return response.status(200).json(responseBody);
-}
-
-async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id });
-  return response.status(errorObject.statusCode).json(errorObject);
-}
-
-function onErrorHandler(error, request, response) {
-  if (error instanceof ValidationError || error instanceof NotFoundError) {
-    return response.status(error.statusCode).json({ ...error, requestId: request.id });
-  }
-
-  const errorObject = new InternalServerError({
-    requestId: request.id,
-    errorId: error.errorId,
-    stack: error.stack,
-  });
-
-  console.error(errorObject);
-
-  return response.status(errorObject.statusCode).json(errorObject);
 }

@@ -1,24 +1,15 @@
 import nextConnect from 'next-connect';
 import { formatISO } from 'date-fns';
-import { v4 as uuid } from 'uuid';
-import { NotFoundError, InternalServerError } from 'errors';
-
-import healthFactory from 'models/health';
-
-const health = healthFactory();
+import controller from 'models/controller.js';
+import health from 'models/health';
 
 export default nextConnect({
   attachParams: true,
-  onNoMatch: onNoMatchHandler,
-  onError: onErrorHandler,
+  onNoMatch: controller.onNoMatchHandler,
+  onError: controller.onErrorHandler,
 })
-  .use(injectRequestId)
+  .use(controller.injectRequestId)
   .get(getHandler);
-
-async function injectRequestId(request, response, next) {
-  request.id = uuid();
-  next();
-}
 
 async function getHandler(request, response) {
   let statusCode = 200;
@@ -33,15 +24,4 @@ async function getHandler(request, response) {
     updated_at: formatISO(Date.now()),
     dependencies: checkedDependencies,
   });
-}
-
-async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.id });
-  return response.status(errorObject.statusCode).json(errorObject);
-}
-
-function onErrorHandler(error, request, response) {
-  const errorObject = new InternalServerError({ requestId: request.id, stack: error.stack });
-  console.error(errorObject);
-  return response.status(errorObject.statusCode).json(errorObject);
 }

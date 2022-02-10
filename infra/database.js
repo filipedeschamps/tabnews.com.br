@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { DatabaseError } from 'errors/index.js';
+import { ServiceError } from 'errors/index.js';
 
 const poolConfiguration = {
   user: process.env.POSTGRES_USER,
@@ -24,7 +24,14 @@ async function query(query, params) {
   try {
     return await pool.query(query, params);
   } catch (error) {
-    const errorObject = new DatabaseError({ message: error.message, stack: new Error().stack });
+    const errorObject = new ServiceError({
+      message: error.message,
+      context: {
+        query: query.text,
+      },
+      errorUniqueCode: 'INFRA:DATABASE:QUERY',
+      stack: new Error().stack,
+    });
     console.error(errorObject);
     throw errorObject;
   }
@@ -34,7 +41,17 @@ async function getNewConnectedClient() {
   // When manually creating a new connection like this,
   // you need to make sure to close it afterward
   // with the .end() method.
-  return await pool.connect();
+  try {
+    return await pool.connect();
+  } catch (error) {
+    const errorObject = new ServiceError({
+      message: error.message,
+      errorUniqueCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
+      stack: new Error().stack,
+    });
+    console.error(errorObject);
+    throw errorObject;
+  }
 }
 
 export default Object.freeze({

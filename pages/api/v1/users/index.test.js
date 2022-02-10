@@ -1,11 +1,9 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import { validate as uuidValidate } from 'uuid';
-import orchestratorFactory from 'tests/orchestrator.js';
+import orchestrator from 'tests/orchestrator.js';
 import user from 'models/user.js';
 import password from 'models/password.js';
-
-const orchestrator = orchestratorFactory();
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -59,18 +57,18 @@ describe('GET /api/v1/users', () => {
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
       expect(uuidValidate(responseBody[0].id)).toEqual(true);
       expect(responseBody[0].username).toEqual('user1');
-      expect(responseBody[0].email).toEqual('user1@gmail.com');
       expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
       expect(responseBody[0]).not.toHaveProperty('password');
+      expect(responseBody[0]).not.toHaveProperty('email');
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
       expect(uuidValidate(responseBody[1].id)).toEqual(true);
       expect(responseBody[1].username).toEqual('user2');
-      expect(responseBody[1].email).toEqual('user2@gmail.com');
       expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
       expect(responseBody[1]).not.toHaveProperty('password');
+      expect(responseBody[1]).not.toHaveProperty('email');
     });
   });
 });
