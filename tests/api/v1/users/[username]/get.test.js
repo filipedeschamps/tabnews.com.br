@@ -10,8 +10,8 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/users/[username].public.js', () => {
-  describe('if "username" does not exists', () => {
-    test('should return a NotFound error', async () => {
+  describe('Anonymous user', () => {
+    test('Retrieving user that not exists', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/donotexist`);
       const responseBody = await response.json();
 
@@ -24,10 +24,8 @@ describe('GET /api/v1/users/[username].public.js', () => {
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
     });
-  });
 
-  describe('if "username" does exists (same uppercase letters)', () => {
-    test('should return the user object', async () => {
+    test('Retrieving user that does exists using same capital letters', async () => {
       const userCreatedResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -56,10 +54,8 @@ describe('GET /api/v1/users/[username].public.js', () => {
       expect(userFindResponseBody).not.toHaveProperty('password');
       expect(userFindResponseBody).not.toHaveProperty('email');
     });
-  });
 
-  describe('if "username" does exists (different uppercase letters)', () => {
-    test('should return the user object', async () => {
+    test('Retrieving user that does exists using different capital letters', async () => {
       const userCreatedResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
