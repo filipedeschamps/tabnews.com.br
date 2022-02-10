@@ -118,6 +118,11 @@ function filterOutput(user, feature, output) {
     if (user.id && output.id && user.id === output.id) {
       filteredOutputValues.email = output.email;
     }
+
+    // TODO: Double check if this is right and covered by tests
+    if (user.id !== output.id && user.features.includes('read:user:email')) {
+      filteredOutputValues.email = output.email;
+    }
   }
 
   if (feature === 'read:users' && can(user, feature, output)) {

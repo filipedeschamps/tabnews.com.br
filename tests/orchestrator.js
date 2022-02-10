@@ -112,6 +112,14 @@ async function createUser() {
   });
 }
 
+async function addFeaturesToUser(userObject, features) {
+  return await user.addFeatures(userObject.id, features);
+}
+
+async function removeFeaturesFromUser(userObject, features) {
+  return await user.removeFeatures(userObject.id, features);
+}
+
 async function activateUser(userObject) {
   return await activation.activateUserByUserId(userObject.id);
 }
@@ -130,4 +138,6 @@ export default {
   createUser,
   activateUser,
   createSession,
+  addFeaturesToUser,
+  removeFeaturesFromUser,
 };

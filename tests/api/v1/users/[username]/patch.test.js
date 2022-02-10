@@ -12,7 +12,7 @@ beforeAll(async () => {
 });
 
 describe('PATCH /api/v1/users/[username]', () => {
-  describe('Regular User', () => {
+  describe('User with default features', () => {
     let firstUser;
     let firstUserSession;
 
@@ -24,7 +24,6 @@ describe('PATCH /api/v1/users/[username]', () => {
 
     test('Patching other user', async () => {
       let secondUser = await orchestrator.createUser();
-      secondUser = await orchestrator.activateUser(secondUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
         method: 'patch',
@@ -80,6 +79,51 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const firstUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', firstUserInDatabase.password);
+      expect(passwordsMatch).toBe(true);
+    });
+  });
+
+  describe('User with "update:user:others" feature', () => {
+    let firstUser;
+    let firstUserSession;
+    let secondUser;
+
+    beforeEach(async () => {
+      firstUser = await orchestrator.createUser();
+      firstUser = await orchestrator.activateUser(firstUser);
+      firstUser = await orchestrator.addFeaturesToUser(firstUser, ['update:user:others']);
+      firstUserSession = await orchestrator.createSession(firstUser);
+      secondUser = await orchestrator.createUser();
+    });
+
+    test('Patching other user username', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${firstUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          username: 'updateOthersPatchingOtherUser',
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(200);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidValidate(responseBody.id)).toEqual(true);
+      expect(firstUser.id).not.toEqual(responseBody.id);
+      expect(secondUser.id).toEqual(responseBody.id);
+      expect(responseBody.username).toEqual('updateOthersPatchingOtherUser');
+      expect(responseBody.features).toEqual(secondUser.features);
+      expect(responseBody.created_at).toEqual(secondUser.created_at.toISOString());
+      expect(responseBody.updated_at > secondUser.created_at.toISOString()).toBe(true);
+      expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('email');
+
+      const secondUserInDatabase = await user.findOneById(responseBody.id);
+      const passwordsMatch = await password.compare('password', secondUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
     });
   });
