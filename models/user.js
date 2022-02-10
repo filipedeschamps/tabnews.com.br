@@ -78,6 +78,8 @@ function createAnonymous() {
 }
 
 async function validatePostSchema(postedUserData) {
+  stripUndefinedValues(postedUserData);
+
   const schema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).trim().required().messages({
       'any.required': `"username" é um campo obrigatório.`,
@@ -163,6 +165,8 @@ async function update(username, postedUserData) {
 // the POST and PATCH schema since (for now) the only
 // differences are the .required() validations and messages.
 async function validatePatchSchema(userData) {
+  stripUndefinedValues(userData);
+
   const schema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).trim().messages({
       'string.empty': `"username" não pode estar em branco.`,
@@ -182,9 +186,6 @@ async function validatePatchSchema(userData) {
       'string.base': `"password" deve ser do tipo String.`,
       'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
       'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
-    }),
-    features: Joi.array().items(Joi.string()).messages({
-      'array.base': `"features" deve ser do tipo Array.`,
     }),
   });
 
@@ -267,6 +268,14 @@ async function addFeatures(userId, features) {
 
   const results = await database.query(query);
   return results.rows[0];
+}
+
+function stripUndefinedValues(object) {
+  Object.keys(object).forEach((key) => {
+    if (object[key] === undefined) {
+      delete object[key];
+    }
+  });
 }
 
 export default Object.freeze({

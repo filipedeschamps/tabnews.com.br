@@ -81,6 +81,7 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
       'read:session',
       'create:post',
       'create:comment',
+      'update:user',
     ]);
     expect(Date.parse(activationLinkResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(activationLinkResponseBody.updated_at)).not.toEqual(NaN);

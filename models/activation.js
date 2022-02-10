@@ -79,7 +79,14 @@ async function findOneTokenByUserId(userId) {
 
 async function activateUserUsingTokenId(tokenId) {
   const tokenObject = await findOneValidTokenById(tokenId);
-  const userToActivate = await user.findOneById(tokenObject.user_id);
+  const activatedUser = await activateUserByUserId(tokenObject.user_id);
+  await markTokenAsUsed(tokenObject.id);
+
+  return activatedUser;
+}
+
+async function activateUserByUserId(userId) {
+  const userToActivate = await user.findOneById(userId);
 
   if (!authorization.can(userToActivate, 'read:activation_token')) {
     throw new ForbiddenError({
@@ -93,9 +100,14 @@ async function activateUserUsingTokenId(tokenId) {
   // TODO: in the future, understand how to run
   // this inside a transaction, or at least
   // reduce how many queries are run.
-  await markTokenAsUsed(tokenObject.id);
   await user.removeFeatures(userToActivate.id, ['read:activation_token']);
-  return await user.addFeatures(userToActivate.id, ['create:session', 'read:session', 'create:post', 'create:comment']);
+  return await user.addFeatures(userToActivate.id, [
+    'create:session',
+    'read:session',
+    'create:post',
+    'create:comment',
+    'update:user',
+  ]);
 }
 
 async function findOneValidTokenById(tokenId) {
@@ -137,4 +149,5 @@ export default Object.freeze({
   findOneTokenByUserId,
   getActivationUrl,
   activateUserUsingTokenId,
+  activateUserByUserId,
 });
