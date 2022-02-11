@@ -1,21 +1,22 @@
 import { ValidationError, ForbiddenError } from 'errors/index.js';
 
 const availableFeatures = new Set([
-  'read:activation_token',
+  'activation_token:read',
 
-  'create:session',
-  'read:session',
+  'session:create',
+  'session:read',
 
-  'create:post',
-  'create:comment',
+  'post:create',
 
-  'create:user',
-  'read:user',
-  'read:user:email',
-  'update:user',
-  'update:user:others',
+  'comment:create',
 
-  'read:users',
+  'user:create',
+  'user:read',
+  'user:read:email',
+  'user:update',
+  'user:update:others',
+
+  'user_list:read',
 ]);
 
 function can(user, feature, resource) {
@@ -29,14 +30,14 @@ function can(user, feature, resource) {
   }
 
   // TODO: Double check if this is right and covered by tests
-  if (feature === 'update:user' && resource) {
+  if (feature === 'user:update' && resource) {
     authorized = false;
 
     if (user.id === resource.id) {
       authorized = true;
     }
 
-    if (user.id !== resource.id && can(user, 'update:user:others')) {
+    if (user.id !== resource.id && can(user, 'user:update:others')) {
       authorized = true;
     }
   }
@@ -51,14 +52,14 @@ function filterInput(user, feature, input) {
 
   let filteredInputValues = {};
 
-  if (feature === 'create:session' && can(user, feature)) {
+  if (feature === 'session:create' && can(user, feature)) {
     filteredInputValues = {
       username: input.username,
       password: input.password,
     };
   }
 
-  if (feature === 'create:user' && can(user, feature)) {
+  if (feature === 'user:create' && can(user, feature)) {
     filteredInputValues = {
       username: input.username,
       email: input.email,
@@ -66,7 +67,7 @@ function filterInput(user, feature, input) {
     };
   }
 
-  if (feature === 'update:user' && can(user, feature)) {
+  if (feature === 'user:update' && can(user, feature)) {
     filteredInputValues = {
       username: input.username,
       email: input.email,
@@ -84,7 +85,7 @@ function filterOutput(user, feature, output) {
 
   let filteredOutputValues = {};
 
-  if (feature === 'read:session' && can(user, feature)) {
+  if (feature === 'session:read' && can(user, feature)) {
     if (user.id && output.user_id && user.id === output.user_id) {
       filteredOutputValues = {
         id: output.id,
@@ -96,7 +97,7 @@ function filterOutput(user, feature, output) {
     }
   }
 
-  if (feature === 'create:session' && can(user, feature)) {
+  if (feature === 'session:create' && can(user, feature)) {
     if (user.id && output.user_id && user.id === output.user_id) {
       filteredOutputValues = {
         id: output.id,
@@ -108,7 +109,7 @@ function filterOutput(user, feature, output) {
     }
   }
 
-  if (feature === 'read:user' && can(user, feature)) {
+  if (feature === 'user:read' && can(user, feature)) {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
@@ -122,12 +123,12 @@ function filterOutput(user, feature, output) {
     }
 
     // TODO: Double check if this is right and covered by tests
-    if (user.id !== output.id && can(user, 'read:user:email')) {
+    if (user.id !== output.id && can(user, 'user:read:email')) {
       filteredOutputValues.email = output.email;
     }
   }
 
-  if (feature === 'read:users' && can(user, feature, output)) {
+  if (feature === 'user_list:read' && can(user, feature, output)) {
     filteredOutputValues = output.map((user) => ({
       id: user.id,
       username: user.username,

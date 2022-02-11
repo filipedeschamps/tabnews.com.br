@@ -12,15 +12,15 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('read:users'), getHandler)
-  .post(authorization.canRequest('create:user'), postHandler);
+  .get(authorization.canRequest('user_list:read'), getHandler)
+  .post(authorization.canRequest('user:create'), postHandler);
 
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
 
   const userList = await user.findAll();
 
-  const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:users', userList);
+  const secureOutputValues = authorization.filterOutput(userTryingToList, 'user_list:read', userList);
 
   return response.status(200).json(secureOutputValues);
 }
@@ -28,12 +28,12 @@ async function getHandler(request, response) {
 async function postHandler(request, response) {
   const userTryingToCreate = request.context.user;
   const insecureInputValues = request.body;
-  const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
+  const secureInputValues = authorization.filterInput(userTryingToCreate, 'user:create', insecureInputValues);
 
   const newUser = await user.create(secureInputValues);
   await activation.sendActivationEmailToUser(newUser);
 
-  const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
+  const secureOutputValues = authorization.filterOutput(newUser, 'user:read', newUser);
 
   return response.status(201).json(secureOutputValues);
 }

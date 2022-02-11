@@ -12,14 +12,14 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('read:session'), getHandler)
-  .post(authorization.canRequest('create:session'), postHandler);
+  .get(authorization.canRequest('session:read'), getHandler)
+  .post(authorization.canRequest('session:create'), postHandler);
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
   const sessionObject = request.context.session;
 
-  const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
+  const secureOutputValues = authorization.filterOutput(authenticatedUser, 'session:read', sessionObject);
 
   return response.status(200).json(secureOutputValues);
 }
@@ -30,14 +30,14 @@ async function postHandler(request, response) {
   // TODO: Validate the requirement of "username" and "password".
   const insecureInputValues = request.body;
 
-  const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
+  const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'session:create', insecureInputValues);
 
   const storedUser = await user.findOneByUsername(secureInputValues.username);
 
-  if (!authorization.can(storedUser, 'create:session')) {
+  if (!authorization.can(storedUser, 'session:create')) {
     throw new ForbiddenError({
       message: `Você não possui permissão para fazer login.`,
-      action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "create:session".`,
+      action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "session:create".`,
       errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
     });
   }
@@ -46,7 +46,7 @@ async function postHandler(request, response) {
 
   const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
 
-  const secureOutputValues = authorization.filterOutput(storedUser, 'create:session', sessionObject);
+  const secureOutputValues = authorization.filterOutput(storedUser, 'session:create', sessionObject);
 
   return response.status(201).json(secureOutputValues);
 }
