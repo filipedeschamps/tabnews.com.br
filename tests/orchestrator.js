@@ -102,13 +102,11 @@ async function getLastEmail() {
   return lastEmailItem;
 }
 
-// TODO: upgrade this function to receive
-// a user object with custom values.
-async function createUser() {
+async function createUser(userObject) {
   return await user.create({
-    username: faker.internet.userName().replace('_', '').replace('.', ''),
-    email: faker.internet.email(),
-    password: 'password',
+    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
+    email: userObject?.email || faker.internet.email(),
+    password: userObject?.password || 'password',
   });
 }
 
