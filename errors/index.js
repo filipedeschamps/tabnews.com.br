@@ -16,10 +16,10 @@ class BaseError extends Error {
 }
 
 export class InternalServerError extends BaseError {
-  constructor({ requestId, errorId, statusCode, stack, errorUniqueCode }) {
+  constructor({ message, action, requestId, errorId, statusCode, stack, errorUniqueCode }) {
     super({
-      message: 'Um erro interno não esperado aconteceu.',
-      action: "Informe ao suporte o valor encontrado nos campos 'errorId'.",
+      message: message || 'Um erro interno não esperado aconteceu.',
+      action: action || "Informe ao suporte o valor encontrado nos campos 'errorId'.",
       statusCode: statusCode || 500,
       requestId: requestId,
       errorId: errorId,
@@ -57,12 +57,13 @@ export class ServiceError extends BaseError {
 }
 
 export class ValidationError extends BaseError {
-  constructor({ message, action, stack, statusCode, errorUniqueCode }) {
+  constructor({ message, action, stack, statusCode, context, errorUniqueCode }) {
     super({
-      message: message,
+      message: message || 'Um erro de validação ocorreu.',
       action: action || 'Ajuste os dados enviados e tente novamente.',
       statusCode: statusCode || 400,
       stack: stack,
+      context: context,
       errorUniqueCode: errorUniqueCode,
     });
   }
