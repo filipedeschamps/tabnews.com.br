@@ -39,7 +39,7 @@
     "services:stop": "docker-compose -f infra/docker-compose.development.yml stop",
     "build": "next build",
     "start": "next start",
-    "test": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --verbose --detectOpenHandles' && npm run services:stop",
+    "test": "npm run services:up && concurrently -s -k -n next,jest --hide next 'npm run next' 'jest --runInBand --verbose --detectOpenHandles' && npm run services:stop",
     "test:watch": "jest --runInBand --watchAll",
     "test:watch:services": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watchAll' && npm run services:stop",
     "lint": "npm run lint:next && npm run lint:prettier",
