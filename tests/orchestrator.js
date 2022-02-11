@@ -1,7 +1,11 @@
 import fetch from 'cross-fetch';
 import retry from 'async-retry';
+import faker from '@faker-js/faker';
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
+import user from 'models/user.js';
+import activation from 'models/activation.js';
+import session from 'models/session.js';
 
 const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -98,6 +102,30 @@ async function getLastEmail() {
   return lastEmailItem;
 }
 
+async function createUser(userObject) {
+  return await user.create({
+    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
+    email: userObject?.email || faker.internet.email(),
+    password: userObject?.password || 'password',
+  });
+}
+
+async function addFeaturesToUser(userObject, features) {
+  return await user.addFeatures(userObject.id, features);
+}
+
+async function removeFeaturesFromUser(userObject, features) {
+  return await user.removeFeatures(userObject.id, features);
+}
+
+async function activateUser(userObject) {
+  return await activation.activateUserByUserId(userObject.id);
+}
+
+async function createSession(userObject) {
+  return await session.create(userObject.id);
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -105,4 +133,9 @@ export default {
   webserverUrl,
   deleteAllEmails,
   getLastEmail,
+  createUser,
+  activateUser,
+  createSession,
+  addFeaturesToUser,
+  removeFeaturesFromUser,
 };
