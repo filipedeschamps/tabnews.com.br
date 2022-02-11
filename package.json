@@ -19,6 +19,8 @@
   "devDependencies": {
     "@babel/preset-env": "7.16.11",
     "@faker-js/faker": "6.0.0-alpha.5",
+    "@swc/core": "1.2.138",
+    "@swc/jest": "0.2.17",
     "async-retry": "1.3.3",
     "autoprefixer": "10.4.2",
     "concurrently": "7.0.0",
@@ -67,6 +69,11 @@
   },
   "homepage": "https://www.tabnews.com.br/",
   "jest": {
+    "transform": {
+      "^.+\\.(t|j)sx?$": [
+        "@swc/jest"
+      ]
+    },
     "moduleDirectories": [
       "node_modules",
       "."
