@@ -8,7 +8,7 @@ concurrency:
 
 jobs:
   tests:
-    name: Tests
+    name: Tests & Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -39,30 +39,18 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-
       - uses: actions/setup-node@v2
         with:
           node-version: "14"
           cache: "npm"
       - run: npm ci
       - run: npm run build
+      - run: npm run lint
       - run: npm start & npx jest --runInBand
 
       - name: Stop containers
         if: always()
         run: docker-compose -f infra/docker-compose.development.yml down
-  
-  lint-styles:
-    name: Lint Styles
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run lint
   
   lint-commits:
     name: Lint Commits
