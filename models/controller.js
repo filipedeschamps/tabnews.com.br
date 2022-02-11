@@ -30,6 +30,8 @@ function onErrorHandler(error, request, response) {
   }
 
   const errorObject = new InternalServerError({
+    message: error.message,
+    action: error.action,
     requestId: request.id,
     errorId: error.errorId,
     stack: error.stack,

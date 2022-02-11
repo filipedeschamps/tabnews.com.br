@@ -60,7 +60,7 @@ describe('GET /api/v1/users/[username]', () => {
       expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(userCreated.id).toEqual(responseBody.id);
       expect(responseBody.username).toEqual('userNameToBeFoundCAPS');
-      expect(responseBody.features).toEqual(['read:activation_token', 'read:user', 'read:users']);
+      expect(responseBody.features).toEqual(['activation_token:read', 'user:read', 'user_list:read']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');

@@ -34,10 +34,10 @@ async function injectAnonymousOrUser(request, response, next) {
     const sessionObject = await session.findOneValidFromRequest(request);
     const userObject = await user.findOneById(sessionObject.user_id);
 
-    if (!authorization.can(userObject, 'read:session')) {
+    if (!authorization.can(userObject, 'session:read')) {
       throw new ForbiddenError({
         message: `Você não possui permissão para executar esta ação.`,
-        action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".`,
+        action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "session:read".`,
         errorUniqueCode: 'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
       });
     }

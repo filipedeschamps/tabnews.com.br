@@ -34,7 +34,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:user".');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "user:update".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -74,7 +74,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não possui permissão para atualizar outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:user:others".');
+      expect(responseBody.action).toEqual('Verifique se você possui a feature "user:update:others".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -115,7 +115,7 @@ describe('PATCH /api/v1/users/[username]', () => {
     });
   });
 
-  describe('User with "update:user:others" feature', () => {
+  describe('User with "user:update:others" feature', () => {
     let firstUser;
     let firstUserSession;
     let secondUser;
@@ -123,7 +123,7 @@ describe('PATCH /api/v1/users/[username]', () => {
     beforeEach(async () => {
       firstUser = await orchestrator.createUser();
       firstUser = await orchestrator.activateUser(firstUser);
-      firstUser = await orchestrator.addFeaturesToUser(firstUser, ['update:user:others']);
+      firstUser = await orchestrator.addFeaturesToUser(firstUser, ['user:update:others']);
       firstUserSession = await orchestrator.createSession(firstUser);
       secondUser = await orchestrator.createUser();
     });
@@ -142,6 +142,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
+
       expect(response.status).toEqual(200);
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
