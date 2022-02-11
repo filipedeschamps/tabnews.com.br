@@ -11,7 +11,9 @@ const availableFeatures = new Set([
 
   'create:user',
   'read:user',
+  'read:user:email',
   'update:user',
+  'update:user:others',
 
   'read:users',
 ]);
@@ -34,7 +36,7 @@ function can(user, feature, resource) {
       authorized = true;
     }
 
-    if (user.id !== resource.id && user.features.includes('update:user:others')) {
+    if (user.id !== resource.id && can(user, 'update:user:others')) {
       authorized = true;
     }
   }
@@ -120,7 +122,7 @@ function filterOutput(user, feature, output) {
     }
 
     // TODO: Double check if this is right and covered by tests
-    if (user.id !== output.id && user.features.includes('read:user:email')) {
+    if (user.id !== output.id && can(user, 'read:user:email')) {
       filteredOutputValues.email = output.email;
     }
   }
@@ -164,8 +166,11 @@ function validateFeature(feature) {
 
   if (!availableFeatures.has(feature)) {
     throw new ValidationError({
-      message: `A "feature" enviada não está disponível na lista de features existentes.`,
+      message: `A feature utilizada não está disponível na lista de features existentes.`,
       action: `Contate o suporte informado o campo "errorId".`,
+      context: {
+        feature: feature,
+      },
     });
   }
 }

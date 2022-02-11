@@ -142,6 +142,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
+
       expect(response.status).toEqual(200);
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
