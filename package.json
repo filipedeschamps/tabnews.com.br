@@ -43,7 +43,7 @@
     "test:watch": "jest --runInBand --watchAll",
     "test:watch:services": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watchAll' && npm run services:stop",
     "lint": "npm run lint:next && npm run lint:prettier",
-    "lint:next": "next lint --dir .",
+    "lint:next": "next lint --max-warnings=0 --dir .",
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix && prettier --write '**/*.{json,js,jsx,ts,tsx}'",
     "commit": "cz",
