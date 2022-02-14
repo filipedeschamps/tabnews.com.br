@@ -17,6 +17,8 @@ const availableFeatures = new Set([
   'user:update:others',
 
   'user_list:read',
+
+  'migration:read',
 ]);
 
 function can(user, feature, resource) {
