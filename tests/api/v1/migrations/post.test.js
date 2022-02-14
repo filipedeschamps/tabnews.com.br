@@ -35,7 +35,7 @@ describe('POST /api/v1/migrations', () => {
     });
   });
 
-  describe('User with "migration:create" feature', () => {      
+  describe('User with "migration:create" feature', () => {
     let firstUser;
     let firstUserSession;
 
