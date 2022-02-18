@@ -16,6 +16,8 @@ const availableFeatures = new Set([
   'user:update',
   'user:update:others',
 
+  'migrations:read',
+
   'user_list:read',
 ]);
 
