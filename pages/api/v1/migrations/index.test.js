@@ -10,6 +10,17 @@ beforeAll(async () => {
 });
 
 describe('[e2e] First GET to /api/v1/migrations', () => {
+  test('should not list migrations for anonymous', async () => {
+    const numberOfMigrationFiles = numberOfFilesInFolder('./infra/migrations');
+
+    const pendingMigrationsResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`);
+    const pendingMigrationsBody = await pendingMigrationsResponse.json();
+
+    expect(pendingMigrationsResponse.status).toEqual(403);
+  });
+});
+
+/*describe('[e2e] First GET to /api/v1/migrations', () => {
   test('should list all pending migrations', async () => {
     const numberOfMigrationFiles = numberOfFilesInFolder('./infra/migrations');
 
@@ -83,4 +94,4 @@ describe('[e2e] PUT to /api/v1/migrations', () => {
     expect(putMigrationsBody.statusCode).toEqual(404);
     expect(putMigrationsBody.stack).toBeUndefined();
   });
-});
+});*/
