@@ -10,15 +10,13 @@ beforeAll(async () => {
 });
 
 describe('POST /api/v1/migrations', () => {
-
   describe('Anonymous user', () => {
-    test('Should return a ForbiddenError', async () => {      
-
+    test('Should return a ForbiddenError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       const responseBody = await response.json();
@@ -44,11 +42,10 @@ describe('POST /api/v1/migrations', () => {
       firstUser = await orchestrator.createUser();
       firstUser = await orchestrator.activateUser(firstUser);
       firstUser = await orchestrator.addFeaturesToUser(firstUser, ['migration:create']);
-      firstUserSession = await orchestrator.createSession(firstUser);      
+      firstUserSession = await orchestrator.createSession(firstUser);
     });
 
-    test('Should list all migrations', async () => {      
-
+    test('Should list all migrations', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
         method: 'POST',
         headers: {
@@ -56,12 +53,12 @@ describe('POST /api/v1/migrations', () => {
           cookie: `session_id=${firstUserSession.token}`,
         },
         body: JSON.stringify({
-            username: 'firtstUserAccessingMigrations',
-          }),
-      });      
+          username: 'firtstUserAccessingMigrations',
+        }),
+      });
 
       const responseBody = await response.json();
-     
+
       expect(response.status).toEqual(200);
       expect(Array.isArray(responseBody)).toEqual(true);
     });
@@ -74,11 +71,10 @@ describe('POST /api/v1/migrations', () => {
     beforeEach(async () => {
       secondUser = await orchestrator.createUser();
       secondUser = await orchestrator.activateUser(secondUser);
-      secondUserSession = await orchestrator.createSession(secondUser);      
+      secondUserSession = await orchestrator.createSession(secondUser);
     });
 
-    test('Should return a ForbiddenError', async () => {      
-
+    test('Should return a ForbiddenError', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
         method: 'POST',
         headers: {
@@ -86,9 +82,9 @@ describe('POST /api/v1/migrations', () => {
           cookie: `session_id=${secondUserSession.token}`,
         },
         body: JSON.stringify({
-            username: 'secondUserNotAccessingMigrations',
-          }),
-      });      
+          username: 'secondUserNotAccessingMigrations',
+        }),
+      });
 
       const responseBody = await response.json();
 
@@ -102,7 +98,6 @@ describe('POST /api/v1/migrations', () => {
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
-
     });
   });
 
@@ -117,47 +112,45 @@ describe('POST /api/v1/migrations', () => {
       thirdUserSession = await orchestrator.createSession(thirdUser);
     });
 
-    test('Should return a ForbiddenError after remove migration:create feature', async () => {  
-        const responseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${thirdUserSession.token}`,
-            },
-            body: JSON.stringify({
-                username: 'thirdUserAccessingMigrations',
-              }),
-          });      
-       
-        expect(responseBefore.status).toEqual(200);
+    test('Should return a ForbiddenError after remove migration:create feature', async () => {
+      const responseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${thirdUserSession.token}`,
+        },
+        body: JSON.stringify({
+          username: 'thirdUserAccessingMigrations',
+        }),
+      });
 
-        thirdUser = await orchestrator.removeFeaturesFromUser(thirdUser, ['migration:create']);        
+      expect(responseBefore.status).toEqual(200);
 
-        const responseAfter = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${thirdUserSession.token}`,
-            },
-            body: JSON.stringify({
-                username: 'thirdUserNotAccessingMigrations',
-              }),
-          }); 
+      thirdUser = await orchestrator.removeFeaturesFromUser(thirdUser, ['migration:create']);
 
-        const responseBody = await responseAfter.json();
+      const responseAfter = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${thirdUserSession.token}`,
+        },
+        body: JSON.stringify({
+          username: 'thirdUserNotAccessingMigrations',
+        }),
+      });
 
-        expect(responseAfter.status).toEqual(403);
-        expect(responseBody.name).toEqual('ForbiddenError');
-        expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-        expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:create".');
-        expect(responseBody.statusCode).toEqual(403);
-        expect(uuidVersion(responseBody.errorId)).toEqual(4);
-        expect(uuidValidate(responseBody.errorId)).toEqual(true);
-        expect(uuidVersion(responseBody.requestId)).toEqual(4);
-        expect(uuidValidate(responseBody.requestId)).toEqual(true);
-        expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      const responseBody = await responseAfter.json();
 
+      expect(responseAfter.status).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:create".');
+      expect(responseBody.statusCode).toEqual(403);
+      expect(uuidVersion(responseBody.errorId)).toEqual(4);
+      expect(uuidValidate(responseBody.errorId)).toEqual(true);
+      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(uuidValidate(responseBody.requestId)).toEqual(true);
+      expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
-
 });

@@ -28,7 +28,7 @@ function can(user, feature, resource) {
 
   let authorized = false;
 
-  if (user.features.includes(feature)) {   
+  if (user.features.includes(feature)) {
     authorized = true;
   }
 
@@ -44,7 +44,7 @@ function can(user, feature, resource) {
       authorized = true;
     }
   }
- 
+
   return authorized;
 }
 
