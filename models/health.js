@@ -30,15 +30,19 @@ async function getDependencies() {
 async function checkDatabaseDependency() {
   let result;
   try {
+    const maxConnectionsResult = await database.query('SHOW max_connections');
+    const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
+
     const openConnectionsResult = await database.query(
       'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
       [process.env.POSTGRES_DB]
     );
-    const { opened_connections } = openConnectionsResult.rows[0];
+    const openConnectionsValue = openConnectionsResult.rows[0].opened_connections;
 
     result = {
       status: 'healthy',
-      opened_connections: parseInt(opened_connections),
+      max_connections: parseInt(maxConnectionsValue, 10),
+      opened_connections: parseInt(openConnectionsValue, 10),
     };
   } catch (error) {
     result = {
