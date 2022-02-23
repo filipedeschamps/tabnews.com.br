@@ -48,7 +48,7 @@
     "lint:fix": "eslint --fix && prettier --write '**/*.{json,js,jsx,ts,tsx}'",
     "commit": "cz",
     "migration:create": "node-pg-migrate create",
-    "migration:run": "node-pg-migrate -m infra/migrations/"
+    "migration:run": "node-pg-migrate up --envPath ./.env -m infra/migrations/"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
