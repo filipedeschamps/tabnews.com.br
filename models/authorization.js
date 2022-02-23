@@ -1,6 +1,9 @@
 import { ValidationError, ForbiddenError } from 'errors/index.js';
 
 const availableFeatures = new Set([
+  'migration:read',
+  'migration:create',
+
   'activation_token:read',
 
   'session:create',
