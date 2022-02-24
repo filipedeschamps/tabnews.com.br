@@ -31,10 +31,10 @@ export default function Page() {
           overflow-x: hidden;
         }
         .avatar {
-         transition: all .2s ease-in-out; 
+         transition: all .2s ease-in-out;
          position: relative;
          }
-         
+
         .avatar:hover {
          -moz-transform: scale(2.2);
          -webkit-transform: scale(2.2);
@@ -45,7 +45,7 @@ export default function Page() {
         .avatar:hover img {
          display: block;
          margin-left: auto;
-         margin-right: auto 
+         margin-right: auto
         }
 
         .label-username{
@@ -134,19 +134,22 @@ export default function Page() {
         }
 
         @media (min-width: 640px) {
-            .collaborators-grid {
-                grid-template-columns: repeat(8, minmax(0, 1fr));
-            }
+          .collaborators-grid {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+          }
+        }
 
         @media (min-width: 1024px) {
-            .collaborators-grid {
-                grid-template-columns: repeat(16, minmax(0, 1fr));
-            }
+          .collaborators-grid {
+            grid-template-columns: repeat(16, minmax(0, 1fr));
+          }
+        }
 
         @media (min-width: 1280px) {
-            .collaborators-grid {
-                grid-template-columns: repeat(25, minmax(0, 1fr));
-            }
+          .collaborators-grid {
+            grid-template-columns: repeat(25, minmax(0, 1fr));
+          }
+        }
       `}</style>
     </>
   );
