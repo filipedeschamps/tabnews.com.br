@@ -38,7 +38,7 @@ async function waitForAllServices() {
         if (tries >= 25) {
           console.log(`> Trying to connect to Database #${tries}. Are you running the Postgres container?`);
         }
-        const connection = await database.getNewConnectedClient();
+        const connection = await database.getNewClient();
         await connection.end();
       },
       {
@@ -69,7 +69,7 @@ async function waitForAllServices() {
 }
 
 async function dropAllTables() {
-  const databaseClient = await database.getNewConnectedClient();
+  const databaseClient = await database.getNewClient();
   await databaseClient.query('drop schema public cascade; create schema public;');
 
   await databaseClient.end();
