@@ -96,7 +96,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: 'RegularRegistrationFlow',
+        email: 'RegularRegistrationFlow@gmail.com',
         password: 'RegularRegistrationFlowPassword',
       }),
     });

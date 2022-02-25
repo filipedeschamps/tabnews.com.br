@@ -33,6 +33,26 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
+async function findOneByEmail(email) {
+  const query = {
+    text: 'SELECT * FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1;',
+    values: [email],
+  };
+
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O email "${email}" não foi encontrado no sistema.`,
+      action: 'Verifique se o "username" está digitado corretamente.',
+      stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
+    });
+  }
+
+  return results.rows[0];
+}
+
 async function findOneById(userId) {
   const query = {
     text: 'SELECT * FROM users WHERE id = $1 LIMIT 1;',
@@ -282,6 +302,7 @@ export default Object.freeze({
   create,
   findAll,
   findOneByUsername,
+  findOneByEmail,
   findOneById,
   update,
   removeFeatures,

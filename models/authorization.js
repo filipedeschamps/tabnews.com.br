@@ -57,7 +57,7 @@ function filterInput(user, feature, input) {
 
   if (feature === 'session:create' && can(user, feature)) {
     filteredInputValues = {
-      username: input.username,
+      email: input.email,
       password: input.password,
     };
   }
