@@ -3,7 +3,8 @@ import controller from 'models/controller.js';
 import user from 'models/user';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import { ForbiddenError } from '/errors/index.js';
+import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
+import session from 'models/session';
 
 export default nextConnect({
   attachParams: true,
@@ -26,13 +27,24 @@ async function getHandler(request, response) {
 
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
-
-  // TODO: Validate the requirement of "username" and "password".
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'session:create', insecureInputValues);
 
-  const storedUser = await user.findOneByUsername(secureInputValues.username);
+  await session.validatePostSchema(secureInputValues);
+
+  // Compress all mismatch errors (email and password) into one single error.
+  let storedUser;
+  try {
+    storedUser = await user.findOneByEmail(secureInputValues.email);
+    await authentication.comparePasswords(secureInputValues.password, storedUser.password);
+  } catch (error) {
+    throw new UnauthorizedError({
+      message: `Dados não conferem.`,
+      action: `Verifique se os dados enviados estão corretos.`,
+      errorUniqueCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+    });
+  }
 
   if (!authorization.can(storedUser, 'session:create')) {
     throw new ForbiddenError({
@@ -41,8 +53,6 @@ async function postHandler(request, response) {
       errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
     });
   }
-
-  await authentication.comparePasswords(secureInputValues.password, storedUser.password);
 
   const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
 
