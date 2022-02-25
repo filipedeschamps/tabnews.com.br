@@ -30,9 +30,9 @@ async function postHandler(request, response) {
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'session:create', insecureInputValues);
-  
-  await session.validatePostSchema(secureInputValues)
-  
+
+  await session.validatePostSchema(secureInputValues);
+
   const storedUser = await user.findOneByEmail(secureInputValues.email);
 
   if (!authorization.can(storedUser, 'session:create')) {

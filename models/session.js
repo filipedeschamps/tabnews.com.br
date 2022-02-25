@@ -33,7 +33,7 @@ async function validatePostSchema(postedSessionData) {
       'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
       'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
     }),
-  })
+  });
 
   const { error, value } = schema.validate(postedSessionData, { stripUnknown: true });
 
