@@ -12,13 +12,14 @@ beforeAll(async () => {
 });
 
 describe('POST /api/v1/sessions', () => {
-  describe('With valid email and valid password', () => {
-    test('Should be able to create session with email and password', async () => {
-      let defaultUser = await orchestrator.createUser({
+  describe('Anonymous User', () => {
+    test('Using a valid email and password', async () => {
+      const defaultUser = await orchestrator.createUser({
         email: 'emailToBeFoundAndAccepted@gmail.com',
         password: 'ValidPassword',
       });
-      defaultUser = await orchestrator.activateUser(defaultUser);
+
+      await orchestrator.activateUser(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
@@ -51,10 +52,8 @@ describe('POST /api/v1/sessions', () => {
       expect(parsedCookiesFromResponse.session_id.path).toEqual('/');
       expect(parsedCookiesFromResponse.session_id.httpOnly).toEqual(true);
     });
-  });
 
-  describe('With valid email and password but with wrong user', () => {
-    test('Should reject a login from a not activated user', async () => {
+    test('Using a valid email and password, but not activated user', async () => {
       await orchestrator.createUser({
         email: 'emailToBeFoundAndRejected@gmail.com',
         password: 'ValidPassword',
@@ -86,10 +85,74 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION');
     });
-  });
 
-  describe('With a valid password but without email', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid email and password, but wrong password', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'wrongpassword@gmail.com',
+        password: 'wrongpassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'wrongpassword@gmail.com',
+          password: 'IFORGOTMYPASSWORD',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(responseBody.name).toEqual('UnauthorizedError');
+      expect(responseBody.message).toEqual('Dados não conferem.');
+      expect(responseBody.action).toEqual('Verifique se os dados enviados estão corretos.');
+      expect(responseBody.statusCode).toEqual(401);
+      expect(uuidVersion(responseBody.errorId)).toEqual(4);
+      expect(uuidValidate(responseBody.errorId)).toEqual(true);
+      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(uuidValidate(responseBody.requestId)).toEqual(true);
+      expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
+    });
+
+    test('Using a valid email and password, but wrong email', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'wrongemail@gmail.com',
+        password: 'wrongemail',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'IFORGOTMYEMAIL@gmail.com',
+          password: 'wrongemail',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(responseBody.name).toEqual('UnauthorizedError');
+      expect(responseBody.message).toEqual('Dados não conferem.');
+      expect(responseBody.action).toEqual('Verifique se os dados enviados estão corretos.');
+      expect(responseBody.statusCode).toEqual(401);
+      expect(uuidVersion(responseBody.errorId)).toEqual(4);
+      expect(uuidValidate(responseBody.errorId)).toEqual(true);
+      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(uuidValidate(responseBody.requestId)).toEqual(true);
+      expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
+    });
+
+    test('Using a valid password, but without email', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -112,10 +175,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid password but empty email', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid password, but empty email', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -139,10 +200,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid password but email with number type', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid password, but email Using number type', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -166,10 +225,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid password but invalid email', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid password, but invalid email', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -193,10 +250,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid email but without password', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid email, but without password', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -219,10 +274,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid email but empty password', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid email, but empty password', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -246,10 +299,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid email but small password', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid email, but small password', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -273,10 +324,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid email but long password', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid email, but too long password', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -300,10 +349,8 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
-  });
 
-  describe('With a valid email but number type password', () => {
-    test('Should reject a login with wrong input payload', async () => {
+    test('Using a valid email, but number type password', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
