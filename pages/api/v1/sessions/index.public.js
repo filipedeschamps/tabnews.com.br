@@ -4,6 +4,7 @@ import user from 'models/user';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import { ForbiddenError } from '/errors/index.js';
+import session from 'models/session';
 
 export default nextConnect({
   attachParams: true,
@@ -26,13 +27,13 @@ async function getHandler(request, response) {
 
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
-
-  // TODO: Validate the requirement of "username" and "password".
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'session:create', insecureInputValues);
-
-  const storedUser = await user.findOneByUsername(secureInputValues.username);
+  
+  await session.validatePostSchema(secureInputValues)
+  
+  const storedUser = await user.findOneByEmail(secureInputValues.email);
 
   if (!authorization.can(storedUser, 'session:create')) {
     throw new ForbiddenError({
