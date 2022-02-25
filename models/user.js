@@ -44,7 +44,7 @@ async function findOneByEmail(email) {
   if (results.rowCount === 0) {
     throw new NotFoundError({
       message: `O email "${email}" não foi encontrado no sistema.`,
-      action: 'Verifique se o "username" está digitado corretamente.',
+      action: 'Verifique se o "email" está digitado corretamente.',
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
     });
