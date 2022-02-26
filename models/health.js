@@ -1,4 +1,5 @@
 import database from 'infra/database';
+import { performance } from 'perf_hooks';
 
 async function getDependencies() {
   const dependenciesHandlersToCheck = [
@@ -30,10 +31,12 @@ async function getDependencies() {
 async function checkDatabaseDependency() {
   let result;
   try {
+    const startTimer = performance.now();
     const maxConnectionsResult = await database.query(
       'SELECT rolconnlimit as max_connections FROM pg_roles WHERE rolname = $1;',
       [process.env.POSTGRES_USER]
     );
+    const timerDuration = performance.now() - startTimer;
     const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
 
     const openConnectionsResult = await database.query(
@@ -46,6 +49,7 @@ async function checkDatabaseDependency() {
       status: 'healthy',
       max_connections: parseInt(maxConnectionsValue),
       opened_connections: openConnectionsValue,
+      latency: timerDuration,
     };
   } catch (error) {
     console.log(error);
