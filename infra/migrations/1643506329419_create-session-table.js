@@ -2,7 +2,7 @@ exports.up = (pgm) => {
   pgm.createTable('sessions', {
     id: {
       type: 'uuid',
-      default: pgm.func('uuid_generate_v4()'),
+      default: pgm.func('gen_random_uuid()'),
       notNull: true,
       primaryKey: true,
     },
