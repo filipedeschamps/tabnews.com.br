@@ -7,6 +7,10 @@ async function getDependencies() {
       name: 'database',
       handler: checkDatabaseDependency,
     },
+    {
+      name: 'webserver',
+      handler: checkWebserverDependency,
+    },
   ];
 
   const promises = dependenciesHandlersToCheck.map(async ({ name, handler }) => {
@@ -32,10 +36,7 @@ async function checkDatabaseDependency() {
   let result;
   try {
     const startTimer = performance.now();
-    const maxConnectionsResult = await database.query(
-      'SELECT rolconnlimit as max_connections FROM pg_roles WHERE rolname = $1;',
-      [process.env.POSTGRES_USER]
-    );
+    const maxConnectionsResult = await database.query('SHOW max_connections;');
     const timerDuration = performance.now() - startTimer;
     const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
 
@@ -59,6 +60,20 @@ async function checkDatabaseDependency() {
   }
 
   return result;
+}
+
+async function checkWebserverDependency() {
+  return {
+    status: 'healthy',
+    provider: process.env.VERCEL ? 'vercel' : 'local',
+    environment: process.env.VERCEL_ENV ? process.env.VERCEL_ENV : 'local',
+    aws_region: process.env.AWS_REGION,
+    vercel_region: process.env.VERCEL_REGION,
+    timezone: process.env.TZ,
+    last_commit_author: process.env.VERCEL_GIT_COMMIT_AUTHOR_LOGIN,
+    last_commit_message: process.env.VERCEL_GIT_COMMIT_MESSAGE,
+    last_commit_message_sha: process.env.VERCEL_GIT_COMMIT_SHA,
+  };
 }
 
 export default Object.freeze({
