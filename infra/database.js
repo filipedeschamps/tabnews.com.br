@@ -42,6 +42,7 @@ async function query(query, params) {
       errorUniqueCode: 'INFRA:DATABASE:QUERY',
       stack: new Error().stack,
     });
+    console.error(errorObject);
     throw errorObject;
   } finally {
     if (client) {

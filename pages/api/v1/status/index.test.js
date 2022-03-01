@@ -18,6 +18,10 @@ describe('[e2e] do a GET request to /api/v1/status', () => {
     expect(serverStatusBody.dependencies.database.status).toEqual('healthy');
     expect(serverStatusBody.dependencies.database.opened_connections).toBeGreaterThan(0);
     expect(serverStatusBody.dependencies.database.latency).toBeGreaterThan(0);
+
+    expect(serverStatusBody.dependencies.webserver.status).toEqual('healthy');
+    expect(serverStatusBody.dependencies.webserver.provider).toEqual('local');
+    expect(serverStatusBody.dependencies.webserver.environment).toEqual('local');
   });
 });
 
