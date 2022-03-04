@@ -12,7 +12,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('read:user_list'), getHandler)
+  .get(getHandler)
   .post(authorization.canRequest('create:user'), postHandler);
 
 async function getHandler(request, response) {
@@ -20,7 +20,7 @@ async function getHandler(request, response) {
 
   const userList = await user.findAll();
 
-  const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user_list', userList);
+  const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
 
   return response.status(200).json(secureOutputValues);
 }

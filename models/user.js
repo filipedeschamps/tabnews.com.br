@@ -78,7 +78,7 @@ async function create(postedUserData) {
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
 
-  validUserData.features = ['read:activation_token', 'read:user', 'read:user_list'];
+  validUserData.features = ['read:activation_token', 'read:user'];
 
   const newUser = await runInsertQuery(validUserData);
   return newUser;
@@ -95,7 +95,7 @@ async function create(postedUserData) {
 
 function createAnonymous() {
   return {
-    features: ['read:activation_token', 'create:session', 'read:user', 'create:user', 'read:user_list'],
+    features: ['read:activation_token', 'create:session', 'read:user', 'create:user'],
   };
 }
 

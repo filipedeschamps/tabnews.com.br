@@ -5,6 +5,7 @@ const availableFeatures = new Set([
   'create:user',
   'read:user',
   'read:user:others_email',
+  'read:user:list',
   'update:user',
   'update:user:others_email',
 
@@ -24,8 +25,6 @@ const availableFeatures = new Set([
 
   // COMMENT
   'create:comment',
-
-  'read:user_list',
 ]);
 
 function can(user, feature, resource) {
@@ -137,7 +136,7 @@ function filterOutput(user, feature, output) {
     }
   }
 
-  if (feature === 'read:user_list' && can(user, feature, output)) {
+  if (feature === 'read:user:list') {
     filteredOutputValues = output.map((user) => ({
       id: user.id,
       username: user.username,
