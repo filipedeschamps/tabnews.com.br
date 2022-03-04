@@ -35,7 +35,7 @@ async function sendActivationEmailToUser(user) {
 ${activationUrl}
 
 Caso você não tenha feito essa requisição, ignore esse email.
-        
+
 Atenciosamente,
 Equipe TabNews`,
     });
@@ -88,11 +88,11 @@ async function activateUserUsingTokenId(tokenId) {
 async function activateUserByUserId(userId) {
   const userToActivate = await user.findOneById(userId);
 
-  if (!authorization.can(userToActivate, 'activation_token:read')) {
+  if (!authorization.can(userToActivate, 'read:activation_token')) {
     throw new ForbiddenError({
       message: `O usuário "${userToActivate.username}" não pode ler o token de ativação.`,
       action:
-        'Verifique se você está tentando ativar o usuário correto, se ele possui a feature "activation_token:read", ou se ele já está ativo.',
+        'Verifique se você está tentando ativar o usuário correto, se ele possui a feature "read:activation_token", ou se ele já está ativo.',
       stack: new Error().stack,
     });
   }
@@ -100,13 +100,13 @@ async function activateUserByUserId(userId) {
   // TODO: in the future, understand how to run
   // this inside a transaction, or at least
   // reduce how many queries are run.
-  await user.removeFeatures(userToActivate.id, ['activation_token:read']);
+  await user.removeFeatures(userToActivate.id, ['read:activation_token']);
   return await user.addFeatures(userToActivate.id, [
-    'session:create',
-    'session:read',
-    'post:create',
-    'comment:create',
-    'user:update',
+    'create:session',
+    'read:session',
+    'create:post',
+    'create:comment',
+    'update:user',
   ]);
 }
 

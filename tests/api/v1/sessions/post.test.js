@@ -76,7 +76,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não possui permissão para fazer login.');
       expect(responseBody.action).toEqual(
-        'Verifique se este usuário já ativou a sua conta e recebeu a feature "session:create".'
+        'Verifique se este usuário já ativou a sua conta e recebeu a feature "create:session".'
       );
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);

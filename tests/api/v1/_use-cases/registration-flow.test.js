@@ -41,7 +41,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(uuidValidate(postUserResponseBody.id)).toEqual(true);
     expect(postUserResponseBody.username).toEqual('RegularRegistrationFlow');
     expect(postUserResponseBody.email).toEqual('regularregistrationflow@gmail.com');
-    expect(postUserResponseBody.features).toEqual(['activation_token:read', 'user:read', 'user_list:read']);
+    expect(postUserResponseBody.features).toEqual(['read:activation_token', 'read:user', 'read:user_list']);
     expect(Date.parse(postUserResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(postUserResponseBody.updated_at)).not.toEqual(NaN);
     expect(postUserResponseBody).not.toHaveProperty('password');
@@ -75,13 +75,13 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(activationLinkResponseBody.id).toEqual(postUserResponseBody.id);
     expect(activationLinkResponseBody.username).toEqual(postUserResponseBody.username);
     expect(activationLinkResponseBody.features).toEqual([
-      'user:read',
-      'user_list:read',
-      'session:create',
-      'session:read',
-      'post:create',
-      'comment:create',
-      'user:update',
+      'read:user',
+      'read:user_list',
+      'create:session',
+      'read:session',
+      'create:post',
+      'create:comment',
+      'update:user',
     ]);
     expect(Date.parse(activationLinkResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(activationLinkResponseBody.updated_at)).not.toEqual(NaN);

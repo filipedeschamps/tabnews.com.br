@@ -11,8 +11,8 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('migration:read'), getHandler)
-  .post(authorization.canRequest('migration:create'), postHandler);
+  .get(authorization.canRequest('read:migration'), getHandler)
+  .post(authorization.canRequest('create:migration'), postHandler);
 
 async function getHandler(request, response) {
   const pendingMigrations = await migrator.listPendingMigrations();
