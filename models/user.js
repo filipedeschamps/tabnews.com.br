@@ -78,13 +78,15 @@ async function create(postedUserData) {
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
 
+  validUserData.features = ['read:activation_token', 'read:user', 'read:user_list'];
+
   const newUser = await runInsertQuery(validUserData);
   return newUser;
 
   async function runInsertQuery(validUserData) {
     const query = {
-      text: 'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *;',
-      values: [validUserData.username, validUserData.email, validUserData.password],
+      text: 'INSERT INTO users (username, email, password, features) VALUES($1, $2, $3, $4) RETURNING *;',
+      values: [validUserData.username, validUserData.email, validUserData.password, validUserData.features],
     };
     const results = await database.query(query);
     return results.rows[0];
