@@ -104,14 +104,17 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(firstUser.id).toEqual(responseBody.id);
       expect(responseBody.username).toEqual('regularUserPatchingHisUsername');
       expect(responseBody.features).toEqual(firstUser.features);
-      expect(responseBody.email).toEqual(firstUser.email);
       expect(responseBody.created_at).toEqual(firstUser.created_at.toISOString());
       expect(responseBody.updated_at > firstUser.created_at.toISOString()).toBe(true);
       expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('email');
 
       const firstUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', firstUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
+
+      const userInDatabase = await user.findOneById(responseBody.id);
+      expect(userInDatabase.email).toEqual(firstUser.email);
     });
   });
 

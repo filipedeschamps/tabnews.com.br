@@ -4,7 +4,6 @@ const availableFeatures = new Set([
   // USER
   'create:user',
   'read:user',
-  'read:user:others_email',
   'read:user:list',
   'update:user',
   'update:user:others_email',
@@ -117,7 +116,7 @@ function filterOutput(user, feature, output) {
     }
   }
 
-  if (feature === 'read:user' && can(user, feature)) {
+  if (feature === 'read:user') {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
@@ -125,15 +124,6 @@ function filterOutput(user, feature, output) {
       created_at: output.created_at,
       updated_at: output.updated_at,
     };
-
-    if (user.id && output.id && user.id === output.id) {
-      filteredOutputValues.email = output.email;
-    }
-
-    // TODO: Double check if this is right and covered by tests
-    if (user.id !== output.id && can(user, 'read:user:others_email')) {
-      filteredOutputValues.email = output.email;
-    }
   }
 
   if (feature === 'read:user:list') {

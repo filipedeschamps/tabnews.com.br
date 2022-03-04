@@ -97,12 +97,15 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('uniqueUserName');
-      expect(responseBody.email).toEqual('validemailcaps@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('email');
       expect(passwordsMatch).toBe(true);
       expect(wrongPasswordMatch).toBe(false);
+
+      const userInDatabase = await user.findOneById(responseBody.id);
+      expect(userInDatabase.email).toEqual('validemailcaps@gmail.com');
     });
   });
 
@@ -126,11 +129,14 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('postWithUnknownKey');
-      expect(responseBody.email).toEqual('postwithunknownkey@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('email');
       expect(responseBody).not.toHaveProperty('unknownKey');
+
+      const userInDatabase = await user.findOneById(responseBody.id);
+      expect(userInDatabase.email).toEqual('postwithunknownkey@gmail.com');
     });
   });
 
@@ -153,10 +159,13 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('extraSpaceInTheEnd');
-      expect(responseBody.email).toEqual('space.in.the.beggining@gmail.com');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('email');
+
+      const userInDatabase = await user.findOneById(responseBody.id);
+      expect(userInDatabase.email).toEqual('space.in.the.beggining@gmail.com');
     });
   });
 

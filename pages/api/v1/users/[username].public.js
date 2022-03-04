@@ -12,7 +12,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('read:user'), getHandler)
+  .get(getHandler)
   .patch(authorization.canRequest('update:user'), patchHandler);
 
 async function getHandler(request, response) {
