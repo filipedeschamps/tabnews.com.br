@@ -24,7 +24,7 @@ describe('POST /api/v1/migrations', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:create".');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:migration".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -53,7 +53,7 @@ describe('POST /api/v1/migrations', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:create".');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:migration".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -63,11 +63,11 @@ describe('POST /api/v1/migrations', () => {
     });
   });
 
-  describe('User with "migration:create" feature', () => {
+  describe('User with "create:migration" feature', () => {
     test('Running pending migrations', async () => {
       let privilegedUser = await orchestrator.createUser();
       await orchestrator.activateUser(privilegedUser);
-      await orchestrator.addFeaturesToUser(privilegedUser, ['migration:create']);
+      await orchestrator.addFeaturesToUser(privilegedUser, ['create:migration']);
 
       let privilegedUserSession = await orchestrator.createSession(privilegedUser);
 

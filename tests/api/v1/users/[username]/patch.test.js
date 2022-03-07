@@ -34,7 +34,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "user:update".');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:user".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -74,7 +74,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não possui permissão para atualizar outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "user:update:others".');
+      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:user:others_email".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -104,18 +104,21 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(firstUser.id).toEqual(responseBody.id);
       expect(responseBody.username).toEqual('regularUserPatchingHisUsername');
       expect(responseBody.features).toEqual(firstUser.features);
-      expect(responseBody.email).toEqual(firstUser.email);
       expect(responseBody.created_at).toEqual(firstUser.created_at.toISOString());
       expect(responseBody.updated_at > firstUser.created_at.toISOString()).toBe(true);
       expect(responseBody).not.toHaveProperty('password');
+      expect(responseBody).not.toHaveProperty('email');
 
       const firstUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', firstUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
+
+      const userInDatabase = await user.findOneById(responseBody.id);
+      expect(userInDatabase.email).toEqual(firstUser.email);
     });
   });
 
-  describe('User with "user:update:others" feature', () => {
+  describe('User with "update:user:others_email" feature', () => {
     let firstUser;
     let firstUserSession;
     let secondUser;
@@ -123,7 +126,7 @@ describe('PATCH /api/v1/users/[username]', () => {
     beforeEach(async () => {
       firstUser = await orchestrator.createUser();
       firstUser = await orchestrator.activateUser(firstUser);
-      firstUser = await orchestrator.addFeaturesToUser(firstUser, ['user:update:others']);
+      firstUser = await orchestrator.addFeaturesToUser(firstUser, ['update:user:others_email']);
       firstUserSession = await orchestrator.createSession(firstUser);
       secondUser = await orchestrator.createUser();
     });

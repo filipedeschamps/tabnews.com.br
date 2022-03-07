@@ -19,7 +19,7 @@ describe('GET /api/v1/migrations', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:read".');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:migration".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -48,7 +48,7 @@ describe('GET /api/v1/migrations', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:read".');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:migration".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
@@ -58,14 +58,14 @@ describe('GET /api/v1/migrations', () => {
     });
   });
 
-  describe('User with "migration:read" feature', () => {
+  describe('User with "read:migration" feature', () => {
     let privilegedUser;
     let privilegedUserSession;
 
     beforeEach(async () => {
       privilegedUser = await orchestrator.createUser();
       privilegedUser = await orchestrator.activateUser(privilegedUser);
-      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['migration:read']);
+      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:migration']);
       privilegedUserSession = await orchestrator.createSession(privilegedUser);
     });
 
@@ -84,9 +84,9 @@ describe('GET /api/v1/migrations', () => {
       expect(Array.isArray(responseBody)).toEqual(true);
     });
 
-    describe('Same user after losing "migration:read" feature', () => {
+    describe('Same user after losing "read:migration" feature', () => {
       test('Retrieving pending migrations ', async () => {
-        await orchestrator.removeFeaturesFromUser(privilegedUser, ['migration:read']);
+        await orchestrator.removeFeaturesFromUser(privilegedUser, ['read:migration']);
 
         const responseAfter = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
           method: 'GET',
@@ -101,7 +101,7 @@ describe('GET /api/v1/migrations', () => {
         expect(responseAfter.status).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-        expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "migration:read".');
+        expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:migration".');
         expect(responseBody.statusCode).toEqual(403);
         expect(uuidVersion(responseBody.errorId)).toEqual(4);
         expect(uuidValidate(responseBody.errorId)).toEqual(true);
