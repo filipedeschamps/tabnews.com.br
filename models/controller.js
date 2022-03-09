@@ -1,6 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
 import session from 'models/session.js';
-import database from 'infra/database.js';
 
 import {
   InternalServerError,
@@ -16,15 +15,11 @@ async function injectRequestId(request, response, next) {
 }
 
 async function onNoMatchHandler(request, response) {
-  await closeDatabaseConnection();
-
   const errorObject = new NotFoundError({ requestId: request.id });
   return response.status(errorObject.statusCode).json(errorObject);
 }
 
-async function onErrorHandler(error, request, response) {
-  await closeDatabaseConnection();
-
+function onErrorHandler(error, request, response) {
   if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
     return response.status(error.statusCode).json({ ...error, requestId: request.id });
   }
@@ -47,17 +42,8 @@ async function onErrorHandler(error, request, response) {
   return response.status(errorObject.statusCode).json(errorObject);
 }
 
-async function closeDatabaseConnection(request, response, next) {
-  await database.closeConnection();
-
-  if (next) {
-    next();
-  }
-}
-
 export default Object.freeze({
   injectRequestId,
   onNoMatchHandler,
   onErrorHandler,
-  closeDatabaseConnection,
 });
