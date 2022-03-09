@@ -13,19 +13,21 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .get(getHandler)
-  .post(authorization.canRequest('create:user'), postHandler);
+  .post(authorization.canRequest('create:user'), postHandler)
+  .use(controller.closeDatabaseConnection);
 
-async function getHandler(request, response) {
+async function getHandler(request, response, next) {
   const userTryingToList = request.context.user;
 
   const userList = await user.findAll();
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
 
-  return response.status(200).json(secureOutputValues);
+  response.status(200).json(secureOutputValues);
+  return next();
 }
 
-async function postHandler(request, response) {
+async function postHandler(request, response, next) {
   const userTryingToCreate = request.context.user;
   const insecureInputValues = request.body;
   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
@@ -35,5 +37,6 @@ async function postHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 
-  return response.status(201).json(secureOutputValues);
+  response.status(201).json(secureOutputValues);
+  return next();
 }

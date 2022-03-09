@@ -9,9 +9,10 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
-  .get(getHandler);
+  .get(getHandler)
+  .use(controller.closeDatabaseConnection);
 
-async function getHandler(request, response) {
+async function getHandler(request, response, next) {
   let statusCode = 200;
 
   const checkedDependencies = await health.getDependencies();
@@ -20,8 +21,10 @@ async function getHandler(request, response) {
     statusCode = 503;
   }
 
-  return response.status(statusCode).json({
+  response.status(statusCode).json({
     updated_at: formatISO(Date.now()),
     dependencies: checkedDependencies,
   });
+
+  return next();
 }

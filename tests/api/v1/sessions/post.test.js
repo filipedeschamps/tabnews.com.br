@@ -11,6 +11,10 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
+afterAll(async () => {
+  await orchestrator.closeDatabaseConnection();
+});
+
 describe('POST /api/v1/sessions', () => {
   describe('Anonymous User', () => {
     test('Using a valid email and password', async () => {
