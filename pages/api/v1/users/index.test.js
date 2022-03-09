@@ -11,6 +11,10 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
+afterAll(async () => {
+  await orchestrator.closeDatabaseConnection();
+});
+
 describe('GET /api/v1/users', () => {
   describe('in an empty database', () => {
     test('should return an empty array', async () => {

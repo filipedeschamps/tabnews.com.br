@@ -8,6 +8,10 @@ beforeAll(async () => {
   await orchestrator.dropAllTables();
 });
 
+afterAll(async () => {
+  await orchestrator.closeDatabaseConnection();
+});
+
 describe('[e2e] do a GET request to /api/v1/status', () => {
   test('should be able to execute all health-indicators', async () => {
     const serverStatusResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/status`);

@@ -12,19 +12,22 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .get(authorization.canRequest('read:migration'), getHandler)
-  .post(authorization.canRequest('create:migration'), postHandler);
+  .post(authorization.canRequest('create:migration'), postHandler)
+  .use(controller.closeDatabaseConnection);
 
-async function getHandler(request, response) {
+async function getHandler(request, response, next) {
   const pendingMigrations = await migrator.listPendingMigrations();
-  return response.status(200).json(pendingMigrations);
+  response.status(200).json(pendingMigrations);
+  return next();
 }
 
-async function postHandler(request, response) {
+async function postHandler(request, response, next) {
   const migratedMigrations = await migrator.runPendingMigrations();
 
   if (migratedMigrations.length > 0) {
     return response.status(201).json(migratedMigrations);
   }
 
-  return response.status(200).json(migratedMigrations);
+  response.status(200).json(migratedMigrations);
+  return next();
 }

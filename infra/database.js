@@ -22,16 +22,13 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
   delete configurations.ssl;
 }
 
-const pool = new Pool(configurations);
+let client;
 
 async function query(query, params) {
-  let client;
-
   try {
-    // We stopped using pool.connect() because it was causing a lot of
-    // "idle" connections in the database service due to the serverless
-    // nature of Vercel (our current provider).
-    client = await tryToGetNewClient();
+    if (!client) {
+      client = await tryToGetNewClient();
+    }
     return await client.query(query, params);
   } catch (error) {
     const errorObject = new ServiceError({
@@ -44,10 +41,6 @@ async function query(query, params) {
     });
     console.error(errorObject);
     throw errorObject;
-  } finally {
-    if (client) {
-      client.end();
-    }
   }
 }
 
@@ -98,7 +91,15 @@ async function tryToGetNewClient() {
   }
 }
 
+async function closeConnection() {
+  if (client) {
+    await client.end();
+    client = null;
+  }
+}
+
 export default Object.freeze({
   query,
   getNewClient,
+  closeConnection,
 });

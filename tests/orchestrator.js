@@ -126,6 +126,10 @@ async function createSession(userObject) {
   return await session.create(userObject.id);
 }
 
+async function closeDatabaseConnection() {
+  return await database.closeConnection();
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -138,4 +142,5 @@ export default {
   createSession,
   addFeaturesToUser,
   removeFeaturesFromUser,
+  closeDatabaseConnection,
 };

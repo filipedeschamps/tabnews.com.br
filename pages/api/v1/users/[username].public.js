@@ -13,19 +13,21 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .get(getHandler)
-  .patch(authorization.canRequest('update:user'), patchHandler);
+  .patch(authorization.canRequest('update:user'), patchHandler)
+  .use(controller.closeDatabaseConnection);
 
-async function getHandler(request, response) {
+async function getHandler(request, response, next) {
   const userTryingToGet = request.context.user;
   // TODO: Insecure value from the request must be filtered before being used.
   const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
-  return response.status(200).json(secureOutputValues);
+  response.status(200).json(secureOutputValues);
+  return next();
 }
 
-async function patchHandler(request, response) {
+async function patchHandler(request, response, next) {
   const userTryingToPatch = request.context.user;
   const targetUsername = request.query.username;
   const targetUser = await user.findOneByUsername(targetUsername);
@@ -44,5 +46,6 @@ async function patchHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:user', updatedUser);
 
-  return response.status(200).json(secureOutputValues);
+  response.status(200).json(secureOutputValues);
+  return next();
 }

@@ -11,9 +11,10 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('read:activation_token'), getHandler);
+  .get(authorization.canRequest('read:activation_token'), getHandler)
+  .use(controller.closeDatabaseConnection);
 
-async function getHandler(request, response) {
+async function getHandler(request, response, next) {
   const userTryingToActivate = request.context.user;
   const tokenId = request.query.token;
 
@@ -21,5 +22,6 @@ async function getHandler(request, response) {
 
   const authorizedValuesToReturn = authorization.filterOutput(userTryingToActivate, 'read:user', activatedUser);
 
-  return response.status(200).json(authorizedValuesToReturn);
+  response.status(200).json(authorizedValuesToReturn);
+  return next();
 }

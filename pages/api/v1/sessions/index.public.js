@@ -14,18 +14,20 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .get(authorization.canRequest('read:session'), getHandler)
-  .post(authorization.canRequest('create:session'), postHandler);
+  .post(authorization.canRequest('create:session'), postHandler)
+  .use(controller.closeDatabaseConnection);
 
-async function getHandler(request, response) {
+async function getHandler(request, response, next) {
   const authenticatedUser = request.context.user;
   const sessionObject = request.context.session;
 
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
 
-  return response.status(200).json(secureOutputValues);
+  response.status(200).json(secureOutputValues);
+  return next();
 }
 
-async function postHandler(request, response) {
+async function postHandler(request, response, next) {
   const userTryingToCreateSession = request.context.user;
   const insecureInputValues = request.body;
 
@@ -58,5 +60,6 @@ async function postHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(storedUser, 'create:session', sessionObject);
 
-  return response.status(201).json(secureOutputValues);
+  response.status(201).json(secureOutputValues);
+  return next();
 }
