@@ -35,22 +35,34 @@ async function getDependencies() {
 async function checkDatabaseDependency() {
   let result;
   try {
-    const startTimer = performance.now();
+    const firstQueryTimer = performance.now();
     const maxConnectionsResult = await database.query('SHOW max_connections;');
-    const timerDuration = performance.now() - startTimer;
     const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
+    const firstQueryDuration = performance.now() - firstQueryTimer;
 
+    const secondQueryTimer = performance.now();
     const openConnectionsResult = await database.query(
       'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
       [process.env.POSTGRES_DB]
     );
     const openConnectionsValue = openConnectionsResult.rows[0].opened_connections;
+    const secondQueryDuration = performance.now() - secondQueryTimer;
+
+    const thirdQueryTimer = performance.now();
+    const versionResult = await database.query('SHOW server_version;');
+    const versionResultValue = versionResult.rows[0].server_version;
+    const thirdQueryDuration = performance.now() - thirdQueryTimer;
 
     result = {
       status: 'healthy',
       max_connections: parseInt(maxConnectionsValue),
       opened_connections: openConnectionsValue,
-      latency: timerDuration,
+      latency: {
+        first_query: firstQueryDuration,
+        second_query: secondQueryDuration,
+        third_query: thirdQueryDuration,
+      },
+      version: versionResultValue,
     };
   } catch (error) {
     console.log(error);

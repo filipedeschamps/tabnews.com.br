@@ -17,7 +17,10 @@ describe('[e2e] do a GET request to /api/v1/status', () => {
     expect(serverStatusBody.updated_at).toBeDefined();
     expect(serverStatusBody.dependencies.database.status).toEqual('healthy');
     expect(serverStatusBody.dependencies.database.opened_connections).toBeGreaterThan(0);
-    expect(serverStatusBody.dependencies.database.latency).toBeGreaterThan(0);
+    expect(serverStatusBody.dependencies.database.latency.first_query).toBeGreaterThan(0);
+    expect(serverStatusBody.dependencies.database.latency.second_query).toBeGreaterThan(0);
+    expect(serverStatusBody.dependencies.database.latency.third_query).toBeGreaterThan(0);
+    expect(typeof serverStatusBody.dependencies.database.version).toBe('string');
 
     expect(serverStatusBody.dependencies.webserver.status).toEqual('healthy');
     expect(serverStatusBody.dependencies.webserver.provider).toEqual('local');
