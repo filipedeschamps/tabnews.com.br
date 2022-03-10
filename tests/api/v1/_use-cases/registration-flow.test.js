@@ -15,10 +15,6 @@ beforeAll(async () => {
   await orchestrator.deleteAllEmails();
 });
 
-afterAll(async () => {
-  await orchestrator.closeDatabaseConnection();
-});
-
 describe('Use case: Registration Flow (all successfully)', () => {
   let postUserResponseBody;
   let activationUrl;

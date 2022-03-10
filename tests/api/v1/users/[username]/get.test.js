@@ -9,10 +9,6 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-afterAll(async () => {
-  await orchestrator.closeDatabaseConnection();
-});
-
 describe('GET /api/v1/users/[username]', () => {
   describe('Anonymous user', () => {
     test('Retrieving not existing user', async () => {
