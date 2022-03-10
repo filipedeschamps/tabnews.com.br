@@ -9,7 +9,7 @@ const configurations = {
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 5000,
-  idleTimeoutMillis: 5000,
+  idleTimeoutMillis: 1,
   max: 1,
   ssl: {
     rejectUnauthorized: false,
@@ -28,10 +28,7 @@ async function query(query, params) {
   let client;
 
   try {
-    // We stopped using pool.connect() because it was causing a lot of
-    // "idle" connections in the database service due to the serverless
-    // nature of Vercel (our current provider).
-    client = await tryToGetNewClient();
+    client = await tryToGetNewClientFromPool();
     return await client.query(query, params);
   } catch (error) {
     const errorObject = new ServiceError({
@@ -46,7 +43,7 @@ async function query(query, params) {
     throw errorObject;
   } finally {
     if (client) {
-      client.end();
+      client.release();
     }
   }
 }
