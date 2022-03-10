@@ -9,10 +9,6 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-afterAll(async () => {
-  await orchestrator.closeDatabaseConnection();
-});
-
 describe('POST /api/v1/migrations', () => {
   describe('Anonymous user', () => {
     test('Running pending migrations', async () => {

@@ -83,6 +83,21 @@ resource "aws_security_group" "postgres_security_group" {
   }
 }
 
+resource "aws_db_parameter_group" "parameter_group" {
+  name   = "${var.environment}-parameter-group"
+  family = "postgres14"
+
+  parameter {
+    name  = "idle_session_timeout"
+    value = "0"
+  }
+
+  tags = {
+    Name        = "${var.environment}-parameter-group"
+    Environment = var.environment
+  }
+}
+
 resource "aws_db_instance" "postgres" {
   identifier        = "${var.environment}-postgres-${random_integer.postgres_random_identifier_suffix.result}"
   storage_type      = "gp2"
@@ -113,6 +128,8 @@ resource "aws_db_instance" "postgres" {
   copy_tags_to_snapshot     = true
   deletion_protection       = var.deletion_protection
   delete_automated_backups  = var.delete_automated_backups
+
+  parameter_group_name = aws_db_parameter_group.parameter_group.name
 
   tags = {
     Name        = "${var.environment}-postgres"

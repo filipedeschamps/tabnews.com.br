@@ -9,7 +9,7 @@ const configurations = {
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 5000,
-  idleTimeoutMillis: 5000,
+  idleTimeoutMillis: 1,
   max: 1,
   ssl: {
     rejectUnauthorized: false,
@@ -22,13 +22,13 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
   delete configurations.ssl;
 }
 
-let client;
+const pool = new Pool(configurations);
 
 async function query(query, params) {
+  let client;
+
   try {
-    if (!client) {
-      client = await tryToGetNewClient();
-    }
+    client = await tryToGetNewClientFromPool();
     return await client.query(query, params);
   } catch (error) {
     const errorObject = new ServiceError({
@@ -41,6 +41,10 @@ async function query(query, params) {
     });
     console.error(errorObject);
     throw errorObject;
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
 
@@ -91,15 +95,7 @@ async function tryToGetNewClient() {
   }
 }
 
-async function closeConnection() {
-  if (client) {
-    await client.end();
-    client = null;
-  }
-}
-
 export default Object.freeze({
   query,
   getNewClient,
-  closeConnection,
 });

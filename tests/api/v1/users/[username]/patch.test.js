@@ -11,10 +11,6 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-afterAll(async () => {
-  await orchestrator.closeDatabaseConnection();
-});
-
 describe('PATCH /api/v1/users/[username]', () => {
   //TODO: test with expired session
 
