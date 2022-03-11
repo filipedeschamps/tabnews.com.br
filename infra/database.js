@@ -9,7 +9,7 @@ const configurations = {
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 5000,
-  idleTimeoutMillis: 1,
+  idleTimeoutMillis: 10000,
   max: 1,
   ssl: {
     rejectUnauthorized: false,
@@ -22,7 +22,12 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
   delete configurations.ssl;
 }
 
-const pool = new Pool(configurations);
+const cache = {
+  pool: null,
+  maxConnections: null,
+  openedConnections: null,
+  openedConnectionsLastUpdate: null,
+};
 
 async function query(query, params) {
   let client;
@@ -43,7 +48,17 @@ async function query(query, params) {
     throw errorObject;
   } finally {
     if (client) {
-      client.release();
+      const tooManyConnections = await checkForTooManyConnections(client);
+
+      if (tooManyConnections) {
+        console.log('CLOSING POOL.');
+        client.release();
+        await cache.pool.end();
+        cache.pool = null;
+      } else {
+        console.log('JUST RELEASING CLIENT.');
+        client.release();
+      }
     }
   }
 }
@@ -58,7 +73,51 @@ async function tryToGetNewClientFromPool() {
   return clientFromPool;
 
   async function newClientFromPool() {
-    return await pool.connect();
+    if (!cache.pool) {
+      cache.pool = new Pool(configurations);
+    }
+
+    return await cache.pool.connect();
+  }
+}
+
+async function checkForTooManyConnections(client) {
+  const currentTime = new Date().getTime();
+  const openedConnectionsMaxAge = 10000;
+  const maxConnectionsTolerance = 0.7;
+
+  if (cache.maxConnections === null) {
+    const maxConnections = await getMaxConnections();
+    cache.maxConnections = maxConnections;
+  }
+
+  if (
+    !cache.openedConnections === null ||
+    !cache.openedConnectionsLastUpdate === null ||
+    currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge
+  ) {
+    const openedConnections = await getOpenedConnections();
+    cache.openedConnections = openedConnections;
+    cache.openedConnectionsLastUpdate = currentTime;
+  }
+
+  if (cache.openedConnections > cache.maxConnections * maxConnectionsTolerance) {
+    return true;
+  }
+
+  return false;
+
+  async function getMaxConnections() {
+    const results = await client.query('SHOW max_connections;');
+    return results.rows[0].max_connections;
+  }
+
+  async function getOpenedConnections() {
+    const openConnectionsResult = await client.query(
+      'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
+      [process.env.POSTGRES_DB]
+    );
+    return openConnectionsResult.rows[0].opened_connections;
   }
 }
 
