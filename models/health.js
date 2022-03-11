@@ -41,26 +41,32 @@ async function checkDatabaseDependency() {
     const firstQueryDuration = performance.now() - firstQueryTimer;
 
     const secondQueryTimer = performance.now();
+    const superuserReservedConnectionsResult = await database.query('SHOW superuser_reserved_connections;');
+    const superuserReservedConnectionsValue = superuserReservedConnectionsResult.rows[0].superuser_reserved_connections;
+    const secondQueryDuration = performance.now() - secondQueryTimer;
+
+    const thirdQueryTimer = performance.now();
     const openConnectionsResult = await database.query(
       'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
       [process.env.POSTGRES_DB]
     );
     const openConnectionsValue = openConnectionsResult.rows[0].opened_connections;
-    const secondQueryDuration = performance.now() - secondQueryTimer;
+    const thirdQueryDuration = performance.now() - thirdQueryTimer;
 
-    const thirdQueryTimer = performance.now();
+    const fourthQueryTimer = performance.now();
     const versionResult = await database.query('SHOW server_version;');
     const versionResultValue = versionResult.rows[0].server_version;
-    const thirdQueryDuration = performance.now() - thirdQueryTimer;
+    const fourthQueryDuration = performance.now() - fourthQueryTimer;
 
     result = {
       status: 'healthy',
-      max_connections: parseInt(maxConnectionsValue),
+      max_connections: parseInt(maxConnectionsValue) - parseInt(superuserReservedConnectionsValue),
       opened_connections: openConnectionsValue,
       latency: {
         first_query: firstQueryDuration,
         second_query: secondQueryDuration,
         third_query: thirdQueryDuration,
+        fourth_query: fourthQueryDuration,
       },
       version: versionResultValue,
     };
