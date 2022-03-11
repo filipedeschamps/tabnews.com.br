@@ -9,7 +9,7 @@ const configurations = {
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 5000,
-  idleTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
   max: 1,
   ssl: {
     rejectUnauthorized: false,
@@ -25,6 +25,7 @@ if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
 const cache = {
   pool: null,
   maxConnections: null,
+  reservedConnections: null,
   openedConnections: null,
   openedConnectionsLastUpdate: null,
 };
@@ -51,12 +52,10 @@ async function query(query, params) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
       if (tooManyConnections) {
-        console.log('CLOSING POOL.');
         client.release();
         await cache.pool.end();
         cache.pool = null;
       } else {
-        console.log('JUST RELEASING CLIENT.');
         client.release();
       }
     }
@@ -84,11 +83,12 @@ async function tryToGetNewClientFromPool() {
 async function checkForTooManyConnections(client) {
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 10000;
-  const maxConnectionsTolerance = 0.7;
+  const maxConnectionsTolerance = 0.9;
 
-  if (cache.maxConnections === null) {
-    const maxConnections = await getMaxConnections();
+  if (cache.maxConnections === null || cache.reservedConnections === null) {
+    const [maxConnections, reservedConnections] = await getConnectionLimits();
     cache.maxConnections = maxConnections;
+    cache.reservedConnections = reservedConnections;
   }
 
   if (
@@ -101,15 +101,20 @@ async function checkForTooManyConnections(client) {
     cache.openedConnectionsLastUpdate = currentTime;
   }
 
-  if (cache.openedConnections > cache.maxConnections * maxConnectionsTolerance) {
+  if (cache.openedConnections > (cache.maxConnections - cache.reservedConnections) * maxConnectionsTolerance) {
     return true;
   }
 
   return false;
 
-  async function getMaxConnections() {
-    const results = await client.query('SHOW max_connections;');
-    return results.rows[0].max_connections;
+  async function getConnectionLimits() {
+    const [maxConnectionsResult, reservedConnectionResult] = await client.query(
+      'SHOW max_connections; SHOW superuser_reserved_connections;'
+    );
+    return [
+      maxConnectionsResult.rows[0].max_connections,
+      reservedConnectionResult.rows[0].superuser_reserved_connections,
+    ];
   }
 
   async function getOpenedConnections() {
