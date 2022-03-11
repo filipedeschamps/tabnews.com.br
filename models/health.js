@@ -36,27 +36,25 @@ async function checkDatabaseDependency() {
   let result;
   try {
     const firstQueryTimer = performance.now();
-    const maxConnectionsResult = await database.query('SHOW max_connections;');
+    const [maxConnectionsResult, superuserReservedConnectionsResult] = await database.query(
+      'SHOW max_connections; SHOW superuser_reserved_connections;'
+    );
     const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
+    const superuserReservedConnectionsValue = superuserReservedConnectionsResult.rows[0].superuser_reserved_connections;
     const firstQueryDuration = performance.now() - firstQueryTimer;
 
     const secondQueryTimer = performance.now();
-    const superuserReservedConnectionsResult = await database.query('SHOW superuser_reserved_connections;');
-    const superuserReservedConnectionsValue = superuserReservedConnectionsResult.rows[0].superuser_reserved_connections;
-    const secondQueryDuration = performance.now() - secondQueryTimer;
-
-    const thirdQueryTimer = performance.now();
     const openConnectionsResult = await database.query(
       'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
       [process.env.POSTGRES_DB]
     );
     const openConnectionsValue = openConnectionsResult.rows[0].opened_connections;
-    const thirdQueryDuration = performance.now() - thirdQueryTimer;
+    const secondQueryDuration = performance.now() - secondQueryTimer;
 
-    const fourthQueryTimer = performance.now();
+    const thirdQueryTimer = performance.now();
     const versionResult = await database.query('SHOW server_version;');
     const versionResultValue = versionResult.rows[0].server_version;
-    const fourthQueryDuration = performance.now() - fourthQueryTimer;
+    const thirdQueryDuration = performance.now() - thirdQueryTimer;
 
     result = {
       status: 'healthy',
@@ -66,7 +64,6 @@ async function checkDatabaseDependency() {
         first_query: firstQueryDuration,
         second_query: secondQueryDuration,
         third_query: thirdQueryDuration,
-        fourth_query: fourthQueryDuration,
       },
       version: versionResultValue,
     };
