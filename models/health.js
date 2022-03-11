@@ -36,8 +36,11 @@ async function checkDatabaseDependency() {
   let result;
   try {
     const firstQueryTimer = performance.now();
-    const maxConnectionsResult = await database.query('SHOW max_connections;');
+    const [maxConnectionsResult, superuserReservedConnectionsResult] = await database.query(
+      'SHOW max_connections; SHOW superuser_reserved_connections;'
+    );
     const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
+    const superuserReservedConnectionsValue = superuserReservedConnectionsResult.rows[0].superuser_reserved_connections;
     const firstQueryDuration = performance.now() - firstQueryTimer;
 
     const secondQueryTimer = performance.now();
@@ -55,7 +58,7 @@ async function checkDatabaseDependency() {
 
     result = {
       status: 'healthy',
-      max_connections: parseInt(maxConnectionsValue),
+      max_connections: parseInt(maxConnectionsValue) - parseInt(superuserReservedConnectionsValue),
       opened_connections: openConnectionsValue,
       latency: {
         first_query: firstQueryDuration,
