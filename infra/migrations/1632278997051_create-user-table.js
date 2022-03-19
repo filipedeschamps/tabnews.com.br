@@ -2,7 +2,7 @@ exports.up = (pgm) => {
   pgm.createTable('users', {
     id: {
       type: 'uuid',
-      default: pgm.func('uuid_generate_v4()'),
+      default: pgm.func('gen_random_uuid()'),
       notNull: true,
       primaryKey: true,
     },
@@ -30,7 +30,7 @@ exports.up = (pgm) => {
     features: {
       type: 'varchar[]',
       notNull: true,
-      default: `{"read:activation_token","read:user","read:users"}`,
+      default: `{}`,
     },
 
     // Why "with timezone"? https://stackoverflow.com/a/20713587

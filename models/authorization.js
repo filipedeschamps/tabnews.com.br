@@ -1,18 +1,29 @@
 import { ValidationError, ForbiddenError } from 'errors/index.js';
 
 const availableFeatures = new Set([
+  // USER
+  'create:user',
+  'read:user',
+  'read:user:list',
+  'update:user',
+  'update:user:others_email',
+
+  // MIGRATION
+  'read:migration',
+  'create:migration',
+
+  // ACTIVATION_TOKEN
   'read:activation_token',
 
+  // SESSION
   'create:session',
   'read:session',
 
+  // POST
   'create:post',
+
+  // COMMENT
   'create:comment',
-
-  'read:user',
-  'create:user',
-
-  'read:users',
 ]);
 
 function can(user, feature, resource) {
@@ -25,84 +36,98 @@ function can(user, feature, resource) {
     authorized = true;
   }
 
-  // TODO: Implement double check of features
-  // using resource.
+  // TODO: Double check if this is right and covered by tests
+  if (feature === 'update:user' && resource) {
+    authorized = false;
+
+    if (user.id === resource.id) {
+      authorized = true;
+    }
+
+    if (user.id !== resource.id && can(user, 'update:user:others_email')) {
+      authorized = true;
+    }
+  }
 
   return authorized;
 }
 
-function filterInput(user, feature, resource) {
+function filterInput(user, feature, input) {
   validateUser(user);
   validateFeature(feature);
-  validateResource(resource);
+  validateInput(input);
 
-  let filteredValues = {};
+  let filteredInputValues = {};
 
-  if (feature === 'create:session' && can(user, feature, resource)) {
-    filteredValues = {
-      username: resource.username,
-      password: resource.password,
+  if (feature === 'create:session' && can(user, feature)) {
+    filteredInputValues = {
+      email: input.email,
+      password: input.password,
     };
   }
 
-  if (feature === 'create:user' && can(user, feature, resource)) {
-    filteredValues = {
-      username: resource.username,
-      email: resource.email,
-      password: resource.password,
+  if (feature === 'create:user' && can(user, feature)) {
+    filteredInputValues = {
+      username: input.username,
+      email: input.email,
+      password: input.password,
     };
   }
 
-  return filteredValues;
+  if (feature === 'update:user' && can(user, feature)) {
+    filteredInputValues = {
+      username: input.username,
+      email: input.email,
+      password: input.password,
+    };
+  }
+
+  return filteredInputValues;
 }
 
-function filterOutput(user, feature, resource) {
+function filterOutput(user, feature, output) {
   validateUser(user);
   validateFeature(feature);
-  validateResource(resource);
+  validateOutput(output);
 
-  let filteredValues = {};
+  let filteredOutputValues = {};
 
-  if (feature === 'read:session' && can(user, feature, resource)) {
-    if (user.id && resource.user_id && user.id === resource.user_id) {
-      filteredValues = {
-        id: resource.id,
-        token: resource.token,
-        expires_at: resource.expires_at,
-        created_at: resource.created_at,
-        updated_at: resource.updated_at,
+  if (feature === 'read:session' && can(user, feature)) {
+    if (user.id && output.user_id && user.id === output.user_id) {
+      filteredOutputValues = {
+        id: output.id,
+        token: output.token,
+        expires_at: output.expires_at,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
       };
     }
   }
 
-  if (feature === 'create:session' && can(user, feature, resource)) {
-    if (user.id && resource.user_id && user.id === resource.user_id) {
-      filteredValues = {
-        id: resource.id,
-        token: resource.token,
-        expires_at: resource.expires_at,
-        created_at: resource.created_at,
-        updated_at: resource.updated_at,
+  if (feature === 'create:session' && can(user, feature)) {
+    if (user.id && output.user_id && user.id === output.user_id) {
+      filteredOutputValues = {
+        id: output.id,
+        token: output.token,
+        expires_at: output.expires_at,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
       };
     }
   }
 
-  if (feature === 'read:user' && can(user, feature, resource)) {
-    filteredValues = {
-      id: resource.id,
-      username: resource.username,
-      features: resource.features,
-      created_at: resource.created_at,
-      updated_at: resource.updated_at,
+  if (feature === 'read:user') {
+    filteredOutputValues = {
+      id: output.id,
+      username: output.username,
+      features: output.features,
+      created_at: output.created_at,
+      updated_at: output.updated_at,
     };
-
-    if (user.id && resource.id && user.id === resource.id) {
-      filteredValues.email = resource.email;
-    }
   }
 
-  if (feature === 'read:users' && can(user, feature, resource)) {
-    filteredValues = resource.map((user) => ({
+  if (feature === 'read:user:list') {
+    filteredOutputValues = output.map((user) => ({
       id: user.id,
       username: user.username,
       features: user.features,
@@ -111,7 +136,7 @@ function filterOutput(user, feature, resource) {
     }));
   }
 
-  return filteredValues;
+  return filteredOutputValues;
 }
 
 function validateUser(user) {
@@ -140,16 +165,28 @@ function validateFeature(feature) {
 
   if (!availableFeatures.has(feature)) {
     throw new ValidationError({
-      message: `A "feature" enviada não está disponível na lista de features existentes.`,
+      message: `A feature utilizada não está disponível na lista de features existentes.`,
+      action: `Contate o suporte informado o campo "errorId".`,
+      context: {
+        feature: feature,
+      },
+    });
+  }
+}
+
+function validateInput(input) {
+  if (!input) {
+    throw new ValidationError({
+      message: `Nenhum "input" foi especificado para a ação de filtro.`,
       action: `Contate o suporte informado o campo "errorId".`,
     });
   }
 }
 
-function validateResource(resource) {
-  if (!resource) {
+function validateOutput(output) {
+  if (!output) {
     throw new ValidationError({
-      message: `Nenhum "resource" foi especificado para a ação de filtro.`,
+      message: `Nenhum "output" foi especificado para a ação de filtro.`,
       action: `Contate o suporte informado o campo "errorId".`,
     });
   }

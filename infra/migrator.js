@@ -10,7 +10,7 @@ const defaultConfigurations = {
 };
 
 async function listPendingMigrations() {
-  const databaseClient = await database.getNewConnectedClient();
+  const databaseClient = await database.getNewClient();
 
   try {
     const pendingMigrations = await migrationRunner({
@@ -28,7 +28,7 @@ async function listPendingMigrations() {
 }
 
 async function runPendingMigrations() {
-  const databaseClient = await database.getNewConnectedClient();
+  const databaseClient = await database.getNewClient();
 
   try {
     const migratedMigrations = await migrationRunner({

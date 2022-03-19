@@ -15,7 +15,7 @@ beforeAll(async () => {
   await orchestrator.deleteAllEmails();
 });
 
-describe('Use case: From Create Account to Use Session (all successfully)', () => {
+describe('Use case: Registration Flow (all successfully)', () => {
   let postUserResponseBody;
   let activationUrl;
   let postSessionResponseBody;
@@ -40,16 +40,19 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     expect(uuidVersion(postUserResponseBody.id)).toEqual(4);
     expect(uuidValidate(postUserResponseBody.id)).toEqual(true);
     expect(postUserResponseBody.username).toEqual('RegularRegistrationFlow');
-    expect(postUserResponseBody.email).toEqual('regularregistrationflow@gmail.com');
-    expect(postUserResponseBody.features).toEqual(['read:activation_token', 'read:user', 'read:users']);
+    expect(postUserResponseBody.features).toEqual(['read:activation_token']);
     expect(Date.parse(postUserResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(postUserResponseBody.updated_at)).not.toEqual(NaN);
+    expect(postUserResponseBody).not.toHaveProperty('email');
     expect(postUserResponseBody).not.toHaveProperty('password');
 
     const createdUserInDatabase = await user.findOneByUsername('RegularRegistrationFlow');
     const passwordsMatch = await password.compare('RegularRegistrationFlowPassword', createdUserInDatabase.password);
 
     expect(passwordsMatch).toBe(true);
+
+    const userInDatabase = await user.findOneById(postUserResponseBody.id);
+    expect(userInDatabase.email).toEqual('regularregistrationflow@gmail.com');
   });
 
   test('Receive email (successfully)', async () => {
@@ -75,12 +78,11 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
     expect(activationLinkResponseBody.id).toEqual(postUserResponseBody.id);
     expect(activationLinkResponseBody.username).toEqual(postUserResponseBody.username);
     expect(activationLinkResponseBody.features).toEqual([
-      'read:user',
-      'read:users',
       'create:session',
       'read:session',
       'create:post',
       'create:comment',
+      'update:user',
     ]);
     expect(Date.parse(activationLinkResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(activationLinkResponseBody.updated_at)).not.toEqual(NaN);
@@ -95,7 +97,7 @@ describe('Use case: From Create Account to Use Session (all successfully)', () =
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: 'RegularRegistrationFlow',
+        email: 'RegularRegistrationFlow@gmail.com',
         password: 'RegularRegistrationFlowPassword',
       }),
     });

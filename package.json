@@ -1,14 +1,14 @@
 {
   "dependencies": {
     "bcryptjs": "2.4.3",
-    "cookie": "0.4.1",
+    "cookie": "0.4.2",
     "cross-fetch": "3.1.5",
     "joi": "17.6.0",
-    "next": "12.0.10",
-    "next-connect": "0.11.0",
+    "next": "12.1.0",
+    "next-connect": "0.12.2",
     "node-pg-migrate": "6.2.1",
     "nodemailer": "6.7.2",
-    "pg": "8.7.1",
+    "pg": "8.7.3",
     "react": "17.0.2",
     "react-confetti": "6.0.1",
     "react-dom": "17.0.2",
@@ -18,18 +18,19 @@
   },
   "devDependencies": {
     "@babel/preset-env": "7.16.11",
+    "@faker-js/faker": "6.0.0-alpha.7",
     "async-retry": "1.3.3",
     "autoprefixer": "10.4.2",
     "concurrently": "7.0.0",
     "cz-conventional-changelog": "3.3.0",
-    "dotenv": "15.0.0",
-    "eslint": "8.8.0",
-    "eslint-config-next": "12.0.10",
-    "eslint-config-prettier": "8.3.0",
-    "jest": "27.4.7",
-    "postcss": "8.4.5",
+    "dotenv": "16.0.0",
+    "eslint": "8.9.0",
+    "eslint-config-next": "12.1.0",
+    "eslint-config-prettier": "8.4.0",
+    "jest": "27.5.1",
+    "postcss": "8.4.6",
     "prettier": "2.5.1",
-    "tailwindcss": "3.0.18"
+    "tailwindcss": "3.0.23"
   },
   "scripts": {
     "dev": "npm run services:up && npm run next && npm run services:stop",
@@ -38,16 +39,16 @@
     "services:stop": "docker-compose -f infra/docker-compose.development.yml stop",
     "build": "next build",
     "start": "next start",
-    "test": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --verbose --detectOpenHandles' && npm run services:stop",
+    "test": "npm run services:up && concurrently -s -k -n next,jest --hide next 'npm run next' 'jest --runInBand --verbose' && npm run services:stop",
     "test:watch": "jest --runInBand --watchAll",
     "test:watch:services": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watchAll' && npm run services:stop",
     "lint": "npm run lint:next && npm run lint:prettier",
-    "lint:next": "next lint --dir .",
+    "lint:next": "next lint --max-warnings=0 --dir .",
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",
     "lint:fix": "eslint --fix && prettier --write '**/*.{json,js,jsx,ts,tsx}'",
     "commit": "cz",
     "migration:create": "node-pg-migrate create",
-    "migration:run": "node-pg-migrate -m infra/migrations/"
+    "migration:run": "node-pg-migrate up --envPath ./.env -m infra/migrations/"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
@@ -65,20 +66,6 @@
     "url": "https://github.com/filipedeschamps/tabnews.com.br/issues"
   },
   "homepage": "https://www.tabnews.com.br/",
-  "jest": {
-    "moduleDirectories": [
-      "node_modules",
-      "."
-    ],
-    "modulePathIgnorePatterns": [
-      "<rootDir>/.next"
-    ],
-    "testTimeout": 120000,
-    "slowTestThreshold": 40000,
-    "setupFiles": [
-      "dotenv/config"
-    ]
-  },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"

@@ -33,6 +33,26 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
+async function findOneByEmail(email) {
+  const query = {
+    text: 'SELECT * FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1;',
+    values: [email],
+  };
+
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O email "${email}" não foi encontrado no sistema.`,
+      action: 'Verifique se o "email" está digitado corretamente.',
+      stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
+    });
+  }
+
+  return results.rows[0];
+}
+
 async function findOneById(userId) {
   const query = {
     text: 'SELECT * FROM users WHERE id = $1 LIMIT 1;',
@@ -58,13 +78,15 @@ async function create(postedUserData) {
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
 
+  validUserData.features = ['read:activation_token'];
+
   const newUser = await runInsertQuery(validUserData);
   return newUser;
 
   async function runInsertQuery(validUserData) {
     const query = {
-      text: 'INSERT INTO users (username, email, password) VALUES($1, $2, $3) RETURNING *;',
-      values: [validUserData.username, validUserData.email, validUserData.password],
+      text: 'INSERT INTO users (username, email, password, features) VALUES($1, $2, $3, $4) RETURNING *;',
+      values: [validUserData.username, validUserData.email, validUserData.password, validUserData.features],
     };
     const results = await database.query(query);
     return results.rows[0];
@@ -73,11 +95,13 @@ async function create(postedUserData) {
 
 function createAnonymous() {
   return {
-    features: ['read:activation_token', 'create:session', 'read:user', 'create:user', 'read:users'],
+    features: ['read:activation_token', 'create:session', 'create:user'],
   };
 }
 
 async function validatePostSchema(postedUserData) {
+  stripUndefinedValues(postedUserData);
+
   const schema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).trim().required().messages({
       'any.required': `"username" é um campo obrigatório.`,
@@ -163,6 +187,8 @@ async function update(username, postedUserData) {
 // the POST and PATCH schema since (for now) the only
 // differences are the .required() validations and messages.
 async function validatePatchSchema(userData) {
+  stripUndefinedValues(userData);
+
   const schema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).trim().messages({
       'string.empty': `"username" não pode estar em branco.`,
@@ -182,9 +208,6 @@ async function validatePatchSchema(userData) {
       'string.base': `"password" deve ser do tipo String.`,
       'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
       'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
-    }),
-    features: Joi.array().items(Joi.string()).messages({
-      'array.base': `"features" deve ser do tipo Array.`,
     }),
   });
 
@@ -269,10 +292,19 @@ async function addFeatures(userId, features) {
   return results.rows[0];
 }
 
+function stripUndefinedValues(object) {
+  Object.keys(object).forEach((key) => {
+    if (object[key] === undefined) {
+      delete object[key];
+    }
+  });
+}
+
 export default Object.freeze({
   create,
   findAll,
   findOneByUsername,
+  findOneByEmail,
   findOneById,
   update,
   removeFeatures,

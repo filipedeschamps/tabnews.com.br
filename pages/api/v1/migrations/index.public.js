@@ -1,6 +1,8 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import migrator from 'infra/migrator.js';
+import authentication from 'models/authentication.js';
+import authorization from 'models/authorization.js';
 
 export default nextConnect({
   attachParams: true,
@@ -8,8 +10,9 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
-  .get(getHandler)
-  .post(postHandler);
+  .use(authentication.injectAnonymousOrUser)
+  .get(authorization.canRequest('read:migration'), getHandler)
+  .post(authorization.canRequest('create:migration'), postHandler);
 
 async function getHandler(request, response) {
   const pendingMigrations = await migrator.listPendingMigrations();
