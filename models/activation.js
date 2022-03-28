@@ -37,7 +37,10 @@ ${activationUrl}
 Caso você não tenha feito essa requisição, ignore esse email.
 
 Atenciosamente,
-Equipe TabNews`,
+Equipe TabNews
+
+
+Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
     });
   }
 }
