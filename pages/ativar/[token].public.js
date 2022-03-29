@@ -2,27 +2,34 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 export default function ActiveUser() {
-  const {query} = useRouter();
+  const router = useRouter()
+  const { token } = router.query
+
   const [userActivated, setUserActivated] = useState('');
 
   async function handleActivate(token) {
     try{
-    const response = await fetch(`./api/v1/activate/${token}`, { 
-      method: 'POST',
-     })
-     if(response.status === 200){
+    const response = await fetch(`../api/v1/activate/${token}`)
+    .then(response => response.json())
+    .then(data => data)
+
+     if(response.features){
        setUserActivated('Usuário Ativado com Sucesso!');
       }else{
-        setUserActivated('Erro ao Ativar Usuário!');
+        setUserActivated(response.message);
      }
+
     }catch (error) {
       console.log(error);
    }
   }
 
   useEffect(() => {
-    handleActivate(query.token)
-  }, [query.token]);
+    if(token){
+      handleActivate(token)
+    }
+  } , [token])
+
 
 return (
   <h1>{userActivated}</h1>
