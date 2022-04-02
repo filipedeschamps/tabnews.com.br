@@ -33,10 +33,11 @@ async function sendActivationEmailToUser(user) {
 
 ${activationUrl}
 
-Caso você não tenha feito essa requisição, ignore esse email.
+Caso você não tenha feito esta requisição, ignore esse email.
 
 Atenciosamente,
-Equipe TabNews`,
+Equipe TabNews
+Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
     });
   }
 }
@@ -53,7 +54,7 @@ function getActivationUrl(tokenId) {
     webserverHost = `https://${process.env.VERCEL_URL}`;
   }
 
-  const activationUrl = `${webserverHost}/api/v1/activation/${tokenId}`;
+  const activationUrl = `${webserverHost}/ativar/${tokenId}`;
   return activationUrl;
 }
 
