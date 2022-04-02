@@ -32,12 +32,13 @@ async function sendActivationEmailToUser(user) {
       subject: 'Ative seu cadastro no TabNews',
       text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
 
-${activationUrl}
+      ${activationUrl}
 
-Caso você não tenha feito essa requisição, ignore esse email.
+      Caso você não tenha feito essa requisição, ignore esse email.
 
-Atenciosamente,
-Equipe TabNews`,
+      Atenciosamente,
+      Equipe TabNews
+      Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
     });
   }
 }
@@ -54,7 +55,7 @@ function getActivationUrl(tokenId) {
     webserverHost = `https://${process.env.VERCEL_URL}`;
   }
 
-  const activationUrl = `${webserverHost}/api/v1/activate/${tokenId}`;
+  const activationUrl = `${webserverHost}/ativar/${tokenId}`;
   return activationUrl;
 }
 
