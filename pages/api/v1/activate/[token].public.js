@@ -19,7 +19,11 @@ async function postHandler(request, response) {
 
   const tokenObject = await activation.activateUserUsingTokenId(tokenId);
 
-  const authorizedValuesToReturn = authorization.filterOutput(userTryingToActivate, 'read:activation_token', tokenObject);
+  const authorizedValuesToReturn = authorization.filterOutput(
+    userTryingToActivate,
+    'read:activation_token',
+    tokenObject
+  );
 
   return response.status(200).json(authorizedValuesToReturn);
 }

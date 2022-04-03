@@ -136,7 +136,7 @@ function filterOutput(user, feature, output) {
     }));
   }
 
-  if (feature === 'read:activation_token'){
+  if (feature === 'read:activation_token') {
     filteredOutputValues = {
       id: output.id,
       used: output.used,

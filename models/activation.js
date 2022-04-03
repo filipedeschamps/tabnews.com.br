@@ -8,7 +8,7 @@ import { NotFoundError, ForbiddenError } from 'errors/index.js';
 async function sendActivationEmailToUser(user) {
   const tokenObject = await createTokenInDatabase(user);
   await sendEmailToUser(user, tokenObject.id);
-  
+
   async function createTokenInDatabase(user) {
     const query = {
       text: `INSERT INTO activate_account_tokens (user_id, expires_at)
