@@ -69,25 +69,19 @@ describe('Use case: Registration Flow (all successfully)', () => {
   });
 
   test('Activate (successfully)', async () => {
-    const activationLinkResponse = await fetch(activationUrl);
+    const activationLinkResponse = await fetch(activationUrl, { method: 'post' });
     const activationLinkResponseBody = await activationLinkResponse.json();
-
+    const tokenObject = await activation.findOneTokenByUserId(postUserResponseBody.id);
     expect(activationLinkResponse.status).toEqual(200);
     expect(uuidVersion(activationLinkResponseBody.id)).toEqual(4);
     expect(uuidValidate(activationLinkResponseBody.id)).toEqual(true);
-    expect(activationLinkResponseBody.id).toEqual(postUserResponseBody.id);
-    expect(activationLinkResponseBody.username).toEqual(postUserResponseBody.username);
-    expect(activationLinkResponseBody.features).toEqual([
-      'create:session',
-      'read:session',
-      'create:post',
-      'create:comment',
-      'update:user',
-    ]);
+    expect(activationLinkResponseBody.id).toEqual(tokenObject.id);
+    expect(activationLinkResponseBody.used).toEqual(true);
     expect(Date.parse(activationLinkResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(activationLinkResponseBody.updated_at)).not.toEqual(NaN);
     expect(activationLinkResponseBody).not.toHaveProperty('password');
     expect(activationLinkResponseBody).not.toHaveProperty('email');
+    expect(activationLinkResponseBody).not.toHaveProperty('user_id');
   });
 
   test('Login (successfully)', async () => {
