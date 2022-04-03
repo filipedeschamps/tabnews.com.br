@@ -136,6 +136,16 @@ function filterOutput(user, feature, output) {
     }));
   }
 
+  if (feature === 'read:activation_token'){
+    filteredOutputValues = {
+      id: output.id,
+      used: output.used,
+      expires_at: output.expires_at,
+      created_at: output.created_at,
+      updated_at: output.updated_at,
+    };
+  }
+
   return filteredOutputValues;
 }
 

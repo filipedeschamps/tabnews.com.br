@@ -8,7 +8,7 @@ import { NotFoundError, ForbiddenError } from 'errors/index.js';
 async function sendActivationEmailToUser(user) {
   const tokenObject = await createTokenInDatabase(user);
   await sendEmailToUser(user, tokenObject.id);
-
+  
   async function createTokenInDatabase(user) {
     const query = {
       text: `INSERT INTO activate_account_tokens (user_id, expires_at)
@@ -78,11 +78,13 @@ async function findOneTokenByUserId(userId) {
 }
 
 async function activateUserUsingTokenId(tokenId) {
-  const tokenObject = await findOneValidTokenById(tokenId);
-  const activatedUser = await activateUserByUserId(tokenObject.user_id);
-  await markTokenAsUsed(tokenObject.id);
-
-  return activatedUser;
+  let tokenObject = await findOneTokenById(tokenId);
+  if (!tokenObject.used) {
+    tokenObject = await findOneValidTokenById(tokenId);
+    await activateUserByUserId(tokenObject.user_id);
+    return await markTokenAsUsed(tokenObject.id);
+  }
+  return tokenObject;
 }
 
 async function activateUserByUserId(userId) {
@@ -108,6 +110,27 @@ async function activateUserByUserId(userId) {
     'create:comment',
     'update:user',
   ]);
+}
+
+async function findOneTokenById(tokenId) {
+  const query = {
+    text: `SELECT * FROM activate_account_tokens 
+        WHERE id = $1 
+        LIMIT 1;`,
+    values: [tokenId],
+  };
+
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O token "${tokenId}" não foi encontrado no sistema ou expirou.`,
+      action: 'Faça um novo cadastro.',
+      stack: new Error().stack,
+    });
+  }
+
+  return results.rows[0];
 }
 
 async function findOneValidTokenById(tokenId) {
@@ -137,11 +160,14 @@ async function markTokenAsUsed(tokenId) {
   const query = {
     text: `UPDATE activate_account_tokens
             SET used = true
-            WHERE id = $1;`,
+            WHERE id = $1
+            RETURNING *;`,
     values: [tokenId],
   };
 
-  await database.query(query);
+  const results = await database.query(query);
+
+  return results.rows[0];
 }
 
 export default Object.freeze({
