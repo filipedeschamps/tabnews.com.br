@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router'
 import Confetti from 'react-confetti';
 import { CgTab } from "react-icons/cg";
 
 export default function ConfirmSignup() {
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
-  const router = useRouter();
-  const email = router.query.email;
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
+    const userEmail = localStorage.getItem('@tabnews:userEmail')
+    setEmail(userEmail)
+
     function handleResize() {
       setConfettiWidth(window.screen.width);
       setConfettiHeight(window.screen.height);
     }
+
     window.addEventListener('resize', handleResize);
     handleResize();
+
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -24,6 +27,7 @@ export default function ConfirmSignup() {
       <style>{`
         body {
           overflow-x: hidden;
+          overflow-y: hidden;
         }
       `}</style>
     <div className="pl-3 pr-3">
@@ -51,7 +55,7 @@ export default function ConfirmSignup() {
               <h1 className="text-3xl font-semibold text-gray-900 text-center mb-6">
                 Cadastro realizado com sucesso!
               </h1>
-              <h1 className="text-3xl font-semibold text-gray-900 text-center">
+              <h1 className="sm:text-3xl text-xl font-semibold text-gray-900 text-center">
                 Confira seu e-mail: {email}
               </h1>
               <p className="p-4 text-center">

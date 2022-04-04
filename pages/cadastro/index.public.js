@@ -67,10 +67,8 @@ function SignUp() {
           return;
         }
 
-        router.push({
-          pathname: '/pocs/cadastro/confirmar',
-          query: { email: email },
-        })
+        localStorage.setItem('@tabnews:userEmail', email)
+        router.push('/cadastro/confirmar')
       } catch (error) {
         setErrorMessage(`Algum erro ocorreu. Tente novamente.`);
       } finally {
