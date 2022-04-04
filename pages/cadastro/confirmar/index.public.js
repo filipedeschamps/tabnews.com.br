@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router'
 import Confetti from 'react-confetti';
-import { MdAccountCircle, MdMonetizationOn } from "react-icons/md";
 import { CgTab } from "react-icons/cg";
 
 export default function ConfirmSignup() {
@@ -40,15 +39,7 @@ export default function ConfirmSignup() {
         <nav className="flex items-center justify-between pt-2 pb-2 mb-3 border-b-2 border-gray-200">
           <div className="flex items-center space-x-1 text-gray-800">
             <CgTab className="w-5 h-5" />
-            <span className="text-sm font-medium">TabNews</span>
-          </div>
-          <div className="flex space-x-2">
-            <div className="flex items-center pt-1 pb-1 pl-2 pr-2 font-mono text-sm text-gray-500 border border-gray-300 rounded-lg">
-              <MdMonetizationOn className="w-4 h-4 mr-1 text-yellow-400" /> 0052
-            </div>
-            <div className="flex items-center pt-1 pb-1 pl-2 pr-2 font-mono text-sm text-gray-500 border border-gray-300 rounded-lg">
-              <MdAccountCircle className="w-4 h-4 mr-1 text-blue-500" /> 1430
-            </div>
+            <a className="text-sm font-medium" href="/">TabNews</a>
           </div>
         </nav>
       </header>
