@@ -16,21 +16,21 @@ export default function ActiveUser() {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`/api/v1/activate/${token}`, {
-        method: 'POST',
+      const response = await fetch(`/api/v1/activation/${token}`, {
+        method: 'PATCH',
       });
 
-      const data = await response.json();
-
-      if (data.features) {
-        setUserFeedback('Usuário Ativado com Sucesso!');
+      if (response.status === 200) {
         setIsSuccess(true);
-      } else {
-        setUserFeedback(data.message);
-        setIsSuccess(false);
+        setUserFeedback('Sua conta foi ativada com sucesso!');
+        return;
       }
-    } catch (err) {
-      setUserFeedback(err.message);
+
+      const responseBody = await response.json();
+      setUserFeedback(responseBody.message);
+      setIsSuccess(false);
+    } catch (error) {
+      setUserFeedback(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +54,7 @@ export default function ActiveUser() {
       </header>
 
       {isLoading ? (
-        <p className="flex justify-center my-8">Carregando...</p>
+        <p className="flex justify-center my-8">Verificando Token de Ativação...</p>
       ) : (
         <div className="flex justify-center my-8">
           <section className="flex text-center items-center">
