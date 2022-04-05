@@ -1,34 +1,44 @@
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { CgTab } from 'react-icons/cg';
-import { RiMoneyDollarCircleFill } from 'react-icons/ri';
+import { useRouter } from 'next/router';
+import fetch from 'cross-fetch';
+
+import { CgTab, CgCheck, CgClose } from 'react-icons/cg';
 
 export default function ActiveUser() {
   const router = useRouter();
   const { token } = router.query;
 
-  const [userActivated, setUserActivated] = useState('');
+  const [userFeedback, setUserFeedback] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function handleActivate(token) {
+  const handleActivateUser = async (token) => {
     try {
-      const response = await fetch(`../api/v1/activate/${token}`)
-        .then((response) => response.json())
-        .then((data) => data);
+      setIsLoading(true);
 
-      if (response.features) {
-        setUserActivated('Usuário Ativado com Sucesso!');
+      const response = await fetch(`/api/v1/activate/${token}`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (data.features) {
+        setUserFeedback('Usuário Ativado com Sucesso!');
+        setIsSuccess(true);
       } else {
-        setUserActivated(response.message);
+        setUserFeedback(data.message);
+        setIsSuccess(false);
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log({ err });
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (token) {
-      handleActivate(token);
+      handleActivateUser(token);
     }
   }, [token]);
 
@@ -42,12 +52,17 @@ export default function ActiveUser() {
           </div>
         </nav>
       </header>
-      <div className="flex m-2">
-        <div className="bg-gray-100 rounded-md w-96">
-          <h1>{userActivated}</h1>
+
+      {isLoading ? (
+        <p className="flex justify-center my-8">Carregando...</p>
+      ) : (
+        <div className="flex justify-center my-8">
+          <section className="flex text-center items-center">
+            {isSuccess ? <CgCheck className="w-5 h-5 text-green-600" /> : <CgClose className="w-5 h-5 text-red-500" />}
+            <h2 className="py-2 ml-2">{userFeedback}</h2>
+          </section>
         </div>
-        <div className=""></div>
-      </div>
+      )}
     </>
   );
 }
