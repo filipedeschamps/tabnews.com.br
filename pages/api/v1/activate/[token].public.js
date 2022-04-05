@@ -11,9 +11,9 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .post(authorization.canRequest('read:activation_token'), postHandler);
+  .patch(authorization.canRequest('read:activation_token'), patchHandler);
 
-async function postHandler(request, response) {
+async function patchHandler(request, response) {
   const userTryingToActivate = request.context.user;
   const tokenId = request.query.token;
 

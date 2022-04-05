@@ -69,7 +69,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
   });
 
   test('Activate (successfully)', async () => {
-    const activationLinkResponse = await fetch(activationUrl, { method: 'post' });
+    const activationLinkResponse = await fetch(activationUrl, { method: 'patch' });
     const activationLinkResponseBody = await activationLinkResponse.json();
     const tokenObject = await activation.findOneTokenByUserId(postUserResponseBody.id);
     expect(activationLinkResponse.status).toEqual(200);

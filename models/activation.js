@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid';
 import email from 'infra/email.js';
 import database from 'infra/database.js';
 import user from 'models/user.js';
@@ -114,8 +113,8 @@ async function activateUserByUserId(userId) {
 
 async function findOneTokenById(tokenId) {
   const query = {
-    text: `SELECT * FROM activate_account_tokens 
-        WHERE id = $1 
+    text: `SELECT * FROM activate_account_tokens
+        WHERE id = $1
         LIMIT 1;`,
     values: [tokenId],
   };
