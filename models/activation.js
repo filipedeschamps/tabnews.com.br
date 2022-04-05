@@ -53,7 +53,7 @@ function getActivationUrl(tokenId) {
     webserverHost = `https://${process.env.VERCEL_URL}`;
   }
 
-  const activationUrl = `${webserverHost}/api/v1/activate/${tokenId}`;
+  const activationUrl = `${webserverHost}/api/v1/activation/${tokenId}`;
   return activationUrl;
 }
 
