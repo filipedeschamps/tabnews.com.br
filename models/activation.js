@@ -63,7 +63,7 @@ function getActivationApiEndpoint() {
 
 function getActivationPageEndpoint(tokenId) {
   const webserverHost = getWebServerHost();
-  return tokenId ? `${webserverHost}/ativar/${tokenId}` : `${webserverHost}/ativar`;
+  return tokenId ? `${webserverHost}/cadastro/ativar/${tokenId}` : `${webserverHost}/cadastro/ativar`;
 }
 
 async function findOneTokenByUserId(userId) {
