@@ -20,7 +20,7 @@ async function sendActivationEmailToUser(user) {
   }
 
   async function sendEmailToUser(user, tokenId) {
-    const activationUrl = getActivationUrl(tokenId);
+    const activationPageEndpoint = getActivationPageEndpoint(tokenId);
 
     await email.send({
       from: {
@@ -31,7 +31,7 @@ async function sendActivationEmailToUser(user) {
       subject: 'Ative seu cadastro no TabNews',
       text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
 
-${activationUrl}
+${activationPageEndpoint}
 
 Caso você não tenha feito esta requisição, ignore esse email.
 
@@ -42,8 +42,7 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
   }
 }
 
-function getActivationUrl(tokenId) {
-  // TODO: maybe get this from environment variables
+function getWebServerHost() {
   let webserverHost = 'https://www.tabnews.com.br';
 
   if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
@@ -54,8 +53,17 @@ function getActivationUrl(tokenId) {
     webserverHost = `https://${process.env.VERCEL_URL}`;
   }
 
-  const activationUrl = `${webserverHost}/ativar/${tokenId}`;
-  return activationUrl;
+  return webserverHost;
+}
+
+function getActivationApiEndpoint() {
+  const webserverHost = getWebServerHost();
+  return `${webserverHost}/api/v1/activation`;
+}
+
+function getActivationPageEndpoint(tokenId) {
+  const webserverHost = getWebServerHost();
+  return tokenId ? `${webserverHost}/ativar/${tokenId}` : `${webserverHost}/ativar`;
 }
 
 async function findOneTokenByUserId(userId) {
@@ -173,7 +181,8 @@ async function markTokenAsUsed(tokenId) {
 export default Object.freeze({
   sendActivationEmailToUser,
   findOneTokenByUserId,
-  getActivationUrl,
+  getActivationApiEndpoint,
+  getActivationPageEndpoint,
   activateUserUsingTokenId,
   activateUserByUserId,
 });

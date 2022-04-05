@@ -15,9 +15,16 @@ export default nextConnect({
 
 async function patchHandler(request, response) {
   const userTryingToActivate = request.context.user;
-  const tokenId = request.query.token;
+  const insecureInputValues = request.body;
 
-  const tokenObject = await activation.activateUserUsingTokenId(tokenId);
+  //TODO: validate input values with the new validation strategy
+  const secureInputValues = authorization.filterInput(
+    userTryingToActivate,
+    'read:activation_token',
+    insecureInputValues
+  );
+
+  const tokenObject = await activation.activateUserUsingTokenId(secureInputValues.tokenId);
 
   const authorizedValuesToReturn = authorization.filterOutput(
     userTryingToActivate,

@@ -16,8 +16,14 @@ export default function ActiveUser() {
     try {
       setIsLoading(true);
 
-      const response = await fetch(`/api/v1/activation/${token}`, {
+      const response = await fetch(`/api/v1/activation`, {
         method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token_id: token,
+        }),
       });
 
       if (response.status === 200) {
@@ -26,9 +32,15 @@ export default function ActiveUser() {
         return;
       }
 
-      const responseBody = await response.json();
-      setUserFeedback(responseBody.message);
+      if (response.status === 404) {
+        const responseBody = await response.json();
+        setUserFeedback(responseBody.message);
+        setIsSuccess(false);
+        return;
+      }
+
       setIsSuccess(false);
+      throw new Error(response.statusText);
     } catch (error) {
       setUserFeedback(error.message);
     } finally {

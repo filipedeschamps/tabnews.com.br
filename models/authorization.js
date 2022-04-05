@@ -82,6 +82,12 @@ function filterInput(user, feature, input) {
     };
   }
 
+  if (feature === 'read:activation_token' && can(user, feature)) {
+    filteredInputValues = {
+      tokenId: input.token_id,
+    };
+  }
+
   return filteredInputValues;
 }
 
