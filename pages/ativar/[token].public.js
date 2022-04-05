@@ -30,7 +30,7 @@ export default function ActiveUser() {
         setIsSuccess(false);
       }
     } catch (err) {
-      console.log({ err });
+      setUserFeedback(err.message);
     } finally {
       setIsLoading(false);
     }
