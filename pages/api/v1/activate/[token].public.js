@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import activate from 'models/activation.js';
+import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 
@@ -11,15 +11,19 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
-  .get(authorization.canRequest('read:activation_token'), getHandler);
+  .post(authorization.canRequest('read:activation_token'), postHandler);
 
-async function getHandler(request, response) {
+async function postHandler(request, response) {
   const userTryingToActivate = request.context.user;
   const tokenId = request.query.token;
 
-  const activatedUser = await activate.activateUserUsingTokenId(tokenId);
+  const tokenObject = await activation.activateUserUsingTokenId(tokenId);
 
-  const authorizedValuesToReturn = authorization.filterOutput(userTryingToActivate, 'read:user', activatedUser);
+  const authorizedValuesToReturn = authorization.filterOutput(
+    userTryingToActivate,
+    'read:activation_token',
+    tokenObject
+  );
 
   return response.status(200).json(authorizedValuesToReturn);
 }
