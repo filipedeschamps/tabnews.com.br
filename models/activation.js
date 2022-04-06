@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid';
 import email from 'infra/email.js';
 import database from 'infra/database.js';
 import user from 'models/user.js';
@@ -32,12 +31,12 @@ async function sendActivationEmailToUser(user) {
       subject: 'Ative seu cadastro no TabNews',
       text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
 
-${activationUrl}
+      ${activationUrl}
 
-Caso você não tenha feito essa requisição, ignore esse email.
+      Caso você não tenha feito essa requisição, ignore esse email.
 
-Atenciosamente,
-Equipe TabNews`,
+      Atenciosamente,
+      Equipe TabNews`,
     });
   }
 }
