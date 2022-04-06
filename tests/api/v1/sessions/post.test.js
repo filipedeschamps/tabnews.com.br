@@ -53,7 +53,7 @@ describe('POST /api/v1/sessions', () => {
       expect(parsedCookiesFromResponse.session_id.httpOnly).toEqual(true);
     });
 
-    test('Using a valid email and password, but user lost the feature "read:activation_token"', async () => {
+    test('Using a valid email and password, but user lost the feature "create:session"', async () => {
       const user = await orchestrator.createUser({
         email: 'emailToBeFoundAndLostFeature@gmail.com',
         password: 'ValidPassword',
