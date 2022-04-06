@@ -54,11 +54,14 @@ describe('POST /api/v1/sessions', () => {
     });
 
     test('Using a valid email and password, but user lost the feature "create:session"', async () => {
-      const user = await orchestrator.createUser({
+      const defaultUser = await orchestrator.createUser({
         email: 'emailToBeFoundAndLostFeature@gmail.com',
         password: 'ValidPassword',
       });
-      await orchestrator.removeFeaturesFromUser(user, ['read:activation_token']);
+
+      await orchestrator.activateUser(defaultUser);
+      await orchestrator.removeFeaturesFromUser(defaultUser, ['create:session']);
+
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -105,8 +108,8 @@ describe('POST /api/v1/sessions', () => {
 
       expect(response.status).toBe(403);
       expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para fazer login.');
-      expect(responseBody.action).toEqual('Verifique seu email para ativar seu usuário".');
+      expect(responseBody.message).toEqual('O seu usuário ainda não está ativado.');
+      expect(responseBody.action).toEqual('Verifique seu email, pois acabamos de enviar um novo convite de ativação.');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidValidate(responseBody.errorId)).toEqual(true);
