@@ -56,15 +56,6 @@ async function postHandler(request, response) {
     });
   }
 
-  if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
-    await activation.sendActivationEmailToUser(storedUser);
-    throw new ForbiddenError({
-      message: `O seu usuário ainda não está ativado.`,
-      action: `Verifique seu email, pois acabamos de enviar um novo convite de ativação.`,
-      errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED',
-    });
-  }
-
   if (!authorization.can(storedUser, 'create:session')) {
     throw new ForbiddenError({
       message: `Você não possui permissão para fazer login.`,
