@@ -5,7 +5,7 @@ import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll() {
   const query = {
-    text: 'SELECT * FROM users ORDER BY created_at ASC;',
+    text: 'BOGUS QUERY;',
   };
   const results = await database.query(query);
   return results.rows;
