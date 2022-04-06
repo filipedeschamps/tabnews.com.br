@@ -5,6 +5,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
 import session from 'models/session';
+import activation from 'models/activation.js';
 
 export default nextConnect({
   attachParams: true,
@@ -47,11 +48,20 @@ async function postHandler(request, response) {
   }
 
   if (!authorization.can(storedUser, 'create:session')) {
-    throw new ForbiddenError({
-      message: `Você não possui permissão para fazer login.`,
-      action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "create:session".`,
-      errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
-    });
+    if (authorization.can(storedUser, 'read:activation_token')) {
+      await activation.sendActivationEmailToUser(storedUser);
+      throw new ForbiddenError({
+        message: `Você não possui permissão para fazer login.`,
+        action: `Verifique seu email para ativar seu usuário".`,
+        errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED',
+      });
+    } else {
+      throw new ForbiddenError({
+        message: `Você não possui permissão para fazer login.`,
+        action: `Verifique se este usuário possui a feature "create:session".`,
+        errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
+      });
+    }
   }
 
   const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
