@@ -82,6 +82,12 @@ function filterInput(user, feature, input) {
     };
   }
 
+  if (feature === 'read:activation_token' && can(user, feature)) {
+    filteredInputValues = {
+      tokenId: input.token_id,
+    };
+  }
+
   return filteredInputValues;
 }
 
@@ -134,6 +140,16 @@ function filterOutput(user, feature, output) {
       created_at: user.created_at,
       updated_at: user.updated_at,
     }));
+  }
+
+  if (feature === 'read:activation_token') {
+    filteredOutputValues = {
+      id: output.id,
+      used: output.used,
+      expires_at: output.expires_at,
+      created_at: output.created_at,
+      updated_at: output.updated_at,
+    };
   }
 
   return filteredOutputValues;

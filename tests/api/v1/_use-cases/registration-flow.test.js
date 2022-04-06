@@ -17,7 +17,7 @@ beforeAll(async () => {
 
 describe('Use case: Registration Flow (all successfully)', () => {
   let postUserResponseBody;
-  let activationUrl;
+  let tokenObjectInDatabase;
   let postSessionResponseBody;
   let parsedCookiesFromPost;
 
@@ -58,36 +58,39 @@ describe('Use case: Registration Flow (all successfully)', () => {
   test('Receive email (successfully)', async () => {
     const activationEmail = await orchestrator.getLastEmail();
 
-    const tokenObject = await activation.findOneTokenByUserId(postUserResponseBody.id);
-    activationUrl = activation.getActivationUrl(tokenObject.id);
+    tokenObjectInDatabase = await activation.findOneTokenByUserId(postUserResponseBody.id);
+    const activationPageEndpoint = `${activation.getActivationPageEndpoint()}/${tokenObjectInDatabase.id}`;
 
     expect(activationEmail.sender).toEqual('<contato@tabnews.com.br>');
     expect(activationEmail.recipients).toEqual(['<regularregistrationflow@gmail.com>']);
     expect(activationEmail.subject).toEqual('Ative seu cadastro no TabNews');
     expect(activationEmail.text.includes(postUserResponseBody.username)).toBe(true);
-    expect(activationEmail.text.includes(activationUrl)).toBe(true);
+    expect(activationEmail.text.includes(activationPageEndpoint)).toBe(true);
   });
 
   test('Activate (successfully)', async () => {
-    const activationLinkResponse = await fetch(activationUrl);
-    const activationLinkResponseBody = await activationLinkResponse.json();
+    const activationApiEndpoint = activation.getActivationApiEndpoint();
+    const activationApiResponse = await fetch(activationApiEndpoint, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token_id: tokenObjectInDatabase.id,
+      }),
+    });
+    const activationApiResponseBody = await activationApiResponse.json();
 
-    expect(activationLinkResponse.status).toEqual(200);
-    expect(uuidVersion(activationLinkResponseBody.id)).toEqual(4);
-    expect(uuidValidate(activationLinkResponseBody.id)).toEqual(true);
-    expect(activationLinkResponseBody.id).toEqual(postUserResponseBody.id);
-    expect(activationLinkResponseBody.username).toEqual(postUserResponseBody.username);
-    expect(activationLinkResponseBody.features).toEqual([
-      'create:session',
-      'read:session',
-      'create:post',
-      'create:comment',
-      'update:user',
-    ]);
-    expect(Date.parse(activationLinkResponseBody.created_at)).not.toEqual(NaN);
-    expect(Date.parse(activationLinkResponseBody.updated_at)).not.toEqual(NaN);
-    expect(activationLinkResponseBody).not.toHaveProperty('password');
-    expect(activationLinkResponseBody).not.toHaveProperty('email');
+    expect(activationApiResponse.status).toEqual(200);
+    expect(uuidVersion(activationApiResponseBody.id)).toEqual(4);
+    expect(uuidValidate(activationApiResponseBody.id)).toEqual(true);
+    expect(activationApiResponseBody.id).toEqual(tokenObjectInDatabase.id);
+    expect(activationApiResponseBody.used).toEqual(true);
+    expect(Date.parse(activationApiResponseBody.created_at)).not.toEqual(NaN);
+    expect(Date.parse(activationApiResponseBody.updated_at)).not.toEqual(NaN);
+    expect(activationApiResponseBody).not.toHaveProperty('password');
+    expect(activationApiResponseBody).not.toHaveProperty('email');
+    expect(activationApiResponseBody).not.toHaveProperty('user_id');
   });
 
   test('Login (successfully)', async () => {
