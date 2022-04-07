@@ -26,7 +26,6 @@ export default function Home() {
 }
 
 function SignUp() {
-  const usernameRef = useRef('');
   const emailRef = useRef('');
   const passwordRef = useRef('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,28 +36,26 @@ function SignUp() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const username = usernameRef.current.value;
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
 
-    if (username && email && password) {
+    if (email && password) {
       setErrorMessage('');
       setIsLoading(true);
 
       try {
-        const userBody = JSON.stringify({
-          username: username,
+        const sessionBody = JSON.stringify({
           email: email,
           password: password,
         });
 
-        const response = await fetch(`/api/v1/users`, {
+        const response = await fetch(`/api/v1/sessions`, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
           },
-          body: userBody,
+          body: sessionBody,
         });
 
         const data = await response.json();
@@ -69,8 +66,7 @@ function SignUp() {
           return;
         }
 
-        localStorage.setItem('@tabnews:userEmail', email);
-        router.push('/cadastro/confirmar');
+        router.push('/login/sucesso');
       } catch (error) {
         setErrorMessage(`Algum erro ocorreu. Tente novamente.`);
       } finally {
@@ -86,26 +82,10 @@ function SignUp() {
     <div className="max-w-4xl m-auto">
       <div className="flex justify-center align-center font-sans">
         <div className="flex-col overflow-hidden">
-          <h1 className="text-3xl font-semibold text-gray-900">Cadastrar usuário</h1>
+          <h1 className="text-3xl font-semibold text-gray-900">Login</h1>
 
           <div className="w-72">
             <form className="w-full bg-white rounded pt-6 pb-8 mb-4" onSubmit={(e) => handleSubmit(e)}>
-              <div className="mb-6">
-                <label htmlFor="username" className="relative text-gray-600 focus-within:text-gray-600 block">
-                  <AiOutlineUser className="pointer-events-none w-6 h-6 absolute top-1/2 transform -translate-y-1/2 left-3" />
-                  <input
-                    className="shadow appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline block pl-12 h-12"
-                    id="username"
-                    type="text"
-                    placeholder="Nome de usuário"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                    minLength={3}
-                    ref={usernameRef}
-                  />
-                </label>
-              </div>
               <div className="mb-6">
                 <label htmlFor="email" className="relative text-gray-600 focus-within:text-gray-600 block">
                   <MdOutlineEmail className="pointer-events-none w-6 h-6 absolute top-1/2 transform -translate-y-1/2 left-3" />
@@ -154,7 +134,7 @@ function SignUp() {
                   }`}
                   type="submit"
                   disabled={isLoading}>
-                  {isLoading ? <Loading /> : 'Cadastrar'}
+                  {isLoading ? <Loading /> : 'Login'}
                 </button>
               </div>
             </form>
