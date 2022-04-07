@@ -97,7 +97,7 @@ function SignUp() {
                     className="shadow appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline block pl-12 h-12"
                     id="username"
                     type="text"
-                    placeholder="Username"
+                    placeholder="Nome de usuário"
                     autoCorrect="off"
                     autoCapitalize="off"
                     spellCheck={false}
@@ -115,7 +115,7 @@ function SignUp() {
                     type="email"
                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
                     title="E-mail inválido."
-                    placeholder="Seu e-mail principal"
+                    placeholder="Email"
                     autoCorrect="off"
                     autoCapitalize="off"
                     spellCheck={false}
@@ -131,7 +131,7 @@ function SignUp() {
                     className="appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline block pl-12 h-12"
                     id="password"
                     type="password"
-                    placeholder="******"
+                    placeholder="Senha"
                     autoCorrect="off"
                     autoCapitalize="off"
                     spellCheck={false}
@@ -142,7 +142,7 @@ function SignUp() {
               </div>
               {errorMessage && (
                 <p className="mb-6 text-center">
-                  ⚠ {errorMessage}
+                  ⚠ <strong>{errorMessage}</strong>
                   <br />
                   {errorAction}
                 </p>
