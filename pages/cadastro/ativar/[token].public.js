@@ -9,6 +9,7 @@ export default function ActiveUser() {
   const { token } = router.query;
 
   const [userFeedback, setUserFeedback] = useState('');
+  const [userAction, setUserAction] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,9 +33,10 @@ export default function ActiveUser() {
         return;
       }
 
-      if (response.status === 404) {
+      if (response.status >= 400 && response.status <= 503) {
         const responseBody = await response.json();
         setUserFeedback(responseBody.message);
+        setUserAction(responseBody.action);
         setIsSuccess(false);
         return;
       }
@@ -71,8 +73,11 @@ export default function ActiveUser() {
         <div className="flex justify-center my-8">
           <section className="flex text-center items-center">
             {isSuccess ? <CgCheck className="w-5 h-5 text-green-600" /> : <CgClose className="w-5 h-5 text-red-500" />}
-            <h2 className="py-2 ml-2">{userFeedback}</h2>
+            <h2 className="py-2 ml-2">
+              <strong>{userFeedback}</strong>
+            </h2>
           </section>
+          <h2 className="py-2 ml-2">{userAction}</h2>
         </div>
       )}
     </>
