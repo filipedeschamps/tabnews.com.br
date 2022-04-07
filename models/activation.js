@@ -132,8 +132,8 @@ async function findOneTokenById(tokenId) {
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
-      message: `O token "${tokenId}" não foi encontrado no sistema ou expirou.`,
-      action: 'Faça um novo cadastro.',
+      message: `O token de ativação utilizado não foi encontrado no sistema.`,
+      action: 'Certifique-se que está sendo enviado o token corretamente.',
       stack: new Error().stack,
     });
   }
@@ -155,8 +155,8 @@ async function findOneValidTokenById(tokenId) {
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
-      message: `O token "${tokenId}" não foi encontrado no sistema ou expirou.`,
-      action: 'Faça um novo cadastro.',
+      message: `O token de ativação utilizado não foi encontrado no sistema ou expirou.`,
+      action: 'Faça login novamente para receber um novo token por email.',
       stack: new Error().stack,
     });
   }
