@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 import { ServiceError } from 'errors/index.js';
+import logger from './logger.js';
 
 const transporterConfiguration = {
   host: process.env.EMAIL_SMTP_HOST,
@@ -35,7 +36,7 @@ async function send({ from, to, subject, text }) {
       context: mailOptions,
       errorUniqueCode: 'INFRA:EMAIl:SEND',
     });
-    console.error(errorObject);
+    logger.error(errorObject);
     throw errorObject;
   }
 }

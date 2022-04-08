@@ -1,6 +1,7 @@
 import { Pool, Client } from 'pg';
 import retry from 'async-retry';
 import { ServiceError } from 'errors/index.js';
+import logger from './logger.js';
 
 const configurations = {
   user: process.env.POSTGRES_USER,
@@ -45,7 +46,7 @@ async function query(query, params) {
       errorUniqueCode: 'INFRA:DATABASE:QUERY',
       stack: new Error().stack,
     });
-    console.error(errorObject);
+    logger.error(errorObject);
     throw errorObject;
   } finally {
     if (client) {
@@ -136,7 +137,7 @@ async function getNewClient() {
       errorUniqueCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
       stack: new Error().stack,
     });
-    console.error(errorObject);
+    logger.error(errorObject);
     throw errorObject;
   }
 }

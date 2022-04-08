@@ -12,6 +12,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
+  .use(controller.logRequest)
   .get(getHandler)
   .patch(authorization.canRequest('update:user'), patchHandler);
 

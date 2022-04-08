@@ -9,6 +9,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestId)
+  .use(controller.logRequest)
   .get(getHandler);
 
 async function getHandler(request, response) {
