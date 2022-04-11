@@ -11,6 +11,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
+  .use(controller.logRequest)
   .get(authorization.canRequest('read:migration'), getHandler)
   .post(authorization.canRequest('create:migration'), postHandler);
 

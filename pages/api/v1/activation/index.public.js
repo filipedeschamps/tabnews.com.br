@@ -11,6 +11,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
+  .use(controller.logRequest)
   .patch(authorization.canRequest('read:activation_token'), patchHandler);
 
 async function patchHandler(request, response) {
