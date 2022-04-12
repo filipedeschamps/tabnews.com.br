@@ -28,12 +28,14 @@ async function findOneByUsername(username) {
       action: 'Verifique se o "username" está digitado corretamente.',
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+      key: 'username',
     });
   }
 
   return results.rows[0];
 }
 
+// TODO: validate email
 async function findOneByEmail(email) {
   const query = {
     text: 'SELECT * FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1;',
@@ -44,16 +46,18 @@ async function findOneByEmail(email) {
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
-      message: `O email "${email}" não foi encontrado no sistema.`,
+      message: `O email informado não foi encontrado no sistema.`,
       action: 'Verifique se o "email" está digitado corretamente.',
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
+      key: 'email',
     });
   }
 
   return results.rows[0];
 }
 
+// TODO: validate userId
 async function findOneById(userId) {
   const query = {
     text: 'SELECT * FROM users WHERE id = $1 LIMIT 1;',
@@ -67,6 +71,8 @@ async function findOneById(userId) {
       message: `O id "${userId}" não foi encontrado no sistema.`,
       action: 'Verifique se o "id" está digitado corretamente.',
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_ID:NOT_FOUND',
+      key: 'id',
     });
   }
 
@@ -177,8 +183,10 @@ async function validateUniqueUsername(username) {
 
   if (results.rowCount > 0) {
     throw new ValidationError({
-      message: `O username "${username}" já está sendo usado.`,
+      message: `O "username" informado já está sendo usado.`,
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+      key: 'username',
     });
   }
 }
@@ -193,8 +201,10 @@ async function validateUniqueEmail(email) {
 
   if (results.rowCount > 0) {
     throw new ValidationError({
-      message: `O email "${email}" já está sendo usado.`,
+      message: `O email informado já está sendo usado.`,
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
+      key: 'email',
     });
   }
 }

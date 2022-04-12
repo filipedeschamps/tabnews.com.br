@@ -12,13 +12,14 @@ export default function validator(object, keys) {
     throw new ValidationError({
       message: 'Não foi possível interpretar o valor enviado.',
       action: 'Verifique se o valor enviado é um JSON válido.',
-      errorUniqueCode: 'VALIDATOR:ERROR_PARSING_JSON',
+      errorUniqueCode: 'MODEL:VALIDATOR:ERROR_PARSING_JSON',
       stack: new Error().stack,
+      key: 'object',
     });
   }
 
   let finalSchema = Joi.object().required().min(1).messages({
-    'object.base': `Valor enviado deve ser do tipo Object.`,
+    'object.base': `Body enviado deve ser do tipo Object.`,
     'object.min': `Objeto enviado deve ter no mínimo uma chave.`,
   });
 
@@ -38,8 +39,8 @@ export default function validator(object, keys) {
   if (error) {
     throw new ValidationError({
       message: error.details[0].message,
-      key: error.details[0].context.key,
-      errorUniqueCode: 'VALIDATOR:FINAL_SCHEMA',
+      key: error.details[0].context.key || error.details[0].context.type,
+      errorUniqueCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
       stack: new Error().stack,
     });
   }
