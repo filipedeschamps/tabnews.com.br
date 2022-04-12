@@ -1,7 +1,7 @@
 import { v4 as uuid } from 'uuid';
 
 class BaseError extends Error {
-  constructor({ message, stack, action, statusCode, errorId, requestId, context, errorUniqueCode }) {
+  constructor({ message, stack, action, statusCode, errorId, requestId, context, errorUniqueCode, key }) {
     super();
     this.name = this.constructor.name;
     this.message = message;
@@ -12,6 +12,7 @@ class BaseError extends Error {
     this.context = context;
     this.stack = stack;
     this.errorUniqueCode = errorUniqueCode;
+    this.key = key;
   }
 }
 
@@ -57,7 +58,7 @@ export class ServiceError extends BaseError {
 }
 
 export class ValidationError extends BaseError {
-  constructor({ message, action, stack, statusCode, context, errorUniqueCode }) {
+  constructor({ message, action, stack, statusCode, context, errorUniqueCode, key }) {
     super({
       message: message || 'Um erro de validação ocorreu.',
       action: action || 'Ajuste os dados enviados e tente novamente.',
@@ -65,6 +66,7 @@ export class ValidationError extends BaseError {
       stack: stack,
       context: context,
       errorUniqueCode: errorUniqueCode,
+      key: key,
     });
   }
 }
