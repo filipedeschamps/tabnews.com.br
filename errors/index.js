@@ -31,7 +31,7 @@ export class InternalServerError extends BaseError {
 }
 
 export class NotFoundError extends BaseError {
-  constructor({ message, action, requestId, errorId, stack, errorUniqueCode }) {
+  constructor({ message, action, requestId, errorId, stack, errorUniqueCode, key }) {
     super({
       message: message || 'Não foi possível encontrar este recurso no sistema.',
       action: action || 'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.',
@@ -40,6 +40,7 @@ export class NotFoundError extends BaseError {
       errorId: errorId,
       stack: stack,
       errorUniqueCode: errorUniqueCode,
+      key: key,
     });
   }
 }
