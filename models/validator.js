@@ -39,7 +39,7 @@ export default function validator(object, keys) {
   if (error) {
     throw new ValidationError({
       message: error.details[0].message,
-      key: error.details[0].context.key || error.details[0].context.type,
+      key: error.details[0].context.key || error.details[0].context.type || 'object',
       errorUniqueCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
       stack: new Error().stack,
     });
