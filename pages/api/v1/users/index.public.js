@@ -4,6 +4,7 @@ import user from 'models/user.js';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -14,7 +15,7 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getHandler)
-  .post(authorization.canRequest('create:user'), postHandler);
+  .post(postValidationHandler, authorization.canRequest('create:user'), postHandler);
 
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
@@ -24,6 +25,18 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
 
   return response.status(200).json(secureOutputValues);
+}
+
+function postValidationHandler(request, response, next) {
+  const cleanValues = validator(request.body, {
+    username: 'required',
+    email: 'required',
+    password: 'required',
+  });
+
+  request.body = cleanValues;
+
+  next();
 }
 
 async function postHandler(request, response) {
