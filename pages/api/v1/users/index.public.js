@@ -45,7 +45,7 @@ async function postHandler(request, response) {
   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
 
   const newUser = await user.create(secureInputValues);
-  await activation.sendActivationEmailToUser(newUser);
+  await activation.createAndSendActivationEmail(newUser);
 
   const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 
