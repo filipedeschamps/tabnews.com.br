@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import cookie from 'cookie';
-import Joi from 'joi';
 import database from 'infra/database.js';
-import { UnauthorizedError, ValidationError } from 'errors/index.js';
+import { UnauthorizedError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 async function create(userId) {
   const sessionToken = crypto.randomBytes(48).toString('hex');
@@ -41,6 +41,15 @@ function clearSessionIdCookie(response) {
 }
 
 async function findOneValidByToken(sessionToken) {
+  validator(
+    {
+      session_id: sessionToken,
+    },
+    {
+      session_id: 'required',
+    }
+  );
+
   const query = {
     text: `SELECT * FROM sessions WHERE token = $1 AND expires_at > now();`,
     values: [sessionToken],
@@ -61,6 +70,10 @@ async function findOneById(sessionId) {
 }
 
 async function findOneValidFromRequest(request) {
+  validator(request.cookies, {
+    session_id: 'required',
+  });
+
   const sessionToken = request.cookies?.session_id;
 
   if (!sessionToken) {

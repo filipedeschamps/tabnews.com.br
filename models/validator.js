@@ -124,4 +124,20 @@ const schemas = {
         }),
     });
   },
+
+  session_id: function () {
+    return Joi.object({
+      session_id: Joi.string()
+        .length(96)
+        .alphanum()
+        .when('$required.session_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"session_id" é um campo obrigatório.`,
+          'string.empty': `"session_id" não pode estar em branco.`,
+          'string.base': `"session_id" deve ser do tipo String.`,
+          'string.length': `"session_id" deve possuir {#limit} caracteres.`,
+          'string.alphanum': `"session_id" deve conter apenas caracteres alfanuméricos.`,
+        }),
+    });
+  },
 };
