@@ -1,6 +1,5 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -87,7 +86,6 @@ describe('GET /api/v1/users/[username]', () => {
 
       expect(response.status).toEqual(200);
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(userCreated.id).toEqual(responseBody.id);
       expect(responseBody.username).toEqual('userNameToBeFound');
       expect(responseBody.features).toEqual(userCreated.features);
@@ -108,7 +106,6 @@ describe('GET /api/v1/users/[username]', () => {
 
       expect(response.status).toEqual(200);
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(userCreated.id).toEqual(responseBody.id);
       expect(responseBody.username).toEqual('userNameToBeFoundCAPS');
       expect(responseBody.features).toEqual(['read:activation_token']);

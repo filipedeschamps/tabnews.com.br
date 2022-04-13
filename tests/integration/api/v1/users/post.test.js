@@ -1,6 +1,5 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 import user from 'models/user.js';
 import password from 'models/password.js';
@@ -29,7 +28,6 @@ describe('POST /api/v1/users', () => {
 
       expect(response.status).toEqual(201);
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('uniqueUserName');
       expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
@@ -64,7 +62,6 @@ describe('POST /api/v1/users', () => {
 
       expect(response.status).toEqual(201);
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('postWithUnknownKey');
       expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
@@ -94,7 +91,6 @@ describe('POST /api/v1/users', () => {
 
       expect(response.status).toEqual(201);
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(responseBody.username).toEqual('extraSpaceInTheEnd');
       expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);

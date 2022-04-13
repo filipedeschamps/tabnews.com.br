@@ -1,6 +1,5 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 import session from 'models/session';
 import authentication from 'models/authentication';
@@ -37,7 +36,6 @@ describe('POST /api/v1/sessions', () => {
       expect(response.status).toBe(201);
       expect(responseBody.token.length).toEqual(96);
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidValidate(responseBody.id)).toEqual(true);
       expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
@@ -81,9 +79,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:session".');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION');
     });
 
@@ -112,9 +108,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Verifique seu email, pois acabamos de enviar um novo convite de ativação.');
       expect(responseBody.statusCode).toEqual(403);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED');
     });
 
@@ -145,9 +139,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Verifique se os dados enviados estão corretos.');
       expect(responseBody.statusCode).toEqual(401);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
     });
 
@@ -178,9 +170,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Verifique se os dados enviados estão corretos.');
       expect(responseBody.statusCode).toEqual(401);
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
     });
 
@@ -202,9 +192,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"email" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -227,9 +215,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"email" não pode estar em branco.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -252,9 +238,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"email" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -277,9 +261,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"email" deve conter um email válido.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -301,9 +283,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"password" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -326,9 +306,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"password" não pode estar em branco.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -351,9 +329,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"password" deve conter no mínimo 8 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -376,9 +352,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"password" deve conter no máximo 72 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
 
@@ -401,9 +375,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.message).toEqual('"password" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
       expect(responseBody.errorUniqueCode).not.toBeDefined();
     });
   });

@@ -1,6 +1,5 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 import user from 'models/user.js';
 import password from 'models/password.js';
@@ -32,7 +31,6 @@ describe('GET /api/v1/users', () => {
       expect(responseBody.length).toEqual(2);
 
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidValidate(responseBody[0].id)).toEqual(true);
       expect(responseBody[0].username).toEqual(firstUser.username);
       expect(responseBody[0].features).toEqual(firstUser.features);
       expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
@@ -41,7 +39,6 @@ describe('GET /api/v1/users', () => {
       expect(responseBody[0]).not.toHaveProperty('email');
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidValidate(responseBody[1].id)).toEqual(true);
       expect(responseBody[1].username).toEqual(secondUser.username);
       expect(responseBody[1].features).toEqual(secondUser.features);
       expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
