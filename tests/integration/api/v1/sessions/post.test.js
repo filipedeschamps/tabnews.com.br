@@ -188,12 +188,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"email" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('Using a valid password, but empty email', async () => {
@@ -211,15 +213,17 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"email" não pode estar em branco.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
-    test('Using a valid password, but email Using number type', async () => {
+    test('Using a valid password, but email using number type', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'POST',
         headers: {
@@ -234,12 +238,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"email" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('Using a valid password, but invalid email', async () => {
@@ -257,12 +263,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"email" deve conter um email válido.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('Using a valid email, but without password', async () => {
@@ -279,12 +287,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"password" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('Using a valid email, but empty password', async () => {
@@ -302,12 +312,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"password" não pode estar em branco.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('Using a valid email, but small password', async () => {
@@ -325,12 +337,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"password" deve conter no mínimo 8 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('Using a valid email, but too long password', async () => {
@@ -348,12 +362,14 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"password" deve conter no máximo 72 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('Using a valid email, but number type password', async () => {
@@ -371,12 +387,32 @@ describe('POST /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"password" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.errorId)).toEqual(4);
       expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).not.toBeDefined();
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
+    });
+
+    test('Sending a blank body', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.errorId)).toEqual(4);
+      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(responseBody.errorUniqueCode).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('object');
     });
   });
 });

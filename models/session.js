@@ -17,33 +17,6 @@ async function create(userId) {
   return results.rows[0];
 }
 
-async function validatePostSchema(postedSessionData) {
-  const schema = Joi.object({
-    email: Joi.string().email().min(7).max(254).lowercase().trim().required().messages({
-      'any.required': `"email" é um campo obrigatório.`,
-      'string.empty': `"email" não pode estar em branco.`,
-      'string.base': `"email" deve ser do tipo String.`,
-      'string.email': `"email" deve conter um email válido.`,
-    }),
-    // Why 72 in max length? https://security.stackexchange.com/a/39851
-    password: Joi.string().min(8).max(72).trim().required().messages({
-      'any.required': `"password" é um campo obrigatório.`,
-      'string.empty': `"password" não pode estar em branco.`,
-      'string.base': `"password" deve ser do tipo String.`,
-      'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
-      'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
-    }),
-  });
-
-  const { error, value } = schema.validate(postedSessionData, { stripUnknown: true });
-
-  if (error) {
-    throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
-  }
-
-  return value;
-}
-
 function setSessionIdCookieInResponse(sessionToken, response) {
   response.setHeader('Set-Cookie', [
     cookie.serialize('session_id', sessionToken, {
@@ -131,7 +104,6 @@ async function renew(sessionId, response) {
 
 export default Object.freeze({
   create,
-  validatePostSchema,
   setSessionIdCookieInResponse,
   clearSessionIdCookie,
   findOneValidByToken,
