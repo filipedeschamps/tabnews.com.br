@@ -109,4 +109,19 @@ const schemas = {
         }),
     });
   },
+
+  token_id: function () {
+    return Joi.object({
+      token_id: Joi.string()
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.token_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"token_id" é um campo obrigatório.`,
+          'string.empty': `"token_id" não pode estar em branco.`,
+          'string.base': `"token_id" deve ser do tipo String.`,
+          'string.guid': `"token_id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
 };
