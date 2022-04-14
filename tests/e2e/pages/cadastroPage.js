@@ -8,10 +8,11 @@ class CadastroPage {
     this.emailSelector = '#email';
     this.password = '#password';
     this.submitButton = 'button[type="submit"]';
+    this.registerSuccessSelector = '#register-success-msg';
   }
 
   async navigate() {
-    await this.page.goto('./cadastro');
+    await this.page.goto('/cadastro');
   }
 
   async fillCadastroFormAndSubmit(user) {
@@ -20,6 +21,7 @@ class CadastroPage {
     await this.page.fill(this.password, user.password);
 
     await this.page.click(this.submitButton);
+    await this.page.waitForSelector(this.registerSuccessSelector);
   }
 }
 

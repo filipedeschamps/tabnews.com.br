@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
 import { CgTab } from 'react-icons/cg';
 
@@ -54,7 +54,7 @@ export default function ConfirmSignup() {
           <div className="max-w-xl m-auto">
             <div className="flex justify-center align-center font-sans">
               <div className="flex-col overflow-hidden">
-                <h1 className="text-3xl font-semibold text-gray-900 text-center mb-6">
+                <h1 id="register-success-msg" className="text-3xl font-semibold text-gray-900 text-center mb-6">
                   Cadastro realizado com sucesso!
                 </h1>
                 <h1 className="sm:text-3xl text-xl font-semibold text-gray-900 text-center">
