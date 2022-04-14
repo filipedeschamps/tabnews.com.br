@@ -1,8 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
-import session from 'models/session';
-import authentication from 'models/authentication';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -18,13 +16,13 @@ describe('GET /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(403);
-      expect(responseBody.statusCode).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
       expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:session".');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
 
     test('Retrieving the endpoint with malformatted "session_id" (too short)', async () => {
@@ -38,13 +36,13 @@ describe('GET /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"session_id" deve possuir 96 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('session_id');
     });
 
@@ -59,13 +57,13 @@ describe('GET /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"session_id" deve possuir 96 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('session_id');
     });
 
@@ -80,13 +78,13 @@ describe('GET /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"session_id" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('session_id');
     });
   });
@@ -130,15 +128,15 @@ describe('GET /api/v1/sessions', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(403);
-      expect(responseBody.statusCode).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não possui permissão para executar esta ação.');
       expect(responseBody.action).toEqual(
         'Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".'
       );
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual(
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual(
         'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION'
       );
     });

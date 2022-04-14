@@ -19,13 +19,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('object');
     });
 
@@ -44,13 +44,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"token_id" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('token_id');
     });
 
@@ -69,13 +69,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"token_id" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('token_id');
     });
 
@@ -94,13 +94,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"token_id" não pode estar em branco.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('token_id');
     });
 
@@ -119,13 +119,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"token_id" deve possuir um token UUID na versão 4.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('token_id');
     });
 
@@ -226,13 +226,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(404);
-      expect(responseBody.statusCode).toEqual(404);
+      expect(responseBody.status_code).toEqual(404);
       expect(responseBody.name).toEqual('NotFoundError');
       expect(responseBody.message).toEqual('O token de ativação utilizado não foi encontrado no sistema ou expirou.');
       expect(responseBody.action).toEqual('Faça login novamente para receber um novo token por email.');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:ACTIVATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:ACTIVATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND');
       expect(responseBody.key).toEqual('token_id');
     });
   });
@@ -257,15 +257,15 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(403);
-      expect(responseBody.statusCode).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não pode mais ler tokens de ativação.');
       expect(responseBody.action).toEqual(
         'Verifique se você já está logado ou tentando ativar novamente o seu ou outro usuário que já está ativo.'
       );
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:ACTIVATION:ACTIVATE_USER_BY_USER_ID:FEATURE_NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:ACTIVATION:ACTIVATE_USER_BY_USER_ID:FEATURE_NOT_FOUND');
     });
 
     test('Already active, logged in and trying to activate with a valid token', async () => {
@@ -289,13 +289,13 @@ describe('PATCH /api/v1/activation', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(403);
-      expect(responseBody.statusCode).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
       expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:activation_token".');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 });

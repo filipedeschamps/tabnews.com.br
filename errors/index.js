@@ -20,7 +20,7 @@ export class InternalServerError extends BaseError {
   constructor({ message, action, requestId, errorId, statusCode, stack, errorUniqueCode }) {
     super({
       message: message || 'Um erro interno não esperado aconteceu.',
-      action: action || "Informe ao suporte o valor encontrado nos campos 'errorId'.",
+      action: action || "Informe ao suporte o valor encontrado no campo 'error_id'.",
       statusCode: statusCode || 500,
       requestId: requestId,
       errorId: errorId,
