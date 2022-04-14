@@ -61,8 +61,6 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-
       - uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/.next/cache
@@ -74,11 +72,14 @@ jobs:
         with:
           node-version: '14'
           cache: 'npm'
+      - run: npm ci
 
       - name: Install Playwright
         run: npx playwright install --with-deps
+
       - name: Run e2e tests
         run: npm run test:e2e
+
       - uses: actions/upload-artifact@v2
         if: always()
         with:
