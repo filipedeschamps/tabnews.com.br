@@ -6,6 +6,7 @@ require('dotenv').config();
  * @type {import('@playwright/test').PlaywrightTestConfig}
  */
 const config = {
+  globalSetup: require.resolve('./tests/e2e/utils/globalSetup'),
   testDir: './tests/e2e/_use-cases',
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
@@ -94,7 +95,7 @@ const config = {
 
   //  Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run services:up && npm run migration:run && npm run services:up && npm run dev',
+    command: 'npm run dev',
     port: '3000',
     timeout: 120 * 1000,
   },
