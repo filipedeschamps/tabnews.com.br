@@ -16,14 +16,14 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(404);
-      expect(responseBody.statusCode).toEqual(404);
+      expect(responseBody.status_code).toEqual(404);
       expect(responseBody.name).toEqual('NotFoundError');
       expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
       expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(responseBody.statusCode).toEqual(404);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(responseBody.status_code).toEqual(404);
+      expect(responseBody.error_unique_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
     });
 
@@ -33,13 +33,13 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve conter no mínimo 3 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
     });
 
@@ -49,13 +49,13 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve conter no máximo 30 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
     });
 
@@ -65,13 +65,13 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
-      expect(responseBody.statusCode).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
     });
 

@@ -41,6 +41,7 @@ function SignUp() {
 
     if (email && password) {
       setErrorMessage('');
+      setErrorAction('');
       setIsLoading(true);
 
       try {
@@ -60,9 +61,9 @@ function SignUp() {
 
         const data = await response.json();
 
-        if (data.statusCode >= 400) {
+        if (data.status_code >= 400) {
           setErrorMessage(`${data.message}`);
-          !data.action.includes('errorId') && setErrorAction(`${data.action}`);
+          setErrorAction(`${data.action}`);
           return;
         }
 
