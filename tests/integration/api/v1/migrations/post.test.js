@@ -1,6 +1,5 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -25,12 +24,10 @@ describe('POST /api/v1/migrations', () => {
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
       expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:migration".');
-      expect(responseBody.statusCode).toEqual(403);
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.status_code).toEqual(403);
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -54,12 +51,10 @@ describe('POST /api/v1/migrations', () => {
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
       expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:migration".');
-      expect(responseBody.statusCode).toEqual(403);
-      expect(uuidVersion(responseBody.errorId)).toEqual(4);
-      expect(uuidValidate(responseBody.errorId)).toEqual(true);
-      expect(uuidVersion(responseBody.requestId)).toEqual(4);
-      expect(uuidValidate(responseBody.requestId)).toEqual(true);
-      expect(responseBody.errorUniqueCode).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.status_code).toEqual(403);
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 

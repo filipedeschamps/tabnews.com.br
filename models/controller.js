@@ -1,6 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
+import snakeize from 'snakeize';
 
 import {
   InternalServerError,
@@ -17,22 +18,22 @@ async function injectRequestId(request, response, next) {
 
 async function onNoMatchHandler(request, response) {
   const errorObject = new NotFoundError({ requestId: request.context.requestId });
-  logger.info(errorObject);
-  return response.status(errorObject.statusCode).json(errorObject);
+  logger.info(snakeize(errorObject));
+  return response.status(errorObject.statusCode).json(snakeize(errorObject));
 }
 
 function onErrorHandler(error, request, response) {
   if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
     const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(errorObject);
-    return response.status(error.statusCode).json(errorObject);
+    logger.info(snakeize(errorObject));
+    return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
   if (error instanceof UnauthorizedError) {
     const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(errorObject);
+    logger.info(snakeize(errorObject));
     session.clearSessionIdCookie(response);
-    return response.status(error.statusCode).json(errorObject);
+    return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
   const errorObject = new InternalServerError({
@@ -43,9 +44,9 @@ function onErrorHandler(error, request, response) {
     errorUniqueCode: error.errorUniqueCode,
   });
 
-  logger.error(errorObject);
+  logger.error(snakeize(errorObject));
 
-  return response.status(errorObject.statusCode).json(errorObject);
+  return response.status(errorObject.statusCode).json(snakeize(errorObject));
 }
 
 function logRequest(request, response, next) {

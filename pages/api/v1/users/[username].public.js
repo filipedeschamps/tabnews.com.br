@@ -3,6 +3,7 @@ import controller from 'models/controller.js';
 import user from 'models/user.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import validator from 'models/validator.js';
 import { ForbiddenError } from 'errors/index.js';
 
 export default nextConnect({
@@ -13,17 +14,38 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getHandler)
-  .patch(authorization.canRequest('update:user'), patchHandler);
+  .get(getValidationHandler, getHandler)
+  .patch(patchValidationHandler, authorization.canRequest('update:user'), patchHandler);
+
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    username: 'required',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
 
 async function getHandler(request, response) {
   const userTryingToGet = request.context.user;
-  // TODO: Insecure value from the request must be filtered before being used.
   const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
   return response.status(200).json(secureOutputValues);
+}
+
+function patchValidationHandler(request, response, next) {
+  const cleanValues = validator(request.body, {
+    username: 'optional',
+    email: 'optional',
+    password: 'optional',
+  });
+
+  request.body = cleanValues;
+
+  next();
 }
 
 async function patchHandler(request, response) {
@@ -36,7 +58,7 @@ async function patchHandler(request, response) {
   if (!authorization.can(userTryingToPatch, 'update:user', targetUser)) {
     throw new ForbiddenError({
       message: 'Você não possui permissão para atualizar outro usuário.',
-      action: 'Verifique se você possui a feature "update:user:others_email".',
+      action: 'Verifique se você possui a feature "update:user:others".',
       errorUniqueCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
     });
   }
