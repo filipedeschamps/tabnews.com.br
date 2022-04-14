@@ -4,8 +4,8 @@ import user from 'models/user';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
-import session from 'models/session';
 import activation from 'models/activation.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -16,7 +16,7 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), getHandler)
-  .post(authorization.canRequest('create:session'), postHandler);
+  .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
@@ -27,13 +27,22 @@ async function getHandler(request, response) {
   return response.status(200).json(secureOutputValues);
 }
 
+function postValidationHandler(request, response, next) {
+  const cleanValues = validator(request.body, {
+    email: 'required',
+    password: 'required',
+  });
+
+  request.body = cleanValues;
+
+  next();
+}
+
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
-
-  await session.validatePostSchema(secureInputValues);
 
   // Compress all mismatch errors (email and password) into one single error.
   let storedUser;
@@ -49,7 +58,7 @@ async function postHandler(request, response) {
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
-    await activation.sendActivationEmailToUser(storedUser);
+    await activation.createAndSendActivationEmail(storedUser);
     throw new ForbiddenError({
       message: `O seu usuário ainda não está ativado.`,
       action: `Verifique seu email, pois acabamos de enviar um novo convite de ativação.`,

@@ -1,6 +1,5 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 import user from 'models/user.js';
 import authentication from 'models/authentication';
@@ -38,7 +37,6 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     expect(postUserResponse.status).toEqual(201);
     expect(uuidVersion(postUserResponseBody.id)).toEqual(4);
-    expect(uuidValidate(postUserResponseBody.id)).toEqual(true);
     expect(postUserResponseBody.username).toEqual('RegularRegistrationFlow');
     expect(postUserResponseBody.features).toEqual(['read:activation_token']);
     expect(Date.parse(postUserResponseBody.created_at)).not.toEqual(NaN);
@@ -83,7 +81,6 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     expect(activationApiResponse.status).toEqual(200);
     expect(uuidVersion(activationApiResponseBody.id)).toEqual(4);
-    expect(uuidValidate(activationApiResponseBody.id)).toEqual(true);
     expect(activationApiResponseBody.id).toEqual(tokenObjectInDatabase.id);
     expect(activationApiResponseBody.used).toEqual(true);
     expect(Date.parse(activationApiResponseBody.created_at)).not.toEqual(NaN);
@@ -110,7 +107,6 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(postSessionResponse.status).toEqual(201);
     expect(postSessionResponseBody.token.length).toEqual(96);
     expect(uuidVersion(postSessionResponseBody.id)).toEqual(4);
-    expect(uuidValidate(postSessionResponseBody.id)).toEqual(true);
     expect(Date.parse(postSessionResponseBody.expires_at)).not.toEqual(NaN);
     expect(Date.parse(postSessionResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(postSessionResponseBody.updated_at)).not.toEqual(NaN);
@@ -140,7 +136,6 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(getSessionResponseBody.id).toEqual(postSessionResponseBody.id);
     expect(getSessionResponseBody.token).toEqual(postSessionResponseBody.token);
     expect(uuidVersion(getSessionResponseBody.id)).toEqual(4);
-    expect(uuidValidate(getSessionResponseBody.id)).toEqual(true);
     expect(getSessionResponseBody.token.length).toEqual(96);
     expect(Date.parse(getSessionResponseBody.expires_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.created_at)).not.toEqual(NaN);
