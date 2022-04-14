@@ -61,6 +61,7 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/.next/cache
