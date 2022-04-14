@@ -41,5 +41,6 @@ test('Should create a new user and Log In', async ({ page }) => {
 
     await expect(page).toHaveURL('/login/sucesso');
     const isSuccessMessageVisible = await page.isVisible(loginPage.successMessageSelector);
+    await expect(isSuccessMessageVisible).toBeTruthy();
   });
 });
