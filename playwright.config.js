@@ -95,7 +95,7 @@ const config = {
 
   //  Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run next && npm run services:up',
     port: '3000',
     timeout: 120 * 1000,
   },
