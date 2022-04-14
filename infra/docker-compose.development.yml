@@ -1,8 +1,13 @@
-version: '2.4'
+version: '3.8'
 services:
   postgres_dev:
     container_name: 'postgres-dev'
     image: 'postgres:14.1-alpine'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -d tabnews -u local_user']
+      interval: 1s
+      timeout: 15s
+      retries: 15
     env_file:
       - ../.env
     ports:
