@@ -135,3 +135,5 @@ override.tf.json
 .terraformrc
 terraform.rc
 .terraform.lock.hcl
+test-results/
+playwright-report/

@@ -21,6 +21,7 @@
   "devDependencies": {
     "@babel/preset-env": "7.16.11",
     "@faker-js/faker": "6.1.2",
+    "@playwright/test": "^1.21.0",
     "async-retry": "1.3.3",
     "autoprefixer": "10.4.4",
     "concurrently": "7.1.0",
@@ -44,6 +45,7 @@
     "test": "npm run services:up && concurrently -s -k -n next,jest --hide next 'npm run next' 'jest --runInBand --verbose' && npm run services:stop",
     "test:watch": "jest --runInBand --watchAll",
     "test:watch:services": "npm run services:up && concurrently -s -k -n next,jest 'npm run next' 'jest --runInBand --watchAll' && npm run services:stop",
+    "test:e2e": "npx playwright test",
     "lint": "npm run lint:next && npm run lint:prettier",
     "lint:next": "next lint --max-warnings=0 --dir .",
     "lint:prettier": "prettier --check '**/*.{json,js,jsx,ts,tsx}'",
