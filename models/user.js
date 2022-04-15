@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
+import validator from 'models/validator.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll() {
@@ -23,16 +24,18 @@ async function findOneByUsername(username) {
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
-      message: `O username "${username}" não foi encontrado no sistema.`,
+      message: `O "username" informado não foi encontrado no sistema.`,
       action: 'Verifique se o "username" está digitado corretamente.',
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+      key: 'username',
     });
   }
 
   return results.rows[0];
 }
 
+// TODO: validate email
 async function findOneByEmail(email) {
   const query = {
     text: 'SELECT * FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1;',
@@ -43,16 +46,18 @@ async function findOneByEmail(email) {
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
-      message: `O email "${email}" não foi encontrado no sistema.`,
+      message: `O email informado não foi encontrado no sistema.`,
       action: 'Verifique se o "email" está digitado corretamente.',
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
+      key: 'email',
     });
   }
 
   return results.rows[0];
 }
 
+// TODO: validate userId
 async function findOneById(userId) {
   const query = {
     text: 'SELECT * FROM users WHERE id = $1 LIMIT 1;',
@@ -66,6 +71,8 @@ async function findOneById(userId) {
       message: `O id "${userId}" não foi encontrado no sistema.`,
       action: 'Verifique se o "id" está digitado corretamente.',
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_ID:NOT_FOUND',
+      key: 'id',
     });
   }
 
@@ -100,40 +107,13 @@ function createAnonymous() {
 }
 
 async function validatePostSchema(postedUserData) {
-  stripUndefinedValues(postedUserData);
-
-  const schema = Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).trim().required().messages({
-      'any.required': `"username" é um campo obrigatório.`,
-      'string.empty': `"username" não pode estar em branco.`,
-      'string.base': `"username" deve ser do tipo String.`,
-      'string.alphanum': `"username" deve conter apenas caracteres alfanuméricos.`,
-      'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
-      'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
-    }),
-    email: Joi.string().email().min(7).max(254).lowercase().trim().required().messages({
-      'any.required': `"email" é um campo obrigatório.`,
-      'string.empty': `"email" não pode estar em branco.`,
-      'string.base': `"email" deve ser do tipo String.`,
-      'string.email': `"email" deve conter um email válido.`,
-    }),
-    // Why 72 in max length? https://security.stackexchange.com/a/39851
-    password: Joi.string().min(8).max(72).trim().required().messages({
-      'any.required': `"password" é um campo obrigatório.`,
-      'string.empty': `"password" não pode estar em branco.`,
-      'string.base': `"password" deve ser do tipo String.`,
-      'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
-      'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
-    }),
+  const cleanValues = validator(postedUserData, {
+    username: 'required',
+    email: 'required',
+    password: 'required',
   });
 
-  const { error, value } = schema.validate(postedUserData, { stripUnknown: true });
-
-  if (error) {
-    throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
-  }
-
-  return value;
+  return cleanValues;
 }
 
 // TODO: Refactor the interface of this function
@@ -183,41 +163,20 @@ async function update(username, postedUserData) {
   }
 }
 
-// TODO: Verify if it's interesting the idea of merging
-// the POST and PATCH schema since (for now) the only
-// differences are the .required() validations and messages.
-async function validatePatchSchema(userData) {
-  stripUndefinedValues(userData);
-
-  const schema = Joi.object({
-    username: Joi.string().alphanum().min(3).max(30).trim().messages({
-      'string.empty': `"username" não pode estar em branco.`,
-      'string.base': `"username" deve ser do tipo String.`,
-      'string.alphanum': `"username" deve conter apenas caracteres alfanuméricos.`,
-      'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
-      'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
-    }),
-    email: Joi.string().email().min(7).max(254).lowercase().trim().messages({
-      'string.empty': `"email" não pode estar em branco.`,
-      'string.base': `"email" deve ser do tipo String.`,
-      'string.email': `"email" deve conter um email válido.`,
-    }),
-    password: Joi.string().min(8).max(72).trim().messages({
-      'any.required': `"password" é um campo obrigatório.`,
-      'string.empty': `"password" não pode estar em branco.`,
-      'string.base': `"password" deve ser do tipo String.`,
-      'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
-      'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
-    }),
+async function validatePatchSchema(postedUserData) {
+  const cleanValues = validator(postedUserData, {
+    username: 'optional',
+    email: 'optional',
+    password: 'optional',
   });
 
-  const { error, value } = schema.validate(userData, { stripUnknown: true });
+  // TEMPORARY BEHAVIOR
+  // TODO: only let user update "email" and "password"
+  // once we have double confirmation via email.
+  delete cleanValues.email;
+  delete cleanValues.password;
 
-  if (error) {
-    throw new ValidationError({ message: error.details[0].message, stack: new Error().stack });
-  }
-
-  return value;
+  return cleanValues;
 }
 
 async function validateUniqueUsername(username) {
@@ -230,8 +189,10 @@ async function validateUniqueUsername(username) {
 
   if (results.rowCount > 0) {
     throw new ValidationError({
-      message: `O username "${username}" já está sendo usado.`,
+      message: `O "username" informado já está sendo usado.`,
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+      key: 'username',
     });
   }
 }
@@ -246,8 +207,10 @@ async function validateUniqueEmail(email) {
 
   if (results.rowCount > 0) {
     throw new ValidationError({
-      message: `O email "${email}" já está sendo usado.`,
+      message: `O email informado já está sendo usado.`,
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
+      key: 'email',
     });
   }
 }
@@ -290,14 +253,6 @@ async function addFeatures(userId, features) {
 
   const results = await database.query(query);
   return results.rows[0];
-}
-
-function stripUndefinedValues(object) {
-  Object.keys(object).forEach((key) => {
-    if (object[key] === undefined) {
-      delete object[key];
-    }
-  });
 }
 
 export default Object.freeze({

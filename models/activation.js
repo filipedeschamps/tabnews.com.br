@@ -4,32 +4,33 @@ import user from 'models/user.js';
 import authorization from 'models/authorization.js';
 import { NotFoundError, ForbiddenError } from 'errors/index.js';
 
-async function sendActivationEmailToUser(user) {
-  const tokenObject = await createTokenInDatabase(user);
+async function createAndSendActivationEmail(user) {
+  const tokenObject = await create(user);
   await sendEmailToUser(user, tokenObject.id);
+}
 
-  async function createTokenInDatabase(user) {
-    const query = {
-      text: `INSERT INTO activate_account_tokens (user_id, expires_at)
-             VALUES($1, now() + interval '15 minutes') RETURNING *;`,
-      values: [user.id],
-    };
+async function create(user) {
+  const query = {
+    text: `INSERT INTO activate_account_tokens (user_id, expires_at)
+           VALUES($1, now() + interval '15 minutes') RETURNING *;`,
+    values: [user.id],
+  };
 
-    const results = await database.query(query);
-    return results.rows[0];
-  }
+  const results = await database.query(query);
+  return results.rows[0];
+}
 
-  async function sendEmailToUser(user, tokenId) {
-    const activationPageEndpoint = getActivationPageEndpoint(tokenId);
+async function sendEmailToUser(user, tokenId) {
+  const activationPageEndpoint = getActivationPageEndpoint(tokenId);
 
-    await email.send({
-      from: {
-        name: 'TabNews',
-        address: 'contato@tabnews.com.br',
-      },
-      to: user.email,
-      subject: 'Ative seu cadastro no TabNews',
-      text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
+  await email.send({
+    from: {
+      name: 'TabNews',
+      address: 'contato@tabnews.com.br',
+    },
+    to: user.email,
+    subject: 'Ative seu cadastro no TabNews',
+    text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
 
 ${activationPageEndpoint}
 
@@ -38,8 +39,7 @@ Caso você não tenha feito esta requisição, ignore esse email.
 Atenciosamente,
 Equipe TabNews
 Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
-    });
-  }
+  });
 }
 
 function getWebServerHost() {
@@ -100,10 +100,10 @@ async function activateUserByUserId(userId) {
 
   if (!authorization.can(userToActivate, 'read:activation_token')) {
     throw new ForbiddenError({
-      message: `O usuário "${userToActivate.username}" não pode ler o token de ativação.`,
-      action:
-        'Verifique se você está tentando ativar o usuário correto, se ele possui a feature "read:activation_token", ou se ele já está ativo.',
+      message: `Você não pode mais ler tokens de ativação.`,
+      action: 'Verifique se você já está logado ou tentando ativar novamente o seu ou outro usuário que já está ativo.',
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:ACTIVATION:ACTIVATE_USER_BY_USER_ID:FEATURE_NOT_FOUND',
     });
   }
 
@@ -158,6 +158,8 @@ async function findOneValidTokenById(tokenId) {
       message: `O token de ativação utilizado não foi encontrado no sistema ou expirou.`,
       action: 'Faça login novamente para receber um novo token por email.',
       stack: new Error().stack,
+      errorUniqueCode: 'MODEL:ACTIVATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+      key: 'token_id',
     });
   }
 
@@ -167,7 +169,8 @@ async function findOneValidTokenById(tokenId) {
 async function markTokenAsUsed(tokenId) {
   const query = {
     text: `UPDATE activate_account_tokens
-            SET used = true
+            SET used = true,
+            updated_at = (now() at time zone 'utc')
             WHERE id = $1
             RETURNING *;`,
     values: [tokenId],
@@ -178,11 +181,41 @@ async function markTokenAsUsed(tokenId) {
   return results.rows[0];
 }
 
+async function update(tokenId, tokenBody) {
+  const currentToken = await findOneTokenById(tokenId);
+  const updatedToken = { ...currentToken, ...tokenBody };
+
+  const query = {
+    text: `UPDATE activate_account_tokens SET
+            user_id = $2,
+            used = $3,
+            expires_at = $4,
+            created_at = $5,
+            updated_at = $6
+            WHERE id = $1
+            RETURNING *;`,
+    values: [
+      tokenId,
+      updatedToken.user_id,
+      updatedToken.used,
+      updatedToken.expires_at,
+      updatedToken.created_at,
+      updatedToken.updated_at,
+    ],
+  };
+
+  const results = await database.query(query);
+
+  return results.rows[0];
+}
+
 export default Object.freeze({
-  sendActivationEmailToUser,
+  create,
+  createAndSendActivationEmail,
   findOneTokenByUserId,
   getActivationApiEndpoint,
   getActivationPageEndpoint,
   activateUserUsingTokenId,
   activateUserByUserId,
+  update,
 });

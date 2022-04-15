@@ -6,7 +6,6 @@ const availableFeatures = new Set([
   'read:user',
   'read:user:list',
   'update:user',
-  'update:user:others_email',
 
   // MIGRATION
   'read:migration',
@@ -41,10 +40,6 @@ function can(user, feature, resource) {
     authorized = false;
 
     if (user.id === resource.id) {
-      authorized = true;
-    }
-
-    if (user.id !== resource.id && can(user, 'update:user:others_email')) {
       authorized = true;
     }
   }

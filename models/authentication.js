@@ -4,6 +4,7 @@ import user from 'models/user.js';
 import authorization from 'models/authorization.js';
 import password from 'models/password.js';
 import { ForbiddenError, UnauthorizedError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 async function hashPassword(unhashedPassword) {
   return await password.hash(unhashedPassword);
@@ -23,6 +24,11 @@ async function comparePasswords(providedPassword, passwordHash) {
 
 async function injectAnonymousOrUser(request, response, next) {
   if (request.cookies?.session_id) {
+    const cleanCookies = validator(request.cookies, {
+      session_id: 'required',
+    });
+    request.cookies.session_id = cleanCookies.session_id;
+
     await injectAuthenticatedUser(request, response);
     return next();
   } else {
@@ -45,6 +51,7 @@ async function injectAnonymousOrUser(request, response, next) {
     const sessionRenewed = await session.renew(sessionObject.id, response);
 
     request.context = {
+      ...request.context,
       user: userObject,
       session: sessionRenewed,
     };
@@ -52,8 +59,8 @@ async function injectAnonymousOrUser(request, response, next) {
 
   function injectAnonymousUser(request) {
     const anonymousUser = user.createAnonymous();
-
     request.context = {
+      ...request.context,
       user: anonymousUser,
     };
   }

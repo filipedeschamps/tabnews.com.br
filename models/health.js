@@ -1,5 +1,6 @@
 import database from 'infra/database';
 import { performance } from 'perf_hooks';
+import logger from 'infra/logger';
 
 async function getDependencies() {
   const dependenciesHandlersToCheck = [
@@ -68,7 +69,7 @@ async function checkDatabaseDependency() {
       version: versionResultValue,
     };
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     result = {
       status: 'unhealthy',
     };
