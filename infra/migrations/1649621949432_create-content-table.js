@@ -18,15 +18,15 @@ exports.up = async (pgm) => {
     },
 
     slug: {
-      type: 'varchar(60)',
+      type: 'varchar(200)',
     },
 
     title: {
-      type: 'varchar(60)',
+      type: 'varchar(256)',
     },
 
     body: {
-      type: 'text',
+      type: 'varchar(20000)',
       notNull: true,
     },
 
@@ -37,7 +37,7 @@ exports.up = async (pgm) => {
     },
 
     source_url: {
-      type: 'varchar(100)',
+      type: 'varchar(2000)',
       notNull: false,
     },
 
@@ -53,8 +53,23 @@ exports.up = async (pgm) => {
       default: pgm.func("(now() at time zone 'utc')"),
     },
   });
+
+  await pgm.addConstraint(
+    'contents',
+    'contents_owner_id_and_slug_fkey',
+    'UNIQUE ("owner_id", "slug")'
+  );
+
+  await pgm.addConstraint(
+    'contents',
+    'contents_status_check',
+    'CHECK ("status" = ANY (ARRAY[\'draft\', \'published\', \'unpublished\', \'deleted\']))'
+  );
+
 };
 
 exports.down = async (pgm) => {
+  await pgm.dropConstraint('contents', 'contents_status_check');
+  await pgm.dropConstraint('contents', 'contents_owner_id_and_slug_fkey');
   await pgm.dropTable('contents');
 };
