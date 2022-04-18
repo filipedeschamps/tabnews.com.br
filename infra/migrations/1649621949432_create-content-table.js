@@ -5,11 +5,7 @@ exports.up = async (pgm) => {
       default: pgm.func('gen_random_uuid()'),
       notNull: true,
       primaryKey: true,
-    },
-
-    owner_id: {
-      type: 'uuid',
-      notNull: true,
+      unique: true,
     },
 
     parent_id: {
@@ -17,27 +13,39 @@ exports.up = async (pgm) => {
       notNull: false,
     },
 
+    owner_id: {
+      type: 'uuid',
+      notNull: true,
+    },
+
     slug: {
-      type: 'varchar(200)',
+      type: 'varchar',
+      check: 'length(slug) <= 200',
+      notNull: true,
     },
 
     title: {
-      type: 'varchar(256)',
+      type: 'varchar',
+      check: 'length(title) <= 256',
+      notNull: true,
     },
 
     body: {
-      type: 'varchar(20000)',
+      type: 'text',
+      check: 'length(body) <= 20000',
       notNull: true,
     },
 
     status: {
-      type: 'varchar(20)',
+      type: 'varchar',
       default: 'draft',
       notNull: true,
+      check: "status IN ('draft', 'published', 'unpublished', 'deleted')",
     },
 
     source_url: {
-      type: 'varchar(2000)',
+      type: 'varchar',
+      check: 'length(body) <= 2000',
       notNull: false,
     },
 
@@ -54,22 +62,10 @@ exports.up = async (pgm) => {
     },
   });
 
-  await pgm.addConstraint(
-    'contents',
-    'contents_owner_id_and_slug_fkey',
-    'UNIQUE ("owner_id", "slug")'
-  );
-
-  await pgm.addConstraint(
-    'contents',
-    'contents_status_check',
-    'CHECK ("status" = ANY (ARRAY[\'draft\', \'published\', \'unpublished\', \'deleted\']))'
-  );
-
+  await pgm.addConstraint('contents', 'contents_uniqueness_fkey', 'UNIQUE ("owner_id", "slug")');
 };
 
 exports.down = async (pgm) => {
-  await pgm.dropConstraint('contents', 'contents_status_check');
-  await pgm.dropConstraint('contents', 'contents_owner_id_and_slug_fkey');
+  await pgm.dropConstraint('contents', 'contents_uniqueness_fkey');
   await pgm.dropTable('contents');
 };
