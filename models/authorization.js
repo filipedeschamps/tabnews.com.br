@@ -23,6 +23,9 @@ const availableFeatures = new Set([
 
   // COMMENT
   'create:comment',
+
+  // CONTENT
+  'read:content:list',
 ]);
 
 function can(user, feature, resource) {
@@ -145,6 +148,23 @@ function filterOutput(user, feature, output) {
       created_at: output.created_at,
       updated_at: output.updated_at,
     };
+  }
+
+  if (feature === 'read:content:list') {
+    filteredOutputValues = output.map((output) => ({
+      id: output.id,
+      parent_id: output.parent_id,
+      owner_id: output.owner_id,
+      username: output.username,
+      slug: output.slug,
+      title: output.title,
+      body: output.body,
+      status: output.status,
+      source_url: output.source_url,
+      created_at: output.created_at,
+      updated_at: output.updated_at,
+      published_at: output.published_at,
+    }));
   }
 
   return filteredOutputValues;
