@@ -162,6 +162,7 @@ function filterOutput(user, feature, output) {
       source_url: output.source_url,
       created_at: output.created_at,
       updated_at: output.updated_at,
+      published_at: output.published_at,
     }));
   }
 

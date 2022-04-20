@@ -24,11 +24,13 @@ describe('GET /api/v1/contents', () => {
       const firstRootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Primeiro conteúdo criado',
+        status: 'published',
       });
 
       const secondRootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Segundo conteúdo criado',
+        status: 'published',
       });
 
       const NotRootContent = await orchestrator.createContent({
@@ -37,6 +39,7 @@ describe('GET /api/v1/contents', () => {
         title: 'Este conteúdo não deverá aparecer na lista abaixo',
         body: `Quando um conteúdo possui um "parent_id",
                significa que ele é uma resposta a um outro conteúdo`,
+        status: 'published',
       });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
@@ -55,6 +58,7 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[0].source_url).toEqual(secondRootContent.source_url);
       expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody[0].published_at)).not.toEqual(NaN);
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
       expect(responseBody[1].owner_id).toEqual(defaultUser.id);
@@ -66,6 +70,9 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[1].source_url).toEqual(firstRootContent.source_url);
       expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody[1].published_at)).not.toEqual(NaN);
+
+      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
     });
   });
 });

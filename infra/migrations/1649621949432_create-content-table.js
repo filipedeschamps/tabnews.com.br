@@ -49,6 +49,11 @@ exports.up = async (pgm) => {
       notNull: false,
     },
 
+    published_at: {
+      type: 'timestamp with time zone',
+      notNull: false,
+    },
+
     created_at: {
       type: 'timestamp with time zone',
       notNull: true,

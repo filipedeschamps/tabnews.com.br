@@ -4,6 +4,20 @@ import validator from 'models/validator.js';
 import slug from 'slug';
 import { ValidationError } from 'errors/index.js';
 
+async function findOneByUserIdAndSlug(userId, slug) {
+  const query = {
+    text: `SELECT * FROM contents
+            WHERE
+              owner_id = $1
+              AND slug = $2
+              LIMIT 1;`,
+    values: [userId, slug],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
 async function findAll(options = {}) {
   options.parent_id = options.parent_id || null;
   options.strategy = options.strategy || 'descending';
@@ -21,8 +35,9 @@ async function getDescending(options = {}) {
     text: `SELECT * FROM contents
             WHERE
               parent_id IS NOT DISTINCT FROM $1
+              AND status = 'published'
             ORDER BY
-              created_at DESC;`,
+              published_at DESC;`,
     values: [options.parent_id],
   };
   const results = await database.query(query);
@@ -34,8 +49,9 @@ async function getAscending(options = {}) {
     text: `SELECT * FROM contents
             WHERE
               parent_id IS NOT DISTINCT FROM $1
+              AND status = 'published'
             ORDER BY
-              created_at ASC;`,
+              published_at ASC;`,
     values: [options.parent_id],
   };
   const results = await database.query(query);
@@ -43,9 +59,11 @@ async function getAscending(options = {}) {
 }
 
 async function create(postedContent) {
-  const postedContentPopulated = populateMissingFields(postedContent);
-  const validContent = await validateCreateSchema(postedContentPopulated);
+  populateSlug(postedContent);
+  populateStatus(postedContent);
+  const validContent = validateCreateSchema(postedContent);
   await checkForContentUniqueness(validContent);
+  await populatePublishedAtValue(validContent);
 
   const newContent = await runInsertQuery(validContent);
   return newContent;
@@ -53,8 +71,8 @@ async function create(postedContent) {
   async function runInsertQuery(content) {
     const query = {
       text: `INSERT INTO
-              contents (parent_id, owner_id, slug, title, body, status, source_url)
-              VALUES($1, $2, $3, $4, $5, $6, $7)
+              contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
+              VALUES($1, $2, $3, $4, $5, $6, $7, $8)
               RETURNING *;`,
       values: [
         content.parent_id,
@@ -64,6 +82,7 @@ async function create(postedContent) {
         content.body,
         content.status,
         content.source_url,
+        content.published_at,
       ],
     };
     const results = await database.query(query);
@@ -71,13 +90,10 @@ async function create(postedContent) {
   }
 }
 
-function populateMissingFields(postedContent) {
+function populateSlug(postedContent) {
   if (!postedContent.slug) {
     postedContent.slug = getSlug(postedContent.title) || uuidV4();
   }
-
-  postedContent.status = postedContent.status || 'draft';
-  return postedContent;
 }
 
 function getSlug(title) {
@@ -103,18 +119,17 @@ function getSlug(title) {
   return truncatedSlug;
 }
 
+function populateStatus(postedContent) {
+  postedContent.status = postedContent.status || 'draft';
+}
+
 async function checkForContentUniqueness(content) {
-  const query = {
-    text: 'SELECT id, slug FROM contents WHERE owner_id = $1 AND slug = $2;',
-    values: [content.owner_id, content.slug],
-  };
+  const existingContent = await findOneByUserIdAndSlug(content.owner_id, content.slug);
 
-  const results = await database.query(query);
-
-  if (results.rowCount > 0) {
+  if (existingContent) {
     throw new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "slug" diferente de "${results.rows[0].slug}".`,
+      action: `Utilize um "slug" diferente de "${existingContent.slug}".`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 422,
@@ -145,6 +160,25 @@ function validateCreateSchema(content) {
   }
 
   return cleanValues;
+}
+
+async function populatePublishedAtValue(postedContent) {
+  const existingContent = await findOneByUserIdAndSlug(postedContent.owner_id, postedContent.slug);
+
+  if (existingContent && existingContent.published_at) {
+    postedContent.published_at = existingContent.published_at;
+    return;
+  }
+
+  if (existingContent && !existingContent.published_at && postedContent.status === 'published') {
+    postedContent.published_at = new Date();
+    return;
+  }
+
+  if (!existingContent && postedContent.status === 'published') {
+    postedContent.published_at = new Date();
+    return;
+  }
 }
 
 export default Object.freeze({
