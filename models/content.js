@@ -32,12 +32,28 @@ const strategies = {
 
 async function getDescending(options = {}) {
   const query = {
-    text: `SELECT * FROM contents
+    text: `SELECT
+              contents.id as id,
+              contents.owner_id as owner_id,
+              contents.parent_id as parent_id,
+              contents.slug as slug,
+              contents.title as title,
+              contents.body as body,
+              contents.status as status,
+              contents.source_url as source_url,
+              contents.created_at as created_at,
+              contents.updated_at as updated_at,
+              contents.published_at as published_at,
+              users.username as username
+            FROM
+              contents
+            INNER JOIN
+              users ON contents.owner_id = users.id
             WHERE
-              parent_id IS NOT DISTINCT FROM $1
-              AND status = 'published'
+            contents.parent_id IS NOT DISTINCT FROM $1
+              AND contents.status = 'published'
             ORDER BY
-              published_at DESC;`,
+            contents.published_at DESC;`,
     values: [options.parent_id],
   };
   const results = await database.query(query);
@@ -46,12 +62,28 @@ async function getDescending(options = {}) {
 
 async function getAscending(options = {}) {
   const query = {
-    text: `SELECT * FROM contents
+    text: `SELECT
+              contents.id as id,
+              contents.owner_id as owner_id,
+              contents.parent_id as parent_id,
+              contents.slug as slug,
+              contents.title as title,
+              contents.body as body,
+              contents.status as status,
+              contents.source_url as source_url,
+              contents.created_at as created_at,
+              contents.updated_at as updated_at,
+              contents.published_at as published_at,
+              users.username as username
+            FROM
+              contents
+            INNER JOIN
+              users ON contents.owner_id = users.id
             WHERE
-              parent_id IS NOT DISTINCT FROM $1
-              AND status = 'published'
+            contents.parent_id IS NOT DISTINCT FROM $1
+              AND contents.status = 'published'
             ORDER BY
-              published_at ASC;`,
+            contents.published_at ASC;`,
     values: [options.parent_id],
   };
   const results = await database.query(query);

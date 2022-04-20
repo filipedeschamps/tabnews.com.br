@@ -155,6 +155,7 @@ function filterOutput(user, feature, output) {
       id: output.id,
       parent_id: output.parent_id,
       owner_id: output.owner_id,
+      username: output.username,
       slug: output.slug,
       title: output.title,
       body: output.body,

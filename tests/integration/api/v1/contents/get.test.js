@@ -50,6 +50,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
       expect(responseBody[0].owner_id).toEqual(defaultUser.id);
+      expect(responseBody[0].username).toEqual(defaultUser.username);
       expect(responseBody[0].parent_id).toEqual(secondRootContent.parent_id);
       expect(responseBody[0].slug).toEqual(secondRootContent.slug);
       expect(responseBody[0].title).toEqual(secondRootContent.title);
@@ -62,6 +63,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
       expect(responseBody[1].owner_id).toEqual(defaultUser.id);
+      expect(responseBody[0].username).toEqual(defaultUser.username);
       expect(responseBody[1].parent_id).toEqual(firstRootContent.parent_id);
       expect(responseBody[1].slug).toEqual(firstRootContent.slug);
       expect(responseBody[1].title).toEqual(firstRootContent.title);
