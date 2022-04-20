@@ -20,14 +20,14 @@ exports.up = async (pgm) => {
 
     slug: {
       type: 'varchar',
-      check: 'length(slug) <= 200',
+      check: 'length(slug) <= 256',
       notNull: true,
     },
 
     title: {
       type: 'varchar',
       check: 'length(title) <= 256',
-      notNull: true,
+      notNull: false,
     },
 
     body: {

@@ -6,6 +6,7 @@ import migrator from 'infra/migrator.js';
 import user from 'models/user.js';
 import activation from 'models/activation.js';
 import session from 'models/session.js';
+import content from 'models/content.js';
 
 const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -126,6 +127,18 @@ async function createSession(userObject) {
   return await session.create(userObject.id);
 }
 
+async function createContent(contentObject) {
+  return await content.create({
+    parent_id: contentObject?.parent_id || undefined,
+    owner_id: contentObject?.owner_id || undefined,
+    title: contentObject?.title || undefined,
+    slug: contentObject?.slug || undefined,
+    body: contentObject?.body || faker.lorem.paragraphs(5),
+    status: contentObject?.status || 'draft',
+    source_url: contentObject?.source_url || undefined,
+  });
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -138,4 +151,5 @@ export default {
   createSession,
   addFeaturesToUser,
   removeFeaturesFromUser,
+  createContent,
 };

@@ -140,4 +140,132 @@ const schemas = {
         }),
     });
   },
+
+  parent_id: function () {
+    return Joi.object({
+      parent_id: Joi.string()
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.parent_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"parent_id" é um campo obrigatório.`,
+          'string.empty': `"parent_id" não pode estar em branco.`,
+          'string.base': `"parent_id" deve ser do tipo String.`,
+          'string.guid': `"parent_id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
+
+  owner_id: function () {
+    return Joi.object({
+      owner_id: Joi.string()
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"owner_id" é um campo obrigatório.`,
+          'string.empty': `"owner_id" não pode estar em branco.`,
+          'string.base': `"owner_id" deve ser do tipo String.`,
+          'string.guid': `"owner_id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
+
+  slug: function () {
+    return Joi.object({
+      slug: Joi.string()
+        .min(1)
+        .max(256)
+        .trim()
+        .invalid(null)
+        .pattern(/^[a-z0-9](-?[a-z0-9])*$/m)
+        .when('$required.slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"slug" é um campo obrigatório.`,
+          'string.empty': `"slug" não pode estar em branco.`,
+          'string.base': `"slug" deve ser do tipo String.`,
+          'string.min': `"slug" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"slug" deve conter no máximo {#limit} caracteres.`,
+          'string.pattern.base': `"slug" está no formato errado.`,
+          'any.invalid': `"slug" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
+  title: function () {
+    return Joi.object({
+      title: Joi.string()
+        .min(1)
+        .max(256)
+        .trim()
+        .invalid(null)
+        .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"title" é um campo obrigatório.`,
+          'string.empty': `"title" não pode estar em branco.`,
+          'string.base': `"title" deve ser do tipo String.`,
+          'string.min': `"title" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"title" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"title" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
+  body: function () {
+    return Joi.object({
+      body: Joi.string()
+        .min(1)
+        .max(20000)
+        .trim()
+        .invalid(null)
+        .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"body" é um campo obrigatório.`,
+          'string.empty': `"body" não pode estar em branco.`,
+          'string.base': `"body" deve ser do tipo String.`,
+          'string.min': `"body" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"body" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"body" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
+  status: function () {
+    return Joi.object({
+      status: Joi.string()
+        .trim()
+        .valid('draft', 'published', 'unpublished', 'deleted')
+        .invalid(null)
+        .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"status" é um campo obrigatório.`,
+          'string.empty': `"status" não pode estar em branco.`,
+          'string.base': `"status" deve ser do tipo String.`,
+          'string.min': `"status" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"status" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"status" possui o valor inválido "null".`,
+          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published", "unpublished" ou "deleted".`,
+        }),
+    });
+  },
+
+  source_url: function () {
+    return Joi.object({
+      source_url: Joi.string()
+        .trim()
+        .uri({ scheme: ['http', 'https'] })
+        .invalid(null)
+        .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"source_url" é um campo obrigatório.`,
+          'string.empty': `"source_url" não pode estar em branco.`,
+          'string.base': `"source_url" deve ser do tipo String.`,
+          'string.min': `"source_url" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"source_url" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"source_url" possui o valor inválido "null".`,
+          'string.uri': `"source_url" deve possuir uma URL válida.`,
+          'string.uriCustomScheme': `"source_url" deve possuir um dos seguintes protocolos: "http" ou "https".`,
+        }),
+    });
+  },
 };
