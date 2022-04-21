@@ -88,6 +88,16 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(activationApiResponseBody).not.toHaveProperty('password');
     expect(activationApiResponseBody).not.toHaveProperty('email');
     expect(activationApiResponseBody).not.toHaveProperty('user_id');
+
+    const activatedUserInDatabase = await user.findOneByUsername('RegularRegistrationFlow');
+    expect(activatedUserInDatabase.features).toEqual([
+      'create:session',
+      'read:session',
+      'create:content',
+      'create:content:text_root',
+      'create:content:text_child',
+      'update:user',
+    ]);
   });
 
   test('Login (successfully)', async () => {
