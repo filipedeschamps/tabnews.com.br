@@ -253,18 +253,17 @@ const schemas = {
     return Joi.object({
       source_url: Joi.string()
         .trim()
-        .uri({ scheme: ['http', 'https'] })
+        .max(2000)
         .invalid(null)
+        .pattern(/^(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
         .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"source_url" é um campo obrigatório.`,
           'string.empty': `"source_url" não pode estar em branco.`,
           'string.base': `"source_url" deve ser do tipo String.`,
-          'string.min': `"source_url" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"source_url" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"source_url" possui o valor inválido "null".`,
-          'string.uri': `"source_url" deve possuir uma URL válida.`,
-          'string.uriCustomScheme': `"source_url" deve possuir um dos seguintes protocolos: "http" ou "https".`,
+          'string.pattern.base': `"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.`,
         }),
     });
   },
