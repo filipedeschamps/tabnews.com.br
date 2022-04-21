@@ -41,7 +41,7 @@ describe('PATCH /api/v1/users/[username]', () => {
     });
   });
 
-  describe('User with default features', () => {
+  describe('Default user', () => {
     test('Patching other user', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);

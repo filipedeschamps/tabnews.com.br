@@ -4,6 +4,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
+import { ForbiddenError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -13,8 +14,8 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getHandler);
-// .post(postValidationHandler, authorization.canRequest('create:content:root'), postHandler);
+  .get(getHandler)
+  .post(postValidationHandler, authorization.canRequest('create:content'), postHandler);
 
 // TODO: cache the response
 async function getHandler(request, response) {
@@ -26,27 +27,56 @@ async function getHandler(request, response) {
   return response.status(200).json(secureOutputValues);
 }
 
-// function postValidationHandler(request, response, next) {
-//   const cleanValues = validator(request.body, {
-//     username: 'required',
-//     email: 'required',
-//     password: 'required',
-//   });
+function postValidationHandler(request, response, next) {
+  const cleanValues = validator(request.body, {
+    parent_id: 'optional',
+    slug: 'optional',
+    title: 'optional',
+    body: 'required',
+    status: 'optional',
+    source_url: 'optional',
+  });
 
-//   request.body = cleanValues;
+  request.body = cleanValues;
 
-//   next();
-// }
+  next();
+}
 
-// async function postHandler(request, response) {
-//   const userTryingToCreate = request.context.user;
-//   const insecureInputValues = request.body;
-//   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
+async function postHandler(request, response) {
+  const userTryingToCreate = request.context.user;
+  const insecureInputValues = request.body;
 
-//   const newUser = await user.create(secureInputValues);
-//   await activation.createAndSendActivationEmail(newUser);
+  let secureInputValues;
 
-//   const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
+  if (!insecureInputValues.parent_id) {
+    if (!authorization.can(userTryingToCreate, 'create:content:text_root', insecureInputValues)) {
+      throw new ForbiddenError({
+        message: 'Você não possui permissão para criar conteúdos na raiz do site.',
+        action: 'Verifique se você possui a feature "create:content:text_root".',
+        errorUniqueCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
+      });
+    }
 
-//   return response.status(201).json(secureOutputValues);
-// }
+    secureInputValues = authorization.filterInput(userTryingToCreate, 'create:content:text_root', insecureInputValues);
+  }
+
+  if (insecureInputValues.parent_id) {
+    if (!authorization.can(userTryingToCreate, 'create:content:text_child', insecureInputValues)) {
+      throw new ForbiddenError({
+        message: 'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
+        action: 'Verifique se você possui a feature "create:content:text_child".',
+        errorUniqueCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
+      });
+    }
+
+    secureInputValues = authorization.filterInput(userTryingToCreate, 'create:content:text_child', insecureInputValues);
+  }
+
+  secureInputValues.owner_id = userTryingToCreate.id;
+
+  const createdContent = await content.create(secureInputValues);
+
+  const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+
+  return response.status(201).json(secureOutputValues);
+}

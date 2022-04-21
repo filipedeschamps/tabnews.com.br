@@ -26,7 +26,7 @@ describe('GET /api/v1/migrations', () => {
     });
   });
 
-  describe('User with default features', () => {
+  describe('Default user', () => {
     test('Retrieving pending migrations', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);

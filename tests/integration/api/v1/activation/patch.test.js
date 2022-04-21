@@ -237,7 +237,7 @@ describe('PATCH /api/v1/activation', () => {
     });
   });
 
-  describe('User with default features', () => {
+  describe('Default user', () => {
     test('Already active and trying to activate with a valid token (somehow)', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);

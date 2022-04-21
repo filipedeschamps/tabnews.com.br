@@ -45,7 +45,7 @@ exports.up = async (pgm) => {
 
     source_url: {
       type: 'varchar',
-      check: 'length(body) <= 2000',
+      check: 'length(source_url) <= 2000',
       notNull: false,
     },
 

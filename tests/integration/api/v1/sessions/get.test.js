@@ -9,7 +9,7 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/sessions', () => {
-  describe('Anonymous User', () => {
+  describe('Anonymous user', () => {
     test('Retrieving the endpoint', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`);
 
@@ -89,7 +89,7 @@ describe('GET /api/v1/sessions', () => {
     });
   });
 
-  describe('User with default features', () => {
+  describe('Default user', () => {
     test('With valid session and necessary features', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
