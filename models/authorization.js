@@ -18,13 +18,11 @@ const availableFeatures = new Set([
   'create:session',
   'read:session',
 
-  // POST
-  'create:post',
-
-  // COMMENT
-  'create:comment',
-
   // CONTENT
+  'read:content',
+  'create:content',
+  'create:content:text_root',
+  'create:content:text_child',
   'read:content:list',
 ]);
 
@@ -83,6 +81,27 @@ function filterInput(user, feature, input) {
   if (feature === 'read:activation_token' && can(user, feature)) {
     filteredInputValues = {
       tokenId: input.token_id,
+    };
+  }
+
+  if (feature === 'create:content:text_root' && can(user, feature)) {
+    filteredInputValues = {
+      slug: input.slug,
+      title: input.title,
+      body: input.body,
+      status: input.status,
+      source_url: input.source_url,
+    };
+  }
+
+  if (feature === 'create:content:text_child' && can(user, feature)) {
+    filteredInputValues = {
+      parent_id: input.parent_id,
+      slug: input.slug,
+      title: input.title,
+      body: input.body,
+      status: input.status,
+      source_url: input.source_url,
     };
   }
 
@@ -147,6 +166,23 @@ function filterOutput(user, feature, output) {
       expires_at: output.expires_at,
       created_at: output.created_at,
       updated_at: output.updated_at,
+    };
+  }
+
+  if (feature === 'read:content') {
+    filteredOutputValues = {
+      id: output.id,
+      parent_id: output.parent_id,
+      owner_id: output.owner_id,
+      username: output.username,
+      slug: output.slug,
+      title: output.title,
+      body: output.body,
+      status: output.status,
+      source_url: output.source_url,
+      created_at: output.created_at,
+      updated_at: output.updated_at,
+      published_at: output.published_at,
     };
   }
 

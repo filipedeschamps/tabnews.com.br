@@ -234,7 +234,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published', 'unpublished', 'deleted')
+        .valid('draft', 'published', 'deleted')
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -244,7 +244,7 @@ const schemas = {
           'string.min': `"status" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"status" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"status" possui o valor inválido "null".`,
-          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published", "unpublished" ou "deleted".`,
+          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
         }),
     });
   },

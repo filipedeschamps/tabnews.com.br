@@ -114,8 +114,9 @@ async function activateUserByUserId(userId) {
   return await user.addFeatures(userToActivate.id, [
     'create:session',
     'read:session',
-    'create:post',
-    'create:comment',
+    'create:content',
+    'create:content:text_root',
+    'create:content:text_child',
     'update:user',
   ]);
 }
