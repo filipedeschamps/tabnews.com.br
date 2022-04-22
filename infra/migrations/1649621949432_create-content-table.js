@@ -40,7 +40,7 @@ exports.up = async (pgm) => {
       type: 'varchar',
       default: 'draft',
       notNull: true,
-      check: "status IN ('draft', 'published', 'unpublished', 'deleted')",
+      check: "status IN ('draft', 'published')",
     },
 
     source_url: {

@@ -564,35 +564,6 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "title" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: null,
-          body: 'Qualquer coisa.',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
     test('Content with "title" containing untrimmed values', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -733,38 +704,6 @@ describe('POST /api/v1/contents', () => {
       expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
     });
 
-    test('Content with "status" set to "deleted"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar criar conteúdos diretamente com status "deleted".',
-          body: 'Qualquer coisa.',
-          status: 'deleted',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Não é possível criar um conteúdo diretamente com status "deleted".');
-      expect(responseBody.action).toEqual(
-        'Você pode apenas criar conteúdos com "status" igual a "draft" ou "published".'
-      );
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS:DELETED');
-    });
-
     test('Content with "status" set to "non_existent_status"', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -788,9 +727,7 @@ describe('POST /api/v1/contents', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
-      );
+      expect(responseBody.message).toEqual('"status" deve possuir um dos seguintes valores: "draft" ou "published".');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -820,9 +757,7 @@ describe('POST /api/v1/contents', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
-      );
+      expect(responseBody.message).toEqual('"status" deve possuir um dos seguintes valores: "draft" ou "published".');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -852,9 +787,7 @@ describe('POST /api/v1/contents', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
-      );
+      expect(responseBody.message).toEqual('"status" deve possuir um dos seguintes valores: "draft" ou "published".');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -1049,6 +982,7 @@ describe('POST /api/v1/contents', () => {
           source_url: '',
         }),
       });
+
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
@@ -1078,16 +1012,22 @@ describe('POST /api/v1/contents', () => {
           source_url: null,
         }),
       });
+
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"source_url" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toEqual(201);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(responseBody.owner_id).toEqual(defaultUser.id);
+      expect(responseBody.username).toEqual(defaultUser.username);
+      expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.slug).toEqual('titulo');
+      expect(responseBody.title).toEqual('Titulo');
+      expect(responseBody.body).toEqual('Corpo');
+      expect(responseBody.status).toEqual('draft');
+      expect(responseBody.source_url).toEqual(null);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.published_at).toEqual(null);
     });
 
     test('"root" content with minimum valid data', async () => {
@@ -1107,6 +1047,7 @@ describe('POST /api/v1/contents', () => {
           body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         }),
       });
+
       const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
@@ -1145,6 +1086,7 @@ describe('POST /api/v1/contents', () => {
           body: 'Não deveria conseguir, falta o "title".',
         }),
       });
+
       const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
@@ -1154,9 +1096,36 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual(
-        'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:MISSING_TITLE_WITHOUT_PARENT_ID'
-      );
+      expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
+    });
+
+    test('"root" content with "title" containing Null value', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: null,
+          body: 'Não deveria conseguir, falta o "title".',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('"title" é um campo obrigatório para conteúdos raiz.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
     });
 
     test('"child" content with minimum valid data', async () => {
@@ -1181,6 +1150,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: rootContent.id,
         }),
       });
+
       const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
@@ -1198,6 +1168,48 @@ describe('POST /api/v1/contents', () => {
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody.published_at).toEqual(null);
+    });
+
+    test('"child" content with "title" containing Null value', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo raiz',
+        status: 'published',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: null,
+          body: 'Deveria criar um slug com UUID V4',
+          parent_id: rootContent.id,
+          status: 'published',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(responseBody.owner_id).toEqual(defaultUser.id);
+      expect(responseBody.username).toEqual(defaultUser.username);
+      expect(responseBody.parent_id).toEqual(rootContent.id);
+      expect(uuidVersion(responseBody.slug)).toEqual(4);
+      expect(responseBody.title).toEqual(null);
+      expect(responseBody.body).toEqual('Deveria criar um slug com UUID V4');
+      expect(responseBody.status).toEqual('published');
+      expect(responseBody.source_url).toEqual(null);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
     });
 
     test('"child" content with "title"', async () => {
@@ -1224,6 +1236,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         }),
       });
+
       const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
@@ -1350,7 +1363,9 @@ describe('POST /api/v1/contents', () => {
       expect(response.status).toEqual(422);
       expect(responseBody.status_code).toEqual(422);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Você está tentando criar um sub-conteúdo para um conteúdo que não existe.');
+      expect(responseBody.message).toEqual(
+        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'
+      );
       expect(responseBody.action).toEqual('Utilize um "parent_id" que aponte para um conteúdo que existe.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);

@@ -117,6 +117,7 @@ async function activateUserByUserId(userId) {
     'create:content',
     'create:content:text_root',
     'create:content:text_child',
+    'update:content',
     'update:user',
   ]);
 }

@@ -144,6 +144,7 @@ const schemas = {
   parent_id: function () {
     return Joi.object({
       parent_id: Joi.string()
+        .allow(null)
         .trim()
         .guid({ version: 'uuidv4' })
         .when('$required.parent_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
@@ -195,10 +196,10 @@ const schemas = {
   title: function () {
     return Joi.object({
       title: Joi.string()
+        .allow(null)
         .min(1)
         .max(256)
         .trim()
-        .invalid(null)
         .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"title" é um campo obrigatório.`,
@@ -234,7 +235,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published', 'deleted')
+        .valid('draft', 'published')
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -244,7 +245,7 @@ const schemas = {
           'string.min': `"status" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"status" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"status" possui o valor inválido "null".`,
-          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
+          'any.only': `"status" deve possuir um dos seguintes valores: "draft" ou "published".`,
         }),
     });
   },
@@ -252,9 +253,9 @@ const schemas = {
   source_url: function () {
     return Joi.object({
       source_url: Joi.string()
+        .allow(null)
         .trim()
         .max(2000)
-        .invalid(null)
         .pattern(/^(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
         .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({

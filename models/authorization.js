@@ -20,6 +20,7 @@ const availableFeatures = new Set([
 
   // CONTENT
   'read:content',
+  'update:content',
   'create:content',
   'create:content:text_root',
   'create:content:text_child',
@@ -41,6 +42,14 @@ function can(user, feature, resource) {
     authorized = false;
 
     if (user.id === resource.id) {
+      authorized = true;
+    }
+  }
+
+  if (feature === 'update:content' && resource) {
+    authorized = false;
+
+    if (user.id === resource.owner_id) {
       authorized = true;
     }
   }
@@ -105,7 +114,19 @@ function filterInput(user, feature, input) {
     };
   }
 
-  return filteredInputValues;
+  if (feature === 'update:content' && can(user, feature)) {
+    filteredInputValues = {
+      parent_id: input.parent_id,
+      slug: input.slug,
+      title: input.title,
+      body: input.body,
+      status: input.status,
+      source_url: input.source_url,
+    };
+  }
+
+  // Force the clean up of "undefined" values
+  return JSON.parse(JSON.stringify(filteredInputValues));
 }
 
 function filterOutput(user, feature, output) {
@@ -203,7 +224,8 @@ function filterOutput(user, feature, output) {
     }));
   }
 
-  return filteredOutputValues;
+  // Force the clean up of "undefined" values
+  return JSON.parse(JSON.stringify(filteredOutputValues));
 }
 
 function validateUser(user) {
