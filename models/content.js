@@ -1,8 +1,9 @@
 import { v4 as uuidV4 } from 'uuid';
+import slug from 'slug';
 import database from 'infra/database.js';
 import validator from 'models/validator.js';
-import slug from 'slug';
-import { ValidationError } from 'errors/index.js';
+import user from 'models/user.js';
+import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findOneById(contentId) {
   const query = {
@@ -27,6 +28,50 @@ async function findOneByUserIdAndSlug(userId, slug) {
   };
 
   const results = await database.query(query);
+  return results.rows[0];
+}
+
+async function findOneByUsernameAndSlug(username, slug) {
+  const userOwner = await user.findOneByUsername(username);
+
+  const query = {
+    text: `SELECT
+              contents.id as id,
+              contents.owner_id as owner_id,
+              contents.parent_id as parent_id,
+              contents.slug as slug,
+              contents.title as title,
+              contents.body as body,
+              contents.status as status,
+              contents.source_url as source_url,
+              contents.created_at as created_at,
+              contents.updated_at as updated_at,
+              contents.published_at as published_at,
+              users.username as username
+            FROM
+              contents
+            INNER JOIN
+              users ON contents.owner_id = users.id
+            WHERE
+              owner_id = $1
+              AND slug = $2
+            LIMIT 1
+            ;`,
+    values: [userOwner.id, slug],
+  };
+
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O conteúdo informado não foi encontrado no sistema.`,
+      action: 'Verifique se o "slug" está digitado corretamente.',
+      stack: new Error().stack,
+      errorUniqueCode: 'MODEL:CONTENT:FIND_ONE_BY_USERNAME_AND_SLUG:CONTENT_NOT_FOUND',
+      key: 'slug',
+    });
+  }
+
   return results.rows[0];
 }
 
@@ -108,6 +153,8 @@ async function create(postedContent) {
   populateSlug(postedContent);
   populateStatus(postedContent);
   const validContent = validateCreateSchema(postedContent);
+
+  checkRootContentTitle(validContent);
 
   if (validContent.parent_id) {
     await checkIfParentIdExists(validContent);
@@ -204,7 +251,7 @@ async function checkIfParentIdExists(content) {
 
   if (!existingContent) {
     throw new ValidationError({
-      message: `Você está tentando criar um sub-conteúdo para um conteúdo que não existe.`,
+      message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
       action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
@@ -240,28 +287,19 @@ function validateCreateSchema(content) {
     source_url: 'optional',
   });
 
-  if (!cleanValues.parent_id && !cleanValues.title) {
+  return cleanValues;
+}
+
+function checkRootContentTitle(content) {
+  if (!content.parent_id && !content.title) {
     throw new ValidationError({
       message: `"title" é um campo obrigatório para conteúdos raiz.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:MISSING_TITLE_WITHOUT_PARENT_ID',
+      errorUniqueCode: 'MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE',
       statusCode: 400,
       key: 'title',
     });
   }
-
-  if (cleanValues.status === 'deleted') {
-    throw new ValidationError({
-      message: `Não é possível criar um conteúdo diretamente com status "deleted".`,
-      action: `Você pode apenas criar conteúdos com "status" igual a "draft" ou "published".`,
-      stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS:DELETED',
-      statusCode: 400,
-      key: 'status',
-    });
-  }
-
-  return cleanValues;
 }
 
 async function populatePublishedAtValue(postedContent) {
@@ -283,7 +321,108 @@ async function populatePublishedAtValue(postedContent) {
   }
 }
 
+async function update(contentId, postedContent) {
+  const validPostedContent = validateUpdateSchema(postedContent);
+  const oldContent = await findOneById(contentId);
+  const newContent = { ...oldContent, ...validPostedContent };
+
+  checkRootContentTitle(newContent);
+  checkForParentIdRecursion(newContent);
+
+  if (newContent.parent_id) {
+    await checkIfParentIdExists(newContent);
+  }
+
+  await populatePublishedAtValue(newContent);
+
+  const updatedContent = await runUpdateQuery(newContent);
+  return updatedContent;
+
+  async function runUpdateQuery(content) {
+    const query = {
+      text: `
+      WITH
+        updated_content as (
+          UPDATE contents SET
+            parent_id = $2,
+            slug = $3,
+            title = $4,
+            body = $5,
+            status = $6,
+            source_url = $7,
+            published_at = $8,
+            updated_at = (now() at time zone 'utc')
+          WHERE
+            id = $1
+          RETURNING *
+        )
+      SELECT
+        updated_content.id as id,
+        updated_content.owner_id as owner_id,
+        updated_content.parent_id as parent_id,
+        updated_content.slug as slug,
+        updated_content.title as title,
+        updated_content.body as body,
+        updated_content.status as status,
+        updated_content.source_url as source_url,
+        updated_content.created_at as created_at,
+        updated_content.updated_at as updated_at,
+        updated_content.published_at as published_at,
+        users.username as username
+      FROM
+        updated_content
+      INNER JOIN
+        users
+      ON
+        updated_content.owner_id = users.id;
+      `,
+      values: [
+        content.id,
+        content.parent_id,
+        content.slug,
+        content.title,
+        content.body,
+        content.status,
+        content.source_url,
+        content.published_at,
+      ],
+    };
+    const results = await database.query(query);
+    return results.rows[0];
+  }
+}
+
+function validateUpdateSchema(content) {
+  const cleanValues = validator(content, {
+    parent_id: 'optional',
+    slug: 'optional',
+    title: 'optional',
+    body: 'optional',
+    status: 'optional',
+    source_url: 'optional',
+  });
+
+  return cleanValues;
+}
+
+function checkForParentIdRecursion(content) {
+  if (content.parent_id === content.id) {
+    throw new ValidationError({
+      message: `"parent_id" não deve apontar para o próprio conteúdo.`,
+      action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
+      stack: new Error().stack,
+      errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
+      statusCode: 422,
+      key: 'parent_id',
+    });
+  }
+}
+
 export default Object.freeze({
   findAll,
   create,
+  update,
+  findOneById,
+  findOneByUserIdAndSlug,
+  findOneByUsernameAndSlug,
 });

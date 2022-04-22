@@ -44,7 +44,9 @@ function onErrorHandler(error, request, response) {
     errorUniqueCode: error.errorUniqueCode,
   });
 
-  logger.error(snakeize(errorObject));
+  // TODO: Understand why `sanaize` is not logging the
+  // `stack` property of the error object.
+  logger.error(snakeize({ ...errorObject, stack: error.stack }));
 
   return response.status(errorObject.statusCode).json(snakeize(errorObject));
 }

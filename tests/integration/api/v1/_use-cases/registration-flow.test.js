@@ -96,6 +96,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
       'create:content',
       'create:content:text_root',
       'create:content:text_child',
+      'update:content',
       'update:user',
     ]);
   });
