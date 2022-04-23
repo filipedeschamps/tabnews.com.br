@@ -33,12 +33,22 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
+      const thirdRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Terceiro conteúdo criado',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
+               porque quando um conteúdo possui o "status" como "draft", ele não
+               esta pronto para ser listado publicamente.`,
+        status: 'draft',
+      });
+
       const NotRootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
-        title: 'Este conteúdo não deverá aparecer na lista abaixo',
-        body: `Quando um conteúdo possui um "parent_id",
-               significa que ele é uma resposta a um outro conteúdo`,
+        title: 'Quarto conteúdo criado',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
+               porque quando um conteúdo possui um "parent_id",
+               significa que ele é uma resposta a um outro conteúdo.`,
         status: 'published',
       });
 
@@ -63,7 +73,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
       expect(responseBody[1].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[0].username).toEqual(defaultUser.username);
+      expect(responseBody[1].username).toEqual(defaultUser.username);
       expect(responseBody[1].parent_id).toEqual(firstRootContent.parent_id);
       expect(responseBody[1].slug).toEqual(firstRootContent.slug);
       expect(responseBody[1].title).toEqual(firstRootContent.title);

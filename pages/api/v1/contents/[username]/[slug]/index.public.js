@@ -4,7 +4,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
-import { ForbiddenError } from 'errors/index.js';
+import { ForbiddenError, NotFoundError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -14,18 +14,46 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  // .get(getHandler)
+  .get(getValidationHandler, getHandler)
   .patch(patchValidationHandler, authorization.canRequest('update:content'), patchHandler);
 
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    username: 'required',
+    slug: 'required',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
+
 // TODO: cache the response
-// async function getHandler(request, response) {
-//   const userTryingToGet = request.context.user;
-//   const contentList = await content.findAll();
+async function getHandler(request, response) {
+  const userTryingToGet = request.context.user;
 
-//   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', contentList);
+  const contentFound = await content.findOne({
+    where: {
+      username: request.query.username,
+      slug: request.query.slug,
+      status: 'published',
+    },
+  });
 
-//   return response.status(200).json(secureOutputValues);
-// }
+  if (!contentFound) {
+    throw new NotFoundError({
+      message: `O conteúdo informado não foi encontrado no sistema.`,
+      action: 'Verifique se o "slug" está digitado corretamente.',
+      stack: new Error().stack,
+      errorUniqueCode: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
+      key: 'slug',
+    });
+  }
+
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+
+  return response.status(200).json(secureOutputValues);
+}
 
 function patchValidationHandler(request, response, next) {
   const cleanQueryValues = validator(request.query, {
@@ -52,7 +80,23 @@ function patchValidationHandler(request, response, next) {
 async function patchHandler(request, response) {
   const userTryingToPatch = request.context.user;
   const unfilteredBodyValues = request.body;
-  const contentToBeUpdated = await content.findOneByUsernameAndSlug(request.query.username, request.query.slug);
+
+  const contentToBeUpdated = await content.findOne({
+    where: {
+      username: request.query.username,
+      slug: request.query.slug,
+    },
+  });
+
+  if (!contentToBeUpdated) {
+    throw new NotFoundError({
+      message: `O conteúdo informado não foi encontrado no sistema.`,
+      action: 'Verifique se o "slug" está digitado corretamente.',
+      stack: new Error().stack,
+      errorUniqueCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+      key: 'slug',
+    });
+  }
 
   if (!authorization.can(userTryingToPatch, 'update:content', contentToBeUpdated)) {
     throw new ForbiddenError({

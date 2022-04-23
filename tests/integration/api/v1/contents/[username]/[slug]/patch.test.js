@@ -306,7 +306,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:FIND_ONE_BY_USERNAME_AND_SLUG:CONTENT_NOT_FOUND');
+      expect(responseBody.error_unique_code).toEqual('CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('Content with "username" and "slug" pointing to content from another user', async () => {

@@ -20,7 +20,13 @@ export default nextConnect({
 // TODO: cache the response
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
-  const contentList = await content.findAll();
+  const contentList = await content.findWithStrategy({
+    strategy: 'descending',
+    where: {
+      parent_id: null,
+      status: 'published',
+    },
+  });
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
