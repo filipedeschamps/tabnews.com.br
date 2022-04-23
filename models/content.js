@@ -5,148 +5,124 @@ import validator from 'models/validator.js';
 import user from 'models/user.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
 
-async function findOneById(contentId) {
-  const query = {
-    text: `SELECT * FROM contents
-            WHERE
-              id = $1`,
-    values: [contentId],
-  };
-
-  const results = await database.query(query);
-  return results.rows[0];
-}
-
-async function findOneByUserIdAndSlug(userId, slug) {
-  const query = {
-    text: `SELECT * FROM contents
-            WHERE
-              owner_id = $1
-              AND slug = $2
-              LIMIT 1;`,
-    values: [userId, slug],
-  };
-
-  const results = await database.query(query);
-  return results.rows[0];
-}
-
-async function findOneByUsernameAndSlug(username, slug) {
-  const userOwner = await user.findOneByUsername(username);
+async function findAll(options = {}) {
+  options.where = validateWhereSchema(options?.where);
+  await replaceUsernameWithOwnerId(options);
+  const whereClause = buildWhereClause(options?.where);
+  const orderByClause = buildOrderByClause(options?.order);
 
   const query = {
-    text: `SELECT
-              contents.id as id,
-              contents.owner_id as owner_id,
-              contents.parent_id as parent_id,
-              contents.slug as slug,
-              contents.title as title,
-              contents.body as body,
-              contents.status as status,
-              contents.source_url as source_url,
-              contents.created_at as created_at,
-              contents.updated_at as updated_at,
-              contents.published_at as published_at,
-              users.username as username
-            FROM
-              contents
-            INNER JOIN
-              users ON contents.owner_id = users.id
-            WHERE
-              owner_id = $1
-              AND slug = $2
-            LIMIT 1
-            ;`,
-    values: [userOwner.id, slug],
+    text: `
+      SELECT
+        contents.id as id,
+        contents.owner_id as owner_id,
+        contents.parent_id as parent_id,
+        contents.slug as slug,
+        contents.title as title,
+        contents.body as body,
+        contents.status as status,
+        contents.source_url as source_url,
+        contents.created_at as created_at,
+        contents.updated_at as updated_at,
+        contents.published_at as published_at,
+        users.username as username
+      FROM
+        contents
+      INNER JOIN
+        users ON contents.owner_id = users.id
+      ${whereClause}
+      ${orderByClause}
+      ;`,
   };
 
-  const results = await database.query(query);
-
-  if (results.rowCount === 0) {
-    throw new NotFoundError({
-      message: `O conteúdo informado não foi encontrado no sistema.`,
-      action: 'Verifique se o "slug" está digitado corretamente.',
-      stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:FIND_ONE_BY_USERNAME_AND_SLUG:CONTENT_NOT_FOUND',
-      key: 'slug',
-    });
+  if (options.where) {
+    query.values = Object.values(options.where);
   }
 
-  return results.rows[0];
+  const results = await database.query(query);
+  return results.rows;
+
+  async function replaceUsernameWithOwnerId(options) {
+    if (options?.where?.username) {
+      const userOwner = await user.findOneByUsername(options.where.username);
+      options.where.owner_id = userOwner.id;
+      delete options.where.username;
+    }
+  }
+
+  function validateWhereSchema(where) {
+    if (!where) {
+      return;
+    }
+
+    const cleanValues = validator(where, {
+      id: 'optional',
+      parent_id: 'optional',
+      slug: 'optional',
+      title: 'optional',
+      body: 'optional',
+      status: 'optional',
+      source_url: 'optional',
+      owner_id: 'optional',
+      username: 'optional',
+    });
+
+    return cleanValues;
+  }
+
+  function buildWhereClause(columns) {
+    if (!columns) {
+      return '';
+    }
+
+    return Object.entries(columns).reduce((accumulator, column, index) => {
+      if (index === 0) {
+        return `WHERE ${getColumnDeclaration(column, index)}`;
+      } else {
+        return `${accumulator} AND ${getColumnDeclaration(column, index)}`;
+      }
+
+      function getColumnDeclaration(column, index) {
+        if (column[1] === null) {
+          return `contents.${column[0]} IS NOT DISTINCT FROM $${index + 1}`;
+        } else {
+          return `contents.${column[0]} = $${index + 1}`;
+        }
+      }
+    }, '');
+  }
+
+  function buildOrderByClause(orderBy) {
+    if (!orderBy) {
+      return '';
+    }
+
+    return `ORDER BY ${orderBy}`;
+  }
 }
 
-async function findAll(options = {}) {
-  options.parent_id = options.parent_id || null;
-  options.strategy = options.strategy || 'descending';
+async function findOne(options) {
+  const rows = await findAll(options);
+  return rows[0];
+}
+
+async function findWithStrategy(options = {}) {
+  const strategies = {
+    descending: getDescending,
+    ascending: getAscending,
+  };
 
   return await strategies[options.strategy](options);
-}
 
-const strategies = {
-  descending: getDescending,
-  ascending: getAscending,
-};
+  async function getDescending(options = {}) {
+    options.order = 'created_at DESC';
+    return await findAll(options);
+  }
 
-async function getDescending(options = {}) {
-  const query = {
-    text: `SELECT
-              contents.id as id,
-              contents.owner_id as owner_id,
-              contents.parent_id as parent_id,
-              contents.slug as slug,
-              contents.title as title,
-              contents.body as body,
-              contents.status as status,
-              contents.source_url as source_url,
-              contents.created_at as created_at,
-              contents.updated_at as updated_at,
-              contents.published_at as published_at,
-              users.username as username
-            FROM
-              contents
-            INNER JOIN
-              users ON contents.owner_id = users.id
-            WHERE
-            contents.parent_id IS NOT DISTINCT FROM $1
-              AND contents.status = 'published'
-            ORDER BY
-            contents.published_at DESC;`,
-    values: [options.parent_id],
-  };
-  const results = await database.query(query);
-  return results.rows;
-}
-
-async function getAscending(options = {}) {
-  const query = {
-    text: `SELECT
-              contents.id as id,
-              contents.owner_id as owner_id,
-              contents.parent_id as parent_id,
-              contents.slug as slug,
-              contents.title as title,
-              contents.body as body,
-              contents.status as status,
-              contents.source_url as source_url,
-              contents.created_at as created_at,
-              contents.updated_at as updated_at,
-              contents.published_at as published_at,
-              users.username as username
-            FROM
-              contents
-            INNER JOIN
-              users
-            ON
-              contents.owner_id = users.id
-            WHERE
-            contents.parent_id IS NOT DISTINCT FROM $1
-              AND contents.status = 'published'
-            ORDER BY
-            contents.published_at ASC;`,
-    values: [options.parent_id],
-  };
-  const results = await database.query(query);
-  return results.rows;
+  async function getAscending(options = {}) {
+    options.order = 'created_at ASC';
+    return await findAll(options);
+  }
 }
 
 async function create(postedContent) {
@@ -247,7 +223,11 @@ function populateStatus(postedContent) {
 }
 
 async function checkIfParentIdExists(content) {
-  const existingContent = await findOneById(content.parent_id);
+  const existingContent = await findOne({
+    where: {
+      id: content.parent_id,
+    },
+  });
 
   if (!existingContent) {
     throw new ValidationError({
@@ -262,7 +242,12 @@ async function checkIfParentIdExists(content) {
 }
 
 async function checkForContentUniqueness(content) {
-  const existingContent = await findOneByUserIdAndSlug(content.owner_id, content.slug);
+  const existingContent = await findOne({
+    where: {
+      owner_id: content.owner_id,
+      slug: content.slug,
+    },
+  });
 
   if (existingContent) {
     throw new ValidationError({
@@ -303,7 +288,12 @@ function checkRootContentTitle(content) {
 }
 
 async function populatePublishedAtValue(postedContent) {
-  const existingContent = await findOneByUserIdAndSlug(postedContent.owner_id, postedContent.slug);
+  const existingContent = await findOne({
+    where: {
+      owner_id: postedContent.owner_id,
+      slug: postedContent.slug,
+    },
+  });
 
   if (existingContent && existingContent.published_at) {
     postedContent.published_at = existingContent.published_at;
@@ -323,7 +313,11 @@ async function populatePublishedAtValue(postedContent) {
 
 async function update(contentId, postedContent) {
   const validPostedContent = validateUpdateSchema(postedContent);
-  const oldContent = await findOneById(contentId);
+  const oldContent = await findOne({
+    where: {
+      id: contentId,
+    },
+  });
   const newContent = { ...oldContent, ...validPostedContent };
 
   checkRootContentTitle(newContent);
@@ -420,9 +414,8 @@ function checkForParentIdRecursion(content) {
 
 export default Object.freeze({
   findAll,
+  findOne,
+  findWithStrategy,
   create,
   update,
-  findOneById,
-  findOneByUserIdAndSlug,
-  findOneByUsernameAndSlug,
 });

@@ -49,6 +49,22 @@ export default function validator(object, keys) {
 }
 
 const schemas = {
+  id: function () {
+    return Joi.object({
+      id: Joi.string()
+        .allow(null)
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"id" é um campo obrigatório.`,
+          'string.empty': `"id" não pode estar em branco.`,
+          'string.base': `"id" deve ser do tipo String.`,
+          'string.guid': `"id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
+
   username: function () {
     return Joi.object({
       username: Joi.string()
@@ -265,6 +281,22 @@ const schemas = {
           'string.max': `"source_url" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"source_url" possui o valor inválido "null".`,
           'string.pattern.base': `"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.`,
+        }),
+    });
+  },
+
+  owner_id: function () {
+    return Joi.object({
+      owner_id: Joi.string()
+        .allow(null)
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"owner_id" é um campo obrigatório.`,
+          'string.empty': `"owner_id" não pode estar em branco.`,
+          'string.base': `"owner_id" deve ser do tipo String.`,
+          'string.guid': `"owner_id" deve possuir um token UUID na versão 4.`,
         }),
     });
   },
