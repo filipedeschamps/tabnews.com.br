@@ -49,8 +49,6 @@ Observações:
 
 Há várias formas de rodar os testes dependendo do que você deseja fazer, mas o primeiro passo antes de fazer qualquer alteração no projeto é rodar os testes de forma geral para se certificar que tudo está passando como esperado. O comando abaixo irá rodar todos os serviços necessários, rodar os testes e em seguida derrubar todos os serviços.
 
-**ATENÇÃO:** Primeiro se certifique que o Serviço Web levantado no comando anterior não esteja rodando, pois se estiver, a porta `3000` estará ocupada e os testes não irão rodar corretamente.
-
 ```bash
 npm test
 ```
