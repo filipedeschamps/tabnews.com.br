@@ -412,9 +412,117 @@ function checkForParentIdRecursion(content) {
   }
 }
 
+async function findChildren(options) {
+  options.where = validateWhereSchema(options?.where);
+  const childrenFlatList = await recursiveDatabaseLookup(options);
+  const childrenTree = flatListToTree(childrenFlatList);
+  return childrenTree.children;
+
+  async function recursiveDatabaseLookup(options) {
+    const query = {
+      text: `
+      WITH RECURSIVE children AS (
+        SELECT
+            id,
+            owner_id,
+            parent_id,
+            slug,
+            title,
+            body,
+            status,
+            source_url,
+            created_at,
+            updated_at,
+            published_at
+        FROM
+          contents
+        WHERE
+          contents.id = $1 AND
+          contents.status = 'published'
+        UNION ALL
+          SELECT
+            contents.id,
+            contents.owner_id,
+            contents.parent_id,
+            contents.slug,
+            contents.title,
+            contents.body,
+            contents.status,
+            contents.source_url,
+            contents.created_at,
+            contents.updated_at,
+            contents.published_at
+          FROM
+            contents
+          INNER JOIN
+            children
+          ON
+            contents.parent_id = children.id
+          WHERE
+            contents.status = 'published'
+
+      )
+      SELECT
+        children.id as id,
+        children.owner_id as owner_id,
+        children.parent_id as parent_id,
+        children.slug as slug,
+        children.title as title,
+        children.body as body,
+        children.status as status,
+        children.source_url as source_url,
+        children.created_at as created_at,
+        children.updated_at as updated_at,
+        children.published_at as published_at,
+        users.username as username
+      FROM
+        children
+      INNER JOIN
+        users
+      ON
+        children.owner_id = users.id
+      ORDER BY
+        children.published_at ASC;
+      ;`,
+      values: [options.where.parent_id],
+    };
+    const results = await database.query(query);
+    return results.rows;
+  }
+
+  function validateWhereSchema(where) {
+    const cleanValues = validator(where, {
+      parent_id: 'required',
+    });
+
+    return cleanValues;
+  }
+
+  function flatListToTree(list) {
+    let tree;
+    const table = {};
+
+    list.forEach((row) => {
+      table[row.id] = row;
+      table[row.id].children = [];
+    });
+
+    list.forEach((row) => {
+      if (table[row.parent_id]) {
+        table[row.parent_id].children.push(row);
+      } else {
+        tree = row;
+      }
+    });
+
+    return tree;
+  }
+}
+
 export default Object.freeze({
   findAll,
   findOne,
+  findChildren,
   findWithStrategy,
   create,
   update,
