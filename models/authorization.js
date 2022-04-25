@@ -1,3 +1,4 @@
+import validator from 'models/validator.js';
 import { ValidationError, ForbiddenError } from 'errors/index.js';
 
 const availableFeatures = new Set([
@@ -191,37 +192,17 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:content') {
-    filteredOutputValues = {
-      id: output.id,
-      parent_id: output.parent_id,
-      owner_id: output.owner_id,
-      username: output.username,
-      slug: output.slug,
-      title: output.title,
-      body: output.body,
-      status: output.status,
-      source_url: output.source_url,
-      created_at: output.created_at,
-      updated_at: output.updated_at,
-      published_at: output.published_at,
-    };
+    filteredOutputValues = validator(output, {
+      content: 'required',
+    });
   }
 
   if (feature === 'read:content:list') {
-    filteredOutputValues = output.map((output) => ({
-      id: output.id,
-      parent_id: output.parent_id,
-      owner_id: output.owner_id,
-      username: output.username,
-      slug: output.slug,
-      title: output.title,
-      body: output.body,
-      status: output.status,
-      source_url: output.source_url,
-      created_at: output.created_at,
-      updated_at: output.updated_at,
-      published_at: output.published_at,
-    }));
+    filteredOutputValues = output.map((content) => {
+      return validator(content, {
+        content: 'required',
+      });
+    });
   }
 
   // Force the clean up of "undefined" values

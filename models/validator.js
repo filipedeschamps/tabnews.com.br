@@ -300,4 +300,75 @@ const schemas = {
         }),
     });
   },
+
+  created_at: function () {
+    return Joi.object({
+      created_at: Joi.date()
+        .when('$required.created_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"created_at" é um campo obrigatório.`,
+          'string.empty': `"created_at" não pode estar em branco.`,
+          'string.base': `"created_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  updated_at: function () {
+    return Joi.object({
+      updated_at: Joi.date()
+        .when('$required.updated_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"updated_at" é um campo obrigatório.`,
+          'string.empty': `"updated_at" não pode estar em branco.`,
+          'string.base': `"updated_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  published_at: function () {
+    return Joi.object({
+      published_at: Joi.date()
+        .allow(null)
+        .when('$required.published_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"published_at" é um campo obrigatório.`,
+          'string.empty': `"published_at" não pode estar em branco.`,
+          'string.base': `"published_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  content: function () {
+    let contentSchema = Joi.object({
+      children: Joi.array().optional().items(Joi.link('#content')).messages({
+        'array.base': `"children" deve ser do tipo Array.`,
+      }),
+    })
+      .required()
+      .min(1)
+      .messages({
+        'object.base': `Body deve ser do tipo Object.`,
+      })
+      .id('content');
+
+    for (const key of [
+      'id',
+      'owner_id',
+      'parent_id',
+      'slug',
+      'title',
+      'body',
+      'status',
+      'source_url',
+      'created_at',
+      'updated_at',
+      'published_at',
+      'username',
+    ]) {
+      const keyValidationFunction = schemas[key];
+      contentSchema = contentSchema.concat(keyValidationFunction());
+    }
+
+    return contentSchema;
+  },
 };
