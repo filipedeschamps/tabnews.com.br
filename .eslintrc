@@ -1,5 +1,5 @@
 {
-  "extends": ["next", "next/core-web-vitals", "prettier"],
+  "extends": ["next", "next/core-web-vitals", "prettier", "plugin:primer-react/recommended"],
   "rules": {
     "react/no-unescaped-entities": "off",
     "import/no-anonymous-default-export": "off"

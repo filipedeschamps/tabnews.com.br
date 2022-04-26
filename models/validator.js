@@ -42,6 +42,7 @@ export default function validator(object, keys) {
       key: error.details[0].context.key || error.details[0].context.type || 'object',
       errorUniqueCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
       stack: new Error().stack,
+      type: error.details[0].type,
     });
   }
 
