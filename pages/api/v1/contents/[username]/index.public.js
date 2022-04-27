@@ -34,7 +34,7 @@ async function getHandler(request, response) {
       parent_id: null,
       status: 'published',
     },
-    order: 'created_at ASC',
+    order: 'published_at ASC',
   });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contendFound);
