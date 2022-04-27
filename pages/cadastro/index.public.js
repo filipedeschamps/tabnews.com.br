@@ -1,30 +1,11 @@
-import { Header, FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { CgTab } from 'react-icons/cg';
+import { DefaultLayout } from 'pages/interface/index.js';
+import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
 
-export default function Home() {
+export default function Register() {
   return (
-    <>
-      <Header>
-        <Header.Item full>
-          <Header.Link href="/" fontSize={2}>
-            <CgTab size={16} />
-            <Box sx={{ ml: 2 }}>TabNews</Box>
-          </Header.Link>
-        </Header.Item>
-        <Header.Item>
-          <Header.Link href="/login" fontSize={2}>
-            Login
-          </Header.Link>
-        </Header.Item>
-        <Header.Item>
-          <Header.Link href="/cadastro" fontSize={2}>
-            <Button>Cadastrar</Button>
-          </Header.Link>
-        </Header.Item>
-      </Header>
-
+    <DefaultLayout>
       <Box sx={{ padding: [3, null, null, 4] }}>
         <Box
           sx={{
@@ -36,7 +17,7 @@ export default function Home() {
           <SignUpForm />
         </Box>
       </Box>
-    </>
+    </DefaultLayout>
   );
 }
 
@@ -53,7 +34,6 @@ function SignUpForm() {
 
   function clearErrors() {
     setErrorObject(undefined);
-    setGlobalErrorMessage(undefined);
   }
 
   async function handleSubmit(event) {
@@ -65,7 +45,6 @@ function SignUpForm() {
 
     setIsLoading(true);
     setErrorObject(undefined);
-    setGlobalErrorMessage(undefined);
 
     try {
       const response = await fetch(`/api/v1/users`, {
@@ -81,6 +60,8 @@ function SignUpForm() {
         }),
       });
 
+      setGlobalErrorMessage(undefined);
+
       const responseBody = await response.json();
 
       if (response.status === 400) {
@@ -89,11 +70,11 @@ function SignUpForm() {
       }
 
       if (response.status >= 500) {
-        setGlobalErrorMessage(responseBody.message);
+        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
         return;
       }
 
-      localStorage.setItem('@tabnews:userEmail', email);
+      localStorage.setItem('registrationEmail', email);
       router.push('/cadastro/confirmar');
     } catch (error) {
       setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
