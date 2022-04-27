@@ -1,17 +1,32 @@
+import Confetti from 'react-confetti';
+import fetch from 'cross-fetch';
+import { Box, Flash } from '@primer/react';
+import { DefaultLayout } from 'pages/interface/index.js';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import fetch from 'cross-fetch';
-
-import { CgTab, CgCheck, CgClose } from 'react-icons/cg';
 
 export default function ActiveUser() {
   const router = useRouter();
   const { token } = router.query;
 
-  const [userFeedback, setUserFeedback] = useState('');
-  const [userAction, setUserAction] = useState('');
+  const [globalMessage, setGlobalMessage] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [confettiWidth, setConfettiWidth] = useState(0);
+  const [confettiHeight, setConfettiHeight] = useState(0);
+
+  useEffect(() => {
+    function handleResize() {
+      setConfettiWidth(window.screen.width);
+      setConfettiHeight(window.screen.height);
+    }
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleActivateUser = async (token) => {
     try {
@@ -29,14 +44,14 @@ export default function ActiveUser() {
 
       if (response.status === 200) {
         setIsSuccess(true);
-        setUserFeedback('Sua conta foi ativada com sucesso!');
+        setGlobalMessage('Sua conta foi ativada com sucesso!');
+
         return;
       }
 
       if (response.status >= 400 && response.status <= 503) {
         const responseBody = await response.json();
-        setUserFeedback(responseBody.message);
-        setUserAction(responseBody.action);
+        setGlobalMessage(`${responseBody.message} ${responseBody.action}`);
         setIsSuccess(false);
         return;
       }
@@ -44,7 +59,7 @@ export default function ActiveUser() {
       setIsSuccess(false);
       throw new Error(response.statusText);
     } catch (error) {
-      setUserFeedback(error.message);
+      setGlobalMessage(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -58,28 +73,35 @@ export default function ActiveUser() {
 
   return (
     <>
-      <header className="border-b-2 border-gray-200">
-        <nav className="flex items-center justify-between p-3">
-          <div className="flex items-center space-x-1">
-            <CgTab className="w-5 h-5 text-gray-700" />
-            <span className="text-sm font-medium">TabNews</span>
-          </div>
-        </nav>
-      </header>
-
-      {isLoading ? (
-        <p className="flex justify-center my-8">Verificando Token de Ativação...</p>
-      ) : (
-        <div className="flex justify-center my-8">
-          <section className="flex text-center items-center">
-            {isSuccess ? <CgCheck className="w-5 h-5 text-green-600" /> : <CgClose className="w-5 h-5 text-red-500" />}
-            <h2 className="py-2 ml-2">
-              <strong>{userFeedback}</strong>
-            </h2>
-          </section>
-          <h2 className="py-2 ml-2">{userAction}</h2>
-        </div>
+      {isSuccess && (
+        <Confetti
+          width={confettiWidth}
+          height={confettiHeight}
+          recycle={false}
+          numberOfPieces={800}
+          tweenDuration={15000}
+          gravity={0.15}
+        />
       )}
+      <DefaultLayout>
+        <Box sx={{ padding: [3, null, null, 4] }}>
+          <Box
+            sx={{
+              maxWidth: '400px',
+              marginX: 'auto',
+              display: 'flex',
+              flexWrap: 'wrap',
+            }}>
+            <Box display="grid" width="100%" gridGap={3} sx={{ mt: '50px' }}>
+              {isLoading ? (
+                <Flash variant="default">Verificando Token de Ativação...</Flash>
+              ) : (
+                <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </DefaultLayout>
     </>
   );
 }

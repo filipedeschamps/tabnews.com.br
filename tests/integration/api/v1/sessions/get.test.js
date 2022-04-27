@@ -106,7 +106,6 @@ describe('GET /api/v1/sessions', () => {
 
       expect(response.status).toBe(200);
       expect(responseBody.id).toEqual(sessionObject.id);
-      expect(responseBody.token).toEqual(sessionObject.token);
       expect(responseBody.created_at).toEqual(sessionObject.created_at.toISOString());
       expect(responseBody.expires_at > sessionObject.expires_at.toISOString()).toEqual(true);
       expect(responseBody.updated_at > sessionObject.updated_at.toISOString()).toEqual(true);

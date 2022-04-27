@@ -145,9 +145,6 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     expect(getSessionResponse.status).toEqual(200);
     expect(getSessionResponseBody.id).toEqual(postSessionResponseBody.id);
-    expect(getSessionResponseBody.token).toEqual(postSessionResponseBody.token);
-    expect(uuidVersion(getSessionResponseBody.id)).toEqual(4);
-    expect(getSessionResponseBody.token.length).toEqual(96);
     expect(Date.parse(getSessionResponseBody.expires_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.created_at)).not.toEqual(NaN);
     expect(Date.parse(getSessionResponseBody.updated_at)).not.toEqual(NaN);

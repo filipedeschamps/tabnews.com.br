@@ -5,6 +5,7 @@ const availableFeatures = new Set([
   // USER
   'create:user',
   'read:user',
+  'read:user:self',
   'read:user:list',
   'update:user',
 
@@ -141,7 +142,6 @@ function filterOutput(user, feature, output) {
     if (user.id && output.user_id && user.id === output.user_id) {
       filteredOutputValues = {
         id: output.id,
-        token: output.token,
         expires_at: output.expires_at,
         created_at: output.created_at,
         updated_at: output.updated_at,
@@ -169,6 +169,19 @@ function filterOutput(user, feature, output) {
       created_at: output.created_at,
       updated_at: output.updated_at,
     };
+  }
+
+  if (feature === 'read:user:self') {
+    if (user.id && output.id && user.id === output.id) {
+      filteredOutputValues = {
+        id: output.id,
+        username: output.username,
+        email: output.email,
+        features: output.features,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
+      };
+    }
   }
 
   if (feature === 'read:user:list') {
