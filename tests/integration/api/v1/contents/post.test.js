@@ -1360,8 +1360,8 @@ describe('POST /api/v1/contents', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(422);
-      expect(responseBody.status_code).toEqual(422);
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
         'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'

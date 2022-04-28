@@ -1842,7 +1842,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(responseBody.status_code).toEqual(422);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"parent_id" não deve apontar para o próprio conteúdo.');
       expect(responseBody.action).toEqual('Utilize um "parent_id" diferente do "id" do mesmo conteúdo.');
@@ -1989,8 +1989,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(422);
-      expect(responseBody.status_code).toEqual(422);
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
         'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'

@@ -312,32 +312,6 @@ describe('POST /api/v1/users', () => {
       expect(responseBody.key).toEqual('username');
     });
 
-    test('With "username" too short', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'ab',
-          email: 'valid@email.com',
-          password: 'validpassword123',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter no mínimo 3 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
-    });
-
     test('With "username" too long', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
@@ -361,6 +335,32 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toEqual('username');
+    });
+
+    test('With "username" in blocked list', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'admin',
+          email: 'admin@email.com',
+          password: 'validpassword123',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Este nome de usuário não está disponível para uso.');
+      expect(responseBody.action).toEqual('Escolha outro nome de usuário e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME');
       expect(responseBody.key).toEqual('username');
     });
 

@@ -235,7 +235,7 @@ async function checkIfParentIdExists(content) {
       action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
-      statusCode: 422,
+      statusCode: 400,
       key: 'parent_id',
     });
   }
@@ -255,7 +255,7 @@ async function checkForContentUniqueness(content) {
       action: `Utilize um "slug" diferente de "${existingContent.slug}".`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
-      statusCode: 422,
+      statusCode: 400,
       key: 'slug',
     });
   }
@@ -406,7 +406,7 @@ function checkForParentIdRecursion(content) {
       action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
-      statusCode: 422,
+      statusCode: 400,
       key: 'parent_id',
     });
   }
