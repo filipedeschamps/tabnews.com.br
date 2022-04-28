@@ -91,6 +91,9 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('conteudo-publicamente-disponivel');
       expect(responseBody.title).toEqual('Conteúdo publicamente disponível');
       expect(responseBody.body).toEqual('Deveria estar disponível para todos.');
@@ -162,6 +165,9 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(rootContent.id);
+      expect(responseBody.parent_title).toEqual(rootContent.title);
+      expect(responseBody.parent_slug).toEqual(rootContent.slug);
+      expect(responseBody.parent_username).toEqual(rootContent.username);
       expect(responseBody.slug).toEqual(childContent.slug);
       expect(responseBody.title).toEqual(null);
       expect(responseBody.body).toEqual('Conteúdo child');

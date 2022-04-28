@@ -390,6 +390,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).not.toEqual(secondUser.id);
       expect(responseBody.username).not.toEqual(secondUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('conteudo-do-primeiro-usuario-antes-do-patch');
       expect(responseBody.title).toEqual('Tentando atualizar o dono do conteúdo.');
       expect(responseBody.body).toEqual('Campo "owner_id" da request deveria ser ignorado e pego através da sessão.');
@@ -433,6 +436,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body novo');
@@ -550,6 +556,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Espaço no início e no fim');
@@ -631,6 +640,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('slug-novo');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -822,6 +834,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título novo');
       expect(responseBody.body).toEqual('Body velho');
@@ -938,7 +953,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório para conteúdos raiz.');
+      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -983,6 +998,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(responseBody.id).toEqual(childContent.id);
       expect(responseBody.owner_id).toEqual(defaultUser.id);
+      expect(responseBody.parent_title).toEqual(rootContent.title);
+      expect(responseBody.parent_slug).toEqual(rootContent.slug);
+      expect(responseBody.parent_username).toEqual(rootContent.username);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(rootContent.id);
       expect(responseBody.slug).toEqual('child-old-title');
@@ -1028,6 +1046,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título válido, mas com espaços em branco no início e no fim');
       expect(responseBody.body).toEqual('Body velho');
@@ -1071,6 +1092,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual(
         `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`
@@ -1116,6 +1140,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1160,6 +1187,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1204,6 +1234,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1264,6 +1297,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(republishedResponseBody.owner_id).toEqual(defaultUser.id);
       expect(republishedResponseBody.username).toEqual(defaultUser.username);
       expect(republishedResponseBody.parent_id).toEqual(null);
+      expect(republishedResponseBody.parent_title).toEqual(null);
+      expect(republishedResponseBody.parent_slug).toEqual(null);
+      expect(republishedResponseBody.parent_username).toEqual(null);
       expect(republishedResponseBody.slug).toEqual('titulo-velho');
       expect(republishedResponseBody.title).toEqual('Título velho');
       expect(republishedResponseBody.body).toEqual('Body velho');
@@ -1421,6 +1457,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1464,6 +1503,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1585,6 +1627,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1664,6 +1709,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-velho');
       expect(responseBody.title).toEqual('Título velho');
       expect(responseBody.body).toEqual('Body velho');
@@ -1712,6 +1760,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(rootContent.id);
+      expect(responseBody.parent_title).toEqual(rootContent.title);
+      expect(responseBody.parent_slug).toEqual(rootContent.slug);
+      expect(responseBody.parent_username).toEqual(rootContent.username);
       expect(responseBody.slug).toEqual('child-content-title');
       expect(responseBody.title).toEqual('Child content title');
       expect(responseBody.body).toEqual('Child content body');
@@ -1761,6 +1812,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('child-content-title');
       expect(responseBody.title).toEqual('Child content title');
       expect(responseBody.body).toEqual('Child content body');
@@ -1809,7 +1863,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório para conteúdos raiz.');
+      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);

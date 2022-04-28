@@ -87,6 +87,27 @@ const schemas = {
     });
   },
 
+  parent_username: function () {
+    return Joi.object({
+      parent_username: Joi.string()
+        .allow(null)
+        .alphanum()
+        .min(3)
+        .max(30)
+        .trim()
+        .when('$required.parent_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"parent_username" é um campo obrigatório.`,
+          'string.empty': `"parent_username" não pode estar em branco.`,
+          'string.base': `"parent_username" deve ser do tipo String.`,
+          'string.alphanum': `"parent_username" deve conter apenas caracteres alfanuméricos.`,
+          'string.min': `"parent_username" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"parent_username" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"parent_username" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
   email: function () {
     return Joi.object({
       email: Joi.string()
@@ -210,6 +231,27 @@ const schemas = {
     });
   },
 
+  parent_slug: function () {
+    return Joi.object({
+      parent_slug: Joi.string()
+        .allow(null)
+        .min(1)
+        .max(256)
+        .trim()
+        .pattern(/^[a-z0-9](-?[a-z0-9])*$/m)
+        .when('$required.parent_slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"parent_slug" é um campo obrigatório.`,
+          'string.empty': `"parent_slug" não pode estar em branco.`,
+          'string.base': `"parent_slug" deve ser do tipo String.`,
+          'string.min': `"parent_slug" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"parent_slug" deve conter no máximo {#limit} caracteres.`,
+          'string.pattern.base': `"parent_slug" está no formato errado.`,
+          'any.invalid': `"parent_slug" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
   title: function () {
     return Joi.object({
       title: Joi.string()
@@ -224,7 +266,24 @@ const schemas = {
           'string.base': `"title" deve ser do tipo String.`,
           'string.min': `"title" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"title" deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `"title" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
+  parent_title: function () {
+    return Joi.object({
+      parent_title: Joi.string()
+        .allow(null)
+        .min(1)
+        .max(256)
+        .trim()
+        .when('$required.parent_title', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"parent_title" é um campo obrigatório.`,
+          'string.empty': `"parent_title" não pode estar em branco.`,
+          'string.base': `"parent_title" deve ser do tipo String.`,
+          'string.min': `"parent_title" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"parent_title" deve conter no máximo {#limit} caracteres.`,
         }),
     });
   },
@@ -365,6 +424,9 @@ const schemas = {
       'updated_at',
       'published_at',
       'username',
+      'parent_title',
+      'parent_slug',
+      'parent_username',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());

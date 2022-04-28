@@ -5,18 +5,8 @@ import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/rea
 
 export default function Login() {
   return (
-    <DefaultLayout>
-      <Box sx={{ padding: [3, null, null, 4] }}>
-        <Box
-          sx={{
-            maxWidth: '400px',
-            marginX: 'auto',
-            display: 'flex',
-            flexWrap: 'wrap',
-          }}>
-          <LoginForm />
-        </Box>
-      </Box>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
+      <LoginForm />
     </DefaultLayout>
   );
 }
@@ -60,37 +50,37 @@ function LoginForm() {
       setGlobalErrorMessage(undefined);
 
       const responseBody = await response.json();
-      console.log(responseBody);
 
       if (response.status === 201) {
-        router.push('/login/sucesso');
+        router.push('/publicar');
         return;
       }
 
       if (response.status === 400) {
         setErrorObject(responseBody);
+        setIsLoading(false);
         return;
       }
 
       if (response.status >= 401) {
         setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        setIsLoading(false);
         return;
       }
     } catch (error) {
       setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-    } finally {
       setIsLoading(false);
     }
   }
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-      <Box display="grid" width="100%" gridGap={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
-        <Box>
-          <Heading as="h1">Login</Heading>
-        </Box>
+        <Heading as="h1" sx={{ mb: 3 }}>
+          Login
+        </Heading>
         <FormControl id="email">
           <FormControl.Label>Email</FormControl.Label>
           <TextInput

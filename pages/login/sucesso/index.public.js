@@ -38,16 +38,14 @@ export default function ConfirmSignup() {
         />
       </div>
 
-      <DefaultLayout>
-        <Box sx={{ padding: [3, null, null, 4] }}>
-          <Box display="grid" width="100%" gridGap={3} sx={{ mt: '50px' }}>
-            <Heading as="h1" sx={{ textAlign: 'center' }}>
-              Seu login foi realizado com sucesso!
-            </Heading>
-            <Text sx={{ textAlign: 'center' }}>
-              E pedimos que aguarde por novas features para poder usar o seu usuário dentro do TabNews :)
-            </Text>
-          </Box>
+      <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirme seu email' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+          <Heading as="h1" sx={{ textAlign: 'center' }}>
+            Seu login foi realizado com sucesso!
+          </Heading>
+          <Text sx={{ textAlign: 'center' }}>
+            E pedimos que aguarde por novas features para poder usar o seu usuário dentro do TabNews :)
+          </Text>
         </Box>
       </DefaultLayout>
     </>
