@@ -423,6 +423,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           .bytemd .bytemd-status {
             display: none;
           }
+
+          .bytemd-fullscreen.bytemd {
+            z-index: 100;
+          }
         `}</style>
       </Box>
     );
