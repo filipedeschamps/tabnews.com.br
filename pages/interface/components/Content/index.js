@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useId } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 import {
@@ -71,8 +71,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       });
       setPublishedSinceText(`${publishedSince} atrás`);
     }, []);
-
-    // atrás
 
     function ViewModeOptionsMenu() {
       return (

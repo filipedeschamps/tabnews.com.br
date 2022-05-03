@@ -10,13 +10,7 @@ export default function Home({ contentListFound, username }) {
   return (
     <>
       <DefaultLayout metadata={{ title: `${username}` }}>
-        {contentListFound.length > 0 ? (
-          <ContentList contentList={contentListFound} path={`/api/v1/contents/${username}`} />
-        ) : (
-          <Box sx={{ textAlign: 'center', width: '100%', mt: 10 }}>
-            <Text>Este usuário não possui conteúdos publicados.</Text>
-          </Box>
-        )}
+        <ContentList contentList={contentListFound} path={`/api/v1/contents/${username}`} />
       </DefaultLayout>
     </>
   );

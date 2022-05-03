@@ -1,4 +1,3 @@
-import { Box, Text } from '@primer/react';
 import { DefaultLayout, ContentList } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
@@ -8,13 +7,7 @@ export default function Home({ contentListFound }) {
   return (
     <>
       <DefaultLayout title="TabNews: Conteúdos Para Quem Trabalha Com Tecnologia">
-        {contentListFound.length > 0 ? (
-          <ContentList contentList={contentListFound} path="/api/v1/contents" />
-        ) : (
-          <Box sx={{ textAlign: 'center', width: '100%', mt: 10 }}>
-            <Text>Nenhum conteúdo publicado foi encontrado.</Text>
-          </Box>
-        )}
+        <ContentList contentList={contentListFound} path="/api/v1/contents" />
       </DefaultLayout>
     </>
   );
