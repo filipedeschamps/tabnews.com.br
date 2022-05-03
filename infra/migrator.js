@@ -17,6 +17,7 @@ async function listPendingMigrations() {
       ...defaultConfigurations,
       dbClient: databaseClient,
       dryRun: true,
+      migrationsTable: 'pgmigrations',
     });
 
     return pendingMigrations;
@@ -35,6 +36,7 @@ async function runPendingMigrations() {
       ...defaultConfigurations,
       dbClient: databaseClient,
       dryRun: false,
+      migrationsTable: 'pgmigrations',
     });
 
     return migratedMigrations;

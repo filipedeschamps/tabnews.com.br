@@ -383,6 +383,36 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.key).toEqual('username');
     });
 
+    test('With "username" in blocked list', async () => {
+      let defaultUser = await orchestrator.createUser();
+      defaultUser = await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          username: 'admin',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Este nome de usuário não está disponível para uso.');
+      expect(responseBody.action).toEqual('Escolha outro nome de usuário e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME');
+      expect(responseBody.key).toEqual('username');
+    });
+
     test('Patching itself with "body" totally blank', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);

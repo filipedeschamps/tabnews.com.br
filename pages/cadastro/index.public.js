@@ -5,18 +5,12 @@ import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/rea
 
 export default function Register() {
   return (
-    <DefaultLayout>
-      <Box sx={{ padding: [3, null, null, 4] }}>
-        <Box
-          sx={{
-            maxWidth: '400px',
-            marginX: 'auto',
-            display: 'flex',
-            flexWrap: 'wrap',
-          }}>
-          <SignUpForm />
-        </Box>
-      </Box>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Cadastro' }}>
+      <Heading as="h1" sx={{ mb: 3 }}>
+        Cadastro
+      </Heading>
+
+      <SignUpForm />
     </DefaultLayout>
   );
 }
@@ -64,33 +58,34 @@ function SignUpForm() {
 
       const responseBody = await response.json();
 
+      if (response.status === 201) {
+        localStorage.setItem('registrationEmail', email);
+        router.push('/cadastro/confirmar');
+        return;
+      }
+
       if (response.status === 400) {
         setErrorObject(responseBody);
+        setIsLoading(false);
         return;
       }
 
-      if (response.status >= 500) {
+      if (response.status >= 403) {
         setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+        setIsLoading(false);
         return;
       }
-
-      localStorage.setItem('registrationEmail', email);
-      router.push('/cadastro/confirmar');
     } catch (error) {
       setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-    } finally {
       setIsLoading(false);
     }
   }
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-      <Box display="grid" width="100%" gridGap={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
-        <Box>
-          <Heading as="h1">Cadastro</Heading>
-        </Box>
         <FormControl id="username">
           <FormControl.Label>Nome de usuário</FormControl.Label>
           <TextInput

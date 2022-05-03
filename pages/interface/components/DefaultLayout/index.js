@@ -1,10 +1,20 @@
-import Header from 'pages/interface/components/Header/index.js';
+import { Box } from '@primer/react';
+import { BaseLayout, Header } from 'pages/interface/index.js';
 
-export default function DefaultLayout({ children }) {
+export default function DefaultLayout({ children, containerWidth = 'large', metadata, content }) {
   return (
-    <>
+    <BaseLayout metadata={metadata} content={content}>
       <Header />
-      {children}
-    </>
+      <Box
+        maxWidth={containerWidth}
+        sx={{
+          marginX: 'auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          padding: [3, null, null, 4],
+        }}>
+        {children}
+      </Box>
+    </BaseLayout>
   );
 }

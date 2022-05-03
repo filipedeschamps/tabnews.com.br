@@ -62,6 +62,9 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[0].owner_id).toEqual(defaultUser.id);
       expect(responseBody[0].username).toEqual(defaultUser.username);
       expect(responseBody[0].parent_id).toEqual(secondRootContent.parent_id);
+      expect(responseBody[0].parent_title).toEqual(secondRootContent.parent_title);
+      expect(responseBody[0].parent_slug).toEqual(secondRootContent.parent_slug);
+      expect(responseBody[0].parent_username).toEqual(secondRootContent.parent_username);
       expect(responseBody[0].slug).toEqual(secondRootContent.slug);
       expect(responseBody[0].title).toEqual(secondRootContent.title);
       expect(responseBody[0].body).toEqual(secondRootContent.body);
@@ -75,6 +78,9 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[1].owner_id).toEqual(defaultUser.id);
       expect(responseBody[1].username).toEqual(defaultUser.username);
       expect(responseBody[1].parent_id).toEqual(firstRootContent.parent_id);
+      expect(responseBody[1].parent_title).toEqual(firstRootContent.parent_title);
+      expect(responseBody[1].parent_slug).toEqual(firstRootContent.parent_slug);
+      expect(responseBody[1].parent_username).toEqual(firstRootContent.parent_username);
       expect(responseBody[1].slug).toEqual(firstRootContent.slug);
       expect(responseBody[1].title).toEqual(firstRootContent.title);
       expect(responseBody[1].body).toEqual(firstRootContent.body);

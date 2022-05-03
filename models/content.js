@@ -25,11 +25,20 @@ async function findAll(options = {}) {
         contents.created_at as created_at,
         contents.updated_at as updated_at,
         contents.published_at as published_at,
-        users.username as username
+        users.username as username,
+        parent_content.title as parent_title,
+        parent_content.slug as parent_slug,
+        parent_user.username as parent_username
+
       FROM
         contents
       INNER JOIN
         users ON contents.owner_id = users.id
+      LEFT JOIN
+        contents as parent_content ON contents.parent_id = parent_content.id
+      LEFT JOIN
+        users as parent_user ON parent_content.owner_id = parent_user.id
+
       ${whereClause}
       ${orderByClause}
       ;`,
@@ -164,14 +173,19 @@ async function create(postedContent) {
         inserted_content.created_at as created_at,
         inserted_content.updated_at as updated_at,
         inserted_content.published_at as published_at,
-        users.username as username
+        users.username as username,
+        parent_content.title as parent_title,
+        parent_content.slug as parent_slug,
+        parent_user.username as parent_username
       FROM
         inserted_content
       INNER JOIN
-        users
-      ON
-        inserted_content.owner_id = users.id;
-      `,
+        users ON inserted_content.owner_id = users.id
+      LEFT JOIN
+        contents as parent_content ON inserted_content.parent_id = parent_content.id
+      LEFT JOIN
+        users as parent_user ON parent_content.owner_id = parent_user.id
+      ;`,
       values: [
         content.parent_id,
         content.owner_id,
@@ -235,7 +249,7 @@ async function checkIfParentIdExists(content) {
       action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
-      statusCode: 422,
+      statusCode: 400,
       key: 'parent_id',
     });
   }
@@ -255,7 +269,7 @@ async function checkForContentUniqueness(content) {
       action: `Utilize um "slug" diferente de "${existingContent.slug}".`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
-      statusCode: 422,
+      statusCode: 400,
       key: 'slug',
     });
   }
@@ -278,7 +292,7 @@ function validateCreateSchema(content) {
 function checkRootContentTitle(content) {
   if (!content.parent_id && !content.title) {
     throw new ValidationError({
-      message: `"title" é um campo obrigatório para conteúdos raiz.`,
+      message: `"title" é um campo obrigatório.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE',
       statusCode: 400,
@@ -362,14 +376,19 @@ async function update(contentId, postedContent) {
         updated_content.created_at as created_at,
         updated_content.updated_at as updated_at,
         updated_content.published_at as published_at,
-        users.username as username
+        users.username as username,
+        parent_content.title as parent_title,
+        parent_content.slug as parent_slug,
+        parent_user.username as parent_username
       FROM
         updated_content
       INNER JOIN
-        users
-      ON
-        updated_content.owner_id = users.id;
-      `,
+        users ON updated_content.owner_id = users.id
+      LEFT JOIN
+        contents as parent_content ON updated_content.parent_id = parent_content.id
+      LEFT JOIN
+        users as parent_user ON parent_content.owner_id = parent_user.id
+      ;`,
       values: [
         content.id,
         content.parent_id,
@@ -406,7 +425,7 @@ function checkForParentIdRecursion(content) {
       action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
-      statusCode: 422,
+      statusCode: 400,
       key: 'parent_id',
     });
   }
@@ -455,9 +474,7 @@ async function findChildren(options) {
           FROM
             contents
           INNER JOIN
-            children
-          ON
-            contents.parent_id = children.id
+            children ON contents.parent_id = children.id
           WHERE
             contents.status = 'published'
 
@@ -474,13 +491,18 @@ async function findChildren(options) {
         children.created_at as created_at,
         children.updated_at as updated_at,
         children.published_at as published_at,
-        users.username as username
+        users.username as username,
+        parent_content.title as parent_title,
+        parent_content.slug as parent_slug,
+        parent_user.username as parent_username
       FROM
         children
       INNER JOIN
-        users
-      ON
-        children.owner_id = users.id
+        users ON children.owner_id = users.id
+      LEFT JOIN
+        contents as parent_content ON children.parent_id = parent_content.id
+      LEFT JOIN
+        users as parent_user ON parent_content.owner_id = parent_user.id
       ORDER BY
         children.published_at ASC;
       ;`,

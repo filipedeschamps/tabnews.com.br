@@ -1,5 +1,4 @@
 import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
-import './css/globals.css';
 import { SWRConfig } from 'swr';
 
 async function SWRFetcher(resource, init) {

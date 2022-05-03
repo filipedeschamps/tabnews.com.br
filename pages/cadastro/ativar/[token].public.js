@@ -83,23 +83,13 @@ export default function ActiveUser() {
           gravity={0.15}
         />
       )}
-      <DefaultLayout>
-        <Box sx={{ padding: [3, null, null, 4] }}>
-          <Box
-            sx={{
-              maxWidth: '400px',
-              marginX: 'auto',
-              display: 'flex',
-              flexWrap: 'wrap',
-            }}>
-            <Box display="grid" width="100%" gridGap={3} sx={{ mt: '50px' }}>
-              {isLoading ? (
-                <Flash variant="default">Verificando Token de Ativação...</Flash>
-              ) : (
-                <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
-              )}
-            </Box>
-          </Box>
+      <DefaultLayout containerWidth="medium">
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+          {isLoading ? (
+            <Flash variant="default">Verificando Token de Ativação...</Flash>
+          ) : (
+            <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
+          )}
         </Box>
       </DefaultLayout>
     </>

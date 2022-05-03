@@ -191,6 +191,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).not.toEqual(secondUser.id);
       expect(responseBody.username).not.toEqual(secondUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('tentando-criar-conteudo-em-nome-de-outro-usuario');
       expect(responseBody.title).toEqual('Tentando criar conteúdo em nome de outro usuário');
       expect(responseBody.body).toEqual('Campo "owner_id" da request deveria ser ignorado e pego através da sessão.');
@@ -311,6 +314,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-normal');
       expect(responseBody.title).toEqual('Título normal');
       expect(responseBody.body).toEqual('Espaço no início e no fim');
@@ -375,6 +381,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('nodejs');
       expect(responseBody.title).toEqual('Mini curso de Node.js');
       expect(responseBody.body).toEqual('Instale o Node.js');
@@ -588,6 +597,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo-valido-mas-com-espacos-em-branco-no-inicio-e-no-fim');
       expect(responseBody.title).toEqual('Título válido, mas com espaços em branco no início e no fim');
       expect(responseBody.body).toEqual('Qualquer coisa.');
@@ -622,6 +634,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('tab-e-news-conteudos-com-valor-strong-concreto-strong-e-massa-participe-o');
       expect(responseBody.title).toEqual(
         `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`
@@ -659,6 +674,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('deveria-criar-um-conteudo-com-status-draft');
       expect(responseBody.title).toEqual('Deveria criar um conteúdo com status "draft".');
       expect(responseBody.body).toEqual('Qualquer coisa.');
@@ -694,6 +712,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('deveria-criar-um-conteudo-com-status-published');
       expect(responseBody.title).toEqual('Deveria criar um conteúdo com status "published".');
       expect(responseBody.body).toEqual('E isso vai fazer ter um "published_at" preenchido automaticamente.');
@@ -819,6 +840,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('tabnews');
       expect(responseBody.title).toEqual('TabNews');
       expect(responseBody.body).toEqual('Somos pessoas brutalmente exatas e empáticas, simultaneamente.');
@@ -854,6 +878,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('tabnews-onde-tudo-comecou');
       expect(responseBody.title).toEqual('TabNews: Onde Tudo Começou');
       expect(responseBody.body).toEqual(
@@ -955,6 +982,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo');
       expect(responseBody.title).toEqual('Titulo');
       expect(responseBody.body).toEqual('Corpo');
@@ -1020,6 +1050,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual('titulo');
       expect(responseBody.title).toEqual('Titulo');
       expect(responseBody.body).toEqual('Corpo');
@@ -1055,6 +1088,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
       expect(responseBody.slug).toEqual(
         'deveria-conseguir-e-o-campo-slug-e-opcional-e-95-5-por-cento-dos-usuarios-nao-usam-aeiou-caracteres-especiais'
       );
@@ -1092,11 +1128,11 @@ describe('POST /api/v1/contents', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório para conteúdos raiz.');
+      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('"root" content with "title" containing Null value', async () => {
@@ -1121,7 +1157,7 @@ describe('POST /api/v1/contents', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório para conteúdos raiz.');
+      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -1158,6 +1194,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(rootContent.id);
+      expect(responseBody.parent_title).toEqual(rootContent.title);
+      expect(responseBody.parent_slug).toEqual(rootContent.slug);
+      expect(responseBody.parent_username).toEqual(rootContent.username);
       expect(uuidVersion(responseBody.slug)).toEqual(4);
       expect(responseBody.title).toEqual(null);
       expect(responseBody.body).toEqual(
@@ -1202,6 +1241,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(rootContent.id);
+      expect(responseBody.parent_title).toEqual(rootContent.title);
+      expect(responseBody.parent_slug).toEqual(rootContent.slug);
+      expect(responseBody.parent_username).toEqual(rootContent.username);
       expect(uuidVersion(responseBody.slug)).toEqual(4);
       expect(responseBody.title).toEqual(null);
       expect(responseBody.body).toEqual('Deveria criar um slug com UUID V4');
@@ -1244,6 +1286,9 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.owner_id).toEqual(defaultUser.id);
       expect(responseBody.username).toEqual(defaultUser.username);
       expect(responseBody.parent_id).toEqual(rootContent.id);
+      expect(responseBody.parent_title).toEqual(rootContent.title);
+      expect(responseBody.parent_slug).toEqual(rootContent.slug);
+      expect(responseBody.parent_username).toEqual(rootContent.username);
       expect(responseBody.slug).toEqual('titulo-em-um-child-content-o-que-vai-acontecer');
       expect(responseBody.title).toEqual('Título em um child content! O que vai acontecer?');
       expect(responseBody.body).toEqual('Deveria criar um slug baseado no "title"');
@@ -1360,8 +1405,8 @@ describe('POST /api/v1/contents', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(422);
-      expect(responseBody.status_code).toEqual(422);
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
         'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'
