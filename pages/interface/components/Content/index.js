@@ -78,7 +78,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       return (
         <ActionMenu>
           <ActionMenu.Anchor>
-            <IconButton icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+            <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
           </ActionMenu.Anchor>
 
           <ActionMenu.Overlay>
@@ -131,7 +131,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           borderStyle: 'solid',
         }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+          <Box sx={{ height: 25, display: 'flex', alignItems: 'flex-start' }}>
             <Box sx={{ flex: 'auto' }}>
               <BranchName sx={{ mr: 2 }} href={`/${contentObject.username}`}>
                 {contentObject.username}
