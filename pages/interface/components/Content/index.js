@@ -386,9 +386,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
         <style global jsx>{`
           .bytemd {
-            height: {
-              mode==='edit'?'calc(100vh - 350px)': 'calc(100vh - 100px)';
-            }
+            height: ${mode === 'edit' ? 'calc(100vh - 350px)' : 'calc(100vh - 600px)'};
             min-height: 200px;
             border-radius: 6px;
           }
