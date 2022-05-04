@@ -31,7 +31,7 @@ async function getHandler(request, response) {
   )
 
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
-         daily_counts.ct as conteudos
+         daily_counts.ct as respostas
   FROM day_range
   LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
   `);
