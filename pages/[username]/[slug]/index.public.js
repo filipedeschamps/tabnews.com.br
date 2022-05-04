@@ -1,3 +1,4 @@
+import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
 import { DefaultLayout, Content } from 'pages/interface/index.js';
@@ -8,7 +9,26 @@ import authorization from 'models/authorization.js';
 import { NotFoundError } from 'errors/index.js';
 import { Box, Link } from '@primer/react';
 
-export default function Post({ contentFound, children }) {
+export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback }) {
+  const { data: contentFound } = useSWR(
+    `/api/v1/contents/${contentFoundFallback.username}/${contentFoundFallback.slug}`,
+    {
+      fallbackData: contentFoundFallback,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
+  // TODO: understand why enabling "revalidateOn..." breaks children rendering.
+  const { data: children } = useSWR(
+    `/api/v1/contents/${contentFoundFallback.username}/${contentFoundFallback.slug}/children`,
+    {
+      fallbackData: childrenFallback,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  );
+
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -178,7 +198,7 @@ export async function getStaticProps(context) {
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentValues)),
-      children: JSON.parse(JSON.stringify(secureChildrenList)),
+      childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
     },
 
     // TODO: instead of `revalidate`, understand how to use this:
