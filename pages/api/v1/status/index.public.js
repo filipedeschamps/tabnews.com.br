@@ -1,7 +1,7 @@
 import nextConnect from 'next-connect';
 import { formatISO } from 'date-fns';
 import controller from 'models/controller.js';
-import health from 'models/health';
+import health from 'models/health.js';
 
 export default nextConnect({
   attachParams: true,
