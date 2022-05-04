@@ -21,6 +21,8 @@ async function getHandler(request, response) {
     statusCode = 503;
   }
 
+  response.setHeader('Cache-Control', 'public, s-maxage=1, stale-while-revalidate');
+
   return response.status(statusCode).json({
     updated_at: formatISO(Date.now()),
     dependencies: checkedDependencies,
