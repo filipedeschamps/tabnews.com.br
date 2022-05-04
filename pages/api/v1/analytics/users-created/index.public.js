@@ -36,7 +36,12 @@ async function getHandler(request, response) {
   LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
   `);
 
-  const usersCreated = results.rows;
+  const usersCreated = results.rows.map((row) => {
+    return {
+      date: row.date,
+      cadastros: row.cadastros || 0,
+    };
+  });
 
   response.setHeader('Cache-Control', 'public, s-maxage=1, stale-while-revalidate');
   return response.status(200).json(usersCreated);
