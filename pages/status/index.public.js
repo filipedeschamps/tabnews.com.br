@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Box, Heading, Label, LabelGroup } from '@primer/react';
+import { Box, Heading, Label, LabelGroup, Truncate } from '@primer/react';
 import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
 
 import { DefaultLayout } from 'pages/interface/index.js';
@@ -20,7 +20,7 @@ export default function Page() {
         <Box>
           <h2>Novos cadastros</h2>
 
-          <ResponsiveContainer width="100%" aspect={9}>
+          <ResponsiveContainer width="100%" aspect={7}>
             <BarChart height={400} data={usersCreated}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
@@ -31,7 +31,7 @@ export default function Page() {
 
         <Box>
           <h2>Novas publicações</h2>
-          <ResponsiveContainer width="100%" aspect={9}>
+          <ResponsiveContainer width="100%" aspect={7}>
             <BarChart height={400} data={rootContentPublished}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
@@ -42,7 +42,7 @@ export default function Page() {
 
         <Box>
           <h2>Novas respostas</h2>
-          <ResponsiveContainer width="100%" aspect={9}>
+          <ResponsiveContainer width="100%" aspect={7}>
             <BarChart height={400} data={childContentPublished}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
@@ -143,19 +143,25 @@ export default function Page() {
               <Box>
                 Autor do último commit:{' '}
                 <Label variant={statusObject?.dependencies.webserver.last_commit_author ? 'success' : 'danger'}>
-                  {statusObject?.dependencies.webserver.last_commit_author}
+                  <Truncate inline expandable sx={{ maxWidth: '170px' }}>
+                    {statusObject?.dependencies.webserver.last_commit_author}
+                  </Truncate>
                 </Label>
               </Box>
               <Box>
-                Mensagem no commit:{' '}
+                Mensagem do commit:{' '}
                 <Label variant={statusObject?.dependencies.webserver.last_commit_message ? 'success' : 'danger'}>
-                  {statusObject?.dependencies.webserver.last_commit_message}
+                  <Truncate inline expandable sx={{ maxWidth: '170px' }}>
+                    {statusObject?.dependencies.webserver.last_commit_message}
+                  </Truncate>
                 </Label>
               </Box>
               <Box>
                 SHA do commit:{' '}
                 <Label variant={statusObject?.dependencies.webserver.last_commit_message_sha ? 'success' : 'danger'}>
-                  {statusObject?.dependencies.webserver.last_commit_message_sha}
+                  <Truncate inline expandable sx={{ maxWidth: '170px' }}>
+                    {statusObject?.dependencies.webserver.last_commit_message_sha}
+                  </Truncate>
                 </Label>
               </Box>
             </Box>
