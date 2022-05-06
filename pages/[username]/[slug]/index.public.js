@@ -115,7 +115,6 @@ function RenderChildrenTree({ childrenList, level }) {
     return (
       <Box
         sx={{
-          display: 'grid',
           maxWidth: '100%',
           borderRadius: '6px',
           borderWidth: 1,
