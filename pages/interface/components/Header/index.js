@@ -33,19 +33,13 @@ export default function HeaderComponent() {
 
       {!isLoading && user.username && (
         <>
-          {!router?.pathname?.includes('/publicar') && (
-            <Header.Item>
-              <Button variant="primary" onClick={() => router.push('/publicar')} sx={{ fontSize: 1 }}>
-                Publicar novo conteúdo
-              </Button>
-            </Header.Item>
-          )}
           <Header.Item>
             <ActionMenu>
               <ActionMenu.Button>{user.username}</ActionMenu.Button>
 
               <ActionMenu.Overlay>
                 <ActionList>
+                  <ActionList.LinkItem href="/publicar">Publicar novo conteúdo</ActionList.LinkItem>
                   <ActionList.LinkItem
                     href="/perfil"
                     onClick={(event) => {

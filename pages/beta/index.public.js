@@ -6,7 +6,7 @@ import authorization from 'models/authorization.js';
 export default function Home({ contentListFound }) {
   return (
     <>
-      <DefaultLayout metadata={{ title: 'TabNews: Conteúdos Para Quem Trabalha Com Tecnologia' }}>
+      <DefaultLayout metadata={{ title: 'Conteúdos Com Valor Concreto Para Quem Trabalha Com Tecnologia' }}>
         <ContentList contentList={contentListFound} path="/api/v1/contents" />
       </DefaultLayout>
     </>
