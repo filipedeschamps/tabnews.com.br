@@ -41,8 +41,8 @@ function SignUpForm() {
 
     if (password !== passwordConfirm) {
       setErrorObject({
-        key: 'passwordConfirm',
-        message: 'As senhas devem ser iguais',
+        key: 'password_confirm',
+        message: 'As senhas devem ser iguais.',
       });
       setIsLoading(false);
       return;
@@ -83,7 +83,6 @@ function SignUpForm() {
 
       if (response.status === 400) {
         setErrorObject(responseBody);
-        console.log(responseBody);
         setIsLoading(false);
         return;
       }
@@ -172,7 +171,7 @@ function SignUpForm() {
             size="large"
             aria-label="Repita a senha"
           />
-          {errorObject?.key === 'passwordConfirm' && (
+          {errorObject?.key === 'password_confirm' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
