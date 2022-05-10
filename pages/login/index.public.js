@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { FormControl, Box, Heading, Button, TextInput, Flash, Link } from '@primer/react';
 
 export default function Login() {
   return (
@@ -74,6 +74,7 @@ function LoginForm() {
   }
 
   return (
+    <>
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
@@ -122,5 +123,9 @@ function LoginForm() {
         </FormControl>
       </Box>
     </form>
+    <Box sx={{ p:3, mt:3, width: '100%', textAlign:'center', border: '1px solid #d9d9d9', borderRadius: '6px' }}>
+    Novo no TabNews? <Link href="/cadastro">Crie sua conta aqui.</Link>   
+     </Box>
+    </>
   );
 }
