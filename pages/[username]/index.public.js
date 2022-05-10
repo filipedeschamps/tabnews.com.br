@@ -26,9 +26,15 @@ export async function getStaticPaths() {
 export async function getStaticProps(context) {
   const userTryingToGet = user.createAnonymous();
 
-  context.params = validator(context.params, {
-    username: 'required',
-  });
+  try {
+    context.params = validator(context.params, {
+      username: 'required',
+    });
+  } catch (error) {
+    return {
+      notFound: true,
+    };
+  }
 
   let contentListFound;
 
