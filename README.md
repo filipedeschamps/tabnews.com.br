@@ -25,6 +25,18 @@ Então após baixar o repositório, não se esqueça de instalar as dependência
 npm install
 ```
 
+### Rodar as migrations
+
+Na primeira vez que rodar o projeto é nécessário garantir que o banco foi criado:
+
+```bash
+npm run services:up
+```
+Apos finalizar o script rodar as migrations:
+```bash
+npm run migration:run
+```
+
 ### Rodar o projeto
 
 Para rodar o projeto localmente, basta rodar o comando abaixo:
