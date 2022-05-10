@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { FormControl, Box, Heading, Button, TextInput, Flash, Link } from '@primer/react';
 
 export default function Login() {
   return (
@@ -74,53 +74,58 @@ function LoginForm() {
   }
 
   return (
-    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+    <>
+      <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
-        <Heading as="h1" sx={{ mb: 3 }}>
-          Login
-        </Heading>
-        <FormControl id="email">
-          <FormControl.Label>Email</FormControl.Label>
-          <TextInput
-            ref={emailRef}
-            onChange={clearErrors}
-            name="email"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            aria-label="Seu email"
-          />
-          {errorObject?.key === 'email' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
-        <FormControl id="password">
-          <FormControl.Label>Senha</FormControl.Label>
-          <TextInput
-            ref={passwordRef}
-            onChange={clearErrors}
-            name="password"
-            type="password"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            size="large"
-            aria-label="Sua senha"
-          />
-          {errorObject?.key === 'password' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
-        <FormControl>
-          <FormControl.Label visuallyHidden>Login</FormControl.Label>
-          <Button variant="primary" size="large" type="submit" disabled={isLoading} aria-label="Login">
+          <Heading as="h1" sx={{ mb: 3 }}>
             Login
-          </Button>
-        </FormControl>
+          </Heading>
+          <FormControl id="email">
+            <FormControl.Label>Email</FormControl.Label>
+            <TextInput
+              ref={emailRef}
+              onChange={clearErrors}
+              name="email"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              aria-label="Seu email"
+            />
+            {errorObject?.key === 'email' && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+          </FormControl>
+          <FormControl id="password">
+            <FormControl.Label>Senha</FormControl.Label>
+            <TextInput
+              ref={passwordRef}
+              onChange={clearErrors}
+              name="password"
+              type="password"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              size="large"
+              aria-label="Sua senha"
+            />
+            {errorObject?.key === 'password' && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+          </FormControl>
+          <FormControl>
+            <FormControl.Label visuallyHidden>Login</FormControl.Label>
+            <Button variant="primary" size="large" type="submit" disabled={isLoading} aria-label="Login">
+              Login
+            </Button>
+          </FormControl>
+        </Box>
+      </form>
+      <Box sx={{ mt: 6, width: '100%', textAlign: 'center', fontSize: 1 }}>
+        Novo no TabNews? <Link href="/cadastro">Crie sua conta aqui.</Link>
       </Box>
-    </form>
+    </>
   );
 }
