@@ -4,7 +4,10 @@ import { Box, Heading, Flash, Link } from '@primer/react';
 
 export default function Post() {
   const { user } = useUser();
-  const { data: contents } = useSWR(user?.username ? `/api/v1/contents/${user.username}` : null);
+  const { data: contents } = useSWR(user?.username ? `/api/v1/contents/${user.username}` : null, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   return (
     <DefaultLayout metadata={{ title: 'Publicar novo conteúdo' }}>

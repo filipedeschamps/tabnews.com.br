@@ -1,7 +1,10 @@
 import useSWR from 'swr';
 
-export default function useSession() {
-  const { data, isLoading, isValidating, error } = useSWR('/api/v1/user');
+export default function useUser() {
+  const { data, isLoading, isValidating, error } = useSWR('/api/v1/user', {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   return {
     user: data,
