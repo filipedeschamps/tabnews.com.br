@@ -47,10 +47,11 @@
     "eslint-plugin-primer-react": "0.7.4",
     "jest": "28.0.2",
     "kill-port": "1.6.1",
-    "prettier": "2.6.2"
+    "prettier": "2.6.2",
+    "retry-cli": "0.7.0"
   },
   "scripts": {
-    "dev": "kill-port 3000 && npm run services:up && npm run next && npm run services:stop",
+    "dev": "kill-port 3000 && npm run services:up && npx retry -- npm run migration:run 2>/dev/null && npm run next && npm run services:stop",
     "next": "next dev",
     "services:up": "docker-compose -f infra/docker-compose.development.yml up -d",
     "services:stop": "docker-compose -f infra/docker-compose.development.yml stop",

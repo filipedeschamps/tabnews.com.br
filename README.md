@@ -33,7 +33,7 @@ Para rodar o projeto localmente, basta rodar o comando abaixo:
 npm run dev
 ```
 
-Isto irá automaticamente rodar serviços como Banco de dados, Servidor de Email e irá expor um Serviço Web (Frontend e API) no seguinte endereço:
+Isto irá automaticamente rodar serviços como Banco de dados (incluindo as Migrations), Servidor de Email e irá expor um Serviço Web (Frontend e API) no seguinte endereço:
 
 ```bash
 http://localhost:3000/
@@ -45,7 +45,7 @@ Observações:
 - Para derrubar todos os serviços, basta utilizar as teclas `CTRL+C`, que é o padrão dos terminais para matar processos.
 - Você pode conferir o endereço dos outros serviços dentro do arquivo `.env` encontrado na raiz do projeto, como por exemplo o endereço e credenciais do Banco de Dados local ou o Frontend do Serviço de Email.
 
-### Rodar os testes
+## Rodar os testes
 
 Há várias formas de rodar os testes dependendo do que você deseja fazer, mas o primeiro passo antes de fazer qualquer alteração no projeto é rodar os testes de forma geral para se certificar que tudo está passando como esperado. O comando abaixo irá rodar todos os serviços necessários, rodar os testes e em seguida derrubar todos os serviços.
 
@@ -87,7 +87,7 @@ Observações:
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
 - A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá fazer o _escape_ deles adicionando o caractere `\` na frente, por exemplo: `\[`.
 
-### Commit das alterações
+## Commit das alterações
 
 Após finalizar suas alterações e se certificar que todos os testes estão passando com o comando geral `npm test`, chegou a hora de fazer o commit das suas alterações.
 
