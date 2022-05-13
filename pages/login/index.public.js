@@ -22,7 +22,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [capsLockWarnigMessage, setCapsLockWarnigMessage] = useState(false);
-  
+
   const  capsLock = (e) => { 
     if (e.getModifierState("CapsLock")) 
       setCapsLockWarnigMessage('CapsLock está ativado.');
@@ -95,7 +95,7 @@ function LoginForm() {
             <FormControl.Label>Email</FormControl.Label>
             <TextInput
               ref={emailRef}
-            
+              onChange={clearErrors}
               name="email"
               size="large"
               autoCorrect="off"
