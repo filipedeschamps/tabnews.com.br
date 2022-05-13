@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash, Link } from '@primer/react';
 
+
 export default function Login() {
   return (
     <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
@@ -20,11 +21,19 @@ function LoginForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
+  const [capsLockWarnigMessage, setCapsLockWarnigMessage] = useState(false);
+  
+  const  capsLock = (e) => { 
+    if (e.getModifierState("CapsLock")) 
+      setCapsLockWarnigMessage('CapsLock está ativado.');
+    else
+      setCapsLockWarnigMessage(false);
+  };
 
   function clearErrors() {
     setErrorObject(undefined);
   }
-
+  
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -86,7 +95,7 @@ function LoginForm() {
             <FormControl.Label>Email</FormControl.Label>
             <TextInput
               ref={emailRef}
-              onChange={clearErrors}
+            
               name="email"
               size="large"
               autoCorrect="off"
@@ -103,6 +112,7 @@ function LoginForm() {
             <TextInput
               ref={passwordRef}
               onChange={clearErrors}
+              onKeyDown={capsLock}
               name="password"
               type="password"
               autoCorrect="off"
@@ -111,6 +121,7 @@ function LoginForm() {
               size="large"
               aria-label="Sua senha"
             />
+            {capsLockWarnigMessage && <FormControl.Validation variant="warning">{capsLockWarnigMessage}</FormControl.Validation>}
             {errorObject?.key === 'password' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
