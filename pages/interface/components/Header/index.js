@@ -16,6 +16,12 @@ export default function HeaderComponent() {
         </Header.Link>
       </Header.Item>
 
+      <Header.Item>
+        <Header.Link href="/status" fontSize={2}>
+          Status
+        </Header.Link>
+      </Header.Item>
+
       {!isLoading && !user.username && (
         <>
           <Header.Item>
