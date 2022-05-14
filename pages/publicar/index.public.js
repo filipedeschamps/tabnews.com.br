@@ -14,11 +14,11 @@ export default function Post() {
       {contents?.length === 0 && (
         <Box sx={{ width: '100%', mb: 3 }}>
           <Flash variant="warning">
-            ⚠ Atenção: esta parece ser sua primeira publicação. Pedimos encarecidamente que{' '}
+            ⚠ Atenção: Pedimos encarecidamente que{' '}
             <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
               leia isso antes
-            </Link>
-            .
+            </Link>{' '}
+            de fazer sua primeira publicação.
           </Flash>
         </Box>
       )}
