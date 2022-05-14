@@ -26,12 +26,16 @@ function SignUpForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-  const [capsLockWarnigMessage, setCapsLockWarnigMessage] = useState(false);
+  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
-  const capsLock = (e) => {
-    if (e.getModifierState('CapsLock')) setCapsLockWarnigMessage('CapsLock está ativado.');
-    else setCapsLockWarnigMessage(false);
-  };
+  function detectCapsLock(event) {
+    if (event.getModifierState('CapsLock')) {
+      setCapsLockWarningMessage('Atenção: Caps Lock está ativado.');
+      return;
+    }
+
+    setCapsLockWarningMessage(false);
+  }
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -151,7 +155,8 @@ function SignUpForm() {
           <TextInput
             ref={passwordRef}
             onChange={clearErrors}
-            onKeyDown={capsLock}
+            onKeyDown={detectCapsLock}
+            onKeyUp={detectCapsLock}
             name="password"
             type="password"
             autoCorrect="off"
@@ -160,8 +165,8 @@ function SignUpForm() {
             size="large"
             aria-label="Sua senha"
           />
-          {capsLockWarnigMessage && (
-            <FormControl.Validation variant="warning">{capsLockWarnigMessage}</FormControl.Validation>
+          {capsLockWarningMessage && (
+            <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
           )}
           {errorObject?.key === 'password' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
