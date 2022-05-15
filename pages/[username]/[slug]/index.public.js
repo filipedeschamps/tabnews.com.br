@@ -85,6 +85,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
             borderColor: 'border.default',
             borderStyle: 'solid',
             padding: 4,
+            wordWrap: 'break-word',
           }}>
           <Content content={contentFound} mode="view" />
         </Box>
