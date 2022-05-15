@@ -99,6 +99,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
               mt: 4,
               mb: 4,
               p: 4,
+              wordWrap: 'break-word',
             }}>
             <Content content={{ parent_id: contentFound.id }} mode="compact" />
           </Box>
@@ -122,6 +123,7 @@ function RenderChildrenTree({ childrenList, level }) {
           borderStyle: 'solid',
           mt: 4,
           p: 4,
+          wordWrap: 'break-word',
         }}
         key={child.id}>
         <Content content={child} mode="view" />
