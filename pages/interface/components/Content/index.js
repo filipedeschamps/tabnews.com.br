@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 
 import {
@@ -166,8 +166,8 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   function EditMode() {
     const router = useRouter();
-
     const { user, isLoading } = useUser();
+
 
     useEffect(() => {
       if (!isLoading && !user.username) {
@@ -188,18 +188,54 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const titleRef = useRef('');
     const sourceUrlRef = useRef('');
 
+    const localStorageKey = useMemo(()=>{
+      if(contentObject?.parent_id){
+        return `content-edit-${contentObject.parent_id}-${user.id}`;
+      }else if(contentObject?.id){
+        return `content-edit-${contentObject.id}`;
+      }else{
+        return `content-new`;
+      }
+    }, [user]);
+
     useEffect(() => {
-      if (componentMode === 'edit' && !contentObject && !contentObject?.parent_id) {
-        titleRef?.current.focus();
-      }
+      if(componentMode === 'edit'){
 
-      if (componentMode === 'edit' && contentObject && !contentObject?.parent_id) {
-        titleRef.current.value = contentObject?.title || '';
-        sourceUrlRef.current.value = contentObject?.source_url || '';
-      }
+        if (!contentObject && !contentObject?.parent_id) {
+          titleRef?.current.focus();
+        }
 
-      setBody(contentObject?.body || '');
-    }, []);
+        const data = localStorage.getItem(localStorageKey);
+
+        if (contentObject && !contentObject?.parent_id) {
+          // titleRef.current.value = contentObject?.title || '';
+          // sourceUrlRef.current.value = contentObject?.source_url || '';
+
+
+          if (!isValidJsonString(data)) {
+            localStorage.setItem(localStorageKey, JSON.stringify({
+              title: contentObject?.title || '',
+              source_url: contentObject?.source_url || '',
+              body: contentObject?.body || '',
+            }));
+          }
+        }
+
+        setBody(contentObject?.body || '');
+
+        if (isValidJsonString(data)) {
+          const parcedData = JSON.parse(data);
+
+          setBody(parcedData?.body || '');
+
+          if(!contentObject?.parent_id){
+            titleRef.current.value = parcedData?.title || '';
+            sourceUrlRef.current.value = parcedData?.source_url || '';
+          }
+
+        }
+      }
+    }, [localStorageKey]);
 
     function clearErrors() {
       setErrorObject(undefined);
@@ -255,6 +291,8 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           setContentObject(responseBody);
           setComponentMode('view');
 
+          localStorage.removeItem(localStorageKey);
+
           return;
         }
 
@@ -262,11 +300,15 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           if (!responseBody.parent_id) {
             localStorage.setItem('justPublishedNewRootContent', true);
             router.push(`/${responseBody.username}/${responseBody.slug}`);
+
+            localStorage.removeItem(localStorageKey);
             return;
           }
 
           setContentObject(responseBody);
           setComponentMode('view');
+
+          localStorage.removeItem(localStorageKey);
           return;
         }
 
@@ -298,6 +340,31 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
     }
 
+    const handleChange = useCallback((event)=> {
+      const data = localStorage.getItem(localStorageKey);
+      if (isValidJsonString(data)) {
+        const parcedData = JSON.parse(data);
+
+        parcedData[event.target.name] = event.target.value;
+
+        localStorage.setItem(localStorageKey, JSON.stringify(parcedData));
+      }else{
+        const parcedData = {};
+        parcedData[event.target.name] = event.target.value;
+        localStorage.setItem(localStorageKey, JSON.stringify(parcedData));
+      }
+    }, [localStorageKey]);
+
+    useEffect(() => {
+      handleChange({
+        target:{
+          name: 'body',
+          value: body,
+        }
+      });
+
+    },[handleChange, body]);
+
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -317,6 +384,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Título"
                   aria-label="Título"
+                  onKeyUp={handleChange}
                 />
 
                 {errorObject?.key === 'title' && (
@@ -358,6 +426,8 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Fonte (opcional)"
                   aria-label="Fonte (opcional)"
+
+                  onKeyUp={handleChange}
                 />
 
                 {errorObject?.key === 'source_url' && (
@@ -429,6 +499,29 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function CompactMode() {
+    const { user, isLoading } = useUser();
+
+    const localStorageKey = useMemo(()=>{
+      if(contentObject?.parent_id){
+        return `content-edit-${contentObject.parent_id}-${user?.id}`;
+      }else if(contentObject?.id){
+        return `content-edit-${contentObject.id}`;
+      }else{
+        return `content-new`;
+      }
+    }, [user]);
+
+    useEffect(()=>{
+
+      if(user && !isLoading){
+        const data = localStorage.getItem(localStorageKey);
+        if (isValidJsonString(data)) {
+          setComponentMode('edit');
+        }
+      }
+
+    }, [localStorageKey, user, isLoading]);
+
     return (
       <Button
         sx={{
@@ -441,4 +534,20 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       </Button>
     );
   }
+}
+
+
+function isValidJsonString(jsonString){
+
+  if(!(jsonString && typeof jsonString === "string")){
+      return false;
+  }
+
+  try{
+     JSON.parse(jsonString);
+     return true;
+  }catch(error){
+      return false;
+  }
+
 }
