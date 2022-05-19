@@ -73,10 +73,7 @@ export default function ContentList({ contentList, path }) {
     return publishedSinceText;
   }
 
-  function AmountOfParents({ amount }) {
-    if (amount === undefined) {
-      return '0 comentários';
-    }
+  function AmountOfParents({ amount = 0 }) {
     return amount !== 1 ? `${amount} comentários` : `${amount} comentário`;
   }
 

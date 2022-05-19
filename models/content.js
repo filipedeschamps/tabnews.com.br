@@ -7,6 +7,7 @@ import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll(options = {}) {
   options.where = validateWhereSchema(options?.where);
+  const children_count = options?.where?.children_count;
   await replaceUsernameWithOwnerId(options);
   const whereClause = buildWhereClause(options?.where);
   const orderByClause = buildOrderByClause(options?.order);
@@ -43,12 +44,16 @@ async function findAll(options = {}) {
       ${orderByClause}
       ;`,
   };
-
   if (options.where) {
     query.values = Object.values(options.where);
   }
 
   const results = await database.query(query);
+
+  if (children_count) {
+    return findChildrenCount(results.rows);
+  }
+
   return results.rows;
 
   async function replaceUsernameWithOwnerId(options) {
@@ -74,6 +79,7 @@ async function findAll(options = {}) {
       source_url: 'optional',
       owner_id: 'optional',
       username: 'optional',
+      children_count: 'optional',
     });
 
     return cleanValues;
@@ -82,6 +88,9 @@ async function findAll(options = {}) {
   function buildWhereClause(columns) {
     if (!columns) {
       return '';
+    }
+    if (columns?.children_count) {
+      delete columns.children_count;
     }
 
     return Object.entries(columns).reduce((accumulator, column, index) => {

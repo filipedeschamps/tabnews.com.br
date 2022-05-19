@@ -44,6 +44,7 @@ export async function getStaticProps(context) {
         username: context.params.username,
         parent_id: null,
         status: 'published',
+        children_count: 1,
       },
       order: 'published_at DESC',
     });

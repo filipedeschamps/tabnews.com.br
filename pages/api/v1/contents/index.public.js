@@ -25,6 +25,7 @@ async function getHandler(request, response) {
     where: {
       parent_id: null,
       status: 'published',
+      children_count: 1,
     },
   });
 

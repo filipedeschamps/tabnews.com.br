@@ -33,6 +33,7 @@ async function getHandler(request, response) {
       username: request.query.username,
       parent_id: null,
       status: 'published',
+      children_count: 1,
     },
     order: 'published_at DESC',
   });

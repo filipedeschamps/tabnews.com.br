@@ -21,7 +21,7 @@ export async function getStaticProps(context) {
     where: {
       parent_id: null,
       status: 'published',
-      children_count: true,
+      children_count: 1,
     },
   });
 
