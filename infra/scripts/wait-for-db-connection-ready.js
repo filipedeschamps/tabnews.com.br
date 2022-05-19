@@ -6,10 +6,8 @@ const { sleep } = require('../utils');
  * This is a recursive function that'll execute health check pg_isready command until postgres is accepting connection
  *
  * References: https://www.postgresql.org/docs/current/app-pg-isready.html
- *
- * @param {number} tries_count - how many times the health check was executed
  */
-const healthCheckDB = async (tries_count = 0) => {
+const healthCheckDB = async () => {
   const retryTimeMs = 3000; // 3 seconds
   const retryTimeInSeconds = retryTimeMs / 1000;
 
@@ -23,7 +21,7 @@ const healthCheckDB = async (tries_count = 0) => {
     console.log(`Uma nova tentativa será feita em ${retryTimeInSeconds.toFixed(2)}s ...`);
     await sleep(retryTimeMs);
 
-    return healthCheckDB(++tries_count);
+    return healthCheckDB();
   });
 };
 
