@@ -190,13 +190,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     const localStorageKey = useMemo(()=>{
       if(contentObject?.parent_id){
-        return `content-edit-${contentObject.parent_id}-${user.id}`;
+        return `content-edit-${contentObject.parent_id}`;
       }else if(contentObject?.id){
         return `content-edit-${contentObject.id}`;
       }else{
         return `content-new`;
       }
-    }, [user]);
+    }, []);
 
     useEffect(() => {
       if(componentMode === 'edit'){
@@ -207,32 +207,25 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
         const data = localStorage.getItem(localStorageKey);
 
-        if (contentObject && !contentObject?.parent_id) {
-          // titleRef.current.value = contentObject?.title || '';
-          // sourceUrlRef.current.value = contentObject?.source_url || '';
-
-
-          if (!isValidJsonString(data)) {
-            localStorage.setItem(localStorageKey, JSON.stringify({
-              title: contentObject?.title || '',
-              source_url: contentObject?.source_url || '',
-              body: contentObject?.body || '',
-            }));
-          }
+        if (contentObject && !contentObject?.parent_id && !isValidJsonString(data)) {
+          localStorage.setItem(localStorageKey, JSON.stringify({
+            title: contentObject?.title || '',
+            source_url: contentObject?.source_url || '',
+            body: contentObject?.body || '',
+          }));
         }
 
-        setBody(contentObject?.body || '');
-
         if (isValidJsonString(data)) {
-          const parcedData = JSON.parse(data);
+          const parsedData = JSON.parse(data);
 
-          setBody(parcedData?.body || '');
+          setBody(parsedData?.body || '');
 
           if(!contentObject?.parent_id){
-            titleRef.current.value = parcedData?.title || '';
-            sourceUrlRef.current.value = parcedData?.source_url || '';
+            titleRef.current.value = parsedData?.title || '';
+            sourceUrlRef.current.value = parsedData?.source_url || '';
           }
-
+        }else{
+          setBody(contentObject?.body || '');
         }
       }
     }, [localStorageKey]);
@@ -289,9 +282,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
         if (response.status === 200) {
           setContentObject(responseBody);
-          setComponentMode('view');
 
           localStorage.removeItem(localStorageKey);
+
+          setComponentMode('view');
 
           return;
         }
@@ -299,16 +293,19 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         if (response.status === 201) {
           if (!responseBody.parent_id) {
             localStorage.setItem('justPublishedNewRootContent', true);
-            router.push(`/${responseBody.username}/${responseBody.slug}`);
 
             localStorage.removeItem(localStorageKey);
+
+            router.push(`/${responseBody.username}/${responseBody.slug}`);
             return;
           }
 
           setContentObject(responseBody);
-          setComponentMode('view');
 
           localStorage.removeItem(localStorageKey);
+
+          setComponentMode('view');
+
           return;
         }
 
@@ -343,15 +340,15 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const handleChange = useCallback((event)=> {
       const data = localStorage.getItem(localStorageKey);
       if (isValidJsonString(data)) {
-        const parcedData = JSON.parse(data);
+        const parsedData = JSON.parse(data);
 
-        parcedData[event.target.name] = event.target.value;
+        parsedData[event.target.name] = event.target.value;
 
-        localStorage.setItem(localStorageKey, JSON.stringify(parcedData));
+        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
       }else{
-        const parcedData = {};
-        parcedData[event.target.name] = event.target.value;
-        localStorage.setItem(localStorageKey, JSON.stringify(parcedData));
+        const parsedData = {};
+        parsedData[event.target.name] = event.target.value;
+        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
       }
     }, [localStorageKey]);
 
@@ -500,16 +497,17 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   function CompactMode() {
     const { user, isLoading } = useUser();
+    const router = useRouter();
 
     const localStorageKey = useMemo(()=>{
       if(contentObject?.parent_id){
-        return `content-edit-${contentObject.parent_id}-${user?.id}`;
+        return `content-edit-${contentObject.parent_id}`;
       }else if(contentObject?.id){
         return `content-edit-${contentObject.id}`;
       }else{
         return `content-new`;
       }
-    }, [user]);
+    }, []);
 
     useEffect(()=>{
 
@@ -522,15 +520,23 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     }, [localStorageKey, user, isLoading]);
 
+    const handleClick = useCallback(() => {
+      if(user?.username && !isLoading){
+        setComponentMode('edit');
+      }else{
+        router.push(`/login?redirect=${router.asPath}`);
+      }
+    } ,[user, isLoading, router]);
+
     return (
       <Button
         sx={{
           maxWidth: 'fit-content',
         }}
         onClick={() => {
-          setComponentMode('edit');
+          handleClick();
         }}>
-        Responder
+        {user?.username && !isLoading? 'Responder' : 'Logue para poder Responder'}
       </Button>
     );
   }
