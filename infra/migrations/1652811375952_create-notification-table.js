@@ -7,22 +7,22 @@ exports.up = (pgm) => {
       primaryKey: true,
     },
 
-    // Same as user_id, but I figured out that receiver_id is easier to understand.
-    receiver_id: {
-      type: 'uuid',
-      notNull: true,
-    },
+    // // Same as user_id, but I figured out that receiver_id is easier to understand.
+    // receiver_id: {
+    //   type: 'uuid',
+    //   notNull: true,
+    // },
 
     content_id: {
       type: 'uuid',
       notNull: false,
     },
 
-    read: {
-      type: 'boolean',
-      default: false,
-      notNull: true,
-    },
+    // read: {
+    //   type: 'boolean',
+    //   default: false,
+    //   notNull: true,
+    // },
 
     type: {
       type: 'varchar',
@@ -44,12 +44,12 @@ exports.up = (pgm) => {
       default: pgm.func("(now() at time zone 'utc')"),
     },
 
-    // This is temporary. I want to know what you think about this.
-    read_at: {
-      type: 'timestamp with time zone',
-      notNull: false,
-      default: null,
-    },
+    // // This is temporary. I want to know what you think about this.
+    // read_at: {
+    //   type: 'timestamp with time zone',
+    //   notNull: false,
+    //   default: null,
+    // },
   });
 };
 
