@@ -44,6 +44,7 @@
     "eslint": "8.15.0",
     "eslint-config-next": "12.1.6",
     "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-jsx-a11y": "6.5.1",
     "eslint-plugin-primer-react": "0.7.4",
     "jest": "28.1.0",
     "kill-port": "1.6.1",
