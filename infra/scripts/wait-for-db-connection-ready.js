@@ -27,7 +27,7 @@ const healthCheckDB = async (tries_count = 0) => {
       console.log(`Uma nova tentativa será feita em ${retryTimeInSeconds.toFixed(2)}s ...`)
       await sleep(retryTimeMs)
 
-      return healthCheckDB(healthCheckStatus, ++tries_count)
+      return healthCheckDB(++tries_count)
     }
   )
 }
