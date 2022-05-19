@@ -1416,5 +1416,84 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
     });
+
+    describe('send notifications about new comments', () => {
+      test("Send notification if user comments on another user's content", async () => {
+        const creatorUser = await orchestrator.createUser();
+        const userWhoCommented = await orchestrator.createUser();
+        await orchestrator.activateUser(creatorUser);
+        await orchestrator.activateUser(userWhoCommented);
+        const ownerUserSessionObject = await orchestrator.createSession(creatorUser);
+        const userWhoCommentedSessionObject = await orchestrator.createSession(userWhoCommented);
+
+        const createContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${ownerUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Teste de notificação',
+            body: 'Este é um post massa',
+            status: 'published',
+          }),
+        });
+        const createdContentResponseBody = await createContent.json();
+
+        await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${userWhoCommentedSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Este é um post massa',
+            parent_id: createdContentResponseBody.id,
+            status: 'published',
+          }),
+        });
+
+        const getLastEmail = await orchestrator.getLastEmail();
+        expect(getLastEmail.recipients[0].includes(creatorUser.email)).toBe(true);
+      });
+
+      test('The user cannot receive an email if they reply to their own content', async () => {
+        const creatorUser = await orchestrator.createUser();
+        const userWhoCommented = await orchestrator.createUser();
+        await orchestrator.activateUser(creatorUser);
+        await orchestrator.activateUser(userWhoCommented);
+        const ownerUserSessionObject = await orchestrator.createSession(creatorUser);
+
+        const createContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${ownerUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Teste de notificação',
+            body: 'Este é um post massa',
+            status: 'published',
+          }),
+        });
+        const createdContentResponseBody = await createContent.json();
+
+        await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${ownerUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Este é um post massa',
+            parent_id: createdContentResponseBody.id,
+            status: 'published',
+          }),
+        });
+
+        const getLastEmail = await orchestrator.getLastEmail();
+        expect(getLastEmail.recipients[0].includes(creatorUser.email)).toBe(false);
+      });
+    });
   });
 });

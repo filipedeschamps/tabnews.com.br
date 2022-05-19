@@ -1,13 +1,15 @@
-import email from 'infra/email.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
-import database from 'infra/database';
+import activation from 'models/activation';
+import email from 'infra/email.js';
 
-async function sendNotificationOnNewComment(currentContent) {
-  const rootContent = await findRootContent(currentContent.parent_id);
-  if (rootContent.owner_id !== currentContent.owner_id) {
+async function sendNotificationOnNewComment(createdContent) {
+  const rootContent = await findRootContent(createdContent.parent_id);
+  if (rootContent.owner_id !== createdContent.owner_id) {
     const contentCreator = await user.findOneById(rootContent.owner_id);
-    const userWhoCommented = await user.findOneById(currentContent.owner_id);
+    const userWhoCommented = await user.findOneById(createdContent.owner_id);
+    const redirectPageEndpoint = getRedirectPageEndpoint(rootContent);
+    // O ideal é pegar o conteúdo principal para enviar link com todas as discussões
 
     await email.send({
       to: contentCreator.email,
@@ -16,32 +18,17 @@ async function sendNotificationOnNewComment(currentContent) {
         address: 'contato@tabnews.com.br',
       },
       subject: `O usuário ${userWhoCommented.username} comentou na sua postagem`,
-      text: `
-Sua postagem:
-${rootContent.body}
-
-Comentário:
-${currentContent.body}`,
+      text: `Olá, ${contentCreator.username}!
+Clique aqui para ler o novo comentário ${redirectPageEndpoint}`,
     });
-
-    const findLastContent = await content.findOne({
-      where: {
-        parent_id: currentContent.parent_id,
-      },
-    });
-
-    await create(findLastContent.id);
   }
 }
 
-async function create(content_id) {
-  const query = {
-    text: `INSERT INTO notifications (content_id)
-           VALUES($1);`,
-    values: [content_id],
-  };
+function getRedirectPageEndpoint({ username, slug }) {
+  // é correto buscar essa função do model activation?
+  let webserverHost = activation.getWebServerHost();
 
-  await database.query(query);
+  return `${webserverHost}/${username}/${slug}`;
 }
 
 async function findRootContent(parent_id) {

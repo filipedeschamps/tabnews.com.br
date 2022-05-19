@@ -220,4 +220,5 @@ export default Object.freeze({
   activateUserUsingTokenId,
   activateUserByUserId,
   update,
+  getWebServerHost,
 });
