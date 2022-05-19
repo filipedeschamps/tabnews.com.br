@@ -1,28 +1,45 @@
 const { exec } = require('node:child_process');
-const { sleep } = require('../utils');
+const retry = require('async-retry');
 
 /**
  * Check Postgres database connection status
- * This is a recursive function that'll execute health check pg_isready command until postgres is accepting connection
+ * This is a function that'll execute health check pg_isready command until postgres is accepting connection
  *
  * References: https://www.postgresql.org/docs/current/app-pg-isready.html
  */
 const healthCheckDB = async () => {
-  const retryTimeMs = 3000; // 3 seconds
-  const retryTimeInSeconds = retryTimeMs / 1000;
+  return await retry(
+    async (bail, tries) => {
+      if (tries > 25) {
+        console.log(
+          `> Trying to connect to Database #${tries}. Are you running the postgres container? Run npm services:up to start database service`
+        );
+      }
 
-  exec(`docker exec postgres-dev pg_isready`, async (error, stdout, stderr) => {
-    healthCheckStatus = stdout;
-    console.log('health check postgres: ', healthCheckStatus);
+      return await new Promise((resolve, reject) => {
+        exec(`docker exec postgres-dev pg_isready`, async (error, stdout, stderr) => {
+          healthCheckStatus = stdout;
+          console.log('health check postgres: ', healthCheckStatus);
 
-    if (healthCheckStatus?.indexOf('accepting connections') != -1) return;
+          if (healthCheckStatus?.indexOf('accepting connections') != -1) {
+            resolve();
+            return;
+          }
 
-    console.log('Falha ao tentar conectar com o banco de dados');
-    console.log(`Uma nova tentativa será feita em ${retryTimeInSeconds.toFixed(2)}s ...`);
-    await sleep(retryTimeMs);
+          const reason = 'Failed to connect to database. A new attempt will be made in 3 seconds ...';
+          console.log(reason);
 
-    return healthCheckDB();
-  });
+          reject(reason);
+        });
+      });
+    },
+    {
+      retries: 50,
+      minTimeout: 3000,
+      maxTimeout: 3000,
+      factor: 1.1,
+    }
+  );
 };
 
 (async () => {
