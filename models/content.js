@@ -121,6 +121,11 @@ async function findWithStrategy(options = {}) {
     ascending: getAscending,
   };
 
+  if (options?.where?.children_count) {
+    const contents = await strategies[options.strategy](options);
+    return findChildrenCount(contents);
+  }
+
   return await strategies[options.strategy](options);
 
   async function getDescending(options = {}) {
@@ -132,6 +137,21 @@ async function findWithStrategy(options = {}) {
     options.order = 'created_at ASC';
     return await findAll(options);
   }
+}
+
+async function findChildrenCount(contents) {
+  const contentsWithChildrenAmount = [];
+  for await (const content of contents) {
+    const children = await findChildrenAmount({
+      where: {
+        parent_id: content.id,
+      },
+    });
+    content.children_count = children?.length || 0;
+
+    contentsWithChildrenAmount.push(content);
+  }
+  return contentsWithChildrenAmount;
 }
 
 async function create(postedContent) {
@@ -541,6 +561,85 @@ async function findChildren(options) {
   }
 }
 
+async function findChildrenAmount(options) {
+  options.where = validateWhereSchema(options?.where);
+  const childrenFlatList = await recursiveDatabaseLookup(options);
+  const childrenTree = flatListToTree(childrenFlatList);
+  return childrenTree.children;
+
+  async function recursiveDatabaseLookup(options) {
+    const query = {
+      text: `
+      WITH RECURSIVE children AS (
+        SELECT
+            id,
+            owner_id,
+            parent_id
+        FROM
+          contents
+        WHERE
+          contents.id = $1 AND
+          contents.status = 'published'
+        UNION ALL
+          SELECT
+            contents.id,
+            contents.owner_id,
+            contents.parent_id
+          FROM
+            contents
+          INNER JOIN
+            children ON contents.parent_id = children.id
+          WHERE
+            contents.status = 'published'
+      )
+      SELECT
+        children.id as id,
+        children.owner_id as owner_id,
+        children.parent_id as parent_id
+      FROM
+        children
+      INNER JOIN
+        users ON children.owner_id = users.id
+      LEFT JOIN
+        contents as parent_content ON children.parent_id = parent_content.id
+      LEFT JOIN
+        users as parent_user ON parent_content.owner_id = parent_user.id
+      ;`,
+      values: [options.where.parent_id],
+    };
+    const results = await database.query(query);
+    return results.rows;
+  }
+
+  function validateWhereSchema(where) {
+    const cleanValues = validator(where, {
+      parent_id: 'required',
+    });
+
+    return cleanValues;
+  }
+
+  function flatListToTree(list) {
+    let tree;
+    const table = {};
+
+    list.forEach((row) => {
+      table[row.id] = row;
+      table[row.id].children = [];
+    });
+
+    list.forEach((row) => {
+      if (table[row.parent_id]) {
+        table[row.parent_id].children.push(row);
+      } else {
+        tree = row;
+      }
+    });
+
+    return tree;
+  }
+}
+
 export default Object.freeze({
   findAll,
   findOne,
@@ -548,4 +647,5 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  findChildrenAmount,
 });

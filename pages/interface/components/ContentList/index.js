@@ -35,6 +35,11 @@ export default function ContentList({ contentList, path }) {
               </Link>
             </Box>
             <Box>
+              <Text
+                sx={{ fontSize: 0, color: 'neutral.emphasis' }}
+                href={`/${contentObject.username}/${contentObject.slug}`}>
+                <AmountOfParents amount={contentObject.children_count} /> {' · '}
+              </Text>
               <Link sx={{ fontSize: 0, color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>
                 {contentObject.username}
               </Link>
@@ -66,6 +71,13 @@ export default function ContentList({ contentList, path }) {
     }, [date]);
 
     return publishedSinceText;
+  }
+
+  function AmountOfParents({ amount }) {
+    if (amount === undefined) {
+      return '0 comentários';
+    }
+    return amount !== 1 ? `${amount} comentários` : `${amount} comentário`;
   }
 
   function RenderEmptyMessage() {
