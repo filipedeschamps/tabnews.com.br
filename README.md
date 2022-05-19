@@ -25,6 +25,12 @@ Então após baixar o repositório, não se esqueça de instalar as dependência
 npm install
 ```
 
+Depois que a instalação das dependências finalizar, aplique as migrações no banco de dados:
+
+```bash
+npm run migration:run
+```
+
 ### Rodar o projeto
 
 Para rodar o projeto localmente, basta rodar o comando abaixo:
