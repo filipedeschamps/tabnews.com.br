@@ -77,6 +77,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
             </Link>
           </Box>
         )}
+
         <Box
           sx={{
             width: '100%',
@@ -90,23 +91,25 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
           <Content content={contentFound} mode="view" />
         </Box>
 
-        <Box sx={{ width: '100%' }}>
-          <Box
-            sx={{
-              borderRadius: '6px',
-              borderWidth: 1,
-              borderColor: 'border.default',
-              borderStyle: 'solid',
-              mt: 4,
-              mb: 4,
-              p: 4,
-              wordWrap: 'break-word',
-            }}>
-            <Content content={{ parent_id: contentFound.id }} mode="compact" />
-          </Box>
+        {contentFound.status !== 'deleted' && (
+          <Box sx={{ width: '100%' }}>
+            <Box
+              sx={{
+                borderRadius: '6px',
+                borderWidth: 1,
+                borderColor: 'border.default',
+                borderStyle: 'solid',
+                mt: 4,
+                mb: 4,
+                p: 4,
+                wordWrap: 'break-word',
+              }}>
+              <Content content={{ parent_id: contentFound.id }} mode="compact" />
+            </Box>
 
-          <RenderChildrenTree childrenList={children} level={0} />
-        </Box>
+            <RenderChildrenTree childrenList={children} level={0} />
+          </Box>
+        )}
       </DefaultLayout>
     </>
   );
