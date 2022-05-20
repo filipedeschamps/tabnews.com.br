@@ -536,7 +536,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         onClick={() => {
           handleClick();
         }}>
-        {user?.username && !isLoading? 'Responder' : 'Logue para poder Responder'}
+        Responder
       </Button>
     );
   }
