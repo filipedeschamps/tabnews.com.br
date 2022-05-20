@@ -91,7 +91,7 @@ async function getLastEmail() {
   const emailList = await emailListResponse.json();
 
   if (emailList.length === 0) {
-    throw new Error('No email received');
+    return null;
   }
 
   const lastEmailItem = emailList.pop();
