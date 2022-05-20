@@ -4,6 +4,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
+import notification from 'models/notification.js';
 import { ForbiddenError } from 'errors/index.js';
 
 export default nextConnect({
@@ -81,6 +82,10 @@ async function postHandler(request, response) {
   secureInputValues.owner_id = userTryingToCreate.id;
 
   const createdContent = await content.create(secureInputValues);
+
+  if (createdContent.parent_id) {
+    await notification.sendReplyEmailToParentUser(createdContent);
+  }
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
 

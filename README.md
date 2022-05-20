@@ -2,7 +2,7 @@
 
 ## Diário de Desenvolvimento
 
-- [Acessar diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)
+- [Acessar o diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)
 
 ## Instalar e rodar o projeto
 
