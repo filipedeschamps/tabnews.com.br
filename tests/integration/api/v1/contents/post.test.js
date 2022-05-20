@@ -1417,82 +1417,109 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
     });
 
-    describe('send notifications about new comments', () => {
-      test("Send notification if user comments on another user's content", async () => {
-        const creatorUser = await orchestrator.createUser();
-        const userWhoCommented = await orchestrator.createUser();
-        await orchestrator.activateUser(creatorUser);
-        await orchestrator.activateUser(userWhoCommented);
-        const ownerUserSessionObject = await orchestrator.createSession(creatorUser);
-        const userWhoCommentedSessionObject = await orchestrator.createSession(userWhoCommented);
+    describe('Notifications', () => {
+      test('Create "root" content', async () => {
+        await orchestrator.deleteAllEmails();
 
-        const createContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
           headers: {
             'Content-Type': 'application/json',
-            cookie: `session_id=${ownerUserSessionObject.token}`,
+            cookie: `session_id=${firstUserSessionObject.token}`,
           },
           body: JSON.stringify({
-            title: 'Teste de notificação',
-            body: 'Este é um post massa',
-            status: 'published',
-          }),
-        });
-        const createdContentResponseBody = await createContent.json();
-
-        await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${userWhoCommentedSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Este é um post massa',
-            parent_id: createdContentResponseBody.id,
+            title: 'Usuário não deveria receber email de notificação',
+            body: 'Ele não deveria ser notificado sobre suas próprias criações',
             status: 'published',
           }),
         });
 
         const getLastEmail = await orchestrator.getLastEmail();
-        expect(getLastEmail.recipients[0].includes(creatorUser.email)).toBe(true);
+
+        expect(response.status).toBe(201);
+        expect(getLastEmail).toBe(null);
       });
 
-      test('The user cannot receive an email if they reply to their own content', async () => {
-        const creatorUser = await orchestrator.createUser();
-        const userWhoCommented = await orchestrator.createUser();
-        await orchestrator.activateUser(creatorUser);
-        await orchestrator.activateUser(userWhoCommented);
-        const ownerUserSessionObject = await orchestrator.createSession(creatorUser);
+      test('My "root" content replied by myself', async () => {
+        await orchestrator.deleteAllEmails();
 
-        const createContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
           headers: {
             'Content-Type': 'application/json',
-            cookie: `session_id=${ownerUserSessionObject.token}`,
+            cookie: `session_id=${firstUserSessionObject.token}`,
           },
           body: JSON.stringify({
-            title: 'Teste de notificação',
-            body: 'Este é um post massa',
+            title: 'Novamente, não deveria receber notificação',
+            body: 'Continua não sendo notificado sobre suas próprias criações',
+            parent_id: rootContent.id,
             status: 'published',
           }),
         });
-        const createdContentResponseBody = await createContent.json();
 
-        await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${ownerUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Este é um post massa',
-            parent_id: createdContentResponseBody.id,
-            status: 'published',
-          }),
-        });
+        const responseBody = await response.json();
 
         const getLastEmail = await orchestrator.getLastEmail();
-        expect(getLastEmail.recipients[0].includes(creatorUser.email)).toBe(false);
+
+        expect(response.status).toBe(201);
+        expect(responseBody.parent_id).toBe(rootContent.id);
+        expect(getLastEmail).toBe(null);
+      });
+
+      test('My "root" content replied by other user', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o comentário dele.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await response.json();
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
+
+        expect(response.status).toBe(201);
+        expect(responseBody.parent_id).toBe(rootContent.id);
+        expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
+        expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou na sua postagem!`);
+        expect(getLastEmail.text.includes(firstUser.username)).toBe(true);
+        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
     });
   });

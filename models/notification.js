@@ -1,45 +1,45 @@
 import user from 'models/user.js';
 import content from 'models/content.js';
-import activation from 'models/activation';
+import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
 
-async function sendNotificationOnNewComment(createdContent) {
-  const rootContent = await findRootContent(createdContent.parent_id);
+async function sendReplyEmailToParentUser(createdContent) {
+  const rootContent = await content.findOne({
+    where: {
+      id: createdContent.parent_id,
+    },
+  });
+
   if (rootContent.owner_id !== createdContent.owner_id) {
-    const contentCreator = await user.findOneById(rootContent.owner_id);
-    const userWhoCommented = await user.findOneById(createdContent.owner_id);
-    const redirectPageEndpoint = getRedirectPageEndpoint(rootContent);
-    // O ideal é pegar o conteúdo principal para enviar link com todas as discussões
+    const rootContentUser = await user.findOneById(rootContent.owner_id);
+    const childContendUrl = getChildContendUrl(createdContent);
 
     await email.send({
-      to: contentCreator.email,
+      to: rootContentUser.email,
       from: {
         name: 'TabNews',
         address: 'contato@tabnews.com.br',
       },
-      subject: `O usuário ${userWhoCommented.username} comentou na sua postagem`,
-      text: `Olá, ${contentCreator.username}!
-Clique aqui para ler o novo comentário ${redirectPageEndpoint}`,
+      subject: `"${createdContent.username}" comentou na sua postagem!`,
+      text: `Olá, ${rootContentUser.username}!
+
+Para ler o comentário, utilize o link abaixo:
+
+${childContendUrl}
+
+Atenciosamente,
+Equipe TabNews
+Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
     });
   }
 }
 
-function getRedirectPageEndpoint({ username, slug }) {
-  // é correto buscar essa função do model activation?
-  let webserverHost = activation.getWebServerHost();
+function getChildContendUrl({ username, slug }) {
+  let webserverHost = webserver.getHost();
 
   return `${webserverHost}/${username}/${slug}`;
 }
 
-async function findRootContent(parent_id) {
-  const rootContent = await content.findOne({
-    where: {
-      id: parent_id,
-    },
-  });
-  return rootContent;
-}
-
 export default Object.freeze({
-  sendNotificationOnNewComment,
+  sendReplyEmailToParentUser,
 });
