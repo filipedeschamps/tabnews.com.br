@@ -86,6 +86,7 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[1].body).toEqual(firstRootContent.body);
       expect(responseBody[1].status).toEqual(firstRootContent.status);
       expect(responseBody[1].source_url).toEqual(firstRootContent.source_url);
+      expect(responseBody[1].children_count).toEqual(1);
       expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[1].published_at)).not.toEqual(NaN);
