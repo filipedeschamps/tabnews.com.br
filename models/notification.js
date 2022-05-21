@@ -32,12 +32,14 @@ Alguém respondeu sua publicação com:
 ${createdContent.body.substring(0, 30)}...
 
 ${
-  createdContent.length <= 30 ? `
-Para ler o comentário inteiro, utilize o link abaixo:
+  createdContent.length <= 30
+    ? `
+Para ler o comentário, utilize o link abaixo:
 
 ${childContendUrl}
-` : `
-Para ler o comentário, utilize o link abaixo:
+  `
+    : `
+Para ler o comentário inteiro, utilize o link abaixo:
 
 ${childContendUrl}
 `
