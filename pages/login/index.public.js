@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link } from '@primer/react';
+import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
 
 export default function Login() {
   return (
@@ -142,8 +142,13 @@ function LoginForm() {
           </FormControl>
         </Box>
       </form>
-      <Box sx={{ mt: 6, width: '100%', textAlign: 'center', fontSize: 1 }}>
-        Novo no TabNews? <Link href="/cadastro">Crie sua conta aqui.</Link>
+      <Box sx={{ mt: 6, width: '100%', textAlign: 'center', fontSize: 1 }} display="flex" flexDirection="column">
+        <Text>
+          Novo no TabNews? <Link href="/cadastro">Crie sua conta aqui.</Link>
+        </Text>
+        <Text>
+          Esqueceu sua senha? <Link href="/cadastro/recuperar">Clique aqui.</Link>
+        </Text>
       </Box>
     </>
   );
