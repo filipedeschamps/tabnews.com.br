@@ -68,9 +68,104 @@ function logRequest(request, response, next) {
   next();
 }
 
+export function rateLimit({windowMs, maxRequests, punishMs}){
+  
+  const ipsController = []
+  const ipsPunish = []
+
+  function verifyIps(ip){
+    
+    const verifyIpPunishExists = ipsPunish.filter(i => i.ip = ip)
+    if(verifyIpPunishExists .length> 0) return verfiyIsValidPunishment(verifyIpPunishExists[0])
+
+    const verifyIpExists = ipsController.filter(i => i.ip == ip)
+    if(verifyIpExists.length == 0) return setNewIP(ip)
+    
+    return updateIpData(verifyIpExists[0])
+
+  }
+
+  function updateIpData(data){
+    const position = ipsController.indexOf(data)
+    const creationDate = data.created_at.getTime()
+    const currentDate = new Date().getTime()
+
+    const differenceBeteweenDates = currentDate - creationDate
+
+    if(differenceBeteweenDates > windowMs){
+      ipsController.splice(position, 1)
+      return setNewIP(data.ip)
+    }
+
+    if(maxRequests > data.requests){
+      return ipsController.splice(position, 1, { 
+          ip: data.ip, 
+          created_at: data.created_at, 
+          requests: data.requests + 1 
+      })
+    }
+
+    if(data.requests >= maxRequests){
+      setNewPunishIP(data)
+    }
+
+  }
+
+  function setNewIP(ip){
+    return ipsController.push({ ip, requests: 1, created_at: new Date() })
+  }
+
+  function verfiyIsValidPunishment(data){
+    const punishmentDate = data.created_at.getTime()
+    const currentDate = new Date().getTime()
+
+    const differenceBetweenDates = currentDate - punishmentDate
+
+    if(differenceBetweenDates > punishMs) {
+      console.log('saiu do castigo')
+      return removeIpPunish(data)
+    }
+
+    console.log('ainda em castigo')
+    throw new Error()
+  }
+
+  function setNewPunishIP(data){
+    const position = ipsController.indexOf(data)
+    ipsController.splice(position, 1)
+
+    ipsPunish.push({
+        ip: data.ip,
+        requests: 0,
+        created_at: new Date()
+    })
+     
+    throw new Error()
+  }
+
+  function removeIpPunish(data){
+    const position = ipsPunish.indexOf(data)
+    ipsPunish.splice(position, 1)
+    return setNewIP(data.ip)
+  }
+
+  return (request, response, next) => {
+    try {
+      
+      verifyIps(request.connection.remoteAddress)
+      next()
+
+    } catch (error) {
+      next(error)
+    }
+  }
+
+}
+
 export default Object.freeze({
   injectRequestId,
   onNoMatchHandler,
   onErrorHandler,
   logRequest,
+  rateLimit
 });

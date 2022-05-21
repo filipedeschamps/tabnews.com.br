@@ -15,7 +15,12 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getHandler)
-  .post(postValidationHandler, authorization.canRequest('create:user'), postHandler);
+  .post(
+    postValidationHandler, 
+    authorization.canRequest('create:user'), 
+    controller.rateLimit({ windowMs: 30000, maxRequests: 5, punishMs: 15000 }), 
+    postHandler
+  );
 
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;

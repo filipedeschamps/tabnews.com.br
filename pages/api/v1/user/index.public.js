@@ -2,6 +2,7 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import RateLimit from 'models/rateLimit';
 
 export default nextConnect({
   attachParams: true,
