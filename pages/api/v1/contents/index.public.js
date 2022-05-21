@@ -84,7 +84,7 @@ async function postHandler(request, response) {
   const createdContent = await content.create(secureInputValues);
 
   if (createdContent.parent_id) {
-    await notification.sendReplyEmailToParentUser(createdContent);
+    await notification.create(createdContent);
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
