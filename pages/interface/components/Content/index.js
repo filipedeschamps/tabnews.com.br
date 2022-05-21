@@ -216,17 +216,31 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           );
         }
 
-        if (isValidJsonString(data)) {
-          const parsedData = JSON.parse(data);
+        function rendLocalStorageData(data) {
+          if (isValidJsonString(data)) {
+            const parsedData = JSON.parse(data);
 
-          setBody(parsedData?.body || '');
+            setBody(parsedData?.body || '');
 
-          if (!contentObject?.parent_id) {
-            titleRef.current.value = parsedData?.title || '';
-            sourceUrlRef.current.value = parsedData?.source_url || '';
+            if (!contentObject?.parent_id) {
+              titleRef.current.value = parsedData?.title || '';
+              sourceUrlRef.current.value = parsedData?.source_url || '';
+            }
+          } else {
+            setBody(contentObject?.body || '');
           }
-        } else {
-          setBody(contentObject?.body || '');
+        };
+
+        rendLocalStorageData(data)
+
+        function onFocus(event) {
+          const new_data = event.currentTarget.localStorage[localStorageKey]
+          rendLocalStorageData(new_data)
+        }
+
+        addEventListener("focus", onFocus);
+        return () => {
+          removeEventListener("focus", onFocus);
         }
       }
     }, [localStorageKey]);
