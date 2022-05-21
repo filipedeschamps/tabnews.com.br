@@ -393,7 +393,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     function handleCancel() {
       localStorage.removeItem(localStorageKey);
-      setComponentMode('view');
+      if (contentObject?.id) {
+        setComponentMode('view');
+      } else {
+        setComponentMode('compact');
+      }
     }
 
     return (
@@ -467,7 +471,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
             )}
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              {contentObject && contentObject.id && (
+              {contentObject && (
                 <Link
                   sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
                   aria-label="Cancelar alteração"
