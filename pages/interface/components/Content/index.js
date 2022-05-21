@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 
 import {
@@ -166,7 +166,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   function EditMode() {
     const router = useRouter();
-
     const { user, isLoading } = useUser();
 
     useEffect(() => {
@@ -188,18 +187,49 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const titleRef = useRef('');
     const sourceUrlRef = useRef('');
 
-    useEffect(() => {
-      if (componentMode === 'edit' && !contentObject && !contentObject?.parent_id) {
-        titleRef?.current.focus();
+    const localStorageKey = useMemo(() => {
+      if (contentObject?.parent_id) {
+        return `content-edit-${contentObject.parent_id}`;
+      } else if (contentObject?.id) {
+        return `content-edit-${contentObject.id}`;
+      } else {
+        return `content-new`;
       }
-
-      if (componentMode === 'edit' && contentObject && !contentObject?.parent_id) {
-        titleRef.current.value = contentObject?.title || '';
-        sourceUrlRef.current.value = contentObject?.source_url || '';
-      }
-
-      setBody(contentObject?.body || '');
     }, []);
+
+    useEffect(() => {
+      if (componentMode === 'edit') {
+        if (!contentObject && !contentObject?.parent_id) {
+          titleRef?.current.focus();
+        }
+
+        const data = localStorage.getItem(localStorageKey);
+
+        if (contentObject && !contentObject?.parent_id && !isValidJsonString(data)) {
+          localStorage.setItem(
+            localStorageKey,
+            JSON.stringify({
+              title: contentObject?.title || '',
+              source_url: contentObject?.source_url || '',
+              body: contentObject?.body || '',
+            })
+          );
+        }
+
+        if (isValidJsonString(data)) {
+          const parsedData = JSON.parse(data);
+
+          setBody(parsedData?.body || '');
+
+          if (!contentObject?.parent_id) {
+            titleRef.current.value = parsedData?.title || '';
+            sourceUrlRef.current.value = parsedData?.source_url || '';
+          }
+        } else {
+          setBody(contentObject?.body || '');
+        }
+      }
+    }, [localStorageKey]);
 
     function clearErrors() {
       setErrorObject(undefined);
@@ -253,6 +283,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
         if (response.status === 200) {
           setContentObject(responseBody);
+
+          localStorage.removeItem(localStorageKey);
+
           setComponentMode('view');
 
           return;
@@ -261,12 +294,19 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         if (response.status === 201) {
           if (!responseBody.parent_id) {
             localStorage.setItem('justPublishedNewRootContent', true);
+
+            localStorage.removeItem(localStorageKey);
+
             router.push(`/${responseBody.username}/${responseBody.slug}`);
             return;
           }
 
           setContentObject(responseBody);
+
+          localStorage.removeItem(localStorageKey);
+
           setComponentMode('view');
+
           return;
         }
 
@@ -298,6 +338,33 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
     }
 
+    const handleChange = useCallback(
+      (event) => {
+        const data = localStorage.getItem(localStorageKey);
+        if (isValidJsonString(data)) {
+          const parsedData = JSON.parse(data);
+
+          parsedData[event.target.name] = event.target.value;
+
+          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+        } else {
+          const parsedData = {};
+          parsedData[event.target.name] = event.target.value;
+          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+        }
+      },
+      [localStorageKey]
+    );
+
+    useEffect(() => {
+      handleChange({
+        target: {
+          name: 'body',
+          value: body,
+        },
+      });
+    }, [handleChange, body]);
+
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -317,6 +384,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Título"
                   aria-label="Título"
+                  onKeyUp={handleChange}
                 />
 
                 {errorObject?.key === 'title' && (
@@ -358,6 +426,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Fonte (opcional)"
                   aria-label="Fonte (opcional)"
+                  onKeyUp={handleChange}
                 />
 
                 {errorObject?.key === 'source_url' && (
@@ -429,16 +498,59 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function CompactMode() {
+    const { user, isLoading } = useUser();
+    const router = useRouter();
+
+    const localStorageKey = useMemo(() => {
+      if (contentObject?.parent_id) {
+        return `content-edit-${contentObject.parent_id}`;
+      } else if (contentObject?.id) {
+        return `content-edit-${contentObject.id}`;
+      } else {
+        return `content-new`;
+      }
+    }, []);
+
+    useEffect(() => {
+      if (user && !isLoading) {
+        const data = localStorage.getItem(localStorageKey);
+        if (isValidJsonString(data)) {
+          setComponentMode('edit');
+        }
+      }
+    }, [localStorageKey, user, isLoading]);
+
+    const handleClick = useCallback(() => {
+      if (user?.username && !isLoading) {
+        setComponentMode('edit');
+      } else {
+        router.push(`/login?redirect=${router.asPath}`);
+      }
+    }, [user, isLoading, router]);
+
     return (
       <Button
         sx={{
           maxWidth: 'fit-content',
         }}
         onClick={() => {
-          setComponentMode('edit');
+          handleClick();
         }}>
         Responder
       </Button>
     );
+  }
+}
+
+function isValidJsonString(jsonString) {
+  if (!(jsonString && typeof jsonString === 'string')) {
+    return false;
+  }
+
+  try {
+    JSON.parse(jsonString);
+    return true;
+  } catch (error) {
+    return false;
   }
 }
