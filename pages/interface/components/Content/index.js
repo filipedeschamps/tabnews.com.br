@@ -168,7 +168,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const router = useRouter();
     const { user, isLoading } = useUser();
 
-
     useEffect(() => {
       if (!isLoading && !user.username) {
         // TODO: re-implement this after local changes
@@ -188,19 +187,18 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const titleRef = useRef('');
     const sourceUrlRef = useRef('');
 
-    const localStorageKey = useMemo(()=>{
-      if(contentObject?.parent_id){
+    const localStorageKey = useMemo(() => {
+      if (contentObject?.parent_id) {
         return `content-edit-${contentObject.parent_id}`;
-      }else if(contentObject?.id){
+      } else if (contentObject?.id) {
         return `content-edit-${contentObject.id}`;
-      }else{
+      } else {
         return `content-new`;
       }
     }, []);
 
     useEffect(() => {
-      if(componentMode === 'edit'){
-
+      if (componentMode === 'edit') {
         if (!contentObject && !contentObject?.parent_id) {
           titleRef?.current.focus();
         }
@@ -208,11 +206,14 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         const data = localStorage.getItem(localStorageKey);
 
         if (contentObject && !contentObject?.parent_id && !isValidJsonString(data)) {
-          localStorage.setItem(localStorageKey, JSON.stringify({
-            title: contentObject?.title || '',
-            source_url: contentObject?.source_url || '',
-            body: contentObject?.body || '',
-          }));
+          localStorage.setItem(
+            localStorageKey,
+            JSON.stringify({
+              title: contentObject?.title || '',
+              source_url: contentObject?.source_url || '',
+              body: contentObject?.body || '',
+            })
+          );
         }
 
         if (isValidJsonString(data)) {
@@ -220,11 +221,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
           setBody(parsedData?.body || '');
 
-          if(!contentObject?.parent_id){
+          if (!contentObject?.parent_id) {
             titleRef.current.value = parsedData?.title || '';
             sourceUrlRef.current.value = parsedData?.source_url || '';
           }
-        }else{
+        } else {
           setBody(contentObject?.body || '');
         }
       }
@@ -337,30 +338,32 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
     }
 
-    const handleChange = useCallback((event)=> {
-      const data = localStorage.getItem(localStorageKey);
-      if (isValidJsonString(data)) {
-        const parsedData = JSON.parse(data);
+    const handleChange = useCallback(
+      (event) => {
+        const data = localStorage.getItem(localStorageKey);
+        if (isValidJsonString(data)) {
+          const parsedData = JSON.parse(data);
 
-        parsedData[event.target.name] = event.target.value;
+          parsedData[event.target.name] = event.target.value;
 
-        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
-      }else{
-        const parsedData = {};
-        parsedData[event.target.name] = event.target.value;
-        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
-      }
-    }, [localStorageKey]);
+          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+        } else {
+          const parsedData = {};
+          parsedData[event.target.name] = event.target.value;
+          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+        }
+      },
+      [localStorageKey]
+    );
 
     useEffect(() => {
       handleChange({
-        target:{
+        target: {
           name: 'body',
           value: body,
-        }
+        },
       });
-
-    },[handleChange, body]);
+    }, [handleChange, body]);
 
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
@@ -423,7 +426,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Fonte (opcional)"
                   aria-label="Fonte (opcional)"
-
                   onKeyUp={handleChange}
                 />
 
@@ -499,34 +501,32 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const { user, isLoading } = useUser();
     const router = useRouter();
 
-    const localStorageKey = useMemo(()=>{
-      if(contentObject?.parent_id){
+    const localStorageKey = useMemo(() => {
+      if (contentObject?.parent_id) {
         return `content-edit-${contentObject.parent_id}`;
-      }else if(contentObject?.id){
+      } else if (contentObject?.id) {
         return `content-edit-${contentObject.id}`;
-      }else{
+      } else {
         return `content-new`;
       }
     }, []);
 
-    useEffect(()=>{
-
-      if(user && !isLoading){
+    useEffect(() => {
+      if (user && !isLoading) {
         const data = localStorage.getItem(localStorageKey);
         if (isValidJsonString(data)) {
           setComponentMode('edit');
         }
       }
-
     }, [localStorageKey, user, isLoading]);
 
     const handleClick = useCallback(() => {
-      if(user?.username && !isLoading){
+      if (user?.username && !isLoading) {
         setComponentMode('edit');
-      }else{
+      } else {
         router.push(`/login?redirect=${router.asPath}`);
       }
-    } ,[user, isLoading, router]);
+    }, [user, isLoading, router]);
 
     return (
       <Button
@@ -542,18 +542,15 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 }
 
-
-function isValidJsonString(jsonString){
-
-  if(!(jsonString && typeof jsonString === "string")){
-      return false;
+function isValidJsonString(jsonString) {
+  if (!(jsonString && typeof jsonString === 'string')) {
+    return false;
   }
 
-  try{
-     JSON.parse(jsonString);
-     return true;
-  }catch(error){
-      return false;
+  try {
+    JSON.parse(jsonString);
+    return true;
+  } catch (error) {
+    return false;
   }
-
 }
