@@ -229,19 +229,19 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           } else {
             setBody(contentObject?.body || '');
           }
-        };
+        }
 
-        rendLocalStorageData(data)
+        rendLocalStorageData(data);
 
         function onFocus(event) {
-          const new_data = event.currentTarget.localStorage[localStorageKey]
-          rendLocalStorageData(new_data)
+          const new_data = event.currentTarget.localStorage[localStorageKey];
+          rendLocalStorageData(new_data);
         }
 
-        addEventListener("focus", onFocus);
+        addEventListener('focus', onFocus);
         return () => {
-          removeEventListener("focus", onFocus);
-        }
+          removeEventListener('focus', onFocus);
+        };
       }
     }, [localStorageKey]);
 
