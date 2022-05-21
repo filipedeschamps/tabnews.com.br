@@ -512,11 +512,19 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     }, []);
 
     useEffect(() => {
-      if (user && !isLoading) {
-        const data = localStorage.getItem(localStorageKey);
-        if (isValidJsonString(data)) {
-          setComponentMode('edit');
-        }
+      if (!user || isLoading) return;
+
+      const data = localStorage.getItem(localStorageKey);
+      if (!isValidJsonString(data)) {
+        localStorage.removeItem(localStorageKey);
+        return;
+      }
+
+      const parsedData = JSON.parse(data);
+      if (parsedData?.body) {
+        setComponentMode('edit');
+      } else {
+        localStorage.removeItem(localStorageKey);
       }
     }, [localStorageKey, user, isLoading]);
 
