@@ -62,7 +62,11 @@ function LoginForm() {
       const responseBody = await response.json();
 
       if (response.status === 201) {
-        router.push('/publicar');
+        if (router.query?.redirect) {
+          router.push(router.query.redirect);
+        } else {
+          router.push('/publicar');
+        }
         return;
       }
 
