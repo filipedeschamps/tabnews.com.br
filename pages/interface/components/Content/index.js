@@ -36,6 +36,8 @@ import 'github-markdown-css/github-markdown-light.css';
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
+  const { user, isLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     setComponentMode(mode);
@@ -44,6 +46,33 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   useEffect(() => {
     setContentObject(content);
   }, [content]);
+
+  const localStorageKey = useMemo(() => {
+    if (contentObject?.id) {
+      return `content-edit-${contentObject.id}`;
+    } else if (contentObject?.parent_id) {
+      return `content-edit-parent-${contentObject.parent_id}`;
+    } else {
+      return `content-new`;
+    }
+  }, [contentObject]);
+
+  useEffect(() => {
+    if (!user || isLoading) return;
+
+    const data = localStorage.getItem(localStorageKey);
+    if (!isValidJsonString(data)) {
+      localStorage.removeItem(localStorageKey);
+      return;
+    }
+
+    const parsedData = JSON.parse(data);
+    if (parsedData?.body) {
+      setComponentMode('edit');
+    } else {
+      localStorage.removeItem(localStorageKey);
+    }
+  }, [localStorageKey, user, isLoading]);
 
   const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
 
@@ -60,7 +89,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function ViewMode() {
-    const { user, isLoading } = useUser();
     const [publishedSinceText, setPublishedSinceText] = useState();
 
     useEffect(() => {
@@ -165,9 +193,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function EditMode() {
-    const router = useRouter();
-    const { user, isLoading } = useUser();
-
     useEffect(() => {
       if (!isLoading && !user.username) {
         // TODO: re-implement this after local changes
@@ -178,7 +203,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       } else {
         clearErrors();
       }
-    }, [user, isLoading]);
+    }, []);
 
     const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
@@ -186,16 +211,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const [body, setBody] = useState('');
     const titleRef = useRef('');
     const sourceUrlRef = useRef('');
-
-    const localStorageKey = useMemo(() => {
-      if (contentObject?.parent_id) {
-        return `content-edit-${contentObject.parent_id}`;
-      } else if (contentObject?.id) {
-        return `content-edit-${contentObject.id}`;
-      } else {
-        return `content-new`;
-      }
-    }, []);
 
     useEffect(() => {
       if (componentMode === 'edit') {
@@ -216,20 +231,34 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           );
         }
 
-        if (isValidJsonString(data)) {
-          const parsedData = JSON.parse(data);
+        function rendLocalStorageData(data) {
+          if (isValidJsonString(data)) {
+            const parsedData = JSON.parse(data);
 
-          setBody(parsedData?.body || '');
+            setBody(parsedData?.body || '');
 
-          if (!contentObject?.parent_id) {
-            titleRef.current.value = parsedData?.title || '';
-            sourceUrlRef.current.value = parsedData?.source_url || '';
+            if (!contentObject?.parent_id) {
+              titleRef.current.value = parsedData?.title || '';
+              sourceUrlRef.current.value = parsedData?.source_url || '';
+            }
+          } else {
+            setBody(contentObject?.body || '');
           }
-        } else {
-          setBody(contentObject?.body || '');
         }
+
+        rendLocalStorageData(data);
+
+        function onFocus(event) {
+          const new_data = event.currentTarget.localStorage[localStorageKey];
+          rendLocalStorageData(new_data);
+        }
+
+        addEventListener('focus', onFocus);
+        return () => {
+          removeEventListener('focus', onFocus);
+        };
       }
-    }, [localStorageKey]);
+    }, []);
 
     function clearErrors() {
       setErrorObject(undefined);
@@ -338,23 +367,20 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
     }
 
-    const handleChange = useCallback(
-      (event) => {
-        const data = localStorage.getItem(localStorageKey);
-        if (isValidJsonString(data)) {
-          const parsedData = JSON.parse(data);
+    const handleChange = useCallback((event) => {
+      const data = localStorage.getItem(localStorageKey);
+      if (isValidJsonString(data)) {
+        const parsedData = JSON.parse(data);
 
-          parsedData[event.target.name] = event.target.value;
+        parsedData[event.target.name] = event.target.value;
 
-          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
-        } else {
-          const parsedData = {};
-          parsedData[event.target.name] = event.target.value;
-          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
-        }
-      },
-      [localStorageKey]
-    );
+        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+      } else {
+        const parsedData = {};
+        parsedData[event.target.name] = event.target.value;
+        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+      }
+    }, []);
 
     useEffect(() => {
       handleChange({
@@ -364,6 +390,15 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         },
       });
     }, [handleChange, body]);
+
+    function handleCancel() {
+      localStorage.removeItem(localStorageKey);
+      if (contentObject?.id) {
+        setComponentMode('view');
+      } else {
+        setComponentMode('compact');
+      }
+    }
 
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
@@ -436,13 +471,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
             )}
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              {contentObject && contentObject.id && (
+              {contentObject && (
                 <Link
                   sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
                   aria-label="Cancelar alteração"
-                  onClick={(event) => {
-                    setComponentMode('view');
-                  }}>
+                  onClick={handleCancel}>
                   Cancelar
                 </Link>
               )}
@@ -498,35 +531,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function CompactMode() {
-    const { user, isLoading } = useUser();
-    const router = useRouter();
-
-    const localStorageKey = useMemo(() => {
-      if (contentObject?.parent_id) {
-        return `content-edit-${contentObject.parent_id}`;
-      } else if (contentObject?.id) {
-        return `content-edit-${contentObject.id}`;
-      } else {
-        return `content-new`;
-      }
-    }, []);
-
-    useEffect(() => {
-      if (user && !isLoading) {
-        const data = localStorage.getItem(localStorageKey);
-        if (isValidJsonString(data)) {
-          setComponentMode('edit');
-        }
-      }
-    }, [localStorageKey, user, isLoading]);
-
     const handleClick = useCallback(() => {
       if (user?.username && !isLoading) {
         setComponentMode('edit');
       } else {
         router.push(`/login?redirect=${router.asPath}`);
       }
-    }, [user, isLoading, router]);
+    }, []);
 
     return (
       <Button
