@@ -391,6 +391,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       });
     }, [handleChange, body]);
 
+    function handleCancel() {
+      localStorage.removeItem(localStorageKey);
+      setComponentMode('view');
+    }
+
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -466,9 +471,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <Link
                   sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
                   aria-label="Cancelar alteração"
-                  onClick={(event) => {
-                    setComponentMode('view');
-                  }}>
+                  onClick={handleCancel}>
                   Cancelar
                 </Link>
               )}
