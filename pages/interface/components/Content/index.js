@@ -51,7 +51,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     if (contentObject?.id) {
       return `content-edit-${contentObject.id}`;
     } else if (contentObject?.parent_id) {
-      return `content-edit-${contentObject.parent_id}`;
+      return `content-edit-parent-${contentObject.parent_id}`;
     } else {
       return `content-new`;
     }
