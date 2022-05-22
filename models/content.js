@@ -543,7 +543,7 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
   }
 }
 
-async function findChildren(options) {
+async function findChildrenTree(options) {
   options.where = validateWhereSchema(options?.where);
   const childrenFlatList = await recursiveDatabaseLookup(options);
   const childrenTree = flatListToTree(childrenFlatList);
@@ -639,10 +639,12 @@ async function findChildren(options) {
     list.forEach((row) => {
       table[row.id] = row;
       table[row.id].children = [];
+      table[row.id].children_count = 0;
     });
 
     list.forEach((row) => {
       if (table[row.parent_id]) {
+        table[row.parent_id].children_count++;
         table[row.parent_id].children.push(row);
       } else {
         tree = row;
@@ -653,10 +655,59 @@ async function findChildren(options) {
   }
 }
 
+async function findChildrenCount(options) {
+  options.where = validateWhereSchema(options?.where);
+  const childrenCount = await recursiveDatabaseLookup(options);
+  return childrenCount;
+
+  async function recursiveDatabaseLookup(options) {
+    const query = {
+      text: `
+      WITH RECURSIVE children AS (
+        SELECT
+            id,
+            parent_id
+        FROM
+          contents
+        WHERE
+          contents.id = $1 AND
+          contents.status = 'published'
+        UNION ALL
+          SELECT
+            contents.id,
+            contents.parent_id
+          FROM
+            contents
+          INNER JOIN
+            children ON contents.parent_id = children.id
+          WHERE
+            contents.status = 'published'
+      )
+      SELECT
+        count(children.id)
+      FROM
+        children
+      WHERE children.parent_id IS NOT NULL;`,
+      values: [options.where.parent_id],
+    };
+    const results = await database.query(query);
+    return results.rows[0].count;
+  }
+
+  function validateWhereSchema(where) {
+    const cleanValues = validator(where, {
+      parent_id: 'required',
+    });
+
+    return cleanValues;
+  }
+}
+
 export default Object.freeze({
   findAll,
   findOne,
-  findChildren,
+  findChildrenTree,
+  findChildrenCount,
   findWithStrategy,
   create,
   update,

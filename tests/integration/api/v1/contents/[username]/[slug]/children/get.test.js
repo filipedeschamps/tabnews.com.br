@@ -118,7 +118,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       expect(responseBody.length).toEqual(2);
       expect(responseBody).toStrictEqual([
         {
-          id: responseBody[0].id,
+          id: childBranchALevel1.id,
           owner_id: firstUser.id,
           parent_id: rootBranchLevel0.id,
           parent_title: rootBranchLevel0.title,
@@ -168,10 +168,13 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
                   published_at: childBranchALevel3.published_at.toISOString(),
                   username: firstUser.username,
                   children: [],
+                  children_count: 0,
                 },
               ],
+              children_count: 1,
             },
           ],
+          children_count: 1,
         },
         {
           id: childBranchBLevel1.id,
@@ -209,6 +212,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content1.published_at.toISOString(),
               username: firstUser.username,
               children: [],
+              children_count: 0,
             },
             {
               id: childBranchBLevel2Content2.id,
@@ -228,8 +232,10 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content2.published_at.toISOString(),
               username: secondUser.username,
               children: [],
+              children_count: 0,
             },
           ],
+          children_count: 2,
         },
       ]);
     });
@@ -319,6 +325,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content1.published_at.toISOString(),
           username: firstUser.username,
           children: [],
+          children_count: 0,
         },
         {
           id: childBranchBLevel2Content2.id,
@@ -338,6 +345,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content2.published_at.toISOString(),
           username: secondUser.username,
           children: [],
+          children_count: 0,
         },
       ]);
     });

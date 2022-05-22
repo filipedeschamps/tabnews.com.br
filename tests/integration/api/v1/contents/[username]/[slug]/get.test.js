@@ -98,6 +98,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.title).toEqual('Conteúdo publicamente disponível');
       expect(responseBody.body).toEqual('Deveria estar disponível para todos.');
       expect(responseBody.status).toEqual('published');
+      expect(responseBody.children_count).toEqual(0);
       expect(responseBody.source_url).toEqual('https://www.tabnews.com.br/');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
@@ -207,6 +208,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.title).toEqual(null);
       expect(responseBody.body).toEqual('Conteúdo child');
       expect(responseBody.status).toEqual('published');
+      expect(responseBody.children_count).toEqual(1);
       expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);

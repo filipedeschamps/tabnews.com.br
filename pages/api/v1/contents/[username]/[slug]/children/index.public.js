@@ -49,7 +49,7 @@ async function getHandler(request, response) {
     });
   }
 
-  const childrenFound = await content.findChildren({
+  const childrenFound = await content.findChildrenTree({
     where: {
       parent_id: contentFound.id,
     },
