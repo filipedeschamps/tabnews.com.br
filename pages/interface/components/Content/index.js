@@ -184,12 +184,16 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const [isPosting, setIsPosting] = useState(false);
     const [errorObject, setErrorObject] = useState(undefined);
     const [body, setBody] = useState('');
+    const [titleDefaultValue, setTitleDefaultValue] = useState('');
+    const [sourceUrlDefaultValue, setSourceUrlDefaultValue] = useState('');
     const titleRef = useRef('');
     const sourceUrlRef = useRef('');
 
     const localStorageKey = useMemo(() => {
       if (contentObject?.parent_id) {
-        return `content-edit-${contentObject.parent_id}`;
+        return `content-edit-child-${contentObject.parent_id}`;
+      } else if (contentObject?.parent_id && contentObject?.id) {
+        return `content-edit-child-${contentObject.parent_id}-${contentObject.id}`;
       } else if (contentObject?.id) {
         return `content-edit-${contentObject.id}`;
       } else {
@@ -203,7 +207,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           titleRef?.current.focus();
         }
 
-        const data = localStorage.getItem(localStorageKey);
+        let data = localStorage.getItem(localStorageKey);
 
         if (contentObject && !contentObject?.parent_id && !isValidJsonString(data)) {
           localStorage.setItem(
@@ -216,14 +220,16 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           );
         }
 
+        data = localStorage.getItem(localStorageKey);
+
         if (isValidJsonString(data)) {
           const parsedData = JSON.parse(data);
 
           setBody(parsedData?.body || '');
 
           if (!contentObject?.parent_id) {
-            titleRef.current.value = parsedData?.title || '';
-            sourceUrlRef.current.value = parsedData?.source_url || '';
+            setTitleDefaultValue(parsedData?.title || '');
+            setSourceUrlDefaultValue(parsedData?.source_url || '');
           }
         } else {
           setBody(contentObject?.body || '');
@@ -357,12 +363,14 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     );
 
     useEffect(() => {
-      handleChange({
-        target: {
-          name: 'body',
-          value: body,
-        },
-      });
+      if (body !== '') {
+        handleChange({
+          target: {
+            name: 'body',
+            value: body,
+          },
+        });
+      }
     }, [handleChange, body]);
 
     return (
@@ -376,7 +384,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <FormControl.Label visuallyHidden>Título</FormControl.Label>
                 <TextInput
                   ref={titleRef}
-                  onChange={clearErrors}
+                  onChange={(event) => {
+                    clearErrors();
+                    setTitleDefaultValue(event.target.value);
+                  }}
                   name="title"
                   size="large"
                   autoCorrect="off"
@@ -385,6 +396,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   placeholder="Título"
                   aria-label="Título"
                   onKeyUp={handleChange}
+                  value={titleDefaultValue}
                 />
 
                 {errorObject?.key === 'title' && (
@@ -418,7 +430,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
                 <TextInput
                   ref={sourceUrlRef}
-                  onChange={clearErrors}
+                  onChange={(event) => {
+                    clearErrors();
+                    setSourceUrlDefaultValue(event.target.value);
+                  }}
                   name="source_url"
                   size="large"
                   autoCorrect="off"
@@ -427,6 +442,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   placeholder="Fonte (opcional)"
                   aria-label="Fonte (opcional)"
                   onKeyUp={handleChange}
+                  value={sourceUrlDefaultValue}
                 />
 
                 {errorObject?.key === 'source_url' && (
@@ -442,6 +458,18 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   aria-label="Cancelar alteração"
                   onClick={(event) => {
                     setComponentMode('view');
+                    localStorage.removeItem(localStorageKey);
+                  }}>
+                  Cancelar
+                </Link>
+              )}
+              {contentObject && contentObject.parent_id && !contentObject.id && (
+                <Link
+                  sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
+                  aria-label="Cancelar"
+                  onClick={(event) => {
+                    setComponentMode('compact');
+                    localStorage.removeItem(localStorageKey);
                   }}>
                   Cancelar
                 </Link>
@@ -503,7 +531,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     const localStorageKey = useMemo(() => {
       if (contentObject?.parent_id) {
-        return `content-edit-${contentObject.parent_id}`;
+        return `content-edit-child-${contentObject.parent_id}`;
+      } else if (contentObject?.parent_id && contentObject?.id) {
+        return `content-edit-child-${contentObject.parent_id}-${contentObject.id}`;
       } else if (contentObject?.id) {
         return `content-edit-${contentObject.id}`;
       } else {
@@ -515,7 +545,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       if (user && !isLoading) {
         const data = localStorage.getItem(localStorageKey);
         if (isValidJsonString(data)) {
-          setComponentMode('edit');
+          const parsedData = JSON.parse(data);
+
+          if (parsedData?.body) {
+            setComponentMode('edit');
+          } else {
+            localStorage.removeItem(localStorageKey);
+          }
         }
       }
     }, [localStorageKey, user, isLoading]);
