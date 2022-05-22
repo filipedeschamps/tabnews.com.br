@@ -363,7 +363,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     );
 
     useEffect(() => {
-      if(body!== ''){
+      if (body !== '') {
         handleChange({
           target: {
             name: 'body',
@@ -384,7 +384,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <FormControl.Label visuallyHidden>Título</FormControl.Label>
                 <TextInput
                   ref={titleRef}
-                  onChange={(event)=> {
+                  onChange={(event) => {
                     clearErrors();
                     setTitleDefaultValue(event.target.value);
                   }}
@@ -545,15 +545,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       if (user && !isLoading) {
         const data = localStorage.getItem(localStorageKey);
         if (isValidJsonString(data)) {
-
           const parsedData = JSON.parse(data);
 
-          if(parsedData?.body) {
+          if (parsedData?.body) {
             setComponentMode('edit');
-          }else{
+          } else {
             localStorage.removeItem(localStorageKey);
           }
-
         }
       }
     }, [localStorageKey, user, isLoading]);
