@@ -2,12 +2,52 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
+import validator from 'models/validator.js';
+import database from 'infra/database.js';
 
-async function create(createdContent) {
-  await sendReplyEmailToParentUser(createdContent);
+async function create(postedNotificationData) {
+  const validNotificationData = await validatePostSchema(postedNotificationData);
+
+  if (validNotificationData.type === 'content') {
+    // We are doing this again for the different types of notification
+    const validContentNotificationData = await validateContentNotificationSchema(validNotificationData);
+
+    const createdContent = await content.findOne({
+      where: {id: validContentNotificationData.content_id},
+    });
+
+    await sendReplyEmailToParentUser(createdContent);
+    return await runInsertQueryWithContent(validContentNotificationData);
+  }
+
+  async function runInsertQueryWithContent(validNotificationData) {
+    const query = {
+      text: 'INSERT INTO notifications (content_id, type) VALUES($1, $2) RETURNING *;',
+      values: [validNotificationData.content_id, validNotificationData.type],
+    };
+
+    const results = await database.query(query);
+    return results.rows[0];
+  }
 }
 
-async function storeOnDatabase(createdContent) {}
+async function validateContentNotificationSchema(postedContentNotificationData) {
+  const cleanValues = validator(postedContentNotificationData, {
+    content_id: 'required',
+    type: 'required',
+  });
+
+  return cleanValues;
+}
+
+async function validatePostSchema(postedNotificationData) {
+  const cleanValues = validator(postedNotificationData, {
+    content_id: 'optional',
+    type: 'required',
+  });
+
+  return cleanValues;
+}
 
 async function sendReplyEmailToParentUser(createdContent) {
   const rootContent = await content.findOne({

@@ -434,4 +434,36 @@ const schemas = {
 
     return contentSchema;
   },
+
+  type: function () {
+    return Joi.object({
+      type: Joi.string()
+        .trim()
+        .valid('content')
+        .invalid(null)
+        .when('$required.type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"type" é um campo obrigatório.`,
+          'string.empty': `"type" não pode estar em branco.`,
+          'string.base': `"type" deve ser do tipo String.`,
+          'any.invalid': `"type" possui o valor inválido "null".`,
+          'any.only': `"type" deve possuir um dos seguintes valores: "content".`,
+        }),
+    });
+  },
+  content_id: function () {
+    return Joi.object({
+      content_id: Joi.string()
+        .allow(null)
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.content_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"content_id" é um campo obrigatório.`,
+          'string.empty': `"content_id" não pode estar em branco.`,
+          'string.base': `"content_id" deve ser do tipo String.`,
+          'string.guid': `"content_id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
 };

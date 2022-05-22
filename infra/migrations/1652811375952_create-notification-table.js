@@ -32,12 +32,6 @@ exports.up = (pgm) => {
       check: 'length(type) <= 20',
     },
 
-    parent_id: {
-      type: 'uuid',
-      notNull: false,
-      default: null,
-    },
-
     created_at: {
       type: 'timestamp with time zone',
       notNull: true,
