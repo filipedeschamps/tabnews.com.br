@@ -7,6 +7,8 @@ async function create(createdContent) {
   await sendReplyEmailToParentUser(createdContent);
 }
 
+async function storeOnDatabase(createdContent) {}
+
 async function sendReplyEmailToParentUser(createdContent) {
   const rootContent = await content.findOne({
     where: {
@@ -27,23 +29,18 @@ async function sendReplyEmailToParentUser(createdContent) {
       subject: `"${createdContent.username}" comentou na sua postagem!`,
       text: `Olá, ${rootContentUser.username}!
 
-Alguém respondeu sua publicação com:
+${createdContent.username} respondeu sua publicação com:
 
-${createdContent.body.substring(0, 30)}...
+${createdContent.body.length <= 30 ? createdContent.body : createdContent.body.substring(0, 30) + '...'}
 
 ${
-  createdContent.length <= 30
-    ? `
-Para ler o comentário, utilize o link abaixo:
-
-${childContendUrl}
-  `
-    : `
-Para ler o comentário inteiro, utilize o link abaixo:
-
-${childContendUrl}
-`
+  createdContent.body.length <= 30
+    ? `Para ler o comentário, utilize o link abaixo:`
+    : `Para ler o comentário inteiro, utilize o link abaixo:`
 }
+
+${childContendUrl}
+
 Atenciosamente,
 Equipe TabNews
 Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
