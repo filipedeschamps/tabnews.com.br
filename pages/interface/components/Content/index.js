@@ -207,7 +207,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           titleRef?.current.focus();
         }
 
-        const data = localStorage.getItem(localStorageKey);
+        let data = localStorage.getItem(localStorageKey);
 
         if (contentObject && !contentObject?.parent_id && !isValidJsonString(data)) {
           localStorage.setItem(
@@ -219,6 +219,8 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
             })
           );
         }
+
+        data = localStorage.getItem(localStorageKey);
 
         if (isValidJsonString(data)) {
           const parsedData = JSON.parse(data);
@@ -382,7 +384,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <FormControl.Label visuallyHidden>Título</FormControl.Label>
                 <TextInput
                   ref={titleRef}
-                  onChange={clearErrors}
+                  onChange={(event)=> {
+                    clearErrors();
+                    setTitleDefaultValue(event.target.value);
+                  }}
                   name="title"
                   size="large"
                   autoCorrect="off"
@@ -425,7 +430,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
                 <TextInput
                   ref={sourceUrlRef}
-                  onChange={clearErrors}
+                  onChange={(event) => {
+                    clearErrors();
+                    setSourceUrlDefaultValue(event.target.value);
+                  }}
                   name="source_url"
                   size="large"
                   autoCorrect="off"
@@ -450,6 +458,17 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   aria-label="Cancelar alteração"
                   onClick={(event) => {
                     setComponentMode('view');
+                    localStorage.removeItem(localStorageKey);
+                  }}>
+                  Cancelar
+                </Link>
+              )}
+              {contentObject && contentObject.parent_id && !contentObject.id && (
+                <Link
+                  sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
+                  aria-label="Cancelar"
+                  onClick={(event) => {
+                    setComponentMode('compact');
                     localStorage.removeItem(localStorageKey);
                   }}>
                   Cancelar
