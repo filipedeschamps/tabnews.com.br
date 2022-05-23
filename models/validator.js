@@ -329,7 +329,7 @@ const schemas = {
   source_url: function () {
     return Joi.object({
       source_url: Joi.string()
-        .allow(null)
+        .allow(null, '')
         .trim()
         .max(2000)
         .pattern(/^(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)

@@ -241,15 +241,15 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         status: 'published',
       };
 
-      if (title) {
+      if (title || contentObject?.title) {
         requestBody.title = title;
       }
 
-      if (body) {
+      if (body || contentObject?.body) {
         requestBody.body = body;
       }
 
-      if (sourceUrl) {
+      if (sourceUrl || contentObject?.source_url) {
         requestBody.source_url = sourceUrl;
       }
 
