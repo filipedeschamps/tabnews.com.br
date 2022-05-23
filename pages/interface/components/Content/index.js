@@ -166,18 +166,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   function EditMode() {
     const router = useRouter();
-    useEffect(() => {
-      if (!isLoading && !user.username) {
-        // TODO: re-implement this after local changes
-        // are saved in local storage.
-        // router.push('/login');
-
-        setGlobalErrorMessage('Você precisa estar logado para criar ou editar um conteúdo.');
-      } else {
-        clearErrors();
-      }
-    }, []);
-
     const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [errorObject, setErrorObject] = useState(undefined);
@@ -226,6 +214,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     async function handleSubmit(event) {
       event.preventDefault();
+      if (!user.username) {
+        router.push('/login');
+        setGlobalErrorMessage('Você precisa estar logado para criar ou editar um conteúdo.');
+        return;
+      }
       setIsPosting(true);
       setErrorObject(undefined);
 
@@ -358,8 +351,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Título"
                   aria-label="Título"
-                  // Autofocus: na prática já estava implementado
-                  // através da referência do input no useEffect
                   // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus={true}
                   value={newData.title}
@@ -413,7 +404,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   Cancelar
                 </Link>
               )}
-              <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+              <Button variant="primary" type="submit" disabled={isPosting || isLoading} aria-label="Publicar">
                 {contentObject && contentObject.id ? 'Atualizar' : 'Publicar'}
               </Button>
             </Box>
