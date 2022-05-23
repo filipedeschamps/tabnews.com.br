@@ -250,7 +250,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
 
       if (sourceUrl || contentObject?.source_url) {
-        requestBody.source_url = sourceUrl;
+        requestBody.source_url = sourceUrl || null;
       }
 
       if (contentObject?.parent_id) {
