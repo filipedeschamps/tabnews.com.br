@@ -12,12 +12,6 @@ function getHost() {
   return webserverHost;
 }
 
-function getApiEndpoint(endpoint) {
-  const webserverHost = getHost();
-  return `${webserverHost}/api/${endpoint}`;
-}
-
 export default Object.freeze({
   getHost,
-  getApiEndpoint,
 });
