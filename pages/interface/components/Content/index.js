@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 
 import {
@@ -36,6 +36,7 @@ import 'github-markdown-css/github-markdown-light.css';
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
+  const { user, isLoading } = useUser();
 
   useEffect(() => {
     setComponentMode(mode);
@@ -60,7 +61,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function ViewMode() {
-    const { user, isLoading } = useUser();
     const [publishedSinceText, setPublishedSinceText] = useState();
 
     useEffect(() => {
@@ -166,76 +166,47 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   function EditMode() {
     const router = useRouter();
-    const { user, isLoading } = useUser();
-
-    useEffect(() => {
-      if (!isLoading && !user.username) {
-        // TODO: re-implement this after local changes
-        // are saved in local storage.
-        // router.push('/login');
-
-        setGlobalErrorMessage('Você precisa estar logado para criar ou editar um conteúdo.');
-      } else {
-        clearErrors();
-      }
-    }, [user, isLoading]);
-
     const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [errorObject, setErrorObject] = useState(undefined);
-    const [body, setBody] = useState('');
-    const [titleDefaultValue, setTitleDefaultValue] = useState('');
-    const [sourceUrlDefaultValue, setSourceUrlDefaultValue] = useState('');
-    const titleRef = useRef('');
-    const sourceUrlRef = useRef('');
+    const [newData, setNewData] = useState({
+      title: contentObject?.title || '',
+      body: contentObject?.body || '',
+      source_url: contentObject?.source_url || '',
+    });
 
     const localStorageKey = useMemo(() => {
-      if (contentObject?.parent_id) {
-        return `content-edit-child-${contentObject.parent_id}`;
-      } else if (contentObject?.parent_id && contentObject?.id) {
-        return `content-edit-child-${contentObject.parent_id}-${contentObject.id}`;
-      } else if (contentObject?.id) {
+      if (contentObject?.id) {
         return `content-edit-${contentObject.id}`;
+      } else if (contentObject?.parent_id) {
+        return `content-new-parent-${contentObject.parent_id}`;
       } else {
         return `content-new`;
       }
     }, []);
 
-    useEffect(() => {
-      if (componentMode === 'edit') {
-        if (!contentObject && !contentObject?.parent_id) {
-          titleRef?.current.focus();
-        }
+    function loadLocalStorage(oldData) {
+      const data = localStorage.getItem(localStorageKey);
 
-        let data = localStorage.getItem(localStorageKey);
-
-        if (contentObject && !contentObject?.parent_id && !isValidJsonString(data)) {
-          localStorage.setItem(
-            localStorageKey,
-            JSON.stringify({
-              title: contentObject?.title || '',
-              source_url: contentObject?.source_url || '',
-              body: contentObject?.body || '',
-            })
-          );
-        }
-
-        data = localStorage.getItem(localStorageKey);
-
-        if (isValidJsonString(data)) {
-          const parsedData = JSON.parse(data);
-
-          setBody(parsedData?.body || '');
-
-          if (!contentObject?.parent_id) {
-            setTitleDefaultValue(parsedData?.title || '');
-            setSourceUrlDefaultValue(parsedData?.source_url || '');
-          }
-        } else {
-          setBody(contentObject?.body || '');
-        }
+      if (!isValidJsonString(data)) {
+        localStorage.removeItem(localStorageKey);
+        return oldData;
       }
-    }, [localStorageKey]);
+
+      return JSON.parse(data);
+    }
+
+    useEffect(() => {
+      setNewData(loadLocalStorage(newData));
+
+      function onFocus() {
+        setNewData((oldData) => loadLocalStorage(oldData));
+      }
+
+      addEventListener('focus', onFocus);
+      return () => removeEventListener('focus', onFocus);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     function clearErrors() {
       setErrorObject(undefined);
@@ -243,11 +214,16 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     async function handleSubmit(event) {
       event.preventDefault();
+      if (!user.username) {
+        router.push('/login');
+        return;
+      }
       setIsPosting(true);
       setErrorObject(undefined);
 
-      const title = titleRef.current.value;
-      const sourceUrl = sourceUrlRef.current.value;
+      const title = newData.title;
+      const body = newData.body;
+      const sourceUrl = newData.source_url;
 
       const requestMethod = contentObject?.id ? 'PATCH' : 'POST';
       const requestUrl = contentObject?.id
@@ -257,16 +233,16 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         status: 'published',
       };
 
-      if (title) {
+      if (title || contentObject?.title) {
         requestBody.title = title;
       }
 
-      if (body) {
+      if (body || contentObject?.body) {
         requestBody.body = body;
       }
 
-      if (sourceUrl) {
-        requestBody.source_url = sourceUrl;
+      if (sourceUrl || contentObject?.source_url) {
+        requestBody.source_url = sourceUrl || null;
       }
 
       if (contentObject?.parent_id) {
@@ -288,31 +264,22 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         const responseBody = await response.json();
 
         if (response.status === 200) {
-          setContentObject(responseBody);
-
           localStorage.removeItem(localStorageKey);
-
+          setContentObject(responseBody);
           setComponentMode('view');
-
           return;
         }
 
         if (response.status === 201) {
+          localStorage.removeItem(localStorageKey);
           if (!responseBody.parent_id) {
             localStorage.setItem('justPublishedNewRootContent', true);
-
-            localStorage.removeItem(localStorageKey);
-
             router.push(`/${responseBody.username}/${responseBody.slug}`);
             return;
           }
 
           setContentObject(responseBody);
-
-          localStorage.removeItem(localStorageKey);
-
           setComponentMode('view');
-
           return;
         }
 
@@ -344,34 +311,26 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
     }
 
-    const handleChange = useCallback(
-      (event) => {
-        const data = localStorage.getItem(localStorageKey);
-        if (isValidJsonString(data)) {
-          const parsedData = JSON.parse(data);
+    const handleChange = (event) => {
+      clearErrors();
+      setNewData((oldData) => {
+        const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
+        localStorage.setItem(localStorageKey, JSON.stringify(newData));
+        return newData;
+      });
+    };
 
-          parsedData[event.target.name] = event.target.value;
-
-          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
-        } else {
-          const parsedData = {};
-          parsedData[event.target.name] = event.target.value;
-          localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
-        }
-      },
-      [localStorageKey]
-    );
-
-    useEffect(() => {
-      if (body !== '') {
-        handleChange({
-          target: {
-            name: 'body',
-            value: body,
-          },
-        });
-      }
-    }, [handleChange, body]);
+    function handleCancel() {
+      if (
+        newData.body &&
+        !window.confirm('Tem certeza que deseja sair da edição?\n Os dados não salvos serão perdidos.')
+      )
+        return;
+      clearErrors();
+      localStorage.removeItem(localStorageKey);
+      const isPublished = contentObject?.status === 'published';
+      setComponentMode(isPublished ? 'view' : 'compact');
+    }
 
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
@@ -383,11 +342,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
               <FormControl id="title">
                 <FormControl.Label visuallyHidden>Título</FormControl.Label>
                 <TextInput
-                  ref={titleRef}
-                  onChange={(event) => {
-                    clearErrors();
-                    setTitleDefaultValue(event.target.value);
-                  }}
+                  onChange={handleChange}
                   name="title"
                   size="large"
                   autoCorrect="off"
@@ -395,8 +350,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Título"
                   aria-label="Título"
-                  onKeyUp={handleChange}
-                  value={titleDefaultValue}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
+                  autoFocus={true}
+                  value={newData.title}
                 />
 
                 {errorObject?.key === 'title' && (
@@ -409,15 +365,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
             <FormControl id="body">
               <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
               <Box className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
-                <Editor
-                  value={body}
-                  plugins={bytemdPluginList}
-                  onChange={(newBody) => {
-                    clearErrors();
-                    setBody(newBody);
-                  }}
-                  mode="tab"
-                />
+                <Editor value={newData.body} plugins={bytemdPluginList} onChange={handleChange} mode="tab" />
               </Box>
 
               {errorObject?.key === 'body' && (
@@ -429,11 +377,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
               <FormControl id="source_url">
                 <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
                 <TextInput
-                  ref={sourceUrlRef}
-                  onChange={(event) => {
-                    clearErrors();
-                    setSourceUrlDefaultValue(event.target.value);
-                  }}
+                  onChange={handleChange}
                   name="source_url"
                   size="large"
                   autoCorrect="off"
@@ -441,8 +385,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   spellCheck={false}
                   placeholder="Fonte (opcional)"
                   aria-label="Fonte (opcional)"
-                  onKeyUp={handleChange}
-                  value={sourceUrlDefaultValue}
+                  value={newData.source_url}
                 />
 
                 {errorObject?.key === 'source_url' && (
@@ -452,29 +395,15 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
             )}
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              {contentObject && contentObject.id && (
+              {contentObject && (
                 <Link
                   sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
                   aria-label="Cancelar alteração"
-                  onClick={(event) => {
-                    setComponentMode('view');
-                    localStorage.removeItem(localStorageKey);
-                  }}>
+                  onClick={handleCancel}>
                   Cancelar
                 </Link>
               )}
-              {contentObject && contentObject.parent_id && !contentObject.id && (
-                <Link
-                  sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
-                  aria-label="Cancelar"
-                  onClick={(event) => {
-                    setComponentMode('compact');
-                    localStorage.removeItem(localStorageKey);
-                  }}>
-                  Cancelar
-                </Link>
-              )}
-              <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+              <Button variant="primary" type="submit" disabled={isPosting || isLoading} aria-label="Publicar">
                 {contentObject && contentObject.id ? 'Atualizar' : 'Publicar'}
               </Button>
             </Box>
@@ -526,35 +455,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function CompactMode() {
-    const { user, isLoading } = useUser();
     const router = useRouter();
-
-    const localStorageKey = useMemo(() => {
-      if (contentObject?.parent_id) {
-        return `content-edit-child-${contentObject.parent_id}`;
-      } else if (contentObject?.parent_id && contentObject?.id) {
-        return `content-edit-child-${contentObject.parent_id}-${contentObject.id}`;
-      } else if (contentObject?.id) {
-        return `content-edit-${contentObject.id}`;
-      } else {
-        return `content-new`;
-      }
-    }, []);
-
-    useEffect(() => {
-      if (user && !isLoading) {
-        const data = localStorage.getItem(localStorageKey);
-        if (isValidJsonString(data)) {
-          const parsedData = JSON.parse(data);
-
-          if (parsedData?.body) {
-            setComponentMode('edit');
-          } else {
-            localStorage.removeItem(localStorageKey);
-          }
-        }
-      }
-    }, [localStorageKey, user, isLoading]);
 
     const handleClick = useCallback(() => {
       if (user?.username && !isLoading) {
@@ -562,16 +463,14 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       } else {
         router.push(`/login?redirect=${router.asPath}`);
       }
-    }, [user, isLoading, router]);
+    }, [router]);
 
     return (
       <Button
         sx={{
           maxWidth: 'fit-content',
         }}
-        onClick={() => {
-          handleClick();
-        }}>
+        onClick={handleClick}>
         Responder
       </Button>
     );
