@@ -58,7 +58,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     }
   }, [contentObject]);
 
-  useEffect(()=>{
+  useEffect(() => {
     const localStorageContent = localStorage.getItem(localStorageKey);
     if (isValidJsonString(localStorageContent)) {
       setComponentMode('edit');
@@ -192,7 +192,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       source_url: contentObject?.source_url || '',
     });
 
-    const loadLocalStorage = useCallback((oldData) =>{
+    const loadLocalStorage = useCallback((oldData) => {
       const data = localStorage.getItem(localStorageKey);
 
       if (!isValidJsonString(data)) {
@@ -214,119 +214,125 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       return () => removeEventListener('focus', onFocus);
     }, [loadLocalStorage]);
 
-    const clearErrors = useCallback(() =>{
+    const clearErrors = useCallback(() => {
       setErrorObject(undefined);
     }, []);
 
-    const handleSubmit = useCallback(async(event) =>{
-      event.preventDefault();
-      if (!user.username) {
-        router.push('/login');
-        return;
-      }
-      setIsPosting(true);
-      setErrorObject(undefined);
-
-      const title = newData.title;
-      const body = newData.body;
-      const sourceUrl = newData.source_url;
-
-      const requestMethod = contentObject?.id ? 'PATCH' : 'POST';
-      const requestUrl = contentObject?.id
-        ? `/api/v1/contents/${user.username}/${contentObject.slug}`
-        : `/api/v1/contents`;
-      const requestBody = {
-        status: 'published',
-      };
-
-      if (title || contentObject?.title) {
-        requestBody.title = title;
-      }
-
-      if (body || contentObject?.body) {
-        requestBody.body = body;
-      }
-
-      if (sourceUrl || contentObject?.source_url) {
-        requestBody.source_url = sourceUrl || null;
-      }
-
-      if (contentObject?.parent_id) {
-        requestBody.parent_id = contentObject.parent_id;
-      }
-
-      try {
-        const response = await fetch(requestUrl, {
-          method: requestMethod,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        setGlobalErrorMessage(undefined);
-
-        const responseBody = await response.json();
-
-        if (response.status === 200) {
-          localStorage.removeItem(localStorageKey);
-          setContentObject(responseBody);
-          setComponentMode('view');
+    const handleSubmit = useCallback(
+      async (event) => {
+        event.preventDefault();
+        if (!user.username) {
+          router.push('/login');
           return;
         }
+        setIsPosting(true);
+        setErrorObject(undefined);
 
-        if (response.status === 201) {
-          localStorage.removeItem(localStorageKey);
-          if (!responseBody.parent_id) {
-            localStorage.setItem('justPublishedNewRootContent', true);
-            router.push(`/${responseBody.username}/${responseBody.slug}`);
+        const title = newData.title;
+        const body = newData.body;
+        const sourceUrl = newData.source_url;
+
+        const requestMethod = contentObject?.id ? 'PATCH' : 'POST';
+        const requestUrl = contentObject?.id
+          ? `/api/v1/contents/${user.username}/${contentObject.slug}`
+          : `/api/v1/contents`;
+        const requestBody = {
+          status: 'published',
+        };
+
+        if (title || contentObject?.title) {
+          requestBody.title = title;
+        }
+
+        if (body || contentObject?.body) {
+          requestBody.body = body;
+        }
+
+        if (sourceUrl || contentObject?.source_url) {
+          requestBody.source_url = sourceUrl || null;
+        }
+
+        if (contentObject?.parent_id) {
+          requestBody.parent_id = contentObject.parent_id;
+        }
+
+        try {
+          const response = await fetch(requestUrl, {
+            method: requestMethod,
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+          });
+
+          setGlobalErrorMessage(undefined);
+
+          const responseBody = await response.json();
+
+          if (response.status === 200) {
+            localStorage.removeItem(localStorageKey);
+            setContentObject(responseBody);
+            setComponentMode('view');
             return;
           }
 
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
-        }
+          if (response.status === 201) {
+            localStorage.removeItem(localStorageKey);
+            if (!responseBody.parent_id) {
+              localStorage.setItem('justPublishedNewRootContent', true);
+              router.push(`/${responseBody.username}/${responseBody.slug}`);
+              return;
+            }
 
-        if (response.status === 400) {
-          setErrorObject(responseBody);
-
-          if (responseBody.key === 'slug') {
-            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+            setContentObject(responseBody);
+            setComponentMode('view');
+            return;
           }
+
+          if (response.status === 400) {
+            setErrorObject(responseBody);
+
+            if (responseBody.key === 'slug') {
+              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+            }
+            setIsPosting(false);
+            return;
+          }
+
+          if (response.status === 401 || response.status === 403) {
+            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+            setIsPosting(false);
+            return;
+          }
+
+          if (response.status >= 500) {
+            setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+            setIsPosting(false);
+            return;
+          }
+        } catch (error) {
+          console.log(error);
+          setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
           setIsPosting(false);
-          return;
         }
+      },
+      [newData, router, setGlobalErrorMessage, setIsPosting]
+    );
 
-        if (response.status === 401 || response.status === 403) {
-          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-          setIsPosting(false);
-          return;
-        }
+    const handleChange = useCallback(
+      (event) => {
+        clearErrors();
+        setNewData((oldData) => {
+          const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
+          localStorage.setItem(localStorageKey, JSON.stringify(newData));
+          return newData;
+        });
+      },
+      [clearErrors]
+    );
 
-        if (response.status >= 500) {
-          setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
-          setIsPosting(false);
-          return;
-        }
-      } catch (error) {
-        console.log(error);
-        setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-        setIsPosting(false);
-      }
-    }, [newData, router, setGlobalErrorMessage, setIsPosting]);
-
-    const handleChange = useCallback((event) => {
-      clearErrors();
-      setNewData((oldData) => {
-        const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
-        localStorage.setItem(localStorageKey, JSON.stringify(newData));
-        return newData;
-      });
-    }, [clearErrors]);
-
-    const handleCancel = useCallback(() =>{
+    const handleCancel = useCallback(() => {
       if (
         newData.body &&
         !window.confirm('Tem certeza que deseja sair da edição?\n Os dados não salvos serão perdidos.')
