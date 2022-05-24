@@ -48,6 +48,23 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
 
+  const localStorageKey = useMemo(() => {
+    if (contentObject?.id) {
+      return `content-edit-${contentObject.id}`;
+    } else if (contentObject?.parent_id) {
+      return `content-new-parent-${contentObject.parent_id}`;
+    } else {
+      return `content-new`;
+    }
+  }, [contentObject]);
+
+  useEffect(()=>{
+    const localStorageContent = localStorage.getItem(localStorageKey);
+    if (isValidJsonString(localStorageContent)) {
+      setComponentMode('edit');
+    }
+  }, [localStorageKey]);
+
   if (componentMode === 'view') {
     return <ViewMode />;
   }
@@ -175,17 +192,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       source_url: contentObject?.source_url || '',
     });
 
-    const localStorageKey = useMemo(() => {
-      if (contentObject?.id) {
-        return `content-edit-${contentObject.id}`;
-      } else if (contentObject?.parent_id) {
-        return `content-new-parent-${contentObject.parent_id}`;
-      } else {
-        return `content-new`;
-      }
-    }, []);
-
-    function loadLocalStorage(oldData) {
+    const loadLocalStorage = useCallback((oldData) =>{
       const data = localStorage.getItem(localStorageKey);
 
       if (!isValidJsonString(data)) {
@@ -194,10 +201,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       }
 
       return JSON.parse(data);
-    }
+    }, []);
 
     useEffect(() => {
-      setNewData(loadLocalStorage(newData));
+      setNewData((data) => loadLocalStorage(data));
 
       function onFocus() {
         setNewData((oldData) => loadLocalStorage(oldData));
@@ -205,14 +212,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
       addEventListener('focus', onFocus);
       return () => removeEventListener('focus', onFocus);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loadLocalStorage]);
+
+    const clearErrors = useCallback(() =>{
+      setErrorObject(undefined);
     }, []);
 
-    function clearErrors() {
-      setErrorObject(undefined);
-    }
-
-    async function handleSubmit(event) {
+    const handleSubmit = useCallback(async(event) =>{
       event.preventDefault();
       if (!user.username) {
         router.push('/login');
@@ -309,18 +315,18 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
         setIsPosting(false);
       }
-    }
+    }, [newData, router, setGlobalErrorMessage, setIsPosting]);
 
-    const handleChange = (event) => {
+    const handleChange = useCallback((event) => {
       clearErrors();
       setNewData((oldData) => {
         const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
         localStorage.setItem(localStorageKey, JSON.stringify(newData));
         return newData;
       });
-    };
+    }, [clearErrors]);
 
-    function handleCancel() {
+    const handleCancel = useCallback(() =>{
       if (
         newData.body &&
         !window.confirm('Tem certeza que deseja sair da edição?\n Os dados não salvos serão perdidos.')
@@ -330,7 +336,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       localStorage.removeItem(localStorageKey);
       const isPublished = contentObject?.status === 'published';
       setComponentMode(isPublished ? 'view' : 'compact');
-    }
+    }, [newData, clearErrors]);
 
     return (
       <Box sx={{ mb: 4, width: '100%' }}>
