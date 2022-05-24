@@ -1,7 +1,17 @@
-import { Box } from '@primer/react';
+import { Box, useTheme } from '@primer/react';
 import { BaseLayout, Header } from 'pages/interface/index.js';
+import { useEffect } from 'react';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata, content }) {
+  const { setColorMode } = useTheme();
+
+  useEffect(() => {
+    (async () => {
+      const mode = await localStorage.getItem('theme') || 'day';
+      setColorMode(mode);
+    })();
+  }, []);
+
   return (
     <BaseLayout metadata={metadata} content={content}>
       <Header />

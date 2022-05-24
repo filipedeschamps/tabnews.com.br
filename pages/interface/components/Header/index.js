@@ -1,11 +1,12 @@
 import { useRouter } from 'next/router';
-import { Header, Box, Button, ActionMenu, ActionList } from '@primer/react';
+import { Header, Box, Button, ActionMenu, ActionList, useTheme } from '@primer/react';
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
 
 export default function HeaderComponent() {
   const router = useRouter();
   const { user, isLoading } = useUser();
+  const { colorMode, setColorMode } = useTheme();
 
   return (
     <Header>
@@ -54,6 +55,17 @@ export default function HeaderComponent() {
                     }}>
                     Editar perfil
                   </ActionList.LinkItem>
+                  <ActionList.Item
+                    onClick={() => {
+                      const mode = localStorage.getItem('theme') || 'day';
+                      const modeToChange = mode === 'day' ? 'night' : 'day';
+
+                      localStorage.setItem('theme', modeToChange);
+                      setColorMode(modeToChange);
+                    }}
+                  >
+                    Alterar tema ({colorMode === 'day' ? 'Dark' : 'Light'})
+                  </ActionList.Item>
                   <ActionList.Divider />
                   <ActionList.Item variant="danger" onSelect={(event) => alert('Recurso ainda não implementado.')}>
                     Deslogar

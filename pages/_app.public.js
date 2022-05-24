@@ -15,7 +15,7 @@ function MyApp({ Component, pageProps }) {
         fetcher: SWRFetcher,
       }}>
       <SSRProvider>
-        <ThemeProvider preventSSRMismatch colorMode="day">
+        <ThemeProvider preventSSRMismatch>
           <BaseStyles>
             <Component {...pageProps} />
           </BaseStyles>
