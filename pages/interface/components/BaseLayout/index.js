@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { Box } from '@primer/react';
 
 // TODO: remove `content` from the props and only work with `metadata`
 export default function DefaultLayout({ children, metadata = {}, content }) {
@@ -17,7 +18,10 @@ export default function DefaultLayout({ children, metadata = {}, content }) {
   }
 
   return (
-    <>
+    <Box sx={{
+      bg: 'canvas.default',
+      minHeight: '100vh'
+    }}>
       <Head>
         <title>{title}</title>
         <meta property="og:title" content={title} key="title" />
@@ -27,6 +31,6 @@ export default function DefaultLayout({ children, metadata = {}, content }) {
         <link rel="apple-touch-icon" href="/favicon.png"></link>
       </Head>
       {children}
-    </>
+    </Box>
   );
 }
