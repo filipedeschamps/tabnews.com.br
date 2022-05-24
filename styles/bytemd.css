@@ -1,0 +1,31 @@
+.bytemd.dark {
+  color-scheme: dark;
+  --color-canvas-default: #0d1117;
+  --color-fg-default: #c9d1d9;
+  --color-border-default: #30363d;
+  --color-accent-fg: #58a6ff;
+}
+
+.bytemd.light {
+  color-scheme: light;
+  --color-canvas-default: #ffffff;
+  --color-fg-default: #24292f;
+  --color-border-default: #d0d7de;
+  --color-accent-fg: #0969da;
+}
+
+.bytemd {
+  background-color: var(--color-canvas-default) !important;
+  color: var(--color-fg-default) !important;
+  border-color: var(--color-border-default) !important;
+}
+
+.bytemd-toolbar {
+  background-color: var(--color-canvas-default) !important;
+  color: var(--color-fg-default) !important;
+  border-color: var(--color-border-default) !important;
+}
+
+.bytemd-toolbar-tab-active {
+  color: var(--color-accent-fg);
+}
