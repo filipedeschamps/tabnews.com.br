@@ -15,6 +15,7 @@ import {
   ActionList,
   IconButton,
   Tooltip,
+  useTheme,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, IssueDraftIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import { formatDistanceToNowStrict } from 'date-fns';
@@ -31,11 +32,11 @@ import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
 import 'bytemd/dist/index.min.css';
 import 'highlight.js/styles/github.css';
-import 'github-markdown-css/github-markdown-light.css';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
+  const { colorMode } = useTheme();
 
   useEffect(() => {
     setComponentMode(mode);
@@ -167,6 +168,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   function EditMode() {
     const router = useRouter();
     const { user, isLoading } = useUser();
+
+    useEffect(() => {
+      document
+        .querySelector('.bytemd')
+        .classList
+        .add(colorMode === 'day' ? 'light' : 'dark');
+    }, []);
 
     useEffect(() => {
       if (!isLoading && !user.username) {
@@ -417,6 +425,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                     setBody(newBody);
                   }}
                   mode="tab"
+                  editorConfig={{
+                    theme: `github-${colorMode === 'day' ? 'light' : 'dark'}`,
+                  }}
                 />
               </Box>
 
