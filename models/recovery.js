@@ -2,27 +2,30 @@ import email from 'infra/email.js';
 import database from 'infra/database.js';
 import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
-import authentication from 'models/authentication';
+import authentication from 'models/authentication.js';
 import { NotFoundError } from 'errors/index.js';
 
-async function createAndSendRecoveryEmail(user) {
-  const tokenObject = await create(user);
-  await sendEmailToUser(user, tokenObject.id);
+async function createAndSendRecoveryEmail(secureInputValues) {
+  const userFound = await findUserByUsernameOrEmail(secureInputValues);
+  const tokenObject = await create(userFound);
+  await sendEmailToUser(userFound, tokenObject.id);
+
+  return tokenObject;
 }
 
 async function findUserByUsernameOrEmail({ username, email }) {
-  let userExist = {};
   if (username) {
-    userExist = await user.findOneByUsername(username);
-  } else if (email) {
-    userExist = await user.findOneByEmail(email);
+    return await user.findOneByUsername(username);
   }
-  return userExist;
+
+  if (email) {
+    return await user.findOneByEmail(email);
+  }
 }
 
 async function create(user) {
   const query = {
-    text: `INSERT INTO activate_account_tokens (user_id, expires_at)
+    text: `INSERT INTO reset_password_tokens (user_id, expires_at)
            VALUES($1, now() + interval '15 minutes') RETURNING *;`,
     values: [user.id],
   };
@@ -32,7 +35,7 @@ async function create(user) {
 }
 
 async function sendEmailToUser(user, tokenId) {
-  const recoveryPageEndpoint = getRecoveryPageEndpoint(tokenId);
+  const recoverPageEndpoint = getRecoverPageEndpoint(tokenId);
 
   await email.send({
     from: {
@@ -40,12 +43,12 @@ async function sendEmailToUser(user, tokenId) {
       address: 'contato@tabnews.com.br',
     },
     to: user.email,
-    subject: 'Recuperação de senha no TabNews',
-    text: `${user.username}, uma solicitação de recuperação de senha foi solicitada, se não foi você quem solicitou ignore este e-mail.
+    subject: 'Recuperação de Senha',
+    text: `${user.username}, uma solicitação de recuperação de senha foi solicitada. Caso você não tenha feito esta requisição, ignore esse email.
 
-Caso você tenha feito essa solicitação clique no link abaixo para alterar sua senha.
+Caso você tenha feito essa solicitação clique no link abaixo para definir uma nova senha.
 
-${recoveryPageEndpoint}
+${recoverPageEndpoint}
 
 Atenciosamente,
 Equipe TabNews
@@ -53,7 +56,7 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
   });
 }
 
-function getRecoveryPageEndpoint(tokenId) {
+function getRecoverPageEndpoint(tokenId) {
   const webserverHost = webserver.getHost();
   return `${webserverHost}/cadastro/recuperar/${tokenId}`;
 }
@@ -77,7 +80,7 @@ async function recoveryUserUsingTokenId(tokenId) {
 
 async function findOneTokenById(tokenId) {
   const query = {
-    text: `SELECT * FROM activate_account_tokens
+    text: `SELECT * FROM reset_password_tokens
         WHERE id = $1
         LIMIT 1;`,
     values: [tokenId],
@@ -95,9 +98,29 @@ async function findOneTokenById(tokenId) {
   return results.rows[0];
 }
 
+async function findOneTokenByUserId(userId) {
+  const query = {
+    text: `SELECT * FROM reset_password_tokens
+        WHERE user_id = $1
+        LIMIT 1;`,
+    values: [userId],
+  };
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O token de recuperação de senha utilizado não foi encontrado no sistema.`,
+      action: 'Certifique-se que está sendo enviado o token corretamente.',
+      stack: new Error().stack,
+    });
+  }
+
+  return results.rows[0];
+}
+
 async function findOneValidTokenById(tokenId) {
   const query = {
-    text: `SELECT * FROM activate_account_tokens
+    text: `SELECT * FROM reset_password_tokens
         WHERE id = $1
         AND used = false
         AND expires_at >= now()
@@ -122,7 +145,7 @@ async function findOneValidTokenById(tokenId) {
 
 async function markTokenAsUsed(tokenId) {
   const query = {
-    text: `UPDATE activate_account_tokens
+    text: `UPDATE reset_password_tokens
             SET used = true,
             updated_at = (now() at time zone 'utc')
             WHERE id = $1
@@ -160,8 +183,10 @@ async function updatePassword(userId, password) {
 }
 
 export default Object.freeze({
+  create,
   createAndSendRecoveryEmail,
-  findUserByUsernameOrEmail,
   updatePassword,
   recoveryUserUsingTokenId,
+  findOneTokenByUserId,
+  getRecoverPageEndpoint,
 });

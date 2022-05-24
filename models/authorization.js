@@ -16,6 +16,10 @@ const availableFeatures = new Set([
   // ACTIVATION_TOKEN
   'read:activation_token',
 
+  // RECOVERY_TOKEN
+  'read:recovery_token',
+  'create:recovery_token',
+
   // SESSION
   'create:session',
   'read:session',
@@ -127,6 +131,13 @@ function filterInput(user, feature, input) {
     };
   }
 
+  if (feature === 'create:recovery_token' && can(user, feature)) {
+    filteredInputValues = {
+      username: input.username,
+      email: input.email,
+    };
+  }
+
   // Force the clean up of "undefined" values
   return JSON.parse(JSON.stringify(filteredInputValues));
 }
@@ -215,6 +226,16 @@ function filterOutput(user, feature, output) {
       return validator(content, {
         content: 'required',
       });
+    });
+  }
+
+  if (feature === 'read:recovery_token') {
+    filteredOutputValues = validator(output, {
+      id: 'required',
+      used: 'required',
+      expires_at: 'required',
+      created_at: 'required',
+      updated_at: 'required',
     });
   }
 

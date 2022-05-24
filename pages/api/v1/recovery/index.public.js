@@ -1,7 +1,8 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
-import recover from 'models/recover.js';
+import authorization from 'models/authorization.js';
+import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
 
 export default nextConnect({
@@ -12,28 +13,35 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .post(postValidationHandler, postHandler)
+  .post(postValidationHandler, authorization.canRequest('create:recovery_token'), postHandler)
   .patch(patchValidationHandler, patchHandler);
-
-async function postHandler(request, response) {
-  let user;
-  try {
-    user = await recover.findUserByUsernameOrEmail(request.body);
-  } catch (error) {
-    return response.status(error.statusCode).json(error);
-  }
-  await recover.createAndSendRecoveryEmail(user);
-  return response.status(201).json(request.body);
-}
 
 function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     username: 'optional',
     email: 'optional',
   });
+
   request.body = cleanValues;
 
   next();
+}
+
+async function postHandler(request, response) {
+  const userTryingToRecover = request.context.user;
+  const insecureInputValues = request.body;
+
+  const secureInputValues = authorization.filterInput(
+    userTryingToRecover,
+    'create:recovery_token',
+    insecureInputValues
+  );
+
+  const tokenObject = await recovery.createAndSendRecoveryEmail(secureInputValues);
+
+  const authorizedValuesToReturn = authorization.filterOutput(userTryingToRecover, 'read:recovery_token', tokenObject);
+
+  return response.status(201).json(authorizedValuesToReturn);
 }
 
 function patchValidationHandler(request, response, next) {
@@ -53,11 +61,11 @@ async function patchHandler(request, response) {
   //TODO: validate input values with the new validation strategy
   let tokenObject;
   try {
-    tokenObject = await recover.recoveryUserUsingTokenId(insecureInputValues.token_id);
+    tokenObject = await recovery.recoveryUserUsingTokenId(insecureInputValues.token_id);
   } catch (error) {
     return response.status(error.statusCode).json(error);
   }
 
-  await recover.updatePassword(tokenObject.user_id, insecureInputValues.password);
+  await recovery.updatePassword(tokenObject.user_id, insecureInputValues.password);
   return response.status(200).send();
 }
