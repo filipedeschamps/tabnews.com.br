@@ -216,7 +216,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       event.preventDefault();
       if (!user.username) {
         router.push('/login');
-        setGlobalErrorMessage('Você precisa estar logado para criar ou editar um conteúdo.');
         return;
       }
       setIsPosting(true);
