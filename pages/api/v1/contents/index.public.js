@@ -5,7 +5,7 @@ import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
-import { ForbiddenError } from 'errors/index.js';
+import { ForbiddenError, NotFoundError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -15,12 +15,60 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getHandler)
+  .get(getValidationHandler, getHandler)
   .post(postValidationHandler, authorization.canRequest('create:content'), postHandler);
+
+function getValidationHandler(request, response, next) {
+  if (!request.query) {
+    next();
+
+    return;
+  }
+
+  if (Object.entries(request.query).length === 0) {
+    next();
+
+    return;
+  }
+
+  const cleanValues = validator(request.query, {
+    id: 'optional',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
 
 // TODO: cache the response
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
+
+  const queryValues = request.query;
+
+  if (queryValues.id) {
+    const contentFound = await content.findOne({
+      where: {
+        id: queryValues.id,
+        status: 'published',
+      },
+    });
+
+    if (!contentFound) {
+      throw new NotFoundError({
+        message: `O conteúdo informado não foi encontrado no sistema.`,
+        action: 'Verifique se "id" está digitado corretamente.',
+        stack: new Error().stack,
+        errorUniqueCode: 'CONTROLLER:CONTENT:GET_HANDLER:ID_NOT_FOUND',
+        key: 'id',
+      });
+    }
+
+    const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content', contentFound);
+
+    return response.status(200).json(secureOutputValues);
+  }
+
   const contentList = await content.findWithStrategy({
     strategy: 'descending',
     where: {
@@ -84,7 +132,19 @@ async function postHandler(request, response) {
   const createdContent = await content.create(secureInputValues);
 
   if (createdContent.parent_id) {
-    await notification.create({ content_id: createdContent.id, type: 'content' });
+    if (createdContent.status === 'published') {
+      const parentContent = await content.findOne({
+        where: {
+          id: createdContent.parent_id,
+        },
+      });
+
+      await notification.create({
+        content_id: createdContent.id,
+        type: 'content',
+        receiver_id: parentContent.owner_id,
+      });
+    }
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);

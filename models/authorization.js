@@ -27,6 +27,9 @@ const availableFeatures = new Set([
   'create:content:text_root',
   'create:content:text_child',
   'read:content:list',
+
+  // NOTIFICATION
+  'read:notification',
 ]);
 
 function can(user, feature, resource) {
@@ -217,6 +220,18 @@ function filterOutput(user, feature, output) {
       });
     });
   }
+
+  // if (feature === 'read:notification' && can(user, feature)) {
+  //   filteredOutputValues = output.map((notification) => {
+  //     return validator(notification, {
+  //       id: 'required',
+  //       content_id: "optional",
+  //       type: 'required',
+  //       receiver_id: 'required',
+  //       created_at: 'required',
+  //     });
+  //   });
+  // }
 
   // Force the clean up of "undefined" values
   return JSON.parse(JSON.stringify(filteredOutputValues));

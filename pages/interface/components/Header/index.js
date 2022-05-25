@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { Header, Box, Button, ActionMenu, ActionList } from '@primer/react';
 import { CgTab } from 'react-icons/cg';
-import { useUser } from 'pages/interface/index.js';
+import { useUser, Notifications } from 'pages/interface/index.js';
 
 export default function HeaderComponent() {
   const router = useRouter();
@@ -39,6 +39,9 @@ export default function HeaderComponent() {
 
       {!isLoading && user.username && (
         <>
+          <Header.Item>
+            <Notifications />
+          </Header.Item>
           <Header.Item>
             <ActionMenu>
               <ActionMenu.Button>{user.username}</ActionMenu.Button>

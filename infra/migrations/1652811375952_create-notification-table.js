@@ -7,11 +7,11 @@ exports.up = (pgm) => {
       primaryKey: true,
     },
 
-    // // Same as user_id, but I figured out that receiver_id is easier to understand.
-    // receiver_id: {
-    //   type: 'uuid',
-    //   notNull: true,
-    // },
+    // Same as user_id, but I figured out that receiver_id is easier to understand.
+    receiver_id: {
+      type: 'uuid',
+      notNull: true,
+    },
 
     content_id: {
       type: 'uuid',

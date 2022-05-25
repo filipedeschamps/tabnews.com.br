@@ -466,4 +466,108 @@ const schemas = {
         }),
     });
   },
+  receiver_id: function () {
+    return Joi.object({
+      receiver_id: Joi.string()
+        .invalid(null)
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.receiver_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"receiver_id" é um campo obrigatório.`,
+          'string.empty': `"receiver_id" não pode estar em branco.`,
+          'string.base': `"receiver_id" deve ser do tipo String.`,
+          'string.guid': `"receiver_id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
+};
+
+export function queryValidator(object, keys) {
+  // Force the clean up of "undefined" values since JSON
+  // doesn't support them and Joi doesn't clean
+  // them up. Also handles the case where the
+  // "object" is not a valid JSON.
+  try {
+    object = JSON.parse(JSON.stringify(object));
+  } catch (error) {
+    throw new ValidationError({
+      message: 'Não foi possível interpretar o valor enviado.',
+      action: 'Verifique se o valor enviado é um JSON válido.',
+      errorUniqueCode: 'MODEL:VALIDATOR:ERROR_PARSING_JSON',
+      stack: new Error().stack,
+      key: 'object',
+    });
+  }
+
+  let finalSchema = Joi.object().required().messages({
+    'object.base': `Body enviado deve ser do tipo Object.`,
+  });
+
+  for (const key of Object.keys(keys)) {
+    const keyValidationFunction = querySchemas[key];
+    finalSchema = finalSchema.concat(keyValidationFunction());
+  }
+
+  const { error, value } = finalSchema.validate(object, {
+    escapeHtml: true,
+    stripUnknown: true,
+    context: {
+      required: keys,
+    },
+  });
+
+  if (error) {
+    throw new ValidationError({
+      message: error.details[0].message,
+      key: error.details[0].context.key || error.details[0].context.type || 'object',
+      errorUniqueCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+      stack: new Error().stack,
+      type: error.details[0].type,
+    });
+  }
+
+  return value;
+}
+
+const querySchemas = {
+  id: function () {
+    return Joi.object({
+      id: Joi.string()
+        .allow(null)
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"id" é um campo obrigatório.`,
+          'string.empty': `"id" não pode estar em branco.`,
+          'string.base': `"id" deve ser do tipo String.`,
+          'string.guid': `"id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
+
+  get_user: function () {
+    return Joi.object({
+      get_user: Joi.boolean()
+        .allow(null, 'true', 'false')
+        .trim()
+        .when('$required.get_user', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"get_user" é um campo obrigatório.`,
+        }),
+    });
+  },
+
+  get_content: function () {
+    return Joi.object({
+      get_content: Joi.boolean()
+        .allow(null, 'true', 'false')
+        .trim()
+        .when('$required.get_content', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"get_content" é um campo obrigatório.`,
+        }),
+    });
+  },
 };
