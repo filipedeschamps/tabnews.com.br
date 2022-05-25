@@ -2,9 +2,7 @@ import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
 
 import '../styles/bytemd.css';
-import '../styles/github-markdown.css';
-import '../styles/codemirror-github-light.css';
-import '../styles/codemirror-github-dark.css';
+import '@primer/css/markdown/index.scss';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);

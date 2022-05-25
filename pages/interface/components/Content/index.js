@@ -32,6 +32,8 @@ import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
 import 'bytemd/dist/index.min.css';
 import 'highlight.js/styles/github.css';
+import 'codemirror-github-light/lib/codemirror-github-light-theme.css';
+import 'codemirror-github-dark/lib/codemirror-github-dark-theme.css';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
