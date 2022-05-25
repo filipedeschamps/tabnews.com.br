@@ -103,14 +103,7 @@ async function create(postedUserData) {
 
 function createAnonymous() {
   return {
-    features: [
-      'read:activation_token',
-      'create:session',
-      'create:user',
-      'read:recovery_token',
-      'create:recovery_token',
-      'update:recovery_token',
-    ],
+    features: ['read:activation_token', 'create:session', 'create:user'],
   };
 }
 
