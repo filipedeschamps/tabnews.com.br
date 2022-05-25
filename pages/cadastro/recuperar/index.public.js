@@ -1,14 +1,13 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
-import { EMAIL_VALIDATOR } from 'infra/utils/regexp';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
 
 export default function RecoverPassword() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Recuperar senha' }}>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Recuperação de senha' }}>
       <Heading as="h1" sx={{ mb: 3 }}>
-        Recuperar senha
+        Recuperação de senha
       </Heading>
 
       <RecoverPasswordForm />
@@ -19,7 +18,7 @@ export default function RecoverPassword() {
 function RecoverPasswordForm() {
   const router = useRouter();
 
-  const dataRef = useRef('');
+  const userInputRef = useRef('');
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,33 +32,26 @@ function RecoverPasswordForm() {
     event.preventDefault();
     let email;
     let username;
-    const data = dataRef.current.value;
+    const userInput = userInputRef.current.value;
 
-    if (!data) {
+    if (!userInput) {
       setErrorObject({
-        key: 'empty',
+        key: 'userInput',
         message: 'Campo obrigatório',
       });
       return;
     }
 
-    if (data.includes('@')) {
-      email = data;
-      if (!EMAIL_VALIDATOR.test(data)) {
-        setErrorObject({
-          key: 'email',
-          message: 'Utilize um e-mail válido. Dica: tabnews@tabnews.com.br',
-        });
-        return;
-      }
+    if (userInput.includes('@')) {
+      email = userInput;
     } else {
-      username = data;
+      username = userInput;
     }
     setIsLoading(true);
     setErrorObject(undefined);
 
     try {
-      const response = await fetch(`/api/v1/recover`, {
+      const response = await fetch(`/api/v1/recovery`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -81,16 +73,17 @@ function RecoverPasswordForm() {
 
       if (response.status === 400) {
         setErrorObject(responseBody);
+        setIsLoading(false);
         return;
       }
 
-      if (response.status >= 403) {
-        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+      if (response.status >= 401) {
+        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} (${responseBody.error_id})`);
+        setIsLoading(false);
         return;
       }
     } catch (error) {
       setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-    } finally {
       setIsLoading(false);
     }
   }
@@ -103,16 +96,16 @@ function RecoverPasswordForm() {
         <FormControl id="username">
           <FormControl.Label>Digite seu usuário ou e-mail</FormControl.Label>
           <TextInput
-            ref={dataRef}
+            ref={userInputRef}
             onChange={clearErrors}
-            name="data"
+            name="userInput"
             size="large"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
             aria-label="Seu usuário ou e-mail"
           />
-          {['empty', 'email'].includes(errorObject?.key) && (
+          {['userInput', 'email', 'username'].includes(errorObject?.key) && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
 

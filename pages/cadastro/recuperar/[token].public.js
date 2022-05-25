@@ -6,9 +6,9 @@ import { useRouter } from 'next/router';
 
 export default function RecoverPassword() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Recuperação de senha' }}>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Recuperação de Senha' }}>
       <Heading as="h1" sx={{ mb: 3 }}>
-        Criar uma nova senha
+        Defina uma nova senha
       </Heading>
 
       <RecoverPasswordForm />
@@ -65,7 +65,8 @@ function RecoverPasswordForm() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/v1/recover`, {
+
+      const response = await fetch(`/api/v1/recovery`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -77,20 +78,26 @@ function RecoverPasswordForm() {
       });
 
       setGlobalErrorMessage(undefined);
+      const responseBody = await response.json();
 
       if (response.status === 200) {
         router.push('/cadastro/recuperar/sucesso');
         return;
       }
 
-      if (response.status >= 400 && response.status <= 503) {
-        const responseBody = await response.json();
-        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+      if (response.status === 400) {
+        setErrorObject(responseBody);
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.status >= 401) {
+        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} (${responseBody.error_id})`);
+        setIsLoading(false);
         return;
       }
     } catch (error) {
-      setGlobalErrorMessage(error.message);
-    } finally {
+      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
       setIsLoading(false);
     }
   }
