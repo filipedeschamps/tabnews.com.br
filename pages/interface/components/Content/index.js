@@ -59,11 +59,13 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [contentObject]);
 
   useEffect(() => {
-    const localStorageContent = localStorage.getItem(localStorageKey);
-    if (isValidJsonString(localStorageContent)) {
-      setComponentMode('edit');
+    if (user?.id && !isLoading && contentObject?.owner_id === user?.id) {
+      const localStorageContent = localStorage.getItem(localStorageKey);
+      if (isValidJsonString(localStorageContent)) {
+        setComponentMode('edit');
+      }
     }
-  }, [localStorageKey]);
+  }, [localStorageKey, user, isLoading, contentObject]);
 
   if (componentMode === 'view') {
     return <ViewMode />;
