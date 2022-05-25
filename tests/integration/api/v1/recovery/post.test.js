@@ -67,16 +67,16 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toEqual(400);
 
       expect(responseBody).toStrictEqual({
-        name: 'NotFoundError',
+        name: 'ValidationError',
         message: 'O "username" informado não foi encontrado no sistema.',
-        action: 'Verifique se o "username" está digitado corretamente.',
-        status_code: 404,
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+        error_unique_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
         key: 'username',
       });
 
@@ -171,16 +171,16 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toEqual(400);
 
       expect(responseBody).toStrictEqual({
-        name: 'NotFoundError',
-        message: 'O email informado não foi encontrado no sistema.',
-        action: 'Verifique se o "email" está digitado corretamente.',
-        status_code: 404,
+        name: 'ValidationError',
+        message: 'O "email" informado não foi encontrado no sistema.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
+        error_unique_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
         key: 'email',
       });
 

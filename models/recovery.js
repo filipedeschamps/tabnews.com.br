@@ -2,8 +2,7 @@ import email from 'infra/email.js';
 import database from 'infra/database.js';
 import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
-import authentication from 'models/authentication.js';
-import { NotFoundError } from 'errors/index.js';
+import { NotFoundError, ValidationError } from 'errors/index.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
   const userFound = await findUserByUsernameOrEmail(secureInputValues);
@@ -14,13 +13,25 @@ async function createAndSendRecoveryEmail(secureInputValues) {
 }
 
 async function findUserByUsernameOrEmail({ username, email }) {
-  if (username) {
-    return await user.findOneByUsername(username);
+  try {
+    if (username) {
+      return await user.findOneByUsername(username);
+    }
+
+    if (email) {
+      return await user.findOneByEmail(email);
+    }
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw new ValidationError({
+        message: `O "${username ? 'username' : 'email'}" informado não foi encontrado no sistema.`,
+        key: username ? 'username' : 'email',
+        errorUniqueCode: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+      });
+    }
   }
 
-  if (email) {
-    return await user.findOneByEmail(email);
-  }
+  throw error;
 }
 
 async function create(user) {
@@ -44,9 +55,9 @@ async function sendEmailToUser(user, tokenId) {
     },
     to: user.email,
     subject: 'Recuperação de Senha',
-    text: `${user.username}, uma solicitação de recuperação de senha foi solicitada. Caso você não tenha feito esta requisição, ignore esse email.
+    text: `${user.username}, uma solicitação de recuperação de senha foi solicitada. Caso você não tenha feito esta solicitação, ignore esse email.
 
-Caso você tenha feito essa solicitação clique no link abaixo para definir uma nova senha.
+Caso você tenha feito essa solicitação, clique no link abaixo para definir uma nova senha:
 
 ${recoverPageEndpoint}
 

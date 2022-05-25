@@ -13,8 +13,8 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .post(postValidationHandler, authorization.canRequest('create:recovery_token'), postHandler)
-  .patch(patchValidationHandler, authorization.canRequest('update:recovery_token'), patchHandler);
+  .post(postValidationHandler, postHandler)
+  .patch(patchValidationHandler, patchHandler);
 
 function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
@@ -29,15 +29,9 @@ function postValidationHandler(request, response, next) {
 
 async function postHandler(request, response) {
   const userTryingToRecover = request.context.user;
-  const insecureInputValues = request.body;
+  const validatedInputValues = request.body;
 
-  const secureInputValues = authorization.filterInput(
-    userTryingToRecover,
-    'create:recovery_token',
-    insecureInputValues
-  );
-
-  const tokenObject = await recovery.createAndSendRecoveryEmail(secureInputValues);
+  const tokenObject = await recovery.createAndSendRecoveryEmail(validatedInputValues);
 
   const authorizedValuesToReturn = authorization.filterOutput(userTryingToRecover, 'read:recovery_token', tokenObject);
 
@@ -57,15 +51,9 @@ function patchValidationHandler(request, response, next) {
 
 async function patchHandler(request, response) {
   const userTryingToRecover = request.context.user;
-  const insecureInputValues = request.body;
+  const validatedInputValues = request.body;
 
-  const secureInputValues = authorization.filterInput(
-    userTryingToRecover,
-    'update:recovery_token',
-    insecureInputValues
-  );
-
-  const tokenObject = await recovery.resetUserPassword(secureInputValues);
+  const tokenObject = await recovery.resetUserPassword(validatedInputValues);
 
   const authorizedValuesToReturn = authorization.filterOutput(userTryingToRecover, 'read:recovery_token', tokenObject);
 

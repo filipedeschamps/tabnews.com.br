@@ -18,8 +18,6 @@ const availableFeatures = new Set([
 
   // RECOVERY_TOKEN
   'read:recovery_token',
-  'create:recovery_token',
-  'update:recovery_token',
 
   // SESSION
   'create:session',
@@ -129,20 +127,6 @@ function filterInput(user, feature, input) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
-    };
-  }
-
-  if (feature === 'create:recovery_token' && can(user, feature)) {
-    filteredInputValues = {
-      username: input.username,
-      email: input.email,
-    };
-  }
-
-  if (feature === 'update:recovery_token' && can(user, feature)) {
-    filteredInputValues = {
-      token_id: input.token_id,
-      password: input.password,
     };
   }
 
