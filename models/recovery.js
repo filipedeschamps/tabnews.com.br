@@ -61,19 +61,20 @@ function getRecoverPageEndpoint(tokenId) {
   return `${webserverHost}/cadastro/recuperar/${tokenId}`;
 }
 
-async function recoveryUserUsingTokenId(tokenId) {
-  let tokenObject = await findOneTokenById(tokenId);
+async function resetUserPassword(secureInputValues) {
+  const tokenObject = await findOneValidTokenById(secureInputValues.token_id);
 
   if (!tokenObject.used) {
-    tokenObject = await findOneValidTokenById(tokenId);
-    await markTokenAsUsed(tokenObject.id);
-    return tokenObject;
+    const userToken = await markTokenAsUsed(tokenObject.id);
+    await updateUserPassword(tokenObject.user_id, secureInputValues.password);
+    return userToken;
   }
+
   throw new NotFoundError({
-    message: `O token de recuperação de senha já foi utilizado.`,
+    message: `O token de recuperação de senha não foi encontrado ou já foi utilizado.`,
     action: 'Solicite uma nova recuperação de senha.',
     stack: new Error().stack,
-    errorUniqueCode: 'MODEL:RECOVER:recoveryUserUsingTokenId:NOT_FOUND',
+    errorUniqueCode: 'MODEL:RECOVERY:RESET_USER_PASSWORD:NOT_FOUND',
     key: 'token_id',
   });
 }
@@ -84,26 +85,6 @@ async function findOneTokenById(tokenId) {
         WHERE id = $1
         LIMIT 1;`,
     values: [tokenId],
-  };
-  const results = await database.query(query);
-
-  if (results.rowCount === 0) {
-    throw new NotFoundError({
-      message: `O token de recuperação de senha utilizado não foi encontrado no sistema.`,
-      action: 'Certifique-se que está sendo enviado o token corretamente.',
-      stack: new Error().stack,
-    });
-  }
-
-  return results.rows[0];
-}
-
-async function findOneTokenByUserId(userId) {
-  const query = {
-    text: `SELECT * FROM reset_password_tokens
-        WHERE user_id = $1
-        LIMIT 1;`,
-    values: [userId],
   };
   const results = await database.query(query);
 
@@ -135,8 +116,28 @@ async function findOneValidTokenById(tokenId) {
       message: `O token de recuperação de senha utilizado não foi encontrado no sistema ou expirou.`,
       action: 'Solicite uma nova recuperação de senha.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:RECOVER:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+      errorUniqueCode: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
       key: 'token_id',
+    });
+  }
+
+  return results.rows[0];
+}
+
+async function findOneTokenByUserId(userId) {
+  const query = {
+    text: `SELECT * FROM reset_password_tokens
+        WHERE user_id = $1
+        LIMIT 1;`,
+    values: [userId],
+  };
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O token de recuperação de senha utilizado não foi encontrado no sistema.`,
+      action: 'Certifique-se que está sendo enviado o token corretamente.',
+      stack: new Error().stack,
     });
   }
 
@@ -157,36 +158,45 @@ async function markTokenAsUsed(tokenId) {
   return results.rows[0];
 }
 
-async function updatePassword(userId, password) {
+async function updateUserPassword(userId, password) {
   const currentUser = await user.findOneById(userId);
-  const hashedPassword = await authentication.hashPassword(password);
+  await user.update(currentUser.username, { password });
+}
 
-  const userWithUpdatedValues = { ...currentUser, password: hashedPassword };
+async function update(tokenId, tokenBody) {
+  const currentToken = await findOneTokenById(tokenId);
+  const updatedToken = { ...currentToken, ...tokenBody };
 
-  const updatedUser = await runUpdateQuery(userWithUpdatedValues);
-  return updatedUser;
+  const query = {
+    text: `UPDATE reset_password_tokens SET
+            user_id = $2,
+            used = $3,
+            expires_at = $4,
+            created_at = $5,
+            updated_at = $6
+            WHERE id = $1
+            RETURNING *;`,
+    values: [
+      tokenId,
+      updatedToken.user_id,
+      updatedToken.used,
+      updatedToken.expires_at,
+      updatedToken.created_at,
+      updatedToken.updated_at,
+    ],
+  };
 
-  async function runUpdateQuery({ id, password }) {
-    const query = {
-      text: `UPDATE users SET
-                  password = $1,
-                  updated_at = (now() at time zone 'utc')
-                  WHERE
-                    id = $2
-                  RETURNING *;`,
-      values: [password, id],
-    };
+  const results = await database.query(query);
 
-    const results = await database.query(query);
-    return results.rows[0];
-  }
+  return results.rows[0];
 }
 
 export default Object.freeze({
   create,
   createAndSendRecoveryEmail,
-  updatePassword,
-  recoveryUserUsingTokenId,
+  findOneTokenById,
   findOneTokenByUserId,
   getRecoverPageEndpoint,
+  resetUserPassword,
+  update,
 });

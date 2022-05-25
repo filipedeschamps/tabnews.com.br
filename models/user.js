@@ -107,8 +107,9 @@ function createAnonymous() {
       'read:activation_token',
       'create:session',
       'create:user',
-      'create:recovery_token',
       'read:recovery_token',
+      'create:recovery_token',
+      'update:recovery_token',
     ],
   };
 }
@@ -359,12 +360,6 @@ async function validatePatchSchema(postedUserData) {
     email: 'optional',
     password: 'optional',
   });
-
-  // TEMPORARY BEHAVIOR
-  // TODO: only let user update "email" and "password"
-  // once we have double confirmation via email.
-  delete cleanValues.email;
-  delete cleanValues.password;
 
   return cleanValues;
 }
