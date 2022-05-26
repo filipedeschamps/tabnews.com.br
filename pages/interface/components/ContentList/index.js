@@ -23,7 +23,7 @@ export default function ContentList({ contentList, path }) {
     return list.map((contentObject) => {
       return (
         <Box key={contentObject.id} sx={{ display: 'flex' }}>
-          <Box sx={{ mr: 2, width: '20px', textAlign: 'right' }}>
+          <Box sx={{ mr: 2, width: '30px', textAlign: 'right' }}>
             <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }}>{count++}.</Text>
           </Box>
           <Box>
