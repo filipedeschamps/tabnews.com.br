@@ -311,7 +311,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published')
+        .valid('draft', 'published', 'deleted')
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -381,6 +381,19 @@ const schemas = {
           'any.required': `"updated_at" é um campo obrigatório.`,
           'string.empty': `"updated_at" não pode estar em branco.`,
           'string.base': `"updated_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  deleted_at: function () {
+    return Joi.object({
+      deleted_at: Joi.date()
+        .allow(null)
+        .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"deleted_at" é um campo obrigatório.`,
+          'string.empty': `"deleted_at" não pode estar em branco.`,
+          'string.base': `"deleted_at" deve ser do tipo Date.`,
         }),
     });
   },

@@ -40,7 +40,7 @@ exports.up = async (pgm) => {
       type: 'varchar',
       default: 'draft',
       notNull: true,
-      check: "status IN ('draft', 'published')",
+      check: "status IN ('draft', 'published', 'deleted')",
     },
 
     source_url: {
@@ -65,9 +65,14 @@ exports.up = async (pgm) => {
       notNull: true,
       default: pgm.func("(now() at time zone 'utc')"),
     },
+
+    deleted_at: {
+      type: 'timestamp with time zone',
+      notNull: false,
+    },
   });
 
-  await pgm.addConstraint('contents', 'contents_uniqueness_fkey', 'UNIQUE ("owner_id", "slug")');
+  await pgm.addConstraint('contents', 'contents_uniqueness_fkey', 'UNIQUE ("owner_id", "slug", "deleted_at")');
 };
 
 exports.down = async (pgm) => {

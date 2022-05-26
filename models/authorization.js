@@ -208,6 +208,10 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:content') {
+    if (output.status === 'deleted') {
+      output.body = output.id;
+    }
+
     filteredOutputValues = validator(output, {
       content: 'required',
     });

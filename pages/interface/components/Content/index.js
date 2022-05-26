@@ -83,6 +83,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
   function ViewMode() {
     const [isOpen, setIsOpen] = useState(false);
+    const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
     const [deleteAction, setdeleteAction] = useState({
       disableButton: true,
       spinner: false,
@@ -100,8 +101,37 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
       setdeleteAction({ ...deleteAction, disableButton: true });
     };
 
-    const handleDeltePost = () => {
+    const handleDeletePost = async () => {
       setdeleteAction({ spinner: true, disableButton: true });
+
+      const data = {
+        status: 'deleted',
+      };
+
+      const response = await fetch(`/api/v1/contents/${user.username}/${contentObject.slug}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const responseBody = await response.json();
+
+      if (response.status === 200) {
+        setContentObject(responseBody);
+      }
+
+      if ([400, 401, 403].includes(response.status)) {
+        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+      }
+
+      if (response.status >= 500) {
+        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+      }
+
+      setIsOpen(false);
+      setdeleteAction({ spinner: false, disableButton: true });
     };
 
     useEffect(() => {
@@ -140,7 +170,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 variant="danger"
                 disabled={deleteAction.disableButton}
                 aria-label="Deletar post"
-                onClick={handleDeltePost}>
+                onClick={handleDeletePost}>
                 {deleteAction.spinner ? <Spinner size="small" /> : 'Deletar'}
               </Button>
             </Box>
@@ -161,7 +191,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   </ActionList.LeadingVisual>
                   Editar
                 </ActionList.Item>
-                <ActionList.Item
+                {/* <ActionList.Item
                   onClick={() => {
                     alert('Não implementado.');
                   }}>
@@ -169,7 +199,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                     <IssueDraftIcon />
                   </ActionList.LeadingVisual>
                   Despublicar
-                </ActionList.Item>
+                </ActionList.Item> */}
                 <ActionList.Item
                   variant="danger"
                   onClick={() => {
@@ -201,6 +231,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           borderStyle: 'solid',
         }}>
         <Box>
+          {globalErrorMessage && (
+            <Flash variant="danger" sx={{ mb: 4 }}>
+              {globalErrorMessage}
+            </Flash>
+          )}
           <Box sx={{ height: 25, display: 'flex', alignItems: 'flex-start' }}>
             <Box sx={{ flex: 'auto' }}>
               <BranchName sx={{ mr: 2 }} href={`/${contentObject.username}`}>
@@ -222,9 +257,14 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
           {!contentObject?.parent_id && contentObject?.title && <Heading as="h1">{contentObject.title}</Heading>}
         </Box>
-        <Box>
-          <Viewer value={contentObject.body} plugins={bytemdPluginList} />
-        </Box>
+        {contentObject.body === contentObject.id ? (
+          <Flash variant="danger">Conteúdo deletado.</Flash>
+        ) : (
+          <Box>
+            <Viewer value={contentObject.body} plugins={bytemdPluginList} />
+          </Box>
+        )}
+
         {contentObject.source_url && (
           <Box>
             <Text as="p" fontWeight="bold">

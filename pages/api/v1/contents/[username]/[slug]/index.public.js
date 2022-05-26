@@ -85,6 +85,7 @@ async function patchHandler(request, response) {
     where: {
       username: request.query.username,
       slug: request.query.slug,
+      deleted_at: null,
     },
   });
 

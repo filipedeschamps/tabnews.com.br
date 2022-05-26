@@ -25,6 +25,7 @@ async function findAll(options = {}) {
         contents.created_at as created_at,
         contents.updated_at as updated_at,
         contents.published_at as published_at,
+        contents.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -74,6 +75,7 @@ async function findAll(options = {}) {
       source_url: 'optional',
       owner_id: 'optional',
       username: 'optional',
+      deleted_at: 'optional',
     });
 
     return cleanValues;
@@ -260,6 +262,7 @@ async function checkForContentUniqueness(content) {
     where: {
       owner_id: content.owner_id,
       slug: content.slug,
+      deleted_at: null,
     },
   });
 
@@ -306,6 +309,7 @@ async function populatePublishedAtValue(postedContent) {
     where: {
       owner_id: postedContent.owner_id,
       slug: postedContent.slug,
+      deleted_at: null,
     },
   });
 
@@ -327,11 +331,20 @@ async function populatePublishedAtValue(postedContent) {
 
 async function update(contentId, postedContent) {
   const validPostedContent = validateUpdateSchema(postedContent);
+
   const oldContent = await findOne({
     where: {
       id: contentId,
     },
   });
+
+  if (Object.keys(postedContent).includes('status') && postedContent.status === 'deleted') {
+    validPostedContent['slug'] = `${oldContent.slug}-${uuidV4()}`;
+    validPostedContent['deleted_at'] = new Date();
+  } else {
+    validPostedContent['deleted_at'] = null;
+  }
+
   const newContent = { ...oldContent, ...validPostedContent };
 
   checkRootContentTitle(newContent);
@@ -359,7 +372,8 @@ async function update(contentId, postedContent) {
             status = $6,
             source_url = $7,
             published_at = $8,
-            updated_at = (now() at time zone 'utc')
+            updated_at = (now() at time zone 'utc'),
+            deleted_at = $9
           WHERE
             id = $1
           RETURNING *
@@ -398,6 +412,7 @@ async function update(contentId, postedContent) {
         content.status,
         content.source_url,
         content.published_at,
+        content.deleted_at,
       ],
     };
     const results = await database.query(query);
@@ -475,8 +490,6 @@ async function findChildren(options) {
             contents
           INNER JOIN
             children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
 
       )
       SELECT
@@ -530,6 +543,10 @@ async function findChildren(options) {
     });
 
     list.forEach((row) => {
+      if (row.status === 'deleted') {
+        row.body = row.id;
+      }
+
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
       } else {

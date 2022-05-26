@@ -26,6 +26,7 @@ async function getHandler(request, response) {
     where: {
       parent_id: null,
       status: 'published',
+      delete_at: null,
     },
   });
 
