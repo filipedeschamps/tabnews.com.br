@@ -512,23 +512,9 @@ describe('PATCH /api/v1/users/[username]', () => {
           }),
         });
 
-        const responseBody = await response.json();
+        expect(response.status).toEqual(400);
 
-        expect(response.status).toEqual(200);
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(defaultUser.id).toEqual(responseBody.id);
-        expect(responseBody.username).toEqual(defaultUser.username);
-        expect(responseBody.features).toEqual(defaultUser.features);
-        expect(responseBody.created_at).toEqual(defaultUser.created_at.toISOString());
-        expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
-        expect(responseBody).not.toHaveProperty('password');
-        expect(responseBody).not.toHaveProperty('email');
-
-        const defaultUserInDatabase = await user.findOneById(responseBody.id);
-        const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
-        expect(passwordsMatch).toBe(true);
-
-        const userInDatabase = await user.findOneById(responseBody.id);
+        const userInDatabase = await user.findOneById(defaultUser.id);
         expect(userInDatabase.email).toEqual('this.email.will.not@change.com');
       });
 
@@ -551,19 +537,9 @@ describe('PATCH /api/v1/users/[username]', () => {
           }),
         });
 
-        const responseBody = await response.json();
+        expect(response.status).toEqual(400);
 
-        expect(response.status).toEqual(200);
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(defaultUser.id).toEqual(responseBody.id);
-        expect(responseBody.username).toEqual(defaultUser.username);
-        expect(responseBody.features).toEqual(defaultUser.features);
-        expect(responseBody.created_at).toEqual(defaultUser.created_at.toISOString());
-        expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
-        expect(responseBody).not.toHaveProperty('password');
-        expect(responseBody).not.toHaveProperty('email');
-
-        const defaultUserInDatabase = await user.findOneById(responseBody.id);
+        const defaultUserInDatabase = await user.findOneById(defaultUser.id);
         const passwordsMatch = await password.compare('thisPasswordWillNotChange', defaultUserInDatabase.password);
         const wrongPasswordMatch = await password.compare('CHANGE.MY.PASSWORD', defaultUserInDatabase.password);
         expect(passwordsMatch).toBe(true);
