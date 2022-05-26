@@ -6,7 +6,7 @@ import authorization from 'models/authorization.js';
 export default function Home({ contentListFound }) {
   return (
     <>
-      <DefaultLayout>
+      <DefaultLayout metadata={{ description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.' }}>
         <ContentList contentList={contentListFound} path="/api/v1/contents" />
       </DefaultLayout>
     </>
