@@ -173,9 +173,12 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     useEffect(() => {
       document
-        .querySelector('.bytemd')
-        .classList
-        .add(colorMode === 'day' ? 'light' : 'dark');
+        .querySelectorAll('.bytemd')
+        .forEach(element => {
+          element
+            .classList
+            .add(colorMode === 'day' ? 'light' : 'dark');
+        });
     }, []);
 
     useEffect(() => {
