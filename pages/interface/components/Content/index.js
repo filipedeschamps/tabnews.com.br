@@ -15,6 +15,8 @@ import {
   ActionList,
   IconButton,
   Tooltip,
+  Dialog,
+  Spinner,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, IssueDraftIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import { formatDistanceToNowStrict } from 'date-fns';
@@ -80,7 +82,27 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function ViewMode() {
+    const [isOpen, setIsOpen] = useState(false);
+    const [deleteAction, setdeleteAction] = useState({
+      disableButton: true,
+      spinner: false,
+    });
     const [publishedSinceText, setPublishedSinceText] = useState();
+
+    const handleConfirmDeletePost = (event) => {
+      let inputText = event.target.value;
+      let confirmToken = `${contentObject.username}/${contentObject.slug}`;
+
+      if (inputText === confirmToken) {
+        return setdeleteAction({ ...deleteAction, disableButton: false });
+      }
+
+      setdeleteAction({ ...deleteAction, disableButton: true });
+    };
+
+    const handleDeltePost = () => {
+      setdeleteAction({ spinner: true, disableButton: true });
+    };
 
     useEffect(() => {
       const publishedSince = formatDistanceToNowStrict(new Date(contentObject.published_at), {
@@ -93,44 +115,75 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
     function ViewModeOptionsMenu() {
       return (
-        <ActionMenu>
-          <ActionMenu.Anchor>
-            <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
-          </ActionMenu.Anchor>
+        <>
+          <Dialog isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
+            <Dialog.Header id="header-id">Tem certeza que deseja fazer isso?</Dialog.Header>
 
-          <ActionMenu.Overlay>
-            <ActionList>
-              <ActionList.Item
-                onClick={() => {
-                  setComponentMode('edit');
-                }}>
-                <ActionList.LeadingVisual>
-                  <PencilIcon />
-                </ActionList.LeadingVisual>
-                Editar
-              </ActionList.Item>
-              <ActionList.Item
-                onClick={() => {
-                  alert('Não implementado.');
-                }}>
-                <ActionList.LeadingVisual>
-                  <IssueDraftIcon />
-                </ActionList.LeadingVisual>
-                Despublicar
-              </ActionList.Item>
-              <ActionList.Item
+            <Box
+              sx={{
+                width: '100%',
+                padding: '1rem',
+                fontSize: '.9rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                wordWrap: 'break-word',
+              }}>
+              <Text>
+                Para confirma digite:{' '}
+                <strong>
+                  {contentObject.username}/{contentObject.slug}
+                </strong>
+              </Text>
+              <TextInput onChange={handleConfirmDeletePost} />
+              <Button
                 variant="danger"
-                onClick={() => {
-                  alert('Não implementado.');
-                }}>
-                <ActionList.LeadingVisual>
-                  <TrashIcon />
-                </ActionList.LeadingVisual>
-                Deletar
-              </ActionList.Item>
-            </ActionList>
-          </ActionMenu.Overlay>
-        </ActionMenu>
+                disabled={deleteAction.disableButton}
+                aria-label="Deletar post"
+                onClick={handleDeltePost}>
+                {deleteAction.spinner ? <Spinner size="small" /> : 'Deletar'}
+              </Button>
+            </Box>
+          </Dialog>
+          <ActionMenu>
+            <ActionMenu.Anchor>
+              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+            </ActionMenu.Anchor>
+
+            <ActionMenu.Overlay>
+              <ActionList>
+                <ActionList.Item
+                  onClick={() => {
+                    setComponentMode('edit');
+                  }}>
+                  <ActionList.LeadingVisual>
+                    <PencilIcon />
+                  </ActionList.LeadingVisual>
+                  Editar
+                </ActionList.Item>
+                <ActionList.Item
+                  onClick={() => {
+                    alert('Não implementado.');
+                  }}>
+                  <ActionList.LeadingVisual>
+                    <IssueDraftIcon />
+                  </ActionList.LeadingVisual>
+                  Despublicar
+                </ActionList.Item>
+                <ActionList.Item
+                  variant="danger"
+                  onClick={() => {
+                    setIsOpen(true);
+                  }}>
+                  <ActionList.LeadingVisual>
+                    <TrashIcon />
+                  </ActionList.LeadingVisual>
+                  Deletar
+                </ActionList.Item>
+              </ActionList>
+            </ActionMenu.Overlay>
+          </ActionMenu>
+        </>
       );
     }
 
