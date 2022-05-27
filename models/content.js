@@ -6,13 +6,17 @@ import user from 'models/user.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll(options = {}) {
-  options.where = validateWhereSchema(options?.where);
+  options = validateOptions(options);
   await replaceUsernameWithOwnerId(options);
+  const offset = (options.page - 1) * options.per_page;
+
+  const query = {};
+  query.values = [options.per_page, offset];
+
   const whereClause = buildWhereClause(options?.where);
   const orderByClause = buildOrderByClause(options?.order);
 
-  const query = {
-    text: `
+  query.text = `
       SELECT
         contents.id as id,
         contents.owner_id as owner_id,
@@ -41,11 +45,13 @@ async function findAll(options = {}) {
 
       ${whereClause}
       ${orderByClause}
-      ;`,
-  };
+
+      LIMIT $1
+      OFFSET $2
+      ;`;
 
   if (options.where) {
-    query.values = Object.values(options.where);
+    query.values = [...query.values, ...Object.values(options.where)];
   }
 
   const results = await database.query(query);
@@ -59,24 +65,15 @@ async function findAll(options = {}) {
     }
   }
 
-  function validateWhereSchema(where) {
-    if (!where) {
-      return;
-    }
-
-    const cleanValues = validator(where, {
-      id: 'optional',
-      parent_id: 'optional',
-      slug: 'optional',
-      title: 'optional',
-      body: 'optional',
-      status: 'optional',
-      source_url: 'optional',
-      owner_id: 'optional',
-      username: 'optional',
+  function validateOptions(options) {
+    const cleanOptions = validator(options, {
+      page: 'optional',
+      per_page: 'optional',
+      order: 'optional',
+      where: 'optional',
     });
 
-    return cleanValues;
+    return cleanOptions;
   }
 
   function buildWhereClause(columns) {
@@ -93,9 +90,9 @@ async function findAll(options = {}) {
 
       function getColumnDeclaration(column, index) {
         if (column[1] === null) {
-          return `contents.${column[0]} IS NOT DISTINCT FROM $${index + 1}`;
+          return `contents.${column[0]} IS NOT DISTINCT FROM $${query.values.length + index + 1}`;
         } else {
-          return `contents.${column[0]} = $${index + 1}`;
+          return `contents.${column[0]} = $${query.values.length + index + 1}`;
         }
       }
     }, '');

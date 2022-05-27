@@ -15,10 +15,21 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .get(getValidationHandler)
   .get(getHandler)
   .post(postValidationHandler, authorization.canRequest('create:content'), postHandler);
 
-// TODO: cache the response
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    page: 'optional',
+    per_page: 'optional',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
+
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
   const contentList = await content.findWithStrategy({
@@ -27,6 +38,8 @@ async function getHandler(request, response) {
       parent_id: null,
       status: 'published',
     },
+    page: request.query.page,
+    per_page: request.query.per_page,
   });
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
