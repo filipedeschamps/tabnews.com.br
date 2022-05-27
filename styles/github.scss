@@ -1,0 +1,9 @@
+@use "sass:meta";
+
+html[data-theme="day"] {
+  @include meta.load-css("highlight.js/styles/github");
+}
+
+html[data-theme="night"] {
+  @include meta.load-css("highlight.js/styles/github-dark");
+}

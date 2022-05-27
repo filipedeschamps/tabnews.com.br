@@ -2,6 +2,7 @@ import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
 
 import '../styles/bytemd.css';
+import '../styles/github.scss';
 import '@primer/css/markdown/index.scss';
 
 async function SWRFetcher(resource, init) {
