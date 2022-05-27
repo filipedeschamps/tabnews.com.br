@@ -36,16 +36,16 @@ export async function getStaticProps(context) {
     };
   }
 
-  let contentListFound;
+  let results;
 
   try {
-    contentListFound = await content.findAll({
+    results = await content.findWithStrategy({
+      strategy: 'descending',
       where: {
         username: context.params.username,
         parent_id: null,
         status: 'published',
       },
-      order: 'published_at DESC',
     });
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -56,6 +56,8 @@ export async function getStaticProps(context) {
 
     throw error;
   }
+
+  const contentListFound = results.rows;
 
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 

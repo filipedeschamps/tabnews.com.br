@@ -16,13 +16,15 @@ export default function Home({ contentListFound }) {
 export async function getStaticProps(context) {
   const userTryingToGet = user.createAnonymous();
 
-  const contentListFound = await content.findWithStrategy({
+  const results = await content.findWithStrategy({
     strategy: 'descending',
     where: {
       parent_id: null,
       status: 'published',
     },
   });
+
+  const contentListFound = results.rows;
 
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 

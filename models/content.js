@@ -10,44 +10,24 @@ async function findAll(options = {}) {
   await replaceUsernameWithOwnerId(options);
   const offset = (options.page - 1) * options.per_page;
 
-  const query = {};
-  query.values = [options.per_page, offset];
+  const query = {
+    values: [],
+  };
 
+  if (!options.count) {
+    query.values = [options.per_page, offset];
+  }
+
+  const selectClause = buildSelectClause(options);
   const whereClause = buildWhereClause(options?.where);
   const orderByClause = buildOrderByClause(options?.order);
 
   query.text = `
-      SELECT
-        contents.id as id,
-        contents.owner_id as owner_id,
-        contents.parent_id as parent_id,
-        contents.slug as slug,
-        contents.title as title,
-        contents.body as body,
-        contents.status as status,
-        contents.source_url as source_url,
-        contents.created_at as created_at,
-        contents.updated_at as updated_at,
-        contents.published_at as published_at,
-        users.username as username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username
-
-      FROM
-        contents
-      INNER JOIN
-        users ON contents.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON contents.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
-
+      ${selectClause}
       ${whereClause}
       ${orderByClause}
 
-      LIMIT $1
-      OFFSET $2
+      ${options.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
       ;`;
 
   if (options.where) {
@@ -55,6 +35,11 @@ async function findAll(options = {}) {
   }
 
   const results = await database.query(query);
+
+  if (options.count) {
+    return results.rows.length > 0 ? results.rows[0].total_rows : 0;
+  }
+
   return results.rows;
 
   async function replaceUsernameWithOwnerId(options) {
@@ -71,9 +56,48 @@ async function findAll(options = {}) {
       per_page: 'optional',
       order: 'optional',
       where: 'optional',
+      count: 'optional',
     });
 
     return cleanOptions;
+  }
+
+  function buildSelectClause(options) {
+    if (options.count) {
+      return `
+        SELECT
+          COUNT(*) OVER()::INTEGER as total_rows
+        FROM
+          contents
+        `;
+    }
+
+    return `
+      SELECT
+        contents.id as id,
+        contents.owner_id as owner_id,
+        contents.parent_id as parent_id,
+        contents.slug as slug,
+        contents.title as title,
+        contents.body as body,
+        contents.status as status,
+        contents.source_url as source_url,
+        contents.created_at as created_at,
+        contents.updated_at as updated_at,
+        contents.published_at as published_at,
+        users.username as username,
+        parent_content.title as parent_title,
+        parent_content.slug as parent_slug,
+        parent_user.username as parent_username
+      FROM
+        contents
+      INNER JOIN
+        users ON contents.owner_id = users.id
+      LEFT JOIN
+        contents as parent_content ON contents.parent_id = parent_content.id
+      LEFT JOIN
+        users as parent_user ON parent_content.owner_id = parent_user.id
+    `;
   }
 
   function buildWhereClause(columns) {
@@ -103,7 +127,7 @@ async function findAll(options = {}) {
       return '';
     }
 
-    return `ORDER BY ${orderBy}`;
+    return `ORDER BY contents.${orderBy}`;
   }
 }
 
@@ -121,14 +145,44 @@ async function findWithStrategy(options = {}) {
   return await strategies[options.strategy](options);
 
   async function getDescending(options = {}) {
+    const results = {};
+
     options.order = 'created_at DESC';
-    return await findAll(options);
+    results.rows = await findAll(options);
+    results.pagination = await getPagination(options);
+
+    return results;
   }
 
   async function getAscending(options = {}) {
+    const results = {};
+
     options.order = 'created_at ASC';
-    return await findAll(options);
+    results.rows = await findAll(options);
+    results.pagination = await getPagination(options);
+
+    return results;
   }
+}
+
+async function getPagination(options) {
+  options.count = true;
+
+  const totalRows = await findAll(options);
+  const perPage = options.per_page;
+  const firstPage = 1;
+  const lastPage = Math.ceil(totalRows / options.per_page);
+  const nextPage = options.page >= lastPage ? null : options.page + 1;
+  const previousPage = options.page <= 1 ? null : options.page - 1;
+
+  return {
+    totalRows: totalRows,
+    perPage: perPage,
+    firstPage: firstPage,
+    nextPage: nextPage,
+    previousPage: previousPage,
+    lastPage: lastPage,
+  };
 }
 
 async function create(postedContent) {

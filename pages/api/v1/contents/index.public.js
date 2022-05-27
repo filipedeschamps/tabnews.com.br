@@ -32,7 +32,8 @@ function getValidationHandler(request, response, next) {
 
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
-  const contentList = await content.findWithStrategy({
+
+  const results = await content.findWithStrategy({
     strategy: 'descending',
     where: {
       parent_id: null,
@@ -42,8 +43,11 @@ async function getHandler(request, response) {
     per_page: request.query.per_page,
   });
 
+  const contentList = results.rows;
+
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
   return response.status(200).json(secureOutputValues);
 }
 

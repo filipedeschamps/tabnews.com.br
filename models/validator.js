@@ -496,6 +496,19 @@ const schemas = {
     });
   },
 
+  count: function () {
+    return Joi.object({
+      count: Joi.boolean()
+        .default(false)
+        .when('$required.count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"count" é um campo obrigatório.`,
+          'string.empty': `"count" não pode estar em branco.`,
+          'boolean.base': `"count" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
   content: function () {
     let contentSchema = Joi.object({
       children: Joi.array().optional().items(Joi.link('#content')).messages({
