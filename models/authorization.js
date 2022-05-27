@@ -16,6 +16,9 @@ const availableFeatures = new Set([
   // ACTIVATION_TOKEN
   'read:activation_token',
 
+  // RECOVERY_TOKEN
+  'read:recovery_token',
+
   // SESSION
   'create:session',
   'read:session',
@@ -215,6 +218,16 @@ function filterOutput(user, feature, output) {
       return validator(content, {
         content: 'required',
       });
+    });
+  }
+
+  if (feature === 'read:recovery_token') {
+    filteredOutputValues = validator(output, {
+      id: 'required',
+      used: 'required',
+      expires_at: 'required',
+      created_at: 'required',
+      updated_at: 'required',
     });
   }
 

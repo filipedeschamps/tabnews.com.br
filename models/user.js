@@ -354,12 +354,6 @@ async function validatePatchSchema(postedUserData) {
     password: 'optional',
   });
 
-  // TEMPORARY BEHAVIOR
-  // TODO: only let user update "email" and "password"
-  // once we have double confirmation via email.
-  delete cleanValues.email;
-  delete cleanValues.password;
-
   return cleanValues;
 }
 

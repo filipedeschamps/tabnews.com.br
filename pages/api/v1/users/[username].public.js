@@ -63,6 +63,12 @@ async function patchHandler(request, response) {
     });
   }
 
+  // TEMPORARY BEHAVIOR
+  // TODO: only let user update "email" and "password"
+  // once we have double confirmation.
+  delete secureInputValues.email;
+  delete secureInputValues.password;
+
   const updatedUser = await user.update(targetUsername, secureInputValues);
 
   const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:user', updatedUser);

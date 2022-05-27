@@ -398,6 +398,32 @@ const schemas = {
     });
   },
 
+  expires_at: function () {
+    return Joi.object({
+      expires_at: Joi.date()
+        .allow(null)
+        .when('$required.expires_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"expires_at" é um campo obrigatório.`,
+          'string.empty': `"expires_at" não pode estar em branco.`,
+          'string.base': `"expires_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  used: function () {
+    return Joi.object({
+      used: Joi.boolean()
+        .allow(false)
+        .when('$required.used', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"used" é um campo obrigatório.`,
+          'string.empty': `"used" não pode estar em branco.`,
+          'boolean.base': `"used" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
   content: function () {
     let contentSchema = Joi.object({
       children: Joi.array().optional().items(Joi.link('#content')).messages({
