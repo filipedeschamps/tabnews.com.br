@@ -3,14 +3,28 @@ import { BaseLayout, Header } from 'pages/interface/index.js';
 import { useEffect } from 'react';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata, content }) {
-  const { setColorMode } = useTheme();
+  const { setColorMode, colorMode } = useTheme();
 
   useEffect(() => {
     (async () => {
-      const mode = await localStorage.getItem('theme') || 'day';
+      const darkMode = window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .matches;
+
+      const systemTheme = !darkMode ? 'day' : 'night';
+      const mode = await localStorage.getItem('theme') || systemTheme;
+
       setColorMode(mode);
     })();
-  }, []);
+  }, [setColorMode]);
+
+  useEffect(() => {
+    document
+      .querySelector('html')
+      .setAttribute('data-theme', colorMode);
+
+    localStorage.setItem('theme', colorMode);
+  }, [colorMode]);
 
   return (
     <BaseLayout metadata={metadata} content={content}>

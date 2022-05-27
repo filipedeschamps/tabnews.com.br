@@ -56,13 +56,9 @@ export default function HeaderComponent() {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Item
-                    onClick={() => {
-                      const mode = localStorage.getItem('theme') || 'day';
-                      const modeToChange = mode === 'day' ? 'night' : 'day';
-
-                      localStorage.setItem('theme', modeToChange);
-                      setColorMode(modeToChange);
-                    }}
+                    onClick={() => setColorMode(
+                      colorMode === 'day' ? 'night' : 'day'
+                    )}
                   >
                     Alterar tema ({colorMode === 'day' ? 'Dark' : 'Light'})
                   </ActionList.Item>
