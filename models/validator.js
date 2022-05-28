@@ -424,6 +424,91 @@ const schemas = {
     });
   },
 
+  page: function () {
+    return Joi.object({
+      page: Joi.number()
+        .integer()
+        .min(1)
+        .max(9007199254740990)
+        .default(1)
+        .when('$required.page', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"page" é um campo obrigatório.`,
+          'string.empty': `"page" não pode estar em branco.`,
+          'number.base': `"page" deve ser do tipo Number.`,
+          'number.integer': `"page" deve ser um Inteiro.`,
+          'number.min': `"page" deve possuir um valor mínimo de 1.`,
+          'number.max': `"page" deve possuir um valor máximo de 9007199254740990.`,
+          'number.unsafe': `"page" deve possuir um valor máximo de 9007199254740990.`,
+        }),
+    });
+  },
+
+  per_page: function () {
+    return Joi.object({
+      per_page: Joi.number()
+        .integer()
+        .min(1)
+        .max(100)
+        .default(30)
+        .when('$required.per_page', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"per_page" é um campo obrigatório.`,
+          'string.empty': `"per_page" não pode estar em branco.`,
+          'number.base': `"per_page" deve ser do tipo Number.`,
+          'number.integer': `"per_page" deve ser um Inteiro.`,
+          'number.min': `"per_page" deve possuir um valor mínimo de 1.`,
+          'number.max': `"per_page" deve possuir um valor máximo de 100.`,
+          'number.unsafe': `"per_page" deve possuir um valor máximo de 100.`,
+        }),
+    });
+  },
+
+  // TODO: refactor this in the future for
+  // an Array just like Sequelize.
+  order: function () {
+    return Joi.object({
+      order: Joi.string()
+        .trim()
+        .valid('created_at DESC', 'created_at ASC', 'published_at DESC', 'published_at ASC')
+        .when('$required.order', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"order" é um campo obrigatório.`,
+          'string.empty': `"order" não pode estar em branco.`,
+          'string.base': `"order" deve ser do tipo String.`,
+          'any.only': `"order" deve possuir um dos seguintes valores: "created_at DESC", "created_at ASC", "published_at DESC" ou "published_at ASC".`,
+        }),
+    });
+  },
+
+  where: function () {
+    let whereSchema = Joi.object({}).optional().min(1).messages({
+      'object.base': `Body deve ser do tipo Object.`,
+    });
+
+    for (const key of ['id', 'parent_id', 'slug', 'title', 'body', 'status', 'source_url', 'owner_id', 'username']) {
+      const keyValidationFunction = schemas[key];
+      whereSchema = whereSchema.concat(keyValidationFunction());
+    }
+
+    return Joi.object({
+      where: whereSchema,
+    });
+  },
+
+  count: function () {
+    return Joi.object({
+      count: Joi.boolean()
+        .default(false)
+        .when('$required.count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"count" é um campo obrigatório.`,
+          'string.empty': `"count" não pode estar em branco.`,
+          'boolean.base': `"count" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
   content: function () {
     let contentSchema = Joi.object({
       children: Joi.array().optional().items(Joi.link('#content')).messages({

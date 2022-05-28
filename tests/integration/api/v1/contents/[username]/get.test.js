@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+import parseLinkHeader from 'parse-link-header';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -148,6 +149,53 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(Date.parse(responseBody[1].published_at)).not.toEqual(NaN);
 
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+    });
+
+    test('"username" existent with 60 contents and default pagination', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const numberOfContents = 60;
+
+      for (let item = 0; item < numberOfContents; item++) {
+        await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: `Conteúdo #${item + 1}`,
+          status: 'published',
+        });
+      }
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
+      const responseBody = await response.json();
+
+      const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+      const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
+
+      expect(response.status).toEqual(200);
+      expect(responseTotalRowsHeader).toEqual('60');
+      expect(responseLinkHeader).toStrictEqual({
+        first: {
+          page: '1',
+          per_page: '30',
+          rel: 'first',
+          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?page=1&per_page=30`,
+        },
+        next: {
+          page: '2',
+          per_page: '30',
+          rel: 'next',
+          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?page=2&per_page=30`,
+        },
+        last: {
+          page: '2',
+          per_page: '30',
+          rel: 'last',
+          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?page=2&per_page=30`,
+        },
+      });
+
+      expect(responseBody.length).toEqual(30);
+      expect(responseBody[0].title).toEqual('Conteúdo #60');
+      expect(responseBody[29].title).toEqual('Conteúdo #31');
     });
   });
 });

@@ -1,11 +1,13 @@
 import nextConnect from 'next-connect';
+import snakeize from 'snakeize';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
-import { ForbiddenError } from 'errors/index.js';
+import logger from 'infra/logger.js';
+import { ForbiddenError, ServiceError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -15,22 +17,39 @@ export default nextConnect({
   .use(controller.injectRequestId)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .get(getValidationHandler)
   .get(getHandler)
   .post(postValidationHandler, authorization.canRequest('create:content'), postHandler);
 
-// TODO: cache the response
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    page: 'optional',
+    per_page: 'optional',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
+
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
-  const contentList = await content.findWithStrategy({
+
+  const results = await content.findWithStrategy({
     strategy: 'descending',
     where: {
       parent_id: null,
       status: 'published',
     },
+    page: request.query.page,
+    per_page: request.query.per_page,
   });
+
+  const contentList = results.rows;
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
   return response.status(200).json(secureOutputValues);
 }
 
@@ -88,6 +107,17 @@ async function postHandler(request, response) {
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+
+  try {
+    await response.unstable_revalidate(`/`);
+  } catch (error) {
+    const errorObject = new ServiceError({
+      message: error.message,
+      errorUniqueCode: 'CONTROLLER:CONTENTS:POST_HANDLER:REVALIDATE:ERROR',
+      stack: new Error().stack,
+    });
+    logger.error(snakeize({ ...errorObject, stack: error.stack }));
+  }
 
   return response.status(201).json(secureOutputValues);
 }

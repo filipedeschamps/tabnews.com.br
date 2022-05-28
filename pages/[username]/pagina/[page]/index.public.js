@@ -8,12 +8,12 @@ import { NotFoundError } from 'errors/index.js';
 export default function Home({ contentListFound, pagination, username }) {
   return (
     <>
-      <DefaultLayout metadata={{ title: `${username}` }}>
+      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · ${username}` }}>
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
           nextPageBasePath={`/${username}/pagina`}
-          revalidatePath={`/api/v1/contents/${username}`}
+          revalidatePath={`/api/v1/contents/${username}?page=${pagination.currentPage}`}
         />
       </DefaultLayout>
     </>
@@ -37,6 +37,7 @@ export async function getStaticProps(context) {
       per_page: 'optional',
     });
   } catch (error) {
+    console.log(error);
     return {
       notFound: true,
     };
