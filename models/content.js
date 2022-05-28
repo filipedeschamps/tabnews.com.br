@@ -176,6 +176,7 @@ async function getPagination(options) {
   const previousPage = options.page <= 1 ? null : options.page - 1;
 
   return {
+    currentPage: options.page,
     totalRows: totalRows,
     perPage: perPage,
     firstPage: firstPage,

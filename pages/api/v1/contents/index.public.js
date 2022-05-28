@@ -106,5 +106,8 @@ async function postHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
 
+  await response.unstable_revalidate(`/`);
+  await response.unstable_revalidate(`/${userTryingToCreate}`);
+
   return response.status(201).json(secureOutputValues);
 }

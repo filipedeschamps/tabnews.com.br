@@ -2,12 +2,18 @@ import { DefaultLayout, ContentList } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
+import validator from 'models/validator.js';
 
-export default function Home({ contentListFound }) {
+export default function Home({ contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout metadata={{ description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.' }}>
-        <ContentList contentList={contentListFound} path="/api/v1/contents" />
+        <ContentList
+          contentList={contentListFound}
+          pagination={pagination}
+          nextPageBasePath="/pagina"
+          revalidatePath="/api/v1/contents"
+        />
       </DefaultLayout>
     </>
   );
@@ -16,12 +22,27 @@ export default function Home({ contentListFound }) {
 export async function getStaticProps(context) {
   const userTryingToGet = user.createAnonymous();
 
+  context.params = context.params ? context.params : {};
+
+  try {
+    context.params = validator(context.params, {
+      page: 'optional',
+      per_page: 'optional',
+    });
+  } catch (error) {
+    return {
+      notFound: true,
+    };
+  }
+
   const results = await content.findWithStrategy({
     strategy: 'descending',
     where: {
       parent_id: null,
       status: 'published',
     },
+    page: context.params.page,
+    per_page: context.params.per_page,
   });
 
   const contentListFound = results.rows;
@@ -31,6 +52,7 @@ export async function getStaticProps(context) {
   return {
     props: {
       contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      pagination: results.pagination,
     },
 
     // TODO: instead of `revalidate`, understand how to use this:
