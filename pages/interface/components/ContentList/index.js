@@ -14,6 +14,7 @@ export default function ContentList({ contentList, pagination, nextPageBasePath,
       sx={{
         display: 'table',
         width: '100%',
+        borderSpacing: '0 1rem',
       }}>
       {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
 
