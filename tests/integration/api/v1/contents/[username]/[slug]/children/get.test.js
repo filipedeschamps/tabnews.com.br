@@ -102,6 +102,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
+      // eslint-disable-next-line no-unused-vars
       const childBranchBLevel2Content3 = await orchestrator.createContent({
         parent_id: childBranchBLevel1.id,
         owner_id: firstUser.id,
@@ -258,6 +259,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
+      // eslint-disable-next-line no-unused-vars
       const childBranchALevel3 = await orchestrator.createContent({
         parent_id: childBranchALevel2.id,
         owner_id: firstUser.id,
@@ -286,6 +288,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
+      // eslint-disable-next-line no-unused-vars
       const childBranchBLevel2Content3 = await orchestrator.createContent({
         parent_id: childBranchBLevel1.id,
         owner_id: firstUser.id,

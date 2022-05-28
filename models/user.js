@@ -1,4 +1,3 @@
-import Joi from 'joi';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import validator from 'models/validator.js';

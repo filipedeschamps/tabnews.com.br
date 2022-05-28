@@ -1,10 +1,8 @@
-import { useRouter } from 'next/router';
-import { Header, Box, Button, ActionMenu, ActionList } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList } from '@primer/react';
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
 
 export default function HeaderComponent() {
-  const router = useRouter();
   const { user, isLoading } = useUser();
 
   return (
@@ -55,7 +53,7 @@ export default function HeaderComponent() {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Divider />
-                  <ActionList.Item variant="danger" onSelect={(event) => alert('Recurso ainda não implementado.')}>
+                  <ActionList.Item variant="danger" onSelect={() => alert('Recurso ainda não implementado.')}>
                     Deslogar
                   </ActionList.Item>
                 </ActionList>

@@ -108,6 +108,7 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "username" duplicated exactly (same uppercase letters)', async () => {
+      // eslint-disable-next-line no-unused-vars
       const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -146,6 +147,7 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "username" duplicated (different uppercase letters)', async () => {
+      // eslint-disable-next-line no-unused-vars
       const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -365,6 +367,7 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "email" duplicated (same uppercase letters)', async () => {
+      // eslint-disable-next-line no-unused-vars
       const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -403,6 +406,7 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "email" duplicated (different uppercase letters)', async () => {
+      // eslint-disable-next-line no-unused-vars
       const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {

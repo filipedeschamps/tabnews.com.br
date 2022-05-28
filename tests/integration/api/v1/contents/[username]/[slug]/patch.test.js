@@ -276,6 +276,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(firstUser);
       const firstUserSessionObject = await orchestrator.createSession(firstUser);
 
+      // eslint-disable-next-line no-unused-vars
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Conteúdo do primeiro usuário',

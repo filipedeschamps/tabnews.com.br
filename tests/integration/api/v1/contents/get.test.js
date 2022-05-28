@@ -34,6 +34,7 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
+      // eslint-disable-next-line no-unused-vars
       const thirdRootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Terceiro conteúdo criado',
@@ -43,6 +44,7 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
+      // eslint-disable-next-line no-unused-vars
       const NotRootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,

@@ -3,7 +3,7 @@ import slug from 'slug';
 import database from 'infra/database.js';
 import validator from 'models/validator.js';
 import user from 'models/user.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
+import { ValidationError } from 'errors/index.js';
 
 async function findAll(options = {}) {
   options = validateOptions(options);

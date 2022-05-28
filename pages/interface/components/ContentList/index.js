@@ -7,7 +7,7 @@ import { pt } from 'date-fns/locale';
 export default function ContentList({ contentList, pagination, nextPageBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list, isLoading } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
 
   const nextPageUrl = `${nextPageBasePath}/${pagination?.nextPage}`;
 
