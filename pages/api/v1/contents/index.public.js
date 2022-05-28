@@ -1,11 +1,13 @@
 import nextConnect from 'next-connect';
+import snakeize from 'snakeize';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
-import { ForbiddenError } from 'errors/index.js';
+import logger from 'infra/logger.js';
+import { ForbiddenError, ServiceError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -106,7 +108,16 @@ async function postHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
 
-  await response.unstable_revalidate(`/`);
+  try {
+    await response.unstable_revalidate(`/`);
+  } catch (error) {
+    const errorObject = new ServiceError({
+      message: error.message,
+      errorUniqueCode: 'CONTROLLER:CONTENTS:POST_HANDLER:REVALIDATE:ERROR',
+      stack: new Error().stack,
+    });
+    logger.error(snakeize({ ...errorObject, stack: error.stack }));
+  }
 
   return response.status(201).json(secureOutputValues);
 }
