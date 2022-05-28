@@ -7,25 +7,22 @@ import { pt } from 'date-fns/locale';
 export default function ContentList({ contentList, pagination, nextPageBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list, isLoading } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
 
   const nextPageUrl = `${nextPageBasePath}/${pagination?.nextPage}`;
-
-  let count = 1;
 
   return (
     <Box
       sx={{
-        display: 'grid',
-        gap: 2,
+        display: 'table',
         width: '100%',
       }}>
       {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
 
       {pagination?.nextPage && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: '30px 1fr' }}>
-          <Box sx={{ mr: 2, textAlign: 'right' }}>◀️</Box>
-          <Box>
+        <Box sx={{ display: 'grid', display: 'table-row' }}>
+          <Box sx={{ display: 'table-cell', pr: 2, textAlign: 'right' }}>◀️</Box>
+          <Box sx={{ display: 'table-cell' }}>
             <Link sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }} href={nextPageUrl}>
               Página anterior
             </Link>
@@ -36,15 +33,16 @@ export default function ContentList({ contentList, pagination, nextPageBasePath,
   );
 
   function RenderItems() {
-    return list.map((contentObject) => {
+    return list.map((contentObject, index) => {
+      const itemCount = index + 1 + listNumberOffset;
       return (
-        <Box as="article" key={contentObject.id} sx={{ display: 'grid', gridTemplateColumns: '30px 1fr' }}>
-          <Box sx={{ mr: 2, textAlign: 'right' }}>
+        <Box as="article" key={contentObject.id} sx={{ display: 'table-row' }}>
+          <Box sx={{ display: 'table-cell', pr: 2, textAlign: 'right' }}>
             <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
-              {count++ + listNumberOffset}.
+              {itemCount}.
             </Text>
           </Box>
-          <Box>
+          <Box sx={{ display: 'table-cell' }}>
             <Box>
               <Link
                 sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }}
