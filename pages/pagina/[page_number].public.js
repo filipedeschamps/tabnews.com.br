@@ -13,6 +13,13 @@ export default function Home({ contentListFound }) {
   );
 }
 
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: 'blocking',
+  }
+}
+
 export async function getStaticProps(context) {
   console.log('context');
   const userTryingToGet = user.createAnonymous();
