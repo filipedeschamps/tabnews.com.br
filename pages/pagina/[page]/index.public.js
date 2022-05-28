@@ -3,17 +3,16 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
-import { NotFoundError } from 'errors/index.js';
 
-export default function Home({ contentListFound, pagination, username }) {
+export default function Home({ contentListFound, pagination }) {
   return (
     <>
-      <DefaultLayout metadata={{ title: `${username}` }}>
+      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage}` }}>
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
-          nextPageBasePath={`/${username}/pagina`}
-          revalidatePath={`/api/v1/contents/${username}`}
+          nextPageBasePath="/pagina"
+          revalidatePath={`/api/v1/contents?page=${pagination.currentPage}`}
         />
       </DefaultLayout>
     </>
@@ -30,9 +29,10 @@ export async function getStaticPaths() {
 export async function getStaticProps(context) {
   const userTryingToGet = user.createAnonymous();
 
+  context.params = context.params ? context.params : {};
+
   try {
     context.params = validator(context.params, {
-      username: 'required',
       page: 'optional',
       per_page: 'optional',
     });
@@ -42,28 +42,15 @@ export async function getStaticProps(context) {
     };
   }
 
-  let results;
-
-  try {
-    results = await content.findWithStrategy({
-      strategy: 'descending',
-      where: {
-        username: context.params.username,
-        parent_id: null,
-        status: 'published',
-      },
-      page: context.params.page,
-      per_page: context.params.per_page,
-    });
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      return {
-        notFound: true,
-      };
-    }
-
-    throw error;
-  }
+  const results = await content.findWithStrategy({
+    strategy: 'descending',
+    where: {
+      parent_id: null,
+      status: 'published',
+    },
+    page: context.params.page,
+    per_page: context.params.per_page,
+  });
 
   const contentListFound = results.rows;
 
@@ -73,7 +60,6 @@ export async function getStaticProps(context) {
     props: {
       contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
       pagination: results.pagination,
-      username: context.params.username,
     },
 
     // TODO: instead of `revalidate`, understand how to use this:

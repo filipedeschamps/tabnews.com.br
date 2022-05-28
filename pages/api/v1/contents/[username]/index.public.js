@@ -18,6 +18,8 @@ export default nextConnect({
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
     username: 'required',
+    page: 'optional',
+    per_page: 'optional',
   });
 
   request.query = cleanValues;
@@ -28,16 +30,21 @@ function getValidationHandler(request, response, next) {
 // TODO: cache the response
 async function getHandler(request, response) {
   const userTryingToGet = request.context.user;
-  const contendFound = await content.findAll({
+
+  const results = await content.findWithStrategy({
+    strategy: 'descending',
     where: {
       username: request.query.username,
       parent_id: null,
       status: 'published',
     },
-    order: 'published_at DESC',
+    page: request.query.page,
+    per_page: request.query.per_page,
   });
 
-  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contendFound);
+  const contentListFound = results.rows;
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
+  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
   return response.status(200).json(secureOutputValues);
 }

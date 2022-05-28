@@ -6,13 +6,73 @@ import user from 'models/user.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll(options = {}) {
-  options.where = validateWhereSchema(options?.where);
+  options = validateOptions(options);
   await replaceUsernameWithOwnerId(options);
+  const offset = (options.page - 1) * options.per_page;
+
+  const query = {
+    values: [],
+  };
+
+  if (!options.count) {
+    query.values = [options.per_page, offset];
+  }
+
+  const selectClause = buildSelectClause(options);
   const whereClause = buildWhereClause(options?.where);
   const orderByClause = buildOrderByClause(options?.order);
 
-  const query = {
-    text: `
+  query.text = `
+      ${selectClause}
+      ${whereClause}
+      ${orderByClause}
+
+      ${options.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
+      ;`;
+
+  if (options.where) {
+    query.values = [...query.values, ...Object.values(options.where)];
+  }
+
+  const results = await database.query(query);
+
+  if (options.count) {
+    return results.rows.length > 0 ? results.rows[0].total_rows : 0;
+  }
+
+  return results.rows;
+
+  async function replaceUsernameWithOwnerId(options) {
+    if (options?.where?.username) {
+      const userOwner = await user.findOneByUsername(options.where.username);
+      options.where.owner_id = userOwner.id;
+      delete options.where.username;
+    }
+  }
+
+  function validateOptions(options) {
+    const cleanOptions = validator(options, {
+      page: 'optional',
+      per_page: 'optional',
+      order: 'optional',
+      where: 'optional',
+      count: 'optional',
+    });
+
+    return cleanOptions;
+  }
+
+  function buildSelectClause(options) {
+    if (options.count) {
+      return `
+        SELECT
+          COUNT(*) OVER()::INTEGER as total_rows
+        FROM
+          contents
+        `;
+    }
+
+    return `
       SELECT
         contents.id as id,
         contents.owner_id as owner_id,
@@ -29,7 +89,6 @@ async function findAll(options = {}) {
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
         parent_user.username as parent_username
-
       FROM
         contents
       INNER JOIN
@@ -38,45 +97,7 @@ async function findAll(options = {}) {
         contents as parent_content ON contents.parent_id = parent_content.id
       LEFT JOIN
         users as parent_user ON parent_content.owner_id = parent_user.id
-
-      ${whereClause}
-      ${orderByClause}
-      ;`,
-  };
-
-  if (options.where) {
-    query.values = Object.values(options.where);
-  }
-
-  const results = await database.query(query);
-  return results.rows;
-
-  async function replaceUsernameWithOwnerId(options) {
-    if (options?.where?.username) {
-      const userOwner = await user.findOneByUsername(options.where.username);
-      options.where.owner_id = userOwner.id;
-      delete options.where.username;
-    }
-  }
-
-  function validateWhereSchema(where) {
-    if (!where) {
-      return;
-    }
-
-    const cleanValues = validator(where, {
-      id: 'optional',
-      parent_id: 'optional',
-      slug: 'optional',
-      title: 'optional',
-      body: 'optional',
-      status: 'optional',
-      source_url: 'optional',
-      owner_id: 'optional',
-      username: 'optional',
-    });
-
-    return cleanValues;
+    `;
   }
 
   function buildWhereClause(columns) {
@@ -93,9 +114,9 @@ async function findAll(options = {}) {
 
       function getColumnDeclaration(column, index) {
         if (column[1] === null) {
-          return `contents.${column[0]} IS NOT DISTINCT FROM $${index + 1}`;
+          return `contents.${column[0]} IS NOT DISTINCT FROM $${query.values.length + index + 1}`;
         } else {
-          return `contents.${column[0]} = $${index + 1}`;
+          return `contents.${column[0]} = $${query.values.length + index + 1}`;
         }
       }
     }, '');
@@ -106,7 +127,7 @@ async function findAll(options = {}) {
       return '';
     }
 
-    return `ORDER BY ${orderBy}`;
+    return `ORDER BY contents.${orderBy}`;
   }
 }
 
@@ -124,14 +145,45 @@ async function findWithStrategy(options = {}) {
   return await strategies[options.strategy](options);
 
   async function getDescending(options = {}) {
+    const results = {};
+
     options.order = 'created_at DESC';
-    return await findAll(options);
+    results.rows = await findAll(options);
+    results.pagination = await getPagination(options);
+
+    return results;
   }
 
   async function getAscending(options = {}) {
+    const results = {};
+
     options.order = 'created_at ASC';
-    return await findAll(options);
+    results.rows = await findAll(options);
+    results.pagination = await getPagination(options);
+
+    return results;
   }
+}
+
+async function getPagination(options) {
+  options.count = true;
+
+  const totalRows = await findAll(options);
+  const perPage = options.per_page;
+  const firstPage = 1;
+  const lastPage = Math.ceil(totalRows / options.per_page);
+  const nextPage = options.page >= lastPage ? null : options.page + 1;
+  const previousPage = options.page <= 1 ? null : options.page - 1;
+
+  return {
+    currentPage: options.page,
+    totalRows: totalRows,
+    perPage: perPage,
+    firstPage: firstPage,
+    nextPage: nextPage,
+    previousPage: previousPage,
+    lastPage: lastPage,
+  };
 }
 
 async function create(postedContent) {
