@@ -13,8 +13,7 @@ export default function ContentList({ contentList, pagination, nextPageBasePath,
     <Box
       sx={{
         display: 'table',
-        width: '100%',
-        borderSpacing: '0 1rem',
+        borderSpacing: '0 0.5rem',
       }}>
       {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
 
@@ -41,7 +40,7 @@ export default function ContentList({ contentList, pagination, nextPageBasePath,
               {itemCount}.
             </Text>
           </Box>
-          <Box sx={{ display: 'table-cell' }}>
+          <Box sx={{ display: 'table-cell', lineHeight: '20px' }}>
             <Box>
               <Link
                 sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }}
