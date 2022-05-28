@@ -17,8 +17,7 @@ import {
   Tooltip,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, IssueDraftIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import PublishedSince from 'pages/interface/components/PublishedSince';
 
 import { useUser } from 'pages/interface/index.js';
 
@@ -80,17 +79,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 
   function ViewMode() {
-    const [publishedSinceText, setPublishedSinceText] = useState();
-
-    useEffect(() => {
-      const publishedSince = formatDistanceToNowStrict(new Date(contentObject.published_at), {
-        addSuffix: false,
-        includeSeconds: true,
-        locale: pt,
-      });
-      setPublishedSinceText(`${publishedSince} atrás`);
-    }, []);
-
     function ViewModeOptionsMenu() {
       return (
         <ActionMenu>
@@ -160,7 +148,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   timeStyle: 'short',
                 })}>
                 <Link href={`/${contentObject.username}/${contentObject.slug}`} sx={{ fontSize: 0, color: 'fg.muted' }}>
-                  {publishedSinceText}
+                  <PublishedSince date={contentObject.published_at} />
                 </Link>
               </Tooltip>
             </Box>

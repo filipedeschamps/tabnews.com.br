@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { Box, Link, Text } from '@primer/react';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import PublishedSince from 'pages/interface/components/PublishedSince';
 
 export default function ContentList({ contentList, path }) {
-  const { data: list, isLoading } = useSWR(path, { fallbackData: contentList });
-
+  const { data: list } = useSWR(path, { fallbackData: contentList });
   let count = 1;
   return (
     <Box
@@ -48,24 +45,6 @@ export default function ContentList({ contentList, path }) {
         </Box>
       );
     });
-  }
-
-  // TODO: Fix this, it's flickering.
-  // And this was done with a `useEffect` to avoid
-  // this problem: https://stackoverflow.com/questions/66374123/warning-text-content-did-not-match-server-im-out-client-im-in-div
-  function PublishedSince({ date }) {
-    const [publishedSinceText, setPublishedSinceText] = useState();
-
-    useEffect(() => {
-      const publishedSince = formatDistanceToNowStrict(new Date(date), {
-        addSuffix: false,
-        includeSeconds: true,
-        locale: pt,
-      });
-      setPublishedSinceText(`${publishedSince} atrás`);
-    }, [date]);
-
-    return publishedSinceText;
   }
 
   function RenderEmptyMessage() {
