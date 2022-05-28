@@ -2,9 +2,15 @@ import useSWR from 'swr';
 import { Box, Link, Text } from '@primer/react';
 import PublishedSince from 'pages/interface/components/PublishedSince';
 
-export default function ContentList({ contentList, path }) {
-  const { data: list } = useSWR(path, { fallbackData: contentList });
+export default function ContentList({ contentList, pagination, nextPageBasePath, revalidatePath }) {
+  const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
+
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+
+  const nextPageUrl = `${nextPageBasePath}/${pagination?.nextPage}`;
+
   let count = 1;
+
   return (
     <Box
       sx={{
@@ -13,6 +19,17 @@ export default function ContentList({ contentList, path }) {
         width: '100%',
       }}>
       {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
+
+      {pagination?.nextPage && (
+        <Box sx={{ display: 'grid', gridTemplateColumns: '30px 1fr' }}>
+          <Box sx={{ mr: 2, textAlign: 'right' }}>◀️</Box>
+          <Box>
+            <Link sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }} href={nextPageUrl}>
+              Página anterior
+            </Link>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 
@@ -21,7 +38,9 @@ export default function ContentList({ contentList, path }) {
       return (
         <Box as="article" key={contentObject.id} sx={{ display: 'grid', gridTemplateColumns: '30px 1fr' }}>
           <Box sx={{ mr: 2, textAlign: 'right' }}>
-            <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }}>{count++}.</Text>
+            <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
+              {count++ + listNumberOffset}.
+            </Text>
           </Box>
           <Box>
             <Box>

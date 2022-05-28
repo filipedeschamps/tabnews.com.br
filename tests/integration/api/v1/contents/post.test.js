@@ -1,3 +1,7 @@
+// TODO: `response.unstable_revalidate` is causing tests to fail.
+// More information: https://github.com/filipedeschamps/tabnews.com.br/pull/398#issuecomment-1140143909
+jest.setTimeout(60000);
+
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
