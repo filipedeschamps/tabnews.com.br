@@ -1,31 +1,26 @@
-import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { Box, Link, Text } from '@primer/react';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { pt } from 'date-fns/locale';
+import PublishedSince from 'pages/interface/components/PublishedSince';
 
 export default function ContentList({ contentList, pagination, nextPageBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list, isLoading } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
 
   const nextPageUrl = `${nextPageBasePath}/${pagination?.nextPage}`;
-
-  let count = 1;
 
   return (
     <Box
       sx={{
-        display: 'grid',
-        gap: 2,
-        width: '100%',
+        display: 'table',
+        borderSpacing: '0 0.5rem',
       }}>
       {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
 
       {pagination?.nextPage && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: '30px 1fr' }}>
-          <Box sx={{ mr: 2, textAlign: 'right' }}>◀️</Box>
-          <Box>
+        <Box sx={{ display: 'grid', display: 'table-row' }}>
+          <Box sx={{ display: 'table-cell', pr: 2, textAlign: 'right' }}>◀️</Box>
+          <Box sx={{ display: 'table-cell' }}>
             <Link sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }} href={nextPageUrl}>
               Página anterior
             </Link>
@@ -36,15 +31,16 @@ export default function ContentList({ contentList, pagination, nextPageBasePath,
   );
 
   function RenderItems() {
-    return list.map((contentObject) => {
+    return list.map((contentObject, index) => {
+      const itemCount = index + 1 + listNumberOffset;
       return (
-        <Box as="article" key={contentObject.id} sx={{ display: 'grid', gridTemplateColumns: '30px 1fr' }}>
-          <Box sx={{ mr: 2, textAlign: 'right' }}>
+        <Box as="article" key={contentObject.id} sx={{ display: 'table-row' }}>
+          <Box sx={{ display: 'table-cell', pr: 2, textAlign: 'right' }}>
             <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
-              {count++ + listNumberOffset}.
+              {itemCount}.
             </Text>
           </Box>
-          <Box>
+          <Box sx={{ display: 'table-cell', lineHeight: '20px' }}>
             <Box>
               <Link
                 sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }}
@@ -66,24 +62,6 @@ export default function ContentList({ contentList, pagination, nextPageBasePath,
         </Box>
       );
     });
-  }
-
-  // TODO: Fix this, it's flickering.
-  // And this was done with a `useEffect` to avoid
-  // this problem: https://stackoverflow.com/questions/66374123/warning-text-content-did-not-match-server-im-out-client-im-in-div
-  function PublishedSince({ date }) {
-    const [publishedSinceText, setPublishedSinceText] = useState();
-
-    useEffect(() => {
-      const publishedSince = formatDistanceToNowStrict(new Date(date), {
-        addSuffix: false,
-        includeSeconds: true,
-        locale: pt,
-      });
-      setPublishedSinceText(`${publishedSince} atrás`);
-    }, [date]);
-
-    return publishedSinceText;
   }
 
   function RenderEmptyMessage() {
