@@ -70,6 +70,9 @@
     "migration:create": "node-pg-migrate create",
     "migration:run": "node infra/scripts/wait-for-db-connection-ready.js && node-pg-migrate up --envPath ./.env -m infra/migrations/ 2>migrations.log"
   },
+  "engines": {
+    "node": "^16"
+  },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
   "version": "1.0.0",
