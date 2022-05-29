@@ -2139,5 +2139,46 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
     });
+
+    test('Update content from another user', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+
+      await orchestrator.activateUser(firstUser);
+      const firstUserSessionObject = await orchestrator.createSession(firstUser);
+      const secondUserContent = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        title: 'Conteúdo do Segundo Usuário antes do patch!',
+        body: 'Body antes do patch!',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Tentando atualizar o conteúdo.',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual('Você não possui permissão para atualizar o conteúdo de outro usuário.');
+      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:content:others".');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual(
+        'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER'
+      );
+    });
   });
 });
