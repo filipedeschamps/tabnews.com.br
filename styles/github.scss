@@ -2,8 +2,10 @@
 
 html[data-theme="day"] {
   @include meta.load-css("highlight.js/styles/github");
+  @include meta.load-css("github-markdown-css/github-markdown-light");
 }
 
 html[data-theme="night"] {
   @include meta.load-css("highlight.js/styles/github-dark");
+  @include meta.load-css("github-markdown-css/github-markdown-dark");
 }
