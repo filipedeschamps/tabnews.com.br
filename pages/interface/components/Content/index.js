@@ -30,7 +30,6 @@ import mermaidPlugin from '@bytemd/plugin-mermaid';
 import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
 import 'bytemd/dist/index.min.css';
-import 'codemirror-github-light/lib/codemirror-github-light-theme.css';
 import 'codemirror-github-dark/lib/codemirror-github-dark-theme.css';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
@@ -400,7 +399,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                   onChange={handleChange}
                   mode="tab"
                   editorConfig={{
-                    theme: `github-${colorMode === 'day' ? 'light' : 'dark'}`,
+                    theme: colorMode === 'day' ? 'default' : 'github-dark',
                   }}
                 />
               </Box>
