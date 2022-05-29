@@ -26,6 +26,7 @@ const availableFeatures = new Set([
   // CONTENT
   'read:content',
   'update:content',
+  'update:content:others',
   'create:content',
   'create:content:text_root',
   'create:content:text_child',
@@ -54,7 +55,7 @@ function can(user, feature, resource) {
   if (feature === 'update:content' && resource) {
     authorized = false;
 
-    if (user.id === resource.owner_id) {
+    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
       authorized = true;
     }
   }
