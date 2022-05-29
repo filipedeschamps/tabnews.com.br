@@ -164,6 +164,12 @@ export default function Page() {
                   </Truncate>
                 </Label>
               </Box>
+              <Box>
+                Versão do Node.js:{' '}
+                <Label variant={statusObject?.dependencies.webserver.version ? 'success' : 'danger'}>
+                  {statusObject?.dependencies.webserver.version}
+                </Label>
+              </Box>
             </Box>
           )}
         </Box>
