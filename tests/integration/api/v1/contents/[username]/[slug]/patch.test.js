@@ -2233,7 +2233,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
-      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
+      expect(Date.parse(responseBody.updated_at)).toBeGreaterThan(Date.parse(secondUserContent.updated_at));
     });
   });
 });
