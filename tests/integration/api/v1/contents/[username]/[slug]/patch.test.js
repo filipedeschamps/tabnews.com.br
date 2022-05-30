@@ -2140,7 +2140,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
     });
 
-    test('Update content from another user', async () => {
+    test('Content from another user', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
@@ -2183,11 +2183,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
   });
 
   describe('User with "update:content:others" feature', () => {
-    test('Update content from another user', async () => {
-      const priviledgedUser = await orchestrator.createUser();
-      await orchestrator.addFeaturesToUser(priviledgedUser, ['update:content:others']);
-      await orchestrator.activateUser(priviledgedUser);
-      const priviledgedUserSessionObject = await orchestrator.createSession(priviledgedUser);
+    test('Content from another user', async () => {
+      const privilegedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(privilegedUser, ['update:content:others']);
+      await orchestrator.activateUser(privilegedUser);
+      const privilegedUserSessionObject = await orchestrator.createSession(privilegedUser);
 
       const secondUser = await orchestrator.createUser();
       const secondUserContent = await orchestrator.createContent({
@@ -2203,7 +2203,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            cookie: `session_id=${priviledgedUserSessionObject.token}`,
+            cookie: `session_id=${privilegedUserSessionObject.token}`,
           },
           body: JSON.stringify({
             title: 'Novo title.',
@@ -2219,8 +2219,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.id).toEqual(secondUserContent.id);
       expect(responseBody.owner_id).toEqual(secondUser.id);
       expect(responseBody.username).toEqual(secondUser.username);
-      expect(responseBody.owner_id).not.toEqual(priviledgedUser.id);
-      expect(responseBody.username).not.toEqual(priviledgedUser.username);
+      expect(responseBody.owner_id).not.toEqual(privilegedUser.id);
+      expect(responseBody.username).not.toEqual(privilegedUser.username);
       expect(responseBody.parent_id).toEqual(null);
       expect(responseBody.parent_title).toEqual(null);
       expect(responseBody.parent_slug).toEqual(null);
