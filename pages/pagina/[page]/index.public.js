@@ -11,7 +11,7 @@ export default function Home({ contentListFound, pagination }) {
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
-          nextPageBasePath="/pagina"
+          paginationBasePath="/pagina"
           revalidatePath={`/api/v1/contents?page=${pagination.currentPage}`}
         />
       </DefaultLayout>
