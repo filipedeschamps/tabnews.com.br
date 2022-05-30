@@ -149,19 +149,17 @@ export default function Page() {
                 </Label>
               </Box>
               <Box>
-                Mensagem do commit:{' '}
-                <Label variant={statusObject?.dependencies.webserver.last_commit_message ? 'success' : 'danger'}>
-                  <Truncate inline expandable sx={{ maxWidth: '170px' }}>
-                    {statusObject?.dependencies.webserver.last_commit_message}
-                  </Truncate>
-                </Label>
-              </Box>
-              <Box>
                 SHA do commit:{' '}
                 <Label variant={statusObject?.dependencies.webserver.last_commit_message_sha ? 'success' : 'danger'}>
                   <Truncate inline expandable sx={{ maxWidth: '170px' }}>
                     {statusObject?.dependencies.webserver.last_commit_message_sha}
                   </Truncate>
+                </Label>
+              </Box>
+              <Box>
+                Versão do Node.js:{' '}
+                <Label variant={statusObject?.dependencies.webserver.version ? 'success' : 'danger'}>
+                  {statusObject?.dependencies.webserver.version}
                 </Label>
               </Box>
             </Box>
