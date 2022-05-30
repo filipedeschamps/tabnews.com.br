@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useMediaQuery } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, metadata }) {
   const { title, description, image, url, noIndex } = metadata;
