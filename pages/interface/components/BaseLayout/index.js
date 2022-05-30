@@ -4,7 +4,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 export default function DefaultLayout({ children, metadata }) {
   const { title, description, image, url, noIndex } = metadata;
   const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
-  const favicon = systemTheme ? '/favicon-dark.png' : '/favicon.png';
+  const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
 
   return (
     <>
