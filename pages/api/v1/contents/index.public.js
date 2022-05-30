@@ -106,18 +106,20 @@ async function postHandler(request, response) {
     await notification.sendReplyEmailToParentUser(createdContent);
   }
 
-  const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
-
-  try {
-    await response.unstable_revalidate(`/`);
-  } catch (error) {
-    const errorObject = new ServiceError({
-      message: error.message,
-      errorUniqueCode: 'CONTROLLER:CONTENTS:POST_HANDLER:REVALIDATE:ERROR',
-      stack: new Error().stack,
-    });
-    logger.error(snakeize({ ...errorObject, stack: error.stack }));
+  if (!createdContent.parent_id) {
+    try {
+      await response.unstable_revalidate(`/`);
+    } catch (error) {
+      const errorObject = new ServiceError({
+        message: error.message,
+        errorUniqueCode: 'CONTROLLER:CONTENTS:POST_HANDLER:REVALIDATE:ERROR',
+        stack: new Error().stack,
+      });
+      logger.error(snakeize({ ...errorObject, stack: error.stack }));
+    }
   }
+
+  const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
 
   return response.status(201).json(secureOutputValues);
 }
