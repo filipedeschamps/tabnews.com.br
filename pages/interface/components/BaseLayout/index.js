@@ -1,7 +1,10 @@
 import Head from 'next/head';
+import { useMediaQuery } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, metadata }) {
   const { title, description, image, url, noIndex } = metadata;
+  const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
+  const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
 
   return (
     <>
@@ -25,8 +28,8 @@ export default function DefaultLayout({ children, metadata }) {
         <meta property="twitter:image" content={image} />
 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <link rel="icon" href="/favicon.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/favicon.png"></link>
+        <link rel="icon" href={favicon} type="image/png" />
+        <link rel="apple-touch-icon" href={favicon}></link>
       </Head>
       {children}
     </>
