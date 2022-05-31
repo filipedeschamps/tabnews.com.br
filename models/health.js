@@ -89,6 +89,7 @@ async function checkWebserverDependency() {
     last_commit_author: process.env.VERCEL_GIT_COMMIT_AUTHOR_LOGIN,
     last_commit_message: process.env.VERCEL_GIT_COMMIT_MESSAGE,
     last_commit_message_sha: process.env.VERCEL_GIT_COMMIT_SHA,
+    version: process.version,
   };
 }
 

@@ -1517,6 +1517,91 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
+    test('Content with "source_url" containing a valid long TLD', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Um baita de um Top-Level Domain',
+        body: 'O maior TLD que foi encontrado no dia do commit possuía 18 caracteres',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            source_url: 'https://nic.northwesternmutual/',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(responseBody.owner_id).toEqual(defaultUser.id);
+      expect(responseBody.username).toEqual(defaultUser.username);
+      expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
+      expect(responseBody.slug).toEqual('um-baita-de-um-top-level-domain');
+      expect(responseBody.title).toEqual('Um baita de um Top-Level Domain');
+      expect(responseBody.body).toEqual('O maior TLD que foi encontrado no dia do commit possuía 18 caracteres');
+      expect(responseBody.status).toEqual('draft');
+      expect(responseBody.source_url).toEqual('https://nic.northwesternmutual/');
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.published_at).toEqual(null);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+    });
+
+    test('Content with "source_url" containing a invalid long TLD', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Um Top-Level Domain maior que o permitido',
+        body: 'O maior TLD que foi encontrado no dia do commit possuía 18 caracteres',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            source_url: 'https://tldco.mdezenovecaracteres',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "source_url" containing a not accepted Protocol', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);

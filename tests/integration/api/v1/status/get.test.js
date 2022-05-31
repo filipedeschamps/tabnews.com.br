@@ -24,6 +24,7 @@ describe('GET /status', () => {
       expect(serverStatusBody.dependencies.webserver.status).toEqual('healthy');
       expect(serverStatusBody.dependencies.webserver.provider).toEqual('local');
       expect(serverStatusBody.dependencies.webserver.environment).toEqual('local');
+      expect(typeof serverStatusBody.dependencies.webserver.version).toBe('string');
     });
   });
 });

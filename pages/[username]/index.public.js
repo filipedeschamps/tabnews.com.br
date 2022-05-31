@@ -12,7 +12,7 @@ export default function Home({ contentListFound, pagination, username }) {
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
-          nextPageBasePath={`/${username}/pagina`}
+          paginationBasePath={`/${username}/pagina`}
           revalidatePath={`/api/v1/contents/${username}`}
         />
       </DefaultLayout>

@@ -1,33 +1,60 @@
 import useSWR from 'swr';
 import { Box, Link, Text } from '@primer/react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
+
 import PublishedSince from 'pages/interface/components/PublishedSince';
 
-export default function ContentList({ contentList, pagination, nextPageBasePath, revalidatePath }) {
+export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
   const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
 
-  const nextPageUrl = `${nextPageBasePath}/${pagination?.nextPage}`;
+  const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
+  const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
 
   return (
-    <Box
-      sx={{
-        display: 'table',
-        borderSpacing: '0 0.5rem',
-      }}>
-      {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
+    <>
+      <Box
+        sx={{
+          display: 'table',
+          borderSpacing: '0 0.5rem',
+        }}>
+        {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
+      </Box>
 
-      {pagination?.nextPage && (
-        <Box sx={{ display: 'grid', display: 'table-row' }}>
-          <Box sx={{ display: 'table-cell', pr: 2, textAlign: 'right' }}>◀️</Box>
-          <Box sx={{ display: 'table-cell' }}>
-            <Link sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }} href={nextPageUrl}>
-              Página anterior
-            </Link>
-          </Box>
-        </Box>
-      )}
-    </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          width: '100%',
+          justifyContent: 'center',
+          gap: 4,
+          m: 4,
+        }}>
+        {pagination.previousPage ? (
+          <Link href={previousPageUrl}>
+            <ChevronLeftIcon size={16} />
+            Anterior
+          </Link>
+        ) : (
+          <Text color="fg.muted">
+            <ChevronLeftIcon size={16} />
+            Anterior
+          </Text>
+        )}
+
+        {pagination.nextPage ? (
+          <Link href={nextPageUrl}>
+            Próximo
+            <ChevronRightIcon size={16} />
+          </Link>
+        ) : (
+          <Text color="fg.muted">
+            Próximo
+            <ChevronRightIcon size={16} />
+          </Text>
+        )}
+      </Box>
+    </>
   );
 
   function RenderItems() {
