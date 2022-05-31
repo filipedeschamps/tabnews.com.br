@@ -152,7 +152,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 </Link>
               </Tooltip>
             </Box>
-            <Box>{user && user.id === contentObject.owner_id && ViewModeOptionsMenu()}</Box>
+            <Box>
+              {user &&
+                (user.id === contentObject.owner_id || user.features.includes('update:content:others')) &&
+                ViewModeOptionsMenu()}
+            </Box>
           </Box>
 
           {!contentObject?.parent_id && contentObject?.title && <Heading as="h1">{contentObject.title}</Heading>}
@@ -224,7 +228,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
         const requestMethod = contentObject?.id ? 'PATCH' : 'POST';
         const requestUrl = contentObject?.id
-          ? `/api/v1/contents/${user.username}/${contentObject.slug}`
+          ? `/api/v1/contents/${contentObject.username}/${contentObject.slug}`
           : `/api/v1/contents`;
         const requestBody = {
           status: 'published',
