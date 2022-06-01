@@ -154,7 +154,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
             </Box>
             <Box>
               {user &&
-                (user.id === contentObject.owner_id || user.features.includes('update:content:others')) &&
+                (user.id === contentObject.owner_id || user.features?.includes('update:content:others')) &&
                 ViewModeOptionsMenu()}
             </Box>
           </Box>
