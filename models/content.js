@@ -197,7 +197,6 @@ async function create(postedContent) {
     await checkIfParentIdExists(validContent);
   }
 
-  await checkForContentUniqueness(validContent);
   await populatePublishedAtValue(validContent);
 
   const newContent = await runInsertQuery(validContent);
@@ -250,8 +249,13 @@ async function create(postedContent) {
         content.published_at,
       ],
     };
-    const results = await database.query(query);
-    return results.rows[0];
+
+    try {
+      const results = await database.query(query);
+      return results.rows[0];
+    } catch (error) {
+      throw parseQueryErrorToCustomError(error);
+    }
   }
 }
 
@@ -308,24 +312,19 @@ async function checkIfParentIdExists(content) {
   }
 }
 
-async function checkForContentUniqueness(content) {
-  const existingContent = await findOne({
-    where: {
-      owner_id: content.owner_id,
-      slug: content.slug,
-    },
-  });
-
-  if (existingContent) {
-    throw new ValidationError({
+function parseQueryErrorToCustomError(error) {
+  if (error.databaseErrorCode === '23505') {
+    return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "slug" diferente de "${existingContent.slug}".`,
+      action: `Utilize um "title" ou "slug" diferente.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
       key: 'slug',
     });
   }
+
+  return error;
 }
 
 function validateCreateSchema(content) {

@@ -1,7 +1,19 @@
 import { v4 as uuid } from 'uuid';
 
 class BaseError extends Error {
-  constructor({ message, stack, action, statusCode, errorId, requestId, context, errorUniqueCode, key, type }) {
+  constructor({
+    message,
+    stack,
+    action,
+    statusCode,
+    errorId,
+    requestId,
+    context,
+    errorUniqueCode,
+    key,
+    type,
+    databaseErrorCode,
+  }) {
     super();
     this.name = this.constructor.name;
     this.message = message;
@@ -14,6 +26,7 @@ class BaseError extends Error {
     this.errorUniqueCode = errorUniqueCode;
     this.key = key;
     this.type = type;
+    this.databaseErrorCode = databaseErrorCode;
   }
 }
 
@@ -47,7 +60,7 @@ export class NotFoundError extends BaseError {
 }
 
 export class ServiceError extends BaseError {
-  constructor({ message, action, stack, context, statusCode, errorUniqueCode }) {
+  constructor({ message, action, stack, context, statusCode, errorUniqueCode, databaseErrorCode }) {
     super({
       message: message || 'Serviço indisponível no momento.',
       action: action || 'Verifique se o serviço está disponível.',
@@ -55,6 +68,7 @@ export class ServiceError extends BaseError {
       statusCode: statusCode || 503,
       context: context,
       errorUniqueCode: errorUniqueCode,
+      databaseErrorCode: databaseErrorCode,
     });
   }
 }

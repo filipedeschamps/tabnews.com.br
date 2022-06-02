@@ -517,6 +517,96 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "slug" containing the same value of another content (both "published" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const existingContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo existente',
+        body: 'Conteúdo existente',
+        slug: 'conteudo-existente',
+        status: 'published',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Conteúdo existente',
+          body: 'Outro body',
+          slug: 'conteudo-existente',
+          status: 'published',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O conteúdo enviado parece ser duplicado.',
+        action: 'Utilize um "title" ou "slug" diferente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content with "slug" containing the same value of another content (one with "draft" and the other "published" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const existingContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo existente',
+        body: 'Conteúdo existente',
+        slug: 'conteudo-existente',
+        status: 'draft',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Conteúdo existente',
+          body: 'Outro body',
+          slug: 'conteudo-existente',
+          status: 'published',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O conteúdo enviado parece ser duplicado.',
+        action: 'Utilize um "title" ou "slug" diferente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
     test('Content with "title" containing a blank String', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
