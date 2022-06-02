@@ -311,7 +311,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published')
+        .valid('draft', 'published', 'deleted')
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -321,7 +321,7 @@ const schemas = {
           'string.min': `"status" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"status" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"status" possui o valor inválido "null".`,
-          'any.only': `"status" deve possuir um dos seguintes valores: "draft" ou "published".`,
+          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
         }),
     });
   },
@@ -394,6 +394,19 @@ const schemas = {
           'any.required': `"published_at" é um campo obrigatório.`,
           'string.empty': `"published_at" não pode estar em branco.`,
           'string.base': `"published_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  deleted_at: function () {
+    return Joi.object({
+      deleted_at: Joi.date()
+        .allow(null)
+        .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"deleted_at" é um campo obrigatório.`,
+          'string.empty': `"deleted_at" não pode estar em branco.`,
+          'string.base': `"deleted_at" deve ser do tipo Date.`,
         }),
     });
   },
@@ -534,6 +547,7 @@ const schemas = {
       'created_at',
       'updated_at',
       'published_at',
+      'deleted_at',
       'username',
       'parent_title',
       'parent_slug',

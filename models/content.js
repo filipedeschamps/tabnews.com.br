@@ -225,6 +225,7 @@ async function create(postedContent) {
         inserted_content.created_at as created_at,
         inserted_content.updated_at as updated_at,
         inserted_content.published_at as published_at,
+        inserted_content.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -337,6 +338,15 @@ function validateCreateSchema(content) {
     status: 'required',
     source_url: 'optional',
   });
+
+  if (cleanValues.status === 'deleted') {
+    throw new ValidationError({
+      message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
+      key: 'status',
+      type: 'any.only',
+      errorUniqueCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+    });
+  }
 
   return cleanValues;
 }
