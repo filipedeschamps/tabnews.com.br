@@ -517,7 +517,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing the same value of another content (both "published" status)', async () => {
+    test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -562,7 +562,7 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
-    test('Content with "slug" containing the same value of another content (one with "draft" and the other "published" status)', async () => {
+    test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -605,6 +605,65 @@ describe('POST /api/v1/contents', () => {
       });
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo existente',
+        body: 'Conteúdo existente',
+        slug: 'conteudo-existente',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(firstContent.id, {
+        status: 'deleted',
+      });
+
+      const secondContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Conteúdo existente',
+          body: 'Outro body',
+          slug: 'conteudo-existente',
+          status: 'published',
+        }),
+      });
+
+      const secondContentBody = await secondContent.json();
+
+      expect(secondContent.status).toEqual(201);
+
+      expect(secondContentBody).toStrictEqual({
+        id: secondContentBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'conteudo-existente',
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        status: 'published',
+        source_url: null,
+        created_at: secondContentBody.created_at,
+        updated_at: secondContentBody.updated_at,
+        published_at: secondContentBody.published_at,
+        deleted_at: null,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(Date.parse(secondContentBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(secondContentBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(secondContentBody.updated_at)).not.toEqual(NaN);
     });
 
     test('Content with "title" containing a blank String', async () => {

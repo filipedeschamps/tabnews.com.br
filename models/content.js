@@ -197,7 +197,7 @@ async function create(postedContent) {
     await checkIfParentIdExists(validContent);
   }
 
-  await populatePublishedAtValue(validContent);
+  await populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent);
   return newContent;
@@ -362,26 +362,19 @@ function checkRootContentTitle(content) {
   }
 }
 
-async function populatePublishedAtValue(postedContent) {
-  const existingContent = await findOne({
-    where: {
-      owner_id: postedContent.owner_id,
-      slug: postedContent.slug,
-    },
-  });
-
-  if (existingContent && existingContent.published_at) {
-    postedContent.published_at = existingContent.published_at;
+async function populatePublishedAtValue(oldContent, newContent) {
+  if (oldContent && oldContent.published_at) {
+    newContent.published_at = oldContent.published_at;
     return;
   }
 
-  if (existingContent && !existingContent.published_at && postedContent.status === 'published') {
-    postedContent.published_at = new Date();
+  if (oldContent && !oldContent.published_at && newContent.status === 'published') {
+    newContent.published_at = new Date();
     return;
   }
 
-  if (!existingContent && postedContent.status === 'published') {
-    postedContent.published_at = new Date();
+  if (!oldContent && newContent.status === 'published') {
+    newContent.published_at = new Date();
     return;
   }
 }
@@ -402,7 +395,8 @@ async function update(contentId, postedContent) {
     await checkIfParentIdExists(newContent);
   }
 
-  await populatePublishedAtValue(newContent);
+  await populatePublishedAtValue(oldContent, newContent);
+  populateDeletedAtValue(newContent);
 
   const updatedContent = await runUpdateQuery(newContent);
   return updatedContent;
@@ -420,7 +414,8 @@ async function update(contentId, postedContent) {
             status = $6,
             source_url = $7,
             published_at = $8,
-            updated_at = (now() at time zone 'utc')
+            updated_at = (now() at time zone 'utc'),
+            deleted_at = $9
           WHERE
             id = $1
           RETURNING *
@@ -437,6 +432,7 @@ async function update(contentId, postedContent) {
         updated_content.created_at as created_at,
         updated_content.updated_at as updated_at,
         updated_content.published_at as published_at,
+        updated_content.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -459,6 +455,7 @@ async function update(contentId, postedContent) {
         content.status,
         content.source_url,
         content.published_at,
+        content.deleted_at,
       ],
     };
     const results = await database.query(query);
@@ -489,6 +486,12 @@ function checkForParentIdRecursion(content) {
       statusCode: 400,
       key: 'parent_id',
     });
+  }
+}
+
+function populateDeletedAtValue(contentObject) {
+  if (!contentObject.deleted_at && contentObject.status === 'deleted') {
+    contentObject.deleted_at = new Date();
   }
 }
 

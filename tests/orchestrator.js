@@ -140,6 +140,18 @@ async function createContent(contentObject) {
   });
 }
 
+async function updateContent(contentId, contentObject) {
+  return await content.update(contentId, {
+    parent_id: contentObject?.parent_id || undefined,
+    owner_id: contentObject?.owner_id || undefined,
+    title: contentObject?.title || undefined,
+    slug: contentObject?.slug || undefined,
+    body: contentObject?.body || undefined,
+    status: contentObject?.status || undefined,
+    source_url: contentObject?.source_url || undefined,
+  });
+}
+
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
 }
@@ -157,5 +169,6 @@ export default {
   addFeaturesToUser,
   removeFeaturesFromUser,
   createContent,
+  updateContent,
   createRecoveryToken,
 };
