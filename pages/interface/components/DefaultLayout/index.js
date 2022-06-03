@@ -5,20 +5,7 @@ import { BaseLayout, Header } from 'pages/interface/index.js';
 import { useEffect } from 'react';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata, content }) {
-  const { setColorMode, colorMode } = useTheme();
-
-  useEffect(() => {
-    (async () => {
-      const darkMode = window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .matches;
-
-      const systemTheme = !darkMode ? 'day' : 'night';
-      const mode = await localStorage.getItem('theme') || systemTheme;
-
-      setColorMode(mode);
-    })();
-  }, [setColorMode]);
+  const { colorMode } = useTheme();
 
   useEffect(() => {
     document
