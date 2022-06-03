@@ -67,10 +67,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     }
   }, [localStorageKey, user, isLoading, contentObject]);
 
-  if (contentObject?.status == 'deleted') {
-    return <DeletedMode />;
-  }
-
   if (componentMode === 'view') {
     return <ViewMode />;
   }
@@ -83,57 +79,19 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     return <CompactMode />;
   }
 
-  function DeletedMode() {
-    const router = useRouter();
-
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 2,
-          width: '100%',
-          borderWidth: viewFrame ? 1 : 0,
-          p: viewFrame ? 4 : 0,
-          borderRadius: '6px',
-          borderColor: 'border.default',
-          borderStyle: 'solid',
-        }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}>
-          Esse conteúdo não está mais disponível.
-          <Button
-            sx={{
-              mt: 4,
-            }}
-            variant="primary"
-            size="large"
-            type="submit"
-            aria-label="Ver mais conteúdos"
-            onClick={() => router.push('/')}>
-            Ver mais conteúdos
-          </Button>
-        </Box>
-      </Box>
-    );
+  if (componentMode === 'deleted') {
+    return <DeletedMode />;
   }
 
   function ViewMode() {
-    const { user, isLoading } = useUser();
     const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
 
     const confirm = useConfirm();
-    const router = useRouter();
 
     const handleClickDelete = async () => {
       const confirmDelete = await confirm({
         title: 'Você tem certeza?',
-        content: 'Deseja realmente deletar essa publicação?',
+        content: 'Deseja realmente apagar essa publicação?',
       });
 
       if (!confirmDelete) return;
@@ -142,7 +100,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         status: 'deleted',
       };
 
-      const response = await fetch(`/api/v1/contents/${user.username}/${contentObject.slug}`, {
+      const response = await fetch(`/api/v1/contents/${contentObject.username}/${contentObject.slug}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -152,9 +110,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
       const responseBody = await response.json();
       if (response.status === 200) {
-        setContentObject(responseBody);
-        router.push('/');
-
+        setComponentMode('deleted');
         return;
       }
 
@@ -191,7 +147,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 <ActionList.LeadingVisual>
                   <TrashIcon />
                 </ActionList.LeadingVisual>
-                Deletar
+                Apagar
               </ActionList.Item>
             </ActionList>
           </ActionMenu.Overlay>
@@ -562,6 +518,33 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         onClick={handleClick}>
         Responder
       </Button>
+    );
+  }
+
+  function DeletedMode() {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2,
+          width: '100%',
+          borderWidth: viewFrame ? 1 : 0,
+          p: viewFrame ? 4 : 0,
+          borderRadius: '6px',
+          borderColor: 'border.default',
+          borderStyle: 'solid',
+        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}>
+          Conteúdo apagado com sucesso.
+        </Box>
+      </Box>
     );
   }
 }
