@@ -8,18 +8,23 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   const router = useRouter();
   const webserverHost = webserver.getHost();
   const defaultMetadata = {
-    title: 'TabNews',
-    description: null,
+    title: 'TabNews - Construindo uma internet mais massa',
     image: `${webserverHost}/default-image-share.png`,
     url: `${webserverHost}${router.asPath}`,
+    description: null,
+    published_time: content ? content.published_at : null,
+    modified_time: content ? content.updated_at : null,
+    author: content ? content.username : null,
+    type: content ? 'article' : 'website',
     noIndex: false,
   };
 
   let updatedMetadata = { ...defaultMetadata, ...metadata };
-
   if (content) {
     if (content.title) {
       updatedMetadata.title = `${content.title} · ${content.username}`;
+    } else if (content.parent_title) {
+      updatedMetadata.title = `Em resposta a ${content.parent_title} · ${content.parent_username}`;
     } else {
       updatedMetadata.title = `${content.username}/${content.slug}`;
     }
