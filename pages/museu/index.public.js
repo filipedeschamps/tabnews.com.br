@@ -88,7 +88,7 @@ export default function Page() {
             <a href="https://github.com/pscruzzz">Pedro Cruz</a>
           </li>
         </ul>
-        <a href="/"> {'<'} Voltar ao TabNews</a>
+        <a href="/"> &lt; Voltar ao TabNews</a>
       </div>
 
       <style jsx>{`
