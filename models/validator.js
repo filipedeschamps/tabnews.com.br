@@ -496,16 +496,61 @@ const schemas = {
 
   where: function () {
     let whereSchema = Joi.object({}).optional().min(1).messages({
-      'object.base': `Body deve ser do tipo Object.`,
+      'object.base': `"where" deve ser do tipo Object.`,
     });
 
-    for (const key of ['id', 'parent_id', 'slug', 'title', 'body', 'status', 'source_url', 'owner_id', 'username']) {
+    for (const key of [
+      'id',
+      'parent_id',
+      'slug',
+      'title',
+      'body',
+      'status',
+      'source_url',
+      'owner_id',
+      'username',
+      '$or',
+    ]) {
       const keyValidationFunction = schemas[key];
       whereSchema = whereSchema.concat(keyValidationFunction());
     }
 
     return Joi.object({
       where: whereSchema,
+    });
+  },
+
+  limit: function () {
+    return Joi.object({
+      limit: Joi.number()
+        .integer()
+        .min(1)
+        .max(9007199254740990)
+        .default(null)
+        .when('$required.limit', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"limit" é um campo obrigatório.`,
+          'string.empty': `"limit" não pode estar em branco.`,
+          'number.base': `"limit" deve ser do tipo Number.`,
+          'number.integer': `"limit" deve ser um Inteiro.`,
+          'number.min': `"limit" deve possuir um valor mínimo de 1.`,
+          'number.max': `"limit" deve possuir um valor máximo de 9007199254740990.`,
+          'number.unsafe': `"limit" deve possuir um valor máximo de 9007199254740990.`,
+        }),
+    });
+  },
+
+  $or: function () {
+    const statusSchemaWithId = schemas.status().id('status');
+
+    return Joi.object({
+      $or: Joi.array()
+        .optional()
+        .items(Joi.link('#status'))
+        .messages({
+          'array.base': `"#or" deve ser do tipo Array.`,
+        })
+        .shared(statusSchemaWithId),
     });
   },
 

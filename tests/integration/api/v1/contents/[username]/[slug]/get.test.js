@@ -104,6 +104,41 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
     });
 
+    test('Content "root" with "status" set to "deleted"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo existente, mas não publicamente disponível',
+        body: 'Deveria estar disponível para ninguém.',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(defaultUserContent.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(404);
+
+      expect(responseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        status_code: 404,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
+        key: 'slug',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
     test('Content "child" with "status" set to "draft"', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -176,6 +211,46 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+    });
+
+    test('Content "child" with "status" set to "deleted"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo root',
+        body: 'Conteúdo root',
+        status: 'published',
+      });
+
+      const childContent = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(childContent.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+      );
+      const responseBody = await response.json();
+
+      expect(responseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        status_code: 404,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
+        key: 'slug',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
   });
 });

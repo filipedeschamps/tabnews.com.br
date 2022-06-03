@@ -654,6 +654,179 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
+    test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo',
+        body: 'Primeiro conteúdo',
+        slug: 'primeiro-conteudo',
+        status: 'published',
+      });
+
+      const secondContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        slug: 'segundo-conteudo',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            slug: 'primeiro-conteudo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O conteúdo enviado parece ser duplicado.',
+        action: 'Utilize um "title" ou "slug" diferente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo',
+        body: 'Primeiro conteúdo',
+        slug: 'primeiro-conteudo',
+        status: 'draft',
+      });
+
+      const secondContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        slug: 'segundo-conteudo',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            slug: 'primeiro-conteudo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O conteúdo enviado parece ser duplicado.',
+        action: 'Utilize um "title" ou "slug" diferente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo',
+        body: 'Primeiro conteúdo',
+        slug: 'primeiro-conteudo',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(firstContent.id, {
+        status: 'deleted',
+      });
+
+      const secondContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        slug: 'segundo-conteudo',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            slug: 'primeiro-conteudo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'primeiro-conteudo',
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        status: 'published',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
     test('Content with "slug" containing a blank String', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -883,6 +1056,53 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "title", but current content is "deleted"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título velho',
+        body: 'Body velho',
+      });
+
+      await orchestrator.updateContent(defaultUserContent.id, {
+        status: 'deleted',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Título novo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(404);
+
+      expect(responseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        status_code: 404,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
     test('Content with "title" containing more than 256 characters', async () => {
@@ -1312,6 +1532,119 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(draftResponseBody.published_at).toEqual(republishedResponseBody.published_at);
       expect(draftResponseBody.updated_at > originalContent.updated_at.toISOString()).toEqual(true);
       expect(republishedResponseBody.updated_at > draftResponseBody.updated_at).toEqual(true);
+    });
+
+    test('Content with "status" "published" set to "deleted"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+    });
+
+    test('Content with "status" "published" set to "deleted", than "published"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const originalContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${originalContent.slug}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          status: 'deleted',
+        }),
+      });
+
+      const republishedResponse = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${originalContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'published',
+          }),
+        }
+      );
+
+      const republishedResponseBody = await republishedResponse.json();
+
+      expect(republishedResponse.status).toEqual(404);
+      expect(republishedResponseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        status_code: 404,
+        error_id: republishedResponseBody.error_id,
+        request_id: republishedResponseBody.request_id,
+        error_unique_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+        key: 'slug',
+      });
+      expect(uuidVersion(republishedResponseBody.error_id)).toEqual(4);
+      expect(uuidVersion(republishedResponseBody.request_id)).toEqual(4);
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {

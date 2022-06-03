@@ -15,9 +15,8 @@ async function findAll(options = {}) {
   };
 
   if (!options.count) {
-    query.values = [options.per_page, offset];
+    query.values = [options.limit || options.per_page, offset];
   }
-
   const selectClause = buildSelectClause(options);
   const whereClause = buildWhereClause(options?.where);
   const orderByClause = buildOrderByClause(options?.order);
@@ -31,7 +30,15 @@ async function findAll(options = {}) {
       ;`;
 
   if (options.where) {
-    query.values = [...query.values, ...Object.values(options.where)];
+    Object.keys(options.where).forEach((key) => {
+      if (key === '$or') {
+        options.where[key].forEach(($orObject) => {
+          query.values.push(Object.values($orObject)[0]);
+        });
+      } else {
+        query.values.push(options.where[key]);
+      }
+    });
   }
 
   const results = await database.query(query);
@@ -57,6 +64,8 @@ async function findAll(options = {}) {
       order: 'optional',
       where: 'optional',
       count: 'optional',
+      $or: 'optional',
+      limit: 'optional',
     });
 
     return cleanOptions;
@@ -105,19 +114,38 @@ async function findAll(options = {}) {
       return '';
     }
 
+    let globalIndex = query.values.length;
+
     return Object.entries(columns).reduce((accumulator, column, index) => {
       if (index === 0) {
-        return `WHERE ${getColumnDeclaration(column, index)}`;
+        return `WHERE ${getColumnDeclaration(column)}`;
       } else {
-        return `${accumulator} AND ${getColumnDeclaration(column, index)}`;
+        return `${accumulator} AND ${getColumnDeclaration(column)}`;
       }
 
-      function getColumnDeclaration(column, index) {
-        if (column[1] === null) {
-          return `contents.${column[0]} IS NOT DISTINCT FROM $${query.values.length + index + 1}`;
-        } else {
-          return `contents.${column[0]} = $${query.values.length + index + 1}`;
+      function getColumnDeclaration(column) {
+        const columnName = column[0];
+        const columnValue = column[1];
+
+        if (columnValue === null) {
+          globalIndex += 1;
+          return `contents.${columnName} IS NOT DISTINCT FROM $${globalIndex}`;
         }
+
+        if (columnName === '$or') {
+          const $orQuery = columnValue
+            .map((orColumn) => {
+              globalIndex += 1;
+              const orColumnName = Object.keys(orColumn)[0];
+              return `contents.${orColumnName} = $${globalIndex}`;
+            })
+            .join(' OR ');
+
+          return `(${$orQuery})`;
+        }
+
+        globalIndex += 1;
+        return `contents.${columnName} = $${globalIndex}`;
       }
     }, '');
   }
@@ -132,6 +160,7 @@ async function findAll(options = {}) {
 }
 
 async function findOne(options) {
+  options.limit = 1;
   const rows = await findAll(options);
   return rows[0];
 }
@@ -197,7 +226,7 @@ async function create(postedContent) {
     await checkIfParentIdExists(validContent);
   }
 
-  await populatePublishedAtValue(null, validContent);
+  populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent);
   return newContent;
@@ -362,7 +391,7 @@ function checkRootContentTitle(content) {
   }
 }
 
-async function populatePublishedAtValue(oldContent, newContent) {
+function populatePublishedAtValue(oldContent, newContent) {
   if (oldContent && oldContent.published_at) {
     newContent.published_at = oldContent.published_at;
     return;
@@ -381,13 +410,16 @@ async function populatePublishedAtValue(oldContent, newContent) {
 
 async function update(contentId, postedContent) {
   const validPostedContent = validateUpdateSchema(postedContent);
+
   const oldContent = await findOne({
     where: {
       id: contentId,
     },
   });
+
   const newContent = { ...oldContent, ...validPostedContent };
 
+  throwIfContentIsAlreadyDeleted(oldContent);
   checkRootContentTitle(newContent);
   checkForParentIdRecursion(newContent);
 
@@ -395,7 +427,7 @@ async function update(contentId, postedContent) {
     await checkIfParentIdExists(newContent);
   }
 
-  await populatePublishedAtValue(oldContent, newContent);
+  populatePublishedAtValue(oldContent, newContent);
   populateDeletedAtValue(newContent);
 
   const updatedContent = await runUpdateQuery(newContent);
@@ -458,8 +490,12 @@ async function update(contentId, postedContent) {
         content.deleted_at,
       ],
     };
-    const results = await database.query(query);
-    return results.rows[0];
+    try {
+      const results = await database.query(query);
+      return results.rows[0];
+    } catch (error) {
+      throw parseQueryErrorToCustomError(error);
+    }
   }
 }
 
@@ -492,6 +528,18 @@ function checkForParentIdRecursion(content) {
 function populateDeletedAtValue(contentObject) {
   if (!contentObject.deleted_at && contentObject.status === 'deleted') {
     contentObject.deleted_at = new Date();
+  }
+}
+
+function throwIfContentIsAlreadyDeleted(oldContent) {
+  if (oldContent.status === 'deleted') {
+    throw new ValidationError({
+      message: `Não é possível alterar informações de um conteúdo já deletado.`,
+      stack: new Error().stack,
+      errorUniqueCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_DELETED',
+      statusCode: 400,
+      key: 'status',
+    });
   }
 }
 
