@@ -54,6 +54,7 @@ export default function HeaderComponent() {
                     }}>
                     Editar perfil
                   </ActionList.LinkItem>
+                  <ActionList.LinkItem href="/museu">Museu Tabnews</ActionList.LinkItem>
                   <ActionList.Divider />
                   <ActionList.Item variant="danger" onSelect={(event) => alert('Recurso ainda não implementado.')}>
                     Deslogar
