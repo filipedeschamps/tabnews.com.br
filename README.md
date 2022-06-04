@@ -45,13 +45,24 @@ Observações:
 - Para derrubar todos os serviços, basta utilizar as teclas `CTRL+C`, que é o padrão dos terminais para matar processos.
 - Você pode conferir o endereço dos outros serviços dentro do arquivo `.env` encontrado na raiz do projeto, como por exemplo o endereço e credenciais do Banco de Dados local ou o Frontend do Serviço de Email.
 
-### Criar seu primeiro usuário
+### Cadastro e Login de usuários
+
+No ambiente de desenvolvimento você poderá tanto criar usuários manualmente (inclusive para receber e testar o email de ativação), quanto utilizar usuários pré-cadastrados e que já foram ativados para sua conveniência.
+
+#### Manualmente criar um usuário
 
 1. Após subir os serviços, acesse http://localhost:3000/cadastro
 2. Preencha os dados e utilize **qualquer email** com formato válido, mesmo que este email não exista, por exemplo: `teste@teste.com`
 3. O backend irá enviar um email para o servidor **local** de emails e que pode ser acessado pelo endereço http://localhost:1080/
 4. Abra o email de Ativação e acesse o link para ativar sua conta de fato.
 5. Com a conta ativa, realize o login: http://localhost:3000/login
+
+#### Utilizar usuários pré-cadastrados
+
+Por padrão, ao rodar o comando `npm run dev` será injetado dois usuários ativados, um com features padrões e outro com features administrativas como a habilidade de rodar as Migrations usando a API ou alterar o conteúdo de outros usuários. Segue abaixo as credenciais destes dois usuários (`"email"` + `"senha"`):
+
+- **Usuário Admin**: `"admin@admin.com"` + `"password"`
+- **Usuário padrão**: `"user@user.com"` + `"password"`
 
 ## Rodar os testes
 

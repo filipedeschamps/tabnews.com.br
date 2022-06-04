@@ -2139,5 +2139,101 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_unique_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
     });
+
+    test('Content from another user', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+
+      await orchestrator.activateUser(firstUser);
+      const firstUserSessionObject = await orchestrator.createSession(firstUser);
+      const secondUserContent = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        title: 'Conteúdo do Segundo Usuário antes do patch!',
+        body: 'Body antes do patch!',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Tentando atualizar o conteúdo.',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual('Você não possui permissão para atualizar o conteúdo de outro usuário.');
+      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:content:others".');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual(
+        'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER'
+      );
+    });
+  });
+
+  describe('User with "update:content:others" feature', () => {
+    test('Content from another user', async () => {
+      const privilegedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(privilegedUser, ['update:content:others']);
+      await orchestrator.activateUser(privilegedUser);
+      const privilegedUserSessionObject = await orchestrator.createSession(privilegedUser);
+
+      const secondUser = await orchestrator.createUser();
+      const secondUserContent = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        title: 'Conteúdo do Segundo Usuário antes do patch!',
+        body: 'Body antes do patch!',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${privilegedUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Novo title.',
+            body: 'Novo body.',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(responseBody.id).toEqual(secondUserContent.id);
+      expect(responseBody.owner_id).toEqual(secondUser.id);
+      expect(responseBody.username).toEqual(secondUser.username);
+      expect(responseBody.owner_id).not.toEqual(privilegedUser.id);
+      expect(responseBody.username).not.toEqual(privilegedUser.username);
+      expect(responseBody.parent_id).toEqual(null);
+      expect(responseBody.parent_title).toEqual(null);
+      expect(responseBody.parent_slug).toEqual(null);
+      expect(responseBody.parent_username).toEqual(null);
+      expect(responseBody.slug).toEqual('conteudo-do-segundo-usuario-antes-do-patch');
+      expect(responseBody.title).toEqual('Novo title.');
+      expect(responseBody.body).toEqual('Novo body.');
+      expect(responseBody.status).toEqual('published');
+      expect(responseBody.source_url).toEqual(null);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).toBeGreaterThan(Date.parse(secondUserContent.updated_at));
+    });
   });
 });
