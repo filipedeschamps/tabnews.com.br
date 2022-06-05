@@ -8,7 +8,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   const router = useRouter();
   const webserverHost = webserver.getHost();
   const defaultMetadata = {
-    title: 'TabNews - Construindo uma internet mais massa',
+    title: 'TabNews: Conteúdos para quem trabalha com Programação e Tecnologia',
     image: `${webserverHost}/default-image-share.png`,
     url: `${webserverHost}${router.asPath}`,
     description: null,
@@ -20,14 +20,15 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   };
 
   let updatedMetadata = { ...defaultMetadata, ...metadata };
+
   if (content) {
     if (content.title) {
       updatedMetadata.title = `${content.title} · ${content.username}`;
-    } else if (content.parent_title) {
-      updatedMetadata.title = `Em resposta a ${content.parent_title} · ${content.parent_username}`;
     } else {
-      updatedMetadata.title = `${content.username}/${content.slug}`;
+      updatedMetadata.title = `${content.body.replace(/\s+/g, ' ').substring(0, 80)} · ${content.username}`;
     }
+
+    updatedMetadata.description = content.body.replace(/\s+/g, ' ').substring(0, 190);
   }
 
   if (updatedMetadata.title && updatedMetadata.title != defaultMetadata.title) {
