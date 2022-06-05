@@ -15,6 +15,7 @@ import {
   ActionList,
   IconButton,
   Tooltip,
+  useConfirm,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, IssueDraftIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import PublishedSince from 'pages/interface/components/PublishedSince';
@@ -78,7 +79,52 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     return <CompactMode />;
   }
 
+  if (componentMode === 'deleted') {
+    return <DeletedMode />;
+  }
+
   function ViewMode() {
+    const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
+
+    const confirm = useConfirm();
+
+    const handleClickDelete = async () => {
+      const confirmDelete = await confirm({
+        title: 'Você tem certeza?',
+        content: 'Deseja realmente apagar essa publicação?',
+      });
+
+      if (!confirmDelete) return;
+
+      const data = {
+        status: 'deleted',
+      };
+
+      const response = await fetch(`/api/v1/contents/${contentObject.username}/${contentObject.slug}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const responseBody = await response.json();
+      if (response.status === 200) {
+        setComponentMode('deleted');
+        return;
+      }
+
+      if ([400, 401, 403].includes(response.status)) {
+        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        return;
+      }
+
+      if (response.status >= 500) {
+        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+        return;
+      }
+    };
+
     function ViewModeOptionsMenu() {
       return (
         <ActionMenu>
@@ -97,24 +143,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
                 </ActionList.LeadingVisual>
                 Editar
               </ActionList.Item>
-              <ActionList.Item
-                onClick={() => {
-                  alert('Não implementado.');
-                }}>
-                <ActionList.LeadingVisual>
-                  <IssueDraftIcon />
-                </ActionList.LeadingVisual>
-                Despublicar
-              </ActionList.Item>
-              <ActionList.Item
-                variant="danger"
-                onClick={() => {
-                  alert('Não implementado.');
-                }}>
+              <ActionList.Item variant="danger" onClick={handleClickDelete}>
                 <ActionList.LeadingVisual>
                   <TrashIcon />
                 </ActionList.LeadingVisual>
-                Deletar
+                Apagar
               </ActionList.Item>
             </ActionList>
           </ActionMenu.Overlay>
@@ -136,6 +169,12 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
           borderStyle: 'solid',
         }}>
         <Box>
+          {globalErrorMessage && (
+            <Flash variant="danger" sx={{ mb: 4 }}>
+              {globalErrorMessage}
+            </Flash>
+          )}
+
           <Box sx={{ height: 25, display: 'flex', alignItems: 'flex-start' }}>
             <Box sx={{ flex: 'auto' }}>
               <BranchName sx={{ mr: 2 }} href={`/${contentObject.username}`}>
@@ -479,6 +518,33 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         onClick={handleClick}>
         Responder
       </Button>
+    );
+  }
+
+  function DeletedMode() {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2,
+          width: '100%',
+          borderWidth: viewFrame ? 1 : 0,
+          p: viewFrame ? 4 : 0,
+          borderRadius: '6px',
+          borderColor: 'border.default',
+          borderStyle: 'solid',
+        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}>
+          Conteúdo apagado com sucesso.
+        </Box>
+      </Box>
     );
   }
 }

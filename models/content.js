@@ -15,9 +15,8 @@ async function findAll(options = {}) {
   };
 
   if (!options.count) {
-    query.values = [options.per_page, offset];
+    query.values = [options.limit || options.per_page, offset];
   }
-
   const selectClause = buildSelectClause(options);
   const whereClause = buildWhereClause(options?.where);
   const orderByClause = buildOrderByClause(options?.order);
@@ -31,7 +30,15 @@ async function findAll(options = {}) {
       ;`;
 
   if (options.where) {
-    query.values = [...query.values, ...Object.values(options.where)];
+    Object.keys(options.where).forEach((key) => {
+      if (key === '$or') {
+        options.where[key].forEach(($orObject) => {
+          query.values.push(Object.values($orObject)[0]);
+        });
+      } else {
+        query.values.push(options.where[key]);
+      }
+    });
   }
 
   const results = await database.query(query);
@@ -57,6 +64,8 @@ async function findAll(options = {}) {
       order: 'optional',
       where: 'optional',
       count: 'optional',
+      $or: 'optional',
+      limit: 'optional',
     });
 
     return cleanOptions;
@@ -105,19 +114,38 @@ async function findAll(options = {}) {
       return '';
     }
 
+    let globalIndex = query.values.length;
+
     return Object.entries(columns).reduce((accumulator, column, index) => {
       if (index === 0) {
-        return `WHERE ${getColumnDeclaration(column, index)}`;
+        return `WHERE ${getColumnDeclaration(column)}`;
       } else {
-        return `${accumulator} AND ${getColumnDeclaration(column, index)}`;
+        return `${accumulator} AND ${getColumnDeclaration(column)}`;
       }
 
-      function getColumnDeclaration(column, index) {
-        if (column[1] === null) {
-          return `contents.${column[0]} IS NOT DISTINCT FROM $${query.values.length + index + 1}`;
-        } else {
-          return `contents.${column[0]} = $${query.values.length + index + 1}`;
+      function getColumnDeclaration(column) {
+        const columnName = column[0];
+        const columnValue = column[1];
+
+        if (columnValue === null) {
+          globalIndex += 1;
+          return `contents.${columnName} IS NOT DISTINCT FROM $${globalIndex}`;
         }
+
+        if (columnName === '$or') {
+          const $orQuery = columnValue
+            .map((orColumn) => {
+              globalIndex += 1;
+              const orColumnName = Object.keys(orColumn)[0];
+              return `contents.${orColumnName} = $${globalIndex}`;
+            })
+            .join(' OR ');
+
+          return `(${$orQuery})`;
+        }
+
+        globalIndex += 1;
+        return `contents.${columnName} = $${globalIndex}`;
       }
     }, '');
   }
@@ -132,6 +160,7 @@ async function findAll(options = {}) {
 }
 
 async function findOne(options) {
+  options.limit = 1;
   const rows = await findAll(options);
   return rows[0];
 }
@@ -197,8 +226,7 @@ async function create(postedContent) {
     await checkIfParentIdExists(validContent);
   }
 
-  await checkForContentUniqueness(validContent);
-  await populatePublishedAtValue(validContent);
+  populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent);
   return newContent;
@@ -225,6 +253,7 @@ async function create(postedContent) {
         inserted_content.created_at as created_at,
         inserted_content.updated_at as updated_at,
         inserted_content.published_at as published_at,
+        inserted_content.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -249,8 +278,13 @@ async function create(postedContent) {
         content.published_at,
       ],
     };
-    const results = await database.query(query);
-    return results.rows[0];
+
+    try {
+      const results = await database.query(query);
+      return results.rows[0];
+    } catch (error) {
+      throw parseQueryErrorToCustomError(error);
+    }
   }
 }
 
@@ -307,24 +341,19 @@ async function checkIfParentIdExists(content) {
   }
 }
 
-async function checkForContentUniqueness(content) {
-  const existingContent = await findOne({
-    where: {
-      owner_id: content.owner_id,
-      slug: content.slug,
-    },
-  });
-
-  if (existingContent) {
-    throw new ValidationError({
+function parseQueryErrorToCustomError(error) {
+  if (error.databaseErrorCode === '23505') {
+    return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "slug" diferente de "${existingContent.slug}".`,
+      action: `Utilize um "title" ou "slug" diferente.`,
       stack: new Error().stack,
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
       key: 'slug',
     });
   }
+
+  return error;
 }
 
 function validateCreateSchema(content) {
@@ -337,6 +366,15 @@ function validateCreateSchema(content) {
     status: 'required',
     source_url: 'optional',
   });
+
+  if (cleanValues.status === 'deleted') {
+    throw new ValidationError({
+      message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
+      key: 'status',
+      type: 'any.only',
+      errorUniqueCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+    });
+  }
 
   return cleanValues;
 }
@@ -353,39 +391,35 @@ function checkRootContentTitle(content) {
   }
 }
 
-async function populatePublishedAtValue(postedContent) {
-  const existingContent = await findOne({
-    where: {
-      owner_id: postedContent.owner_id,
-      slug: postedContent.slug,
-    },
-  });
-
-  if (existingContent && existingContent.published_at) {
-    postedContent.published_at = existingContent.published_at;
+function populatePublishedAtValue(oldContent, newContent) {
+  if (oldContent && oldContent.published_at) {
+    newContent.published_at = oldContent.published_at;
     return;
   }
 
-  if (existingContent && !existingContent.published_at && postedContent.status === 'published') {
-    postedContent.published_at = new Date();
+  if (oldContent && !oldContent.published_at && newContent.status === 'published') {
+    newContent.published_at = new Date();
     return;
   }
 
-  if (!existingContent && postedContent.status === 'published') {
-    postedContent.published_at = new Date();
+  if (!oldContent && newContent.status === 'published') {
+    newContent.published_at = new Date();
     return;
   }
 }
 
 async function update(contentId, postedContent) {
   const validPostedContent = validateUpdateSchema(postedContent);
+
   const oldContent = await findOne({
     where: {
       id: contentId,
     },
   });
+
   const newContent = { ...oldContent, ...validPostedContent };
 
+  throwIfContentIsAlreadyDeleted(oldContent);
   checkRootContentTitle(newContent);
   checkForParentIdRecursion(newContent);
 
@@ -393,7 +427,8 @@ async function update(contentId, postedContent) {
     await checkIfParentIdExists(newContent);
   }
 
-  await populatePublishedAtValue(newContent);
+  populatePublishedAtValue(oldContent, newContent);
+  populateDeletedAtValue(newContent);
 
   const updatedContent = await runUpdateQuery(newContent);
   return updatedContent;
@@ -411,7 +446,8 @@ async function update(contentId, postedContent) {
             status = $6,
             source_url = $7,
             published_at = $8,
-            updated_at = (now() at time zone 'utc')
+            updated_at = (now() at time zone 'utc'),
+            deleted_at = $9
           WHERE
             id = $1
           RETURNING *
@@ -428,6 +464,7 @@ async function update(contentId, postedContent) {
         updated_content.created_at as created_at,
         updated_content.updated_at as updated_at,
         updated_content.published_at as published_at,
+        updated_content.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -450,10 +487,15 @@ async function update(contentId, postedContent) {
         content.status,
         content.source_url,
         content.published_at,
+        content.deleted_at,
       ],
     };
-    const results = await database.query(query);
-    return results.rows[0];
+    try {
+      const results = await database.query(query);
+      return results.rows[0];
+    } catch (error) {
+      throw parseQueryErrorToCustomError(error);
+    }
   }
 }
 
@@ -479,6 +521,24 @@ function checkForParentIdRecursion(content) {
       errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
       statusCode: 400,
       key: 'parent_id',
+    });
+  }
+}
+
+function populateDeletedAtValue(contentObject) {
+  if (!contentObject.deleted_at && contentObject.status === 'deleted') {
+    contentObject.deleted_at = new Date();
+  }
+}
+
+function throwIfContentIsAlreadyDeleted(oldContent) {
+  if (oldContent.status === 'deleted') {
+    throw new ValidationError({
+      message: `Não é possível alterar informações de um conteúdo já deletado.`,
+      stack: new Error().stack,
+      errorUniqueCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_DELETED',
+      statusCode: 400,
+      key: 'status',
     });
   }
 }

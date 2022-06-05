@@ -85,6 +85,7 @@ async function patchHandler(request, response) {
     where: {
       username: request.query.username,
       slug: request.query.slug,
+      $or: [{ status: 'draft' }, { status: 'published' }],
     },
   });
 

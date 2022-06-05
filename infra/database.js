@@ -39,16 +39,7 @@ async function query(query, params) {
     client = await tryToGetNewClientFromPool();
     return await client.query(query, params);
   } catch (error) {
-    const errorObject = new ServiceError({
-      message: error.message,
-      context: {
-        query: query.text,
-      },
-      errorUniqueCode: 'INFRA:DATABASE:QUERY',
-      stack: new Error().stack,
-    });
-    logger.error(snakeize(errorObject));
-    throw errorObject;
+    throw parseQueryErrorAndLog(error, query);
   } finally {
     if (client) {
       const tooManyConnections = await checkForTooManyConnections(client);
@@ -159,6 +150,27 @@ async function tryToGetNewClient() {
     await client.connect();
     return client;
   }
+}
+
+function parseQueryErrorAndLog(error, query) {
+  const expectedErrorsCode = [
+    '23505', // unique constraint violation
+  ];
+
+  const errorToReturn = new ServiceError({
+    message: error.message,
+    context: {
+      query: query.text,
+    },
+    errorUniqueCode: 'INFRA:DATABASE:QUERY',
+    databaseErrorCode: error.code,
+  });
+
+  if (!expectedErrorsCode.includes(error.code)) {
+    logger.error(snakeize(errorToReturn));
+  }
+
+  return errorToReturn;
 }
 
 export default Object.freeze({

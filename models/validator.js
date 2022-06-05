@@ -311,7 +311,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published')
+        .valid('draft', 'published', 'deleted')
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -321,7 +321,7 @@ const schemas = {
           'string.min': `"status" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"status" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"status" possui o valor inválido "null".`,
-          'any.only': `"status" deve possuir um dos seguintes valores: "draft" ou "published".`,
+          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
         }),
     });
   },
@@ -394,6 +394,19 @@ const schemas = {
           'any.required': `"published_at" é um campo obrigatório.`,
           'string.empty': `"published_at" não pode estar em branco.`,
           'string.base': `"published_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
+  deleted_at: function () {
+    return Joi.object({
+      deleted_at: Joi.date()
+        .allow(null)
+        .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"deleted_at" é um campo obrigatório.`,
+          'string.empty': `"deleted_at" não pode estar em branco.`,
+          'string.base': `"deleted_at" deve ser do tipo Date.`,
         }),
     });
   },
@@ -483,16 +496,61 @@ const schemas = {
 
   where: function () {
     let whereSchema = Joi.object({}).optional().min(1).messages({
-      'object.base': `Body deve ser do tipo Object.`,
+      'object.base': `"where" deve ser do tipo Object.`,
     });
 
-    for (const key of ['id', 'parent_id', 'slug', 'title', 'body', 'status', 'source_url', 'owner_id', 'username']) {
+    for (const key of [
+      'id',
+      'parent_id',
+      'slug',
+      'title',
+      'body',
+      'status',
+      'source_url',
+      'owner_id',
+      'username',
+      '$or',
+    ]) {
       const keyValidationFunction = schemas[key];
       whereSchema = whereSchema.concat(keyValidationFunction());
     }
 
     return Joi.object({
       where: whereSchema,
+    });
+  },
+
+  limit: function () {
+    return Joi.object({
+      limit: Joi.number()
+        .integer()
+        .min(1)
+        .max(9007199254740990)
+        .default(null)
+        .when('$required.limit', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"limit" é um campo obrigatório.`,
+          'string.empty': `"limit" não pode estar em branco.`,
+          'number.base': `"limit" deve ser do tipo Number.`,
+          'number.integer': `"limit" deve ser um Inteiro.`,
+          'number.min': `"limit" deve possuir um valor mínimo de 1.`,
+          'number.max': `"limit" deve possuir um valor máximo de 9007199254740990.`,
+          'number.unsafe': `"limit" deve possuir um valor máximo de 9007199254740990.`,
+        }),
+    });
+  },
+
+  $or: function () {
+    const statusSchemaWithId = schemas.status().id('status');
+
+    return Joi.object({
+      $or: Joi.array()
+        .optional()
+        .items(Joi.link('#status'))
+        .messages({
+          'array.base': `"#or" deve ser do tipo Array.`,
+        })
+        .shared(statusSchemaWithId),
     });
   },
 
@@ -534,6 +592,7 @@ const schemas = {
       'created_at',
       'updated_at',
       'published_at',
+      'deleted_at',
       'username',
       'parent_title',
       'parent_slug',
