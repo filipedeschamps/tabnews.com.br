@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useMediaQuery } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, metadata }) {
-  const { title, description, image, url, noIndex } = metadata;
+  const { type, title, description, image, url, noIndex, author, published_time, modified_time } = metadata;
   const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
   const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
 
@@ -15,11 +15,16 @@ export default function DefaultLayout({ children, metadata }) {
         <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index follow'} />
 
         <meta property="og:site_name" content="TabNews" />
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content={type} />
         <meta property="og:url" content={url} />
         <meta property="og:title" content={title} />
         {description && <meta property="og:description" content={description} />}
         <meta property="og:image" content={image} />
+
+        {author && <meta property="article:author" content={author} />}
+        {published_time && <meta property="article:published_time" content={published_time} />}
+        {modified_time && <meta property="article:modified_time" content={modified_time} />}
+        {author && <meta property="article:section" content="tecnologia" />}
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={url} />

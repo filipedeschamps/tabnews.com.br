@@ -8,10 +8,14 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   const router = useRouter();
   const webserverHost = webserver.getHost();
   const defaultMetadata = {
-    title: 'TabNews',
-    description: null,
+    title: 'TabNews: Conteúdos para quem trabalha com Programação e Tecnologia',
     image: `${webserverHost}/default-image-share.png`,
     url: `${webserverHost}${router.asPath}`,
+    description: null,
+    published_time: content ? content.published_at : null,
+    modified_time: content ? content.updated_at : null,
+    author: content ? content.username : null,
+    type: content ? 'article' : 'website',
     noIndex: false,
   };
 
@@ -21,8 +25,10 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
     if (content.title) {
       updatedMetadata.title = `${content.title} · ${content.username}`;
     } else {
-      updatedMetadata.title = `${content.username}/${content.slug}`;
+      updatedMetadata.title = `${content.body.replace(/\s+/g, ' ').substring(0, 80)} · ${content.username}`;
     }
+
+    updatedMetadata.description = content.body.replace(/\s+/g, ' ').substring(0, 190);
   }
 
   if (updatedMetadata.title && updatedMetadata.title != defaultMetadata.title) {
