@@ -20,6 +20,9 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With 2 entries and default strategy "descending"', async () => {
+      await orchestrator.dropAllTables();
+      await orchestrator.runPendingMigrations();
+
       const defaultUser = await orchestrator.createUser();
 
       const firstRootContent = await orchestrator.createContent({
@@ -43,7 +46,7 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const NotRootContent = await orchestrator.createContent({
+      const NotRootContentPublished = await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
@@ -53,45 +56,132 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
+      const NotRootContentDraft = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: firstRootContent.id,
+        title: 'Quinto conteúdo criado',
+        body: `Este conteúdo não somente não deve aparecer na lista principal,
+               como também não deve ser contabilizado no "children_deep_count".`,
+        status: 'draft',
+      });
+
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: secondRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'segundo-conteudo-criado',
+          title: 'Segundo conteúdo criado',
+          body: secondRootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 0,
+        },
+        {
+          id: firstRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'primeiro-conteudo-criado',
+          title: 'Primeiro conteúdo criado',
+          body: firstRootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 1,
+        },
+      ]);
 
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(responseBody[0].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[0].username).toEqual(defaultUser.username);
-      expect(responseBody[0].parent_id).toEqual(secondRootContent.parent_id);
-      expect(responseBody[0].parent_title).toEqual(secondRootContent.parent_title);
-      expect(responseBody[0].parent_slug).toEqual(secondRootContent.parent_slug);
-      expect(responseBody[0].parent_username).toEqual(secondRootContent.parent_username);
-      expect(responseBody[0].slug).toEqual(secondRootContent.slug);
-      expect(responseBody[0].title).toEqual(secondRootContent.title);
-      expect(responseBody[0].body).toEqual(secondRootContent.body);
-      expect(responseBody[0].status).toEqual(secondRootContent.status);
-      expect(responseBody[0].source_url).toEqual(secondRootContent.source_url);
-      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].published_at)).not.toEqual(NaN);
-
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(responseBody[1].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[1].username).toEqual(defaultUser.username);
-      expect(responseBody[1].parent_id).toEqual(firstRootContent.parent_id);
-      expect(responseBody[1].parent_title).toEqual(firstRootContent.parent_title);
-      expect(responseBody[1].parent_slug).toEqual(firstRootContent.parent_slug);
-      expect(responseBody[1].parent_username).toEqual(firstRootContent.parent_username);
-      expect(responseBody[1].slug).toEqual(firstRootContent.slug);
-      expect(responseBody[1].title).toEqual(firstRootContent.title);
-      expect(responseBody[1].body).toEqual(firstRootContent.body);
-      expect(responseBody[1].status).toEqual(firstRootContent.status);
-      expect(responseBody[1].source_url).toEqual(firstRootContent.source_url);
-      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].published_at)).not.toEqual(NaN);
-
+      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+    });
+
+    test('With 3 children 3 level deep', async () => {
+      await orchestrator.dropAllTables();
+      await orchestrator.runPendingMigrations();
+
+      const defaultUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo raiz',
+        status: 'published',
+      });
+
+      const level1Content = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        body: 'Nível 1',
+        status: 'published',
+      });
+
+      const level2Content = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: level1Content.id,
+        body: 'Nível 2',
+        status: 'published',
+      });
+
+      const level3Content = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: level2Content.id,
+        body: 'Nível 3',
+        status: 'published',
+      });
+
+      const level4ContentDeleted = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: level2Content.id,
+        body: 'Nível 4 (vai ser deletado e não deve ser contabilizado)',
+        status: 'published',
+      });
+      await orchestrator.updateContent(level4ContentDeleted.id, { status: 'deleted' });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: rootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'conteudo-raiz',
+          title: 'Conteúdo raiz',
+          body: rootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: rootContent.created_at.toISOString(),
+          updated_at: rootContent.updated_at.toISOString(),
+          published_at: rootContent.published_at.toISOString(),
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 3,
+        },
+      ]);
     });
 
     test('With 60 entries and default "page" and "per_page"', async () => {

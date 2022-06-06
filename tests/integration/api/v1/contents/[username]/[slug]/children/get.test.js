@@ -193,15 +193,12 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
                   published_at: childBranchALevel3.published_at.toISOString(),
                   username: firstUser.username,
                   children: [],
-                  children_count: 0,
                   children_deep_count: 0,
                 },
               ],
-              children_count: 1,
               children_deep_count: 1,
             },
           ],
-          children_count: 1,
           children_deep_count: 2,
         },
         {
@@ -240,7 +237,6 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content1.published_at.toISOString(),
               username: firstUser.username,
               children: [],
-              children_count: 0,
               children_deep_count: 0,
             },
             {
@@ -261,11 +257,9 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content2.published_at.toISOString(),
               username: secondUser.username,
               children: [],
-              children_count: 0,
               children_deep_count: 0,
             },
           ],
-          children_count: 2,
           children_deep_count: 2,
         },
       ]);
@@ -356,7 +350,6 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content1.published_at.toISOString(),
           username: firstUser.username,
           children: [],
-          children_count: 0,
           children_deep_count: 0,
         },
         {
@@ -377,7 +370,6 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content2.published_at.toISOString(),
           username: secondUser.username,
           children: [],
-          children_count: 0,
           children_deep_count: 0,
         },
       ]);

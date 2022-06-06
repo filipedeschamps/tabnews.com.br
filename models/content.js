@@ -47,6 +47,12 @@ async function findAll(options = {}) {
     return results.rows.length > 0 ? results.rows[0].total_rows : 0;
   }
 
+  // TODO: this need to be optimized in the future.
+  // Too many travels to the database just to get one value.
+  for await (const contentObject of results.rows) {
+    contentObject.children_deep_count = await findChildrenCount({ where: { id: contentObject.id } });
+  }
+
   return results.rows;
 
   async function replaceUsernameWithOwnerId(options) {
@@ -639,13 +645,11 @@ async function findChildrenTree(options) {
     list.forEach((row) => {
       table[row.id] = row;
       table[row.id].children = [];
-      table[row.id].children_count = 0;
     });
 
     list.forEach((row) => {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
-        table[row.parent_id].children_count++;
       } else {
         tree = row;
       }
@@ -702,8 +706,9 @@ async function findChildrenCount(options) {
         count(children.id)
       FROM
         children
-      WHERE children.parent_id IS NOT NULL;`,
-      values: [options.where.parent_id],
+      WHERE
+        children.id NOT IN ($1);`,
+      values: [options.where.id],
     };
     const results = await database.query(query);
     return results.rows[0].count;
@@ -711,7 +716,7 @@ async function findChildrenCount(options) {
 
   function validateWhereSchema(where) {
     const cleanValues = validator(where, {
-      parent_id: 'required',
+      id: 'required',
     });
 
     return cleanValues;
@@ -722,7 +727,6 @@ export default Object.freeze({
   findAll,
   findOne,
   findChildrenTree,
-  findChildrenCount,
   findWithStrategy,
   create,
   update,
