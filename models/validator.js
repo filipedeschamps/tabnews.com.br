@@ -573,6 +573,18 @@ const schemas = {
         .when('$required.children_count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"children_count" é um campo obrigatório.`,
+          'number.integer': `"children_count" deve ser um Inteiro.`,
+        }),
+    });
+  },
+
+  children_deep_count: function () {
+    return Joi.object({
+      children_deep_count: Joi.number()
+        .when('$required.children_count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"children_deep_count" é um campo obrigatório.`,
+          'number.integer': `"children_deep_count" deve ser um Inteiro.`,
         }),
     });
   },
@@ -608,6 +620,7 @@ const schemas = {
       'parent_slug',
       'parent_username',
       'children_count',
+      'children_deep_count',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());

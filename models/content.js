@@ -644,12 +644,27 @@ async function findChildrenTree(options) {
 
     list.forEach((row) => {
       if (table[row.parent_id]) {
-        table[row.parent_id].children_count++;
         table[row.parent_id].children.push(row);
+        table[row.parent_id].children_count++;
       } else {
         tree = row;
       }
     });
+
+    recursiveInjectChildrenDeepCount(tree);
+
+    function recursiveInjectChildrenDeepCount(node) {
+      let count = node.children.length;
+
+      if (node.children) {
+        node.children.forEach((child) => {
+          count += recursiveInjectChildrenDeepCount(child);
+        });
+      }
+
+      node.children_deep_count = count;
+      return count;
+    }
 
     return tree;
   }
