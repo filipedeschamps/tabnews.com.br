@@ -5,24 +5,24 @@ import { useUser } from 'pages/interface/index.js';
 
 export default function HeaderComponent() {
   const router = useRouter();
-  const { user, isLoading } = useUser();
+  const { user, isLoading, loginStatus } = useUser();
 
   return (
     <Header>
-      <Header.Item full>
+      <Header.Item>
         <Header.Link href="/" fontSize={2}>
           <CgTab size={32} />
           <Box sx={{ ml: 2 }}>TabNews</Box>
         </Header.Link>
       </Header.Item>
 
-      <Header.Item>
+      <Header.Item full>
         <Header.Link href="/status" fontSize={2}>
           Status
         </Header.Link>
       </Header.Item>
 
-      {!isLoading && !user.username && (
+      {loginStatus === 'logged-out' && (
         <>
           <Header.Item>
             <Header.Link href="/login" fontSize={2}>
@@ -37,7 +37,7 @@ export default function HeaderComponent() {
         </>
       )}
 
-      {!isLoading && user.username && (
+      {loginStatus === 'logged-in' && (
         <>
           <Header.Item>
             <ActionMenu>
