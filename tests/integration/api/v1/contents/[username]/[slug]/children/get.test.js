@@ -33,6 +33,31 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       expect(responseBody.error_unique_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
+    test('From "root" content with "deleted" status', async () => {
+      const defaultUser = await orchestrator.createUser();
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content',
+        status: 'published',
+      });
+
+      orchestrator.updateContent(rootContent.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(404);
+      expect(responseBody.status_code).toEqual(404);
+      expect(responseBody.name).toEqual('NotFoundError');
+      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+    });
+
     test('From "root" content with "published" status with no children', async () => {
       const defaultUser = await orchestrator.createUser();
       const rootContent = await orchestrator.createContent({
@@ -118,7 +143,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       expect(responseBody.length).toEqual(2);
       expect(responseBody).toStrictEqual([
         {
-          id: responseBody[0].id,
+          id: childBranchALevel1.id,
           owner_id: firstUser.id,
           parent_id: rootBranchLevel0.id,
           parent_title: rootBranchLevel0.title,
@@ -168,10 +193,13 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
                   published_at: childBranchALevel3.published_at.toISOString(),
                   username: firstUser.username,
                   children: [],
+                  children_deep_count: 0,
                 },
               ],
+              children_deep_count: 1,
             },
           ],
+          children_deep_count: 2,
         },
         {
           id: childBranchBLevel1.id,
@@ -209,6 +237,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content1.published_at.toISOString(),
               username: firstUser.username,
               children: [],
+              children_deep_count: 0,
             },
             {
               id: childBranchBLevel2Content2.id,
@@ -228,8 +257,10 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content2.published_at.toISOString(),
               username: secondUser.username,
               children: [],
+              children_deep_count: 0,
             },
           ],
+          children_deep_count: 2,
         },
       ]);
     });
@@ -319,6 +350,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content1.published_at.toISOString(),
           username: firstUser.username,
           children: [],
+          children_deep_count: 0,
         },
         {
           id: childBranchBLevel2Content2.id,
@@ -338,6 +370,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content2.published_at.toISOString(),
           username: secondUser.username,
           children: [],
+          children_deep_count: 0,
         },
       ]);
     });

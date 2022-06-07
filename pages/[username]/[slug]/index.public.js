@@ -195,7 +195,7 @@ export async function getStaticProps(context) {
 
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
 
-  const childrenFound = await content.findChildren({
+  const childrenFound = await content.findChildrenTree({
     where: {
       parent_id: contentFound.id,
     },

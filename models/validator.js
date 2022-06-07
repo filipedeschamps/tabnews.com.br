@@ -567,6 +567,17 @@ const schemas = {
     });
   },
 
+  children_deep_count: function () {
+    return Joi.object({
+      children_deep_count: Joi.number()
+        .when('$required.children_deep_count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"children_deep_count" é um campo obrigatório.`,
+          'number.integer': `"children_deep_count" deve ser um Inteiro.`,
+        }),
+    });
+  },
+
   content: function () {
     let contentSchema = Joi.object({
       children: Joi.array().optional().items(Joi.link('#content')).messages({
@@ -597,6 +608,7 @@ const schemas = {
       'parent_title',
       'parent_slug',
       'parent_username',
+      'children_deep_count',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());

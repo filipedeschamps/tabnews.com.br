@@ -58,6 +58,10 @@ export default function ContentList({ contentList, pagination, paginationBasePat
   );
 
   function RenderItems() {
+    function ChildrenDeepCount({ count }) {
+      return count !== 1 ? `${count} comentários` : `${count} comentário`;
+    }
+
     return list.map((contentObject, index) => {
       const itemCount = index + 1 + listNumberOffset;
       return (
@@ -75,13 +79,15 @@ export default function ContentList({ contentList, pagination, paginationBasePat
                 {contentObject.title}
               </Link>
             </Box>
-            <Box>
-              <Link sx={{ fontSize: 0, color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>
+            <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+              <Text>
+                <ChildrenDeepCount count={contentObject.children_deep_count} />
+              </Text>
+              {' · '}
+              <Link sx={{ color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>
                 {contentObject.username}
               </Link>
-              <Text
-                sx={{ fontSize: 0, color: 'neutral.emphasis' }}
-                href={`/${contentObject.username}/${contentObject.slug}`}>
+              <Text>
                 <PublishedSince date={contentObject.published_at} />
               </Text>
             </Box>

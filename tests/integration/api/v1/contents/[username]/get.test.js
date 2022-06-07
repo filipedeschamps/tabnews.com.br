@@ -51,7 +51,7 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(responseBody).toEqual([]);
     });
 
-    test('"username" existent and with "published" "child" content', async () => {
+    test('"username" existent and only with "published" "child" content', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const rootContent = await orchestrator.createContent({
@@ -114,40 +114,50 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: secondRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'segundo-conteudo-criado',
+          title: 'Segundo conteúdo criado',
+          body: secondRootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 0,
+        },
+        {
+          id: firstRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'primeiro-conteudo-criado',
+          title: 'Primeiro conteúdo criado',
+          body: firstRootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 1,
+        },
+      ]);
 
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(responseBody[0].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[0].username).toEqual(defaultUser.username);
-      expect(responseBody[0].parent_id).toEqual(secondRootContent.parent_id);
-      expect(responseBody[0].parent_title).toEqual(secondRootContent.parent_title);
-      expect(responseBody[0].parent_slug).toEqual(secondRootContent.parent_slug);
-      expect(responseBody[0].parent_username).toEqual(secondRootContent.parent_username);
-      expect(responseBody[0].slug).toEqual(secondRootContent.slug);
-      expect(responseBody[0].title).toEqual(secondRootContent.title);
-      expect(responseBody[0].body).toEqual(secondRootContent.body);
-      expect(responseBody[0].status).toEqual(secondRootContent.status);
-      expect(responseBody[0].source_url).toEqual(secondRootContent.source_url);
-      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].published_at)).not.toEqual(NaN);
-
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(responseBody[1].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[1].username).toEqual(defaultUser.username);
-      expect(responseBody[1].parent_id).toEqual(firstRootContent.parent_id);
-      expect(responseBody[0].parent_title).toEqual(firstRootContent.parent_title);
-      expect(responseBody[0].parent_slug).toEqual(firstRootContent.parent_slug);
-      expect(responseBody[0].parent_username).toEqual(firstRootContent.parent_username);
-      expect(responseBody[1].slug).toEqual(firstRootContent.slug);
-      expect(responseBody[1].title).toEqual(firstRootContent.title);
-      expect(responseBody[1].body).toEqual(firstRootContent.body);
-      expect(responseBody[1].status).toEqual(firstRootContent.status);
-      expect(responseBody[1].source_url).toEqual(firstRootContent.source_url);
-      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].published_at)).not.toEqual(NaN);
-
+      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
     });
 

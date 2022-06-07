@@ -87,21 +87,28 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: defaultUserContent.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'conteudo-publicamente-disponivel',
+        title: 'Conteúdo publicamente disponível',
+        body: 'Deveria estar disponível para todos.',
+        status: 'published',
+        source_url: 'https://www.tabnews.com.br/',
+        created_at: defaultUserContent.created_at.toISOString(),
+        updated_at: defaultUserContent.updated_at.toISOString(),
+        published_at: defaultUserContent.published_at.toISOString(),
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+        children_deep_count: 0,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('conteudo-publicamente-disponivel');
-      expect(responseBody.title).toEqual('Conteúdo publicamente disponível');
-      expect(responseBody.body).toEqual('Deveria estar disponível para todos.');
-      expect(responseBody.status).toEqual('published');
-      expect(responseBody.source_url).toEqual('https://www.tabnews.com.br/');
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
     });
 
     test('Content "root" with "status" set to "deleted"', async () => {
@@ -137,6 +144,77 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content "root" with with "children"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo root',
+        body: 'Conteúdo root',
+        status: 'published',
+      });
+
+      const childContentLevel1 = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 1',
+        status: 'published',
+      });
+
+      const childContentLevel2 = await orchestrator.createContent({
+        parent_id: childContentLevel1.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 2',
+        status: 'published',
+      });
+
+      const childContentLevel3 = await orchestrator.createContent({
+        parent_id: childContentLevel2.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 3',
+        status: 'published',
+      });
+
+      const childContentLeve4 = await orchestrator.createContent({
+        parent_id: childContentLevel3.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 4 (vai ser deletado e não deve ser contabilizado)',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(childContentLeve4.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: rootContent.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: responseBody.slug,
+        title: 'Conteúdo root',
+        body: 'Conteúdo root',
+        status: 'published',
+        source_url: null,
+        created_at: rootContent.created_at.toISOString(),
+        updated_at: rootContent.updated_at.toISOString(),
+        published_at: rootContent.published_at.toISOString(),
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+        children_deep_count: 3,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
     });
 
     test('Content "child" with "status" set to "draft"', async () => {
@@ -196,21 +274,97 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: childContent.id,
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        slug: responseBody.slug,
+        title: null,
+        body: 'Conteúdo child',
+        status: 'published',
+        source_url: null,
+        created_at: childContent.created_at.toISOString(),
+        updated_at: childContent.updated_at.toISOString(),
+        published_at: childContent.published_at.toISOString(),
+        username: defaultUser.username,
+        parent_title: rootContent.title,
+        parent_slug: rootContent.slug,
+        parent_username: rootContent.username,
+        children_deep_count: 0,
+      });
+    });
+
+    test('Content "child" with with "children"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo root',
+        body: 'Conteúdo root',
+        status: 'published',
+      });
+
+      const childContent = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child',
+        status: 'published',
+      });
+
+      const childContentLevel1 = await orchestrator.createContent({
+        parent_id: childContent.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 1',
+        status: 'published',
+      });
+
+      const childContentLevel2 = await orchestrator.createContent({
+        parent_id: childContentLevel1.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 2',
+        status: 'published',
+      });
+
+      const childContentLeve3 = await orchestrator.createContent({
+        parent_id: childContentLevel2.id,
+        owner_id: defaultUser.id,
+        body: 'Conteúdo child nível 3 (vai ser deletado e não deve ser contabilizado)',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(childContentLeve3.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: childContent.id,
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        slug: responseBody.slug,
+        title: null,
+        body: 'Conteúdo child',
+        status: 'published',
+        source_url: null,
+        created_at: childContent.created_at.toISOString(),
+        updated_at: childContent.updated_at.toISOString(),
+        published_at: childContent.published_at.toISOString(),
+        username: defaultUser.username,
+        parent_title: rootContent.title,
+        parent_slug: rootContent.slug,
+        parent_username: rootContent.username,
+        children_deep_count: 2,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(rootContent.id);
-      expect(responseBody.parent_title).toEqual(rootContent.title);
-      expect(responseBody.parent_slug).toEqual(rootContent.slug);
-      expect(responseBody.parent_username).toEqual(rootContent.username);
-      expect(responseBody.slug).toEqual(childContent.slug);
-      expect(responseBody.title).toEqual(null);
-      expect(responseBody.body).toEqual('Conteúdo child');
-      expect(responseBody.status).toEqual('published');
-      expect(responseBody.source_url).toEqual(null);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody.parent_id)).toEqual(4);
     });
 
     test('Content "child" with "status" set to "deleted"', async () => {

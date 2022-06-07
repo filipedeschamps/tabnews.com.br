@@ -47,6 +47,12 @@ async function findAll(options = {}) {
     return results.rows.length > 0 ? results.rows[0].total_rows : 0;
   }
 
+  // TODO: this need to be optimized in the future.
+  // Too many travels to the database just to get one value.
+  for await (const contentObject of results.rows) {
+    contentObject.children_deep_count = await findChildrenCount({ where: { id: contentObject.id } });
+  }
+
   return results.rows;
 
   async function replaceUsernameWithOwnerId(options) {
@@ -543,7 +549,7 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
   }
 }
 
-async function findChildren(options) {
+async function findChildrenTree(options) {
   options.where = validateWhereSchema(options?.where);
   const childrenFlatList = await recursiveDatabaseLookup(options);
   const childrenTree = flatListToTree(childrenFlatList);
@@ -649,14 +655,78 @@ async function findChildren(options) {
       }
     });
 
+    recursiveInjectChildrenDeepCount(tree);
+
+    function recursiveInjectChildrenDeepCount(node) {
+      let count = node.children.length;
+
+      if (node.children) {
+        node.children.forEach((child) => {
+          count += recursiveInjectChildrenDeepCount(child);
+        });
+      }
+
+      node.children_deep_count = count;
+      return count;
+    }
+
     return tree;
+  }
+}
+
+async function findChildrenCount(options) {
+  options.where = validateWhereSchema(options?.where);
+  const childrenCount = await recursiveDatabaseLookup(options);
+  return childrenCount;
+
+  async function recursiveDatabaseLookup(options) {
+    const query = {
+      text: `
+      WITH RECURSIVE children AS (
+        SELECT
+            id,
+            parent_id
+        FROM
+          contents
+        WHERE
+          contents.id = $1 AND
+          contents.status = 'published'
+        UNION ALL
+          SELECT
+            contents.id,
+            contents.parent_id
+          FROM
+            contents
+          INNER JOIN
+            children ON contents.parent_id = children.id
+          WHERE
+            contents.status = 'published'
+      )
+      SELECT
+        count(children.id)
+      FROM
+        children
+      WHERE
+        children.id NOT IN ($1);`,
+      values: [options.where.id],
+    };
+    const results = await database.query(query);
+    return results.rows[0].count;
+  }
+
+  function validateWhereSchema(where) {
+    const cleanValues = validator(where, {
+      id: 'required',
+    });
+
+    return cleanValues;
   }
 }
 
 export default Object.freeze({
   findAll,
   findOne,
-  findChildren,
+  findChildrenTree,
   findWithStrategy,
   create,
   update,
