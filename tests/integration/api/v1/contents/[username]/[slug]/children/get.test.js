@@ -41,7 +41,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
-      orchestrator.updateContent(rootContent.id, { status: 'deleted' });
+      await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`
