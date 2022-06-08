@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+
 import controller from 'models/controller.js';
 import user from 'models/user.js';
 import activation from 'models/activation.js';
@@ -11,7 +12,7 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestId)
+  .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getHandler)

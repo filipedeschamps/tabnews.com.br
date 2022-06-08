@@ -1,7 +1,8 @@
 import { v4 as uuidV4 } from 'uuid';
+import snakeize from 'snakeize';
+
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
-import snakeize from 'snakeize';
 import webserver from 'infra/webserver.js';
 
 import {
@@ -12,8 +13,23 @@ import {
   UnauthorizedError,
 } from '/errors/index.js';
 
-async function injectRequestId(request, response, next) {
-  request.context = { ...request.context, requestId: uuidV4() };
+async function injectRequestMetadata(request, response, next) {
+  request.context = {
+    ...request.context,
+    requestId: uuidV4(),
+    clientIp: extractIpFromRequest(request),
+  };
+
+  function extractIpFromRequest(request) {
+    let ip = request.headers['x-real-ip'] || request.connection.remoteAddress;
+
+    if (ip.substr(0, 7) == '::ffff:') {
+      ip = ip.substr(7);
+    }
+
+    return ip;
+  }
+
   next();
 }
 
@@ -96,7 +112,7 @@ function injectPaginationHeaders(pagination, endpoint, response) {
 }
 
 export default Object.freeze({
-  injectRequestId,
+  injectRequestMetadata,
   onNoMatchHandler,
   onErrorHandler,
   logRequest,
