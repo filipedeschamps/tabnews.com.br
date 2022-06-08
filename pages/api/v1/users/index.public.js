@@ -6,6 +6,7 @@ import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
+import event from 'models/event.js';
 
 export default nextConnect({
   attachParams: true,
@@ -49,6 +50,15 @@ async function postHandler(request, response) {
   await activation.createAndSendActivationEmail(newUser);
 
   const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
+
+  await event.create({
+    type: 'create:user',
+    originatorUserId: newUser.id,
+    originatorIp: request.context.clientIp,
+    metadata: {
+      id: newUser.id,
+    },
+  });
 
   return response.status(201).json(secureOutputValues);
 }

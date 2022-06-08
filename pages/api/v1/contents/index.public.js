@@ -7,6 +7,7 @@ import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
 import logger from 'infra/logger.js';
+import event from 'models/event.js';
 import { ForbiddenError, ServiceError } from 'errors/index.js';
 
 export default nextConnect({
@@ -120,6 +121,15 @@ async function postHandler(request, response) {
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+
+  await event.create({
+    type: !createdContent.parent_id ? 'create:content:text_root' : 'create:content:text_child',
+    originatorUserId: request.context.user.id,
+    originatorIp: request.context.clientIp,
+    metadata: {
+      id: secureOutputValues.id,
+    },
+  });
 
   return response.status(201).json(secureOutputValues);
 }

@@ -616,4 +616,51 @@ const schemas = {
 
     return contentSchema;
   },
+
+  event: function () {
+    return Joi.object({
+      type: Joi.string().valid('create:user', 'create:content:text_root', 'create:content:text_child').messages({
+        'any.required': `"type" é um campo obrigatório.`,
+        'string.empty': `"type" não pode estar em branco.`,
+        'string.base': `"type" deve ser do tipo String.`,
+        'any.only': `"type" não possui um valor válido.`,
+      }),
+      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).messages({
+        'any.required': `"originatorId" é um campo obrigatório.`,
+        'string.empty': `"originatorId" não pode estar em branco.`,
+        'string.base': `"originatorId" deve ser do tipo String.`,
+        'string.guid': `"originatorId" deve possuir um token UUID na versão 4.`,
+      }),
+      originatorIp: Joi.string()
+        .ip({
+          version: ['ipv4', 'ipv6'],
+        })
+        .messages({
+          'any.required': `"originatorIp" é um campo obrigatório.`,
+          'string.empty': `"originatorIp" não pode estar em branco.`,
+          'string.base': `"originatorIp" deve ser do tipo String.`,
+          'string.ip': `"originatorIp" deve possuir um IP válido`,
+        }),
+      metadata: Joi.when('type', [
+        {
+          is: 'create:user',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'create:content:text_root',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'create:content:text_child',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+      ]),
+    });
+  },
 };
