@@ -192,8 +192,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
               </Tooltip>
             </Box>
             <Box>
-              {user &&
-                (user.id === contentObject.owner_id || user.features?.includes('update:content:others')) &&
+              {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
                 ViewModeOptionsMenu()}
             </Box>
           </Box>
@@ -254,7 +253,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     const handleSubmit = useCallback(
       async (event) => {
         event.preventDefault();
-        if (!user.username) {
+        if (!user?.username) {
           router.push('/login');
           return;
         }
