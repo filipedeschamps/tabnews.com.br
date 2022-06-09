@@ -62,17 +62,6 @@ function LoginForm() {
       const responseBody = await response.json();
 
       if (response.status === 201) {
-        const userResponse = await fetch(`/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-        localStorage.setItem('user', JSON.stringify(userResponseBody));
-
         if (router.query?.redirect) {
           router.push(router.query.redirect);
         } else {

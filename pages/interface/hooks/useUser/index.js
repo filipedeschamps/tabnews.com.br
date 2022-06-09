@@ -1,5 +1,4 @@
 import useSWR from 'swr';
-import { useState, useEffect } from 'react';
 
 async function fetcher(url) {
   const response = await fetch(url);
@@ -17,28 +16,8 @@ async function fetcher(url) {
 const userEndpoint = '/api/v1/user';
 
 export default function useUser() {
-  const [user, setUser] = useState();
-
-  // Stage 1 = true (always revalidate)
-  // Stage 2 = false (revalidate only if user stored in localStorage)
-  const [shouldRevalidate, setShouldRevalidate] = useState(true);
-
-  const [loginStatus, setLoginStatus] = useState('loading');
-
-  useEffect(() => {
-    const userStored = localStorage.getItem('user');
-
-    if (userStored) {
-      setLoginStatus('logged-in');
-      setUser(JSON.parse(userStored));
-      setShouldRevalidate(true);
-    } else {
-      setLoginStatus('logged-out');
-    }
-  }, []);
-
-  const { data, isLoading, isValidating, error } = useSWR(shouldRevalidate ? userEndpoint : false, fetcher, {
-    fallbackData: user,
+  const { data, isLoading, isValidating, error } = useSWR(userEndpoint, fetcher, {
+    shouldRetryOnError: false,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     onSuccess,
@@ -47,13 +26,11 @@ export default function useUser() {
 
   function onSuccess(data) {
     localStorage.setItem('user', JSON.stringify(data));
-    setLoginStatus('logged-in');
   }
 
   function onError(error) {
     if (error.status === 401 || error.status === 403) {
       localStorage.removeItem('user');
-      setLoginStatus('logged-out');
     }
   }
 
@@ -62,6 +39,5 @@ export default function useUser() {
     isLoading: isLoading,
     isValidating: isValidating,
     error: error,
-    loginStatus: loginStatus,
   };
 }
