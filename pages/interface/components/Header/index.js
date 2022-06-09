@@ -1,28 +1,26 @@
-import { useRouter } from 'next/router';
-import { Header, Box, Button, ActionMenu, ActionList } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList } from '@primer/react';
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
 
 export default function HeaderComponent() {
-  const router = useRouter();
   const { user, isLoading } = useUser();
 
   return (
     <Header>
-      <Header.Item full>
+      <Header.Item>
         <Header.Link href="/" fontSize={2}>
           <CgTab size={32} />
           <Box sx={{ ml: 2 }}>TabNews</Box>
         </Header.Link>
       </Header.Item>
 
-      <Header.Item>
+      <Header.Item full>
         <Header.Link href="/status" fontSize={2}>
           Status
         </Header.Link>
       </Header.Item>
 
-      {!isLoading && !user.username && (
+      {!isLoading && !user?.username && (
         <>
           <Header.Item>
             <Header.Link href="/login" fontSize={2}>
@@ -37,7 +35,7 @@ export default function HeaderComponent() {
         </>
       )}
 
-      {!isLoading && user.username && (
+      {user?.username && (
         <>
           <Header.Item>
             <ActionMenu>

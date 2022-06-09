@@ -72,7 +72,7 @@
     "migration:seed": "node infra/scripts/seed-database.js"
   },
   "engines": {
-    "node": "^16"
+    "node": "16.15.0"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
