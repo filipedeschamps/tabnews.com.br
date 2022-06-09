@@ -25,7 +25,14 @@ export default function useUser() {
   });
 
   function onSuccess(data) {
-    localStorage.setItem('user', JSON.stringify(data));
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        id: data.id,
+        username: data.username,
+        features: data.features,
+      })
+    );
   }
 
   function onError(error) {
