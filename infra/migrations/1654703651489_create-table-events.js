@@ -16,17 +16,17 @@ exports.up = (pgm) => {
 
     originator_user_id: {
       type: 'uuid',
-      notNull: true,
+      notNull: false,
     },
 
     originator_ip: {
       type: 'inet',
-      notNull: true,
+      notNull: false,
     },
 
     metadata: {
       type: 'jsonb',
-      notNull: true,
+      notNull: false,
     },
 
     created_at: {

@@ -619,14 +619,15 @@ const schemas = {
 
   event: function () {
     return Joi.object({
-      type: Joi.string().valid('create:user', 'create:content:text_root', 'create:content:text_child').messages({
-        'any.required': `"type" é um campo obrigatório.`,
-        'string.empty': `"type" não pode estar em branco.`,
-        'string.base': `"type" deve ser do tipo String.`,
-        'any.only': `"type" não possui um valor válido.`,
-      }),
-      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).messages({
-        'any.required': `"originatorId" é um campo obrigatório.`,
+      type: Joi.string()
+        .valid('create:user', 'create:content:text_root', 'create:content:text_child', 'firewall:block_users')
+        .messages({
+          'any.required': `"type" é um campo obrigatório.`,
+          'string.empty': `"type" não pode estar em branco.`,
+          'string.base': `"type" deve ser do tipo String.`,
+          'any.only': `"type" não possui um valor válido.`,
+        }),
+      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional().messages({
         'string.empty': `"originatorId" não pode estar em branco.`,
         'string.base': `"originatorId" deve ser do tipo String.`,
         'string.guid': `"originatorId" deve possuir um token UUID na versão 4.`,
@@ -635,8 +636,8 @@ const schemas = {
         .ip({
           version: ['ipv4', 'ipv6'],
         })
+        .optional()
         .messages({
-          'any.required': `"originatorIp" é um campo obrigatório.`,
           'string.empty': `"originatorIp" não pode estar em branco.`,
           'string.base': `"originatorIp" deve ser do tipo String.`,
           'string.ip': `"originatorIp" deve possuir um IP válido`,
@@ -658,6 +659,13 @@ const schemas = {
           is: 'create:content:text_child',
           then: Joi.object({
             id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'firewall:block_users',
+          then: Joi.object({
+            from_rule: Joi.string().required(),
+            users: Joi.array().required(),
           }),
         },
       ]),

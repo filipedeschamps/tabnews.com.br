@@ -7,6 +7,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import event from 'models/event.js';
+import firewall from 'models/firewall.js';
 
 export default nextConnect({
   attachParams: true,
@@ -17,7 +18,12 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getHandler)
-  .post(postValidationHandler, authorization.canRequest('create:user'), postHandler);
+  .post(
+    postValidationHandler,
+    authorization.canRequest('create:user'),
+    firewall.canRequest('create:user'),
+    postHandler
+  );
 
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
@@ -53,7 +59,7 @@ async function postHandler(request, response) {
 
   await event.create({
     type: 'create:user',
-    originatorUserId: newUser.id,
+    originatorUserId: request.context.user.id || newUser.id,
     originatorIp: request.context.clientIp,
     metadata: {
       id: newUser.id,
