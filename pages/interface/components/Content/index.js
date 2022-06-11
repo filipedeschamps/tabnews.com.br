@@ -257,7 +257,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
-      if (!user && router) {
+      if (!user) {
         router.push(`/login?redirect=${router.asPath}`);
         return;
       }

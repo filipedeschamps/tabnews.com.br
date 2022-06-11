@@ -1,5 +1,6 @@
 import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
+import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -10,18 +11,20 @@ async function SWRFetcher(resource, init) {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <SWRConfig
-      value={{
-        fetcher: SWRFetcher,
-      }}>
-      <SSRProvider>
-        <ThemeProvider preventSSRMismatch colorMode="day">
-          <BaseStyles>
-            <Component {...pageProps} />
-          </BaseStyles>
-        </ThemeProvider>
-      </SSRProvider>
-    </SWRConfig>
+    <UserProvider>
+      <SWRConfig
+        value={{
+          fetcher: SWRFetcher,
+        }}>
+        <SSRProvider>
+          <ThemeProvider preventSSRMismatch colorMode="day">
+            <BaseStyles>
+              <Component {...pageProps} />
+            </BaseStyles>
+          </ThemeProvider>
+        </SSRProvider>
+      </SWRConfig>
+    </UserProvider>
   );
 }
 
