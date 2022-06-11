@@ -1,50 +1,62 @@
-import useSWR from 'swr';
-
-async function fetcher(url) {
-  const response = await fetch(url);
-  const responseBody = await response.json();
-
-  if (response.status === 401 || response.status === 403) {
-    const error = new Error(responseBody.message);
-    error.status = response.status;
-    throw error;
-  }
-
-  return responseBody;
-}
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 const userEndpoint = '/api/v1/user';
 
-export default function useUser() {
-  const { data, isLoading, isValidating, error } = useSWR(userEndpoint, fetcher, {
-    shouldRetryOnError: false,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    onSuccess,
-    onError,
-  });
+const UserContext = createContext();
 
-  function onSuccess(data) {
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        id: data.id,
-        username: data.username,
-        features: data.features,
-      })
-    );
-  }
+export function UserProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(undefined);
 
-  function onError(error) {
-    if (error.status === 401 || error.status === 403) {
-      localStorage.removeItem('user');
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await fetch(userEndpoint);
+      const responseBody = await response.json();
+
+      if (response.status !== 401 && response.status !== 403) {
+        const fetchedUser = {
+          id: responseBody.id,
+          username: responseBody.username,
+          features: responseBody.features,
+        };
+        setUser(fetchedUser);
+        localStorage.setItem('user', JSON.stringify(fetchedUser));
+      } else {
+        setUser(null);
+        localStorage.removeItem('user');
+        const error = new Error(responseBody.message);
+        error.status = response.status;
+        throw error;
+      }
+    } catch (error) {
+      setError(error);
     }
-  }
+  }, []);
 
-  return {
-    user: data,
-    isLoading: isLoading,
-    isValidating: isValidating,
-    error: error,
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    (async () => {
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+        // await fetchUser(); // Stage 2 - revalidate only if user stored in localStorage
+      }
+      await fetchUser(); // Stage 1 - always revalidate
+      localStorage.removeItem('registrationEmail'); // Stage 1 - remove registrationEmail from localStorage
+      setIsLoading(false);
+    })();
+  }, [fetchUser]);
+
+  const userContextValue = {
+    user,
+    isLoading,
+    error,
+    fetchUser,
   };
+
+  return <UserContext.Provider value={userContextValue}>{children}</UserContext.Provider>;
+}
+
+export default function useUser() {
+  return useContext(UserContext);
 }

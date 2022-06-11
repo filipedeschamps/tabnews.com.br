@@ -7,6 +7,7 @@ export default function ConfirmSignup() {
 
   useEffect(() => {
     const userEmail = localStorage.getItem('registrationEmail');
+    localStorage.removeItem('registrationEmail');
     setEmail(userEmail);
   }, []);
 
