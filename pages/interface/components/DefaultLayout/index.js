@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { Box } from '@primer/react';
 
+import removeMarkdown from 'remove-markdown';
 import webserver from 'infra/webserver.js';
 import { BaseLayout, Header } from 'pages/interface/index.js';
 
@@ -22,13 +23,14 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   let updatedMetadata = { ...defaultMetadata, ...metadata };
 
   if (content) {
+    const cleanBody = removeMarkdown(content.body);
     if (content.title) {
       updatedMetadata.title = `${content.title} · ${content.username}`;
     } else {
-      updatedMetadata.title = `${content.body.replace(/\s+/g, ' ').substring(0, 80)} · ${content.username}`;
+      updatedMetadata.title = `${cleanBody.replace(/\s+/g, ' ').substring(0, 80)} · ${content.username}`;
     }
 
-    updatedMetadata.description = content.body.replace(/\s+/g, ' ').substring(0, 190);
+    updatedMetadata.description = cleanBody.replace(/\s+/g, ' ').substring(0, 190);
   }
 
   if (updatedMetadata.title && updatedMetadata.title != defaultMetadata.title) {
