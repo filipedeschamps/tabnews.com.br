@@ -1,7 +1,8 @@
 import { v4 as uuidV4 } from 'uuid';
+import snakeize from 'snakeize';
+
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
-import snakeize from 'snakeize';
 import webserver from 'infra/webserver.js';
 
 import {
@@ -10,10 +11,30 @@ import {
   ValidationError,
   ForbiddenError,
   UnauthorizedError,
+  TooManyRequestsError,
 } from '/errors/index.js';
 
-async function injectRequestId(request, response, next) {
-  request.context = { ...request.context, requestId: uuidV4() };
+async function injectRequestMetadata(request, response, next) {
+  request.context = {
+    ...request.context,
+    requestId: uuidV4(),
+    clientIp: extractAnonymousIpFromRequest(request),
+  };
+
+  function extractAnonymousIpFromRequest(request) {
+    let ip = request.headers['x-real-ip'] || request.connection.remoteAddress;
+
+    if (ip.substr(0, 7) == '::ffff:') {
+      ip = ip.substr(7);
+    }
+
+    const ipParts = ip.split('.');
+    ipParts[3] = '0';
+    const anonymizedIp = ipParts.join('.');
+
+    return anonymizedIp;
+  }
+
   next();
 }
 
@@ -34,6 +55,12 @@ function onErrorHandler(error, request, response) {
     const errorObject = { ...error, requestId: request.context.requestId };
     logger.info(snakeize(errorObject));
     session.clearSessionIdCookie(response);
+    return response.status(error.statusCode).json(snakeize(errorObject));
+  }
+
+  if (error instanceof TooManyRequestsError) {
+    const errorObject = { ...error, requestId: request.context.requestId };
+    logger.info(snakeize(errorObject));
     return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
@@ -96,7 +123,7 @@ function injectPaginationHeaders(pagination, endpoint, response) {
 }
 
 export default Object.freeze({
-  injectRequestId,
+  injectRequestMetadata,
   onNoMatchHandler,
   onErrorHandler,
   logRequest,

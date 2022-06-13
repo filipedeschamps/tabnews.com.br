@@ -7,6 +7,8 @@ import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
 import logger from 'infra/logger.js';
+import event from 'models/event.js';
+import firewall from 'models/firewall.js';
 import { ForbiddenError, ServiceError } from 'errors/index.js';
 
 export default nextConnect({
@@ -14,12 +16,12 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestId)
+  .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getValidationHandler)
   .get(getHandler)
-  .post(postValidationHandler, authorization.canRequest('create:content'), postHandler);
+  .post(postValidationHandler, authorization.canRequest('create:content'), firewallValidationHandler, postHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -68,6 +70,14 @@ function postValidationHandler(request, response, next) {
   next();
 }
 
+async function firewallValidationHandler(request, response, next) {
+  if (!request.body.parent_id) {
+    return firewall.canRequest('create:content:text_root')(request, response, next);
+  }
+
+  return firewall.canRequest('create:content:text_child')(request, response, next);
+}
+
 async function postHandler(request, response) {
   const userTryingToCreate = request.context.user;
   const insecureInputValues = request.body;
@@ -101,6 +111,15 @@ async function postHandler(request, response) {
   secureInputValues.owner_id = userTryingToCreate.id;
 
   const createdContent = await content.create(secureInputValues);
+
+  await event.create({
+    type: !createdContent.parent_id ? 'create:content:text_root' : 'create:content:text_child',
+    originatorUserId: request.context.user.id,
+    originatorIp: request.context.clientIp,
+    metadata: {
+      id: createdContent.id,
+    },
+  });
 
   if (createdContent.parent_id) {
     await notification.sendReplyEmailToParentUser(createdContent);

@@ -11,7 +11,7 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestId)
+  .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler);

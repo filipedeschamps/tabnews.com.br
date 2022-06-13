@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import fetch from 'cross-fetch';
 import retry from 'async-retry';
 import faker from '@faker-js/faker';
@@ -156,6 +157,15 @@ async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
 }
 
+async function createFirewallTestFunctions() {
+  const procedures = fs.readdirSync('infra/stored-procedures');
+
+  for (const procedureFile of procedures) {
+    const procedureQuery = fs.readFileSync(`infra/stored-procedures/${procedureFile}`, 'utf8');
+    await database.query(procedureQuery);
+  }
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -171,4 +181,5 @@ export default {
   createContent,
   updateContent,
   createRecoveryToken,
+  createFirewallTestFunctions,
 };
