@@ -53,9 +53,6 @@ async function postHandler(request, response) {
   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
 
   const newUser = await user.create(secureInputValues);
-  await activation.createAndSendActivationEmail(newUser);
-
-  const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 
   await event.create({
     type: 'create:user',
@@ -65,6 +62,10 @@ async function postHandler(request, response) {
       id: newUser.id,
     },
   });
+
+  await activation.createAndSendActivationEmail(newUser);
+
+  const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 
   return response.status(201).json(secureOutputValues);
 }

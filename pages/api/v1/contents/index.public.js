@@ -112,6 +112,15 @@ async function postHandler(request, response) {
 
   const createdContent = await content.create(secureInputValues);
 
+  await event.create({
+    type: !createdContent.parent_id ? 'create:content:text_root' : 'create:content:text_child',
+    originatorUserId: request.context.user.id,
+    originatorIp: request.context.clientIp,
+    metadata: {
+      id: createdContent.id,
+    },
+  });
+
   if (createdContent.parent_id) {
     await notification.sendReplyEmailToParentUser(createdContent);
   }
@@ -130,15 +139,6 @@ async function postHandler(request, response) {
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
-
-  await event.create({
-    type: !createdContent.parent_id ? 'create:content:text_root' : 'create:content:text_child',
-    originatorUserId: request.context.user.id,
-    originatorIp: request.context.clientIp,
-    metadata: {
-      id: secureOutputValues.id,
-    },
-  });
 
   return response.status(201).json(secureOutputValues);
 }
