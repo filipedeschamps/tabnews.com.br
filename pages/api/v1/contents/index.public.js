@@ -8,6 +8,7 @@ import content from 'models/content.js';
 import notification from 'models/notification.js';
 import logger from 'infra/logger.js';
 import event from 'models/event.js';
+import firewall from 'models/firewall.js';
 import { ForbiddenError, ServiceError } from 'errors/index.js';
 
 export default nextConnect({
@@ -20,7 +21,7 @@ export default nextConnect({
   .use(controller.logRequest)
   .get(getValidationHandler)
   .get(getHandler)
-  .post(postValidationHandler, authorization.canRequest('create:content'), postHandler);
+  .post(postValidationHandler, authorization.canRequest('create:content'), firewallValidationHandler, postHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -67,6 +68,14 @@ function postValidationHandler(request, response, next) {
   request.body = cleanValues;
 
   next();
+}
+
+async function firewallValidationHandler(request, response, next) {
+  if (!request.body.parent_id) {
+    return firewall.canRequest('create:content:text_root')(request, response, next);
+  }
+
+  return firewall.canRequest('create:content:text_child')(request, response, next);
 }
 
 async function postHandler(request, response) {

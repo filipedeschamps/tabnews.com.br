@@ -620,7 +620,14 @@ const schemas = {
   event: function () {
     return Joi.object({
       type: Joi.string()
-        .valid('create:user', 'create:content:text_root', 'create:content:text_child', 'firewall:block_users')
+        .valid(
+          'create:user',
+          'create:content:text_root',
+          'create:content:text_child',
+          'firewall:block_users',
+          'firewall:block_contents:text_root',
+          'firewall:block_contents:text_child'
+        )
         .messages({
           'any.required': `"type" é um campo obrigatório.`,
           'string.empty': `"type" não pode estar em branco.`,
@@ -666,6 +673,20 @@ const schemas = {
           then: Joi.object({
             from_rule: Joi.string().required(),
             users: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'firewall:block_contents:text_root',
+          then: Joi.object({
+            from_rule: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'firewall:block_contents:text_child',
+          then: Joi.object({
+            from_rule: Joi.string().required(),
+            contents: Joi.array().required(),
           }),
         },
       ]),
