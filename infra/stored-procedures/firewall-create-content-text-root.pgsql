@@ -10,7 +10,7 @@ BEGIN
     WHERE
       originator_ip = clientIp
       AND type = 'create:content:text_root'
-      AND created_at > NOW() - INTERVAL '1 minute'
+      AND created_at > NOW() - INTERVAL '5 seconds'
   );
 
   IF contents_count >= 2 THEN

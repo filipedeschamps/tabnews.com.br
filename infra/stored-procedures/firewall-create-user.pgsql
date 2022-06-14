@@ -10,7 +10,7 @@ BEGIN
     WHERE
       originator_ip = clientIp
       AND type = 'create:user'
-      AND created_at > NOW() - INTERVAL '1 minute'
+      AND created_at > NOW() - INTERVAL '5 seconds'
   );
 
   IF users_count >= 2 THEN
