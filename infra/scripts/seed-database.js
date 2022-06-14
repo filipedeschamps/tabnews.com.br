@@ -1,3 +1,6 @@
+const fs = require('node:fs');
+const { join, resolve } = require('path');
+
 const { Client } = require('pg');
 const client = new Client({
   connectionString: 'postgres://local_user:local_password@localhost:54320/tabnews',
@@ -13,9 +16,10 @@ async function seedDatabase() {
 
   await client.connect();
   await seedDevelopmentUsers();
+  await createFirewallFunctions();
   await client.end();
 
-  console.log('> Database seeded!');
+  console.log('\n> Database seeded!');
 }
 
 async function seedDevelopmentUsers() {
@@ -62,4 +66,16 @@ async function seedDevelopmentUsers() {
       }
     }
   }
+}
+
+async function createFirewallFunctions() {
+  console.log('\n> Creating Firewall functions...');
+  const proceduresPath = join(resolve('.'), 'infra', 'stored-procedures');
+  const procedures = fs.readdirSync(proceduresPath);
+
+  for (const procedureFile of procedures) {
+    const procedureQuery = fs.readFileSync(`${proceduresPath}/${procedureFile}`, 'utf8');
+    await client.query(procedureQuery);
+  }
+  console.log('> Firewall functions created!');
 }

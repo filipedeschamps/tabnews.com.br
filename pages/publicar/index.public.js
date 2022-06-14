@@ -1,13 +1,22 @@
 import useSWR from 'swr';
+import { useRouter } from 'next/router';
 import { DefaultLayout, Content, useUser } from 'pages/interface/index.js';
 import { Box, Heading, Flash, Link } from '@primer/react';
+import { useEffect } from 'react';
 
 export default function Post() {
-  const { user } = useUser();
-  const { data: contents } = useSWR(user?.username ? `/api/v1/contents/${user.username}` : null, {
+  const router = useRouter();
+  const { user, isLoading } = useUser();
+  const { data: contents } = useSWR(user ? `/api/v1/contents/${user.username}` : null, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
+
+  useEffect(() => {
+    if (router && !user && !isLoading) {
+      router.push(`/login?redirect=${router.asPath}`);
+    }
+  }, [user, router, isLoading]);
 
   return (
     <DefaultLayout metadata={{ title: 'Publicar novo conteúdo' }}>

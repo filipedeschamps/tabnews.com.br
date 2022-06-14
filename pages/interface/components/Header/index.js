@@ -20,7 +20,7 @@ export default function HeaderComponent() {
         </Header.Link>
       </Header.Item>
 
-      {!isLoading && !user?.username && (
+      {!isLoading && !user && (
         <>
           <Header.Item>
             <Header.Link href="/login" fontSize={2}>
@@ -35,7 +35,7 @@ export default function HeaderComponent() {
         </>
       )}
 
-      {user?.username && (
+      {user && (
         <>
           <Header.Item>
             <ActionMenu>

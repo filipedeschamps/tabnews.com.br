@@ -24,6 +24,10 @@ async function injectRequestMetadata(request, response, next) {
   function extractAnonymousIpFromRequest(request) {
     let ip = request.headers['x-real-ip'] || request.connection.remoteAddress;
 
+    if (ip === '::1') {
+      ip = '127.0.0.1';
+    }
+
     if (ip.substr(0, 7) == '::ffff:') {
       ip = ip.substr(7);
     }
