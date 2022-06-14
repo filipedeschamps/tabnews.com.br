@@ -336,19 +336,12 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           return;
         }
 
-        if (response.status === 401 || response.status === 403) {
-          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-          setIsPosting(false);
-          return;
-        }
-
-        if (response.status >= 500) {
-          setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+        if (response.status >= 401) {
+          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
           setIsPosting(false);
           return;
         }
       } catch (error) {
-        console.log(error);
         setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
         setIsPosting(false);
       }
