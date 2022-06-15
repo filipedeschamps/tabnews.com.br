@@ -11,4 +11,15 @@ module.exports = {
     locales: ['pt-br'],
     defaultLocale: 'pt-br',
   },
+  serverRuntimeConfig: {
+    PROJECT_ROOT: __dirname,
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/image.png',
+        destination: '/api/og-image',
+      },
+    ];
+  },
 };

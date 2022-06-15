@@ -23,18 +23,24 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   let updatedMetadata = { ...defaultMetadata, ...metadata };
 
   if (content) {
-    const cleanBody = removeMarkdown(content.body);
-    if (content.title) {
-      updatedMetadata.title = `${content.title} · ${content.username}`;
-    } else {
-      updatedMetadata.title = `${cleanBody.replace(/\s+/g, ' ').substring(0, 80)} · ${content.username}`;
+    const cleanBody = removeMarkdown(content.body).replace(/\s+/g, ' ');
+
+    updatedMetadata.title = `${content.title ?? cleanBody.substring(0, 80)} · ${content.username} · TabNews`;
+    updatedMetadata.description = cleanBody.substring(0, 190);
+    updatedMetadata.image = [
+      `${webserverHost}/image.png`,
+      `?title=${content.title ?? cleanBody.substring(0, 120)}`,
+      `&author=${content.username}`,
+      `&comments=${content.children_deep_count}`,
+      `&date=${new Date(content.published_at).toLocaleDateString('pt-BR')}`,
+    ].join('');
+
+    if (content.parent_slug) {
+      const parentTitle = content.parent_title ?? content.parent_username;
+      updatedMetadata.image += `&parentTitle=${parentTitle.substring(0, 40)}`;
     }
 
-    updatedMetadata.description = cleanBody.replace(/\s+/g, ' ').substring(0, 190);
-  }
-
-  if (updatedMetadata.title && updatedMetadata.title != defaultMetadata.title) {
-    updatedMetadata.title = `${updatedMetadata.title} · TabNews`;
+    updatedMetadata.image = encodeURI(updatedMetadata.image);
   }
 
   return (
