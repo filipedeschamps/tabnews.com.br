@@ -39,10 +39,8 @@ export function UserProvider({ children }) {
     (async () => {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
-        // await fetchUser(); // Stage 2 - revalidate only if user stored in localStorage
+        await fetchUser();
       }
-      await fetchUser(); // Stage 1 - always revalidate
-      localStorage.removeItem('registrationEmail'); // Stage 1 - remove registrationEmail from localStorage
       setIsLoading(false);
     })();
   }, [fetchUser]);
