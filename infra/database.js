@@ -157,6 +157,10 @@ function parseQueryErrorAndLog(error, query) {
     '23505', // unique constraint violation
   ];
 
+  if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
+    expectedErrorsCode.push('42883'); // undefined_function
+  }
+
   const errorToReturn = new ServiceError({
     message: error.message,
     context: {
