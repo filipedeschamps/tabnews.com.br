@@ -85,10 +85,20 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: userCreated.id,
+        username: 'userNameToBeFound',
+        features: userCreated.features,
+        tabcoins: userCreated.tabcoins,
+        tabcoins_accumulated: userCreated.tabcoins_accumulated,
+        tabcash: userCreated.tabcash,
+        tabcash_accumulated: userCreated.tabcash_accumulated,
+        created_at: userCreated.created_at.toISOString(),
+        updated_at: userCreated.updated_at.toISOString(),
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(userCreated.id).toEqual(responseBody.id);
-      expect(responseBody.username).toEqual('userNameToBeFound');
-      expect(responseBody.features).toEqual(userCreated.features);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
@@ -105,10 +115,20 @@ describe('GET /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: userCreated.id,
+        username: 'userNameToBeFoundCAPS',
+        features: userCreated.features,
+        tabcoins: userCreated.tabcoins,
+        tabcoins_accumulated: userCreated.tabcoins_accumulated,
+        tabcash: userCreated.tabcash,
+        tabcash_accumulated: userCreated.tabcash_accumulated,
+        created_at: userCreated.created_at.toISOString(),
+        updated_at: userCreated.updated_at.toISOString(),
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(userCreated.id).toEqual(responseBody.id);
-      expect(responseBody.username).toEqual('userNameToBeFoundCAPS');
-      expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');

@@ -3,7 +3,7 @@ import slug from 'slug';
 import database from 'infra/database.js';
 import validator from 'models/validator.js';
 import user from 'models/user.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
+import { ValidationError } from 'errors/index.js';
 
 async function findAll(options = {}) {
   options = validateOptions(options);
@@ -100,6 +100,8 @@ async function findAll(options = {}) {
         contents.created_at as created_at,
         contents.updated_at as updated_at,
         contents.published_at as published_at,
+        contents.deleted_at as deleted_at,
+        contents.tabcoins as tabcoins,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -260,6 +262,7 @@ async function create(postedContent) {
         inserted_content.updated_at as updated_at,
         inserted_content.published_at as published_at,
         inserted_content.deleted_at as deleted_at,
+        inserted_content.tabcoins as tabcoins,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -471,6 +474,7 @@ async function update(contentId, postedContent) {
         updated_content.updated_at as updated_at,
         updated_content.published_at as published_at,
         updated_content.deleted_at as deleted_at,
+        updated_content.tabcoins as tabcoins,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -570,7 +574,9 @@ async function findChildrenTree(options) {
             source_url,
             created_at,
             updated_at,
-            published_at
+            published_at,
+            deleted_at,
+            tabcoins
         FROM
           contents
         WHERE
@@ -588,7 +594,9 @@ async function findChildrenTree(options) {
             contents.source_url,
             contents.created_at,
             contents.updated_at,
-            contents.published_at
+            contents.published_at,
+            contents.deleted_at,
+            contents.tabcoins
           FROM
             contents
           INNER JOIN
@@ -609,6 +617,8 @@ async function findChildrenTree(options) {
         children.created_at as created_at,
         children.updated_at as updated_at,
         children.published_at as published_at,
+        children.deleted_at as deleted_at,
+        children.tabcoins as tabcoins,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,

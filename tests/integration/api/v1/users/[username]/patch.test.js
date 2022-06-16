@@ -92,14 +92,21 @@ describe('PATCH /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: 'regularUserPatchingHisUsername',
+        features: defaultUser.features,
+        tabcoins: 0,
+        tabcoins_accumulated: 0,
+        tabcash: 0,
+        tabcash_accumulated: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(defaultUser.id).toEqual(responseBody.id);
-      expect(responseBody.username).toEqual('regularUserPatchingHisUsername');
-      expect(responseBody.features).toEqual(defaultUser.features);
-      expect(responseBody.created_at).toEqual(defaultUser.created_at.toISOString());
       expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
-      expect(responseBody).not.toHaveProperty('password');
-      expect(responseBody).not.toHaveProperty('email');
 
       const defaultUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
@@ -129,14 +136,21 @@ describe('PATCH /api/v1/users/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: 'untrimmedUsername',
+        features: defaultUser.features,
+        tabcoins: 0,
+        tabcoins_accumulated: 0,
+        tabcash: 0,
+        tabcash_accumulated: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(defaultUser.id).toEqual(responseBody.id);
-      expect(responseBody.username).toEqual('untrimmedUsername');
-      expect(responseBody.features).toEqual(defaultUser.features);
-      expect(responseBody.created_at).toEqual(defaultUser.created_at.toISOString());
       expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
-      expect(responseBody).not.toHaveProperty('password');
-      expect(responseBody).not.toHaveProperty('email');
     });
 
     test('Patching itself with "username" duplicated exactly (same uppercase letters)', async () => {

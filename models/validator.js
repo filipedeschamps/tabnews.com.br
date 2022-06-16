@@ -609,6 +609,7 @@ const schemas = {
       'parent_slug',
       'parent_username',
       'children_deep_count',
+      'tabcoins',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
@@ -690,6 +691,25 @@ const schemas = {
           }),
         },
       ]),
+    });
+  },
+
+  tabcoins: function () {
+    return Joi.object({
+      tabcoins: Joi.number()
+        .integer()
+        .min(-2147483648)
+        .max(2147483647)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins" é um campo obrigatório.`,
+          'string.empty': `"tabcoins" não pode estar em branco.`,
+          'number.base': `"tabcoins" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins" deve ser um Inteiro.`,
+          'number.min': `"tabcoins" deve possuir um valor mínimo de -2147483648.`,
+          'number.max': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+          'number.unsafe': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+        }),
     });
   },
 };
