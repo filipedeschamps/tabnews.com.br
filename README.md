@@ -105,6 +105,22 @@ Observações:
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
 - A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá usar `regex` para evitar usar esses caracteres, como por exemplo utilizar o `.` que representa o `match` com qualquer caractere. Isto foi utilizado nos exemplos acima para evitar os caracteres `[` e `]` dos arquivos.
 
+## Criar novas Migrations
+
+Você pode utilizar o script `migration:create`, por exemplo:
+
+```
+npm run migration:create alter table users add tabcoins
+```
+
+Isto irá resultar em:
+
+```
+Created migration -- ./infra/migrations/1655399502254_alter-table-users-add-tabcoins.js
+```
+
+Caso esta nova migração esteja válida, ela será automaticamente executada na próxima vez que você rodar o comando `npm run dev`. Caso contrário, o serviço não irá subir e os logs de erro estarão registrados no arquivo `migrations.log` encontrado na raiz do projeto.
+
 ## Commit das alterações
 
 Após finalizar suas alterações e se certificar que todos os testes estão passando com o comando geral `npm test`, chegou a hora de fazer o commit das suas alterações.
