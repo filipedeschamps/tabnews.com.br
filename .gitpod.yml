@@ -1,0 +1,6 @@
+tasks:
+  - name: Run Dev Server
+    init: nvm install node && npm install
+    command: npm run dev
+
+
