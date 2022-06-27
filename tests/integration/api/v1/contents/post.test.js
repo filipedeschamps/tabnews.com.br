@@ -199,7 +199,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: firstUser.username,
         parent_title: null,
         parent_slug: null,
@@ -331,7 +331,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -407,7 +407,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -782,7 +782,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -828,7 +828,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -875,7 +875,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1100,7 +1100,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1147,7 +1147,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1194,7 +1194,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1337,7 +1337,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1414,7 +1414,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1462,7 +1462,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -1571,7 +1571,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: null,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: rootContent.title,
         parent_slug: rootContent.slug,
@@ -1626,7 +1626,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: rootContent.title,
         parent_slug: rootContent.slug,
@@ -1682,7 +1682,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         username: defaultUser.username,
         parent_title: rootContent.title,
         parent_slug: rootContent.slug,
@@ -1916,6 +1916,208 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou na sua postagem!`);
         expect(getLastEmail.text.includes(firstUser.username)).toBe(true);
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+      });
+    });
+
+    describe('TabCoins', () => {
+      test('"root" content with "draft" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+          }),
+        });
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content with "published" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+            status: 'published',
+          }),
+        });
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"child" content with "draft" status', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Body',
+            parent_id: rootContent.id,
+            status: 'draft',
+          }),
+        });
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"child" content with "published" status (same user)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        // But user will not receive additional tabcoins for
+        // publishing a child content to itself.
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Body',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"child" content with "published" status (different user)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Body',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcash).toEqual(0);
       });
     });
   });

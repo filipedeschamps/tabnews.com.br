@@ -1,15 +1,14 @@
 import nextConnect from 'next-connect';
-import snakeize from 'snakeize';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
-import logger from 'infra/logger.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
-import { ForbiddenError, ServiceError } from 'errors/index.js';
+import database from 'infra/database.js';
+import { ForbiddenError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -19,8 +18,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getValidationHandler)
-  .get(getHandler)
+  .get(getValidationHandler, getHandler)
   .post(postValidationHandler, authorization.canRequest('create:content'), firewallValidationHandler, postHandler);
 
 function getValidationHandler(request, response, next) {
@@ -110,35 +108,52 @@ async function postHandler(request, response) {
 
   secureInputValues.owner_id = userTryingToCreate.id;
 
-  const createdContent = await content.create(secureInputValues);
+  const transaction = await database.transaction();
 
-  await event.create({
-    type: !createdContent.parent_id ? 'create:content:text_root' : 'create:content:text_child',
-    originatorUserId: request.context.user.id,
-    originatorIp: request.context.clientIp,
-    metadata: {
-      id: createdContent.id,
-    },
-  });
+  try {
+    await transaction.query('BEGIN');
 
-  if (createdContent.parent_id) {
-    await notification.sendReplyEmailToParentUser(createdContent);
-  }
+    const currentEvent = await event.create(
+      {
+        type: secureInputValues.parent_id ? 'create:content:text_child' : 'create:content:text_root',
+        originatorUserId: request.context.user.id,
+        originatorIp: request.context.clientIp,
+      },
+      {
+        transaction: transaction,
+      }
+    );
 
-  if (!createdContent.parent_id) {
-    try {
-      await response.unstable_revalidate(`/`);
-    } catch (error) {
-      const errorObject = new ServiceError({
-        message: error.message,
-        errorUniqueCode: 'CONTROLLER:CONTENTS:POST_HANDLER:REVALIDATE:ERROR',
-        stack: new Error().stack,
-      });
-      logger.error(snakeize({ ...errorObject, stack: error.stack }));
+    const createdContent = await content.create(secureInputValues, {
+      eventId: currentEvent.id,
+      transaction: transaction,
+    });
+
+    await event.updateMetadata(
+      currentEvent.id,
+      {
+        metadata: {
+          id: createdContent.id,
+        },
+      },
+      {
+        transaction: transaction,
+      }
+    );
+
+    await transaction.query('COMMIT');
+    await transaction.release();
+
+    if (createdContent.parent_id) {
+      await notification.sendReplyEmailToParentUser(createdContent);
     }
+
+    const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+
+    return response.status(201).json(secureOutputValues);
+  } catch (error) {
+    await transaction.query('ROLLBACK');
+    await transaction.release();
+    throw error;
   }
-
-  const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
-
-  return response.status(201).json(secureOutputValues);
 }

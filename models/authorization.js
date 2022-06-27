@@ -171,9 +171,7 @@ function filterOutput(user, feature, output) {
       username: output.username,
       features: output.features,
       tabcoins: output.tabcoins,
-      tabcoins_accumulated: output.tabcoins_accumulated,
       tabcash: output.tabcash,
-      tabcash_accumulated: output.tabcash_accumulated,
       created_at: output.created_at,
       updated_at: output.updated_at,
     };
@@ -187,9 +185,7 @@ function filterOutput(user, feature, output) {
         email: output.email,
         features: output.features,
         tabcoins: output.tabcoins,
-        tabcoins_accumulated: output.tabcoins_accumulated,
         tabcash: output.tabcash,
-        tabcash_accumulated: output.tabcash_accumulated,
         created_at: output.created_at,
         updated_at: output.updated_at,
       };
@@ -202,9 +198,7 @@ function filterOutput(user, feature, output) {
       username: user.username,
       features: user.features,
       tabcoins: user.tabcoins,
-      tabcoins_accumulated: user.tabcoins_accumulated,
       tabcash: user.tabcash,
-      tabcash_accumulated: user.tabcash_accumulated,
       created_at: user.created_at,
       updated_at: user.updated_at,
     }));

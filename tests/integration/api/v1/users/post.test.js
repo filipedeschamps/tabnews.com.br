@@ -33,9 +33,7 @@ describe('POST /api/v1/users', () => {
         username: 'uniqueUserName',
         features: ['read:activation_token'],
         tabcoins: 0,
-        tabcoins_accumulated: 0,
         tabcash: 0,
-        tabcash_accumulated: 0,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -76,9 +74,7 @@ describe('POST /api/v1/users', () => {
         username: 'postWithUnknownKey',
         features: ['read:activation_token'],
         tabcoins: 0,
-        tabcoins_accumulated: 0,
         tabcash: 0,
-        tabcash_accumulated: 0,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -113,9 +109,7 @@ describe('POST /api/v1/users', () => {
         username: 'extraSpaceInTheEnd',
         features: ['read:activation_token'],
         tabcoins: 0,
-        tabcoins_accumulated: 0,
         tabcash: 0,
-        tabcash_accumulated: 0,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });

@@ -625,6 +625,8 @@ const schemas = {
           'create:user',
           'create:content:text_root',
           'create:content:text_child',
+          'update:content:text_root',
+          'update:content:text_child',
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child'
@@ -670,6 +672,18 @@ const schemas = {
           }),
         },
         {
+          is: 'update:content:text_root',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'update:content:text_child',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
           is: 'firewall:block_users',
           then: Joi.object({
             from_rule: Joi.string().required(),
@@ -709,6 +723,25 @@ const schemas = {
           'number.min': `"tabcoins" deve possuir um valor mínimo de -2147483648.`,
           'number.max': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
           'number.unsafe': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+        }),
+    });
+  },
+
+  tabcash: function () {
+    return Joi.object({
+      tabcash: Joi.number()
+        .integer()
+        .min(-2147483648)
+        .max(2147483647)
+        .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcash" é um campo obrigatório.`,
+          'string.empty': `"tabcash" não pode estar em branco.`,
+          'number.base': `"tabcash" deve ser do tipo Number.`,
+          'number.integer': `"tabcash" deve ser um Inteiro.`,
+          'number.min': `"tabcash" deve possuir um valor mínimo de -2147483648.`,
+          'number.max': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+          'number.unsafe': `"tabcash" deve possuir um valor máximo de 2147483647.`,
         }),
     });
   },

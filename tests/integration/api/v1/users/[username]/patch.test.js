@@ -98,9 +98,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         username: 'regularUserPatchingHisUsername',
         features: defaultUser.features,
         tabcoins: 0,
-        tabcoins_accumulated: 0,
         tabcash: 0,
-        tabcash_accumulated: 0,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -142,9 +140,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         username: 'untrimmedUsername',
         features: defaultUser.features,
         tabcoins: 0,
-        tabcoins_accumulated: 0,
         tabcash: 0,
-        tabcash_accumulated: 0,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });

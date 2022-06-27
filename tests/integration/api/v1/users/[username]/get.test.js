@@ -91,9 +91,7 @@ describe('GET /api/v1/users/[username]', () => {
         username: 'userNameToBeFound',
         features: userCreated.features,
         tabcoins: userCreated.tabcoins,
-        tabcoins_accumulated: userCreated.tabcoins_accumulated,
         tabcash: userCreated.tabcash,
-        tabcash_accumulated: userCreated.tabcash_accumulated,
         created_at: userCreated.created_at.toISOString(),
         updated_at: userCreated.updated_at.toISOString(),
       });
@@ -121,9 +119,7 @@ describe('GET /api/v1/users/[username]', () => {
         username: 'userNameToBeFoundCAPS',
         features: userCreated.features,
         tabcoins: userCreated.tabcoins,
-        tabcoins_accumulated: userCreated.tabcoins_accumulated,
         tabcash: userCreated.tabcash,
-        tabcash_accumulated: userCreated.tabcash_accumulated,
         created_at: userCreated.created_at.toISOString(),
         updated_at: userCreated.updated_at.toISOString(),
       });
