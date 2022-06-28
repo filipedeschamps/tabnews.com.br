@@ -123,3 +123,15 @@ export class TooManyRequestsError extends BaseError {
     });
   }
 }
+
+export class UnprocessableEntityError extends BaseError {
+  constructor({ message, action, stack, errorUniqueCode }) {
+    super({
+      message: message || 'Não foi possível realizar esta operação.',
+      action: action || 'Os dados enviados estão corretos, porém não foi possível realizar esta operação.',
+      statusCode: 422,
+      stack: stack,
+      errorUniqueCode: errorUniqueCode,
+    });
+  }
+}

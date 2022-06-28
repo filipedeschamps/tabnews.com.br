@@ -9,6 +9,7 @@ import activation from 'models/activation.js';
 import session from 'models/session.js';
 import content from 'models/content.js';
 import recovery from 'models/recovery.js';
+import balance from 'models/balance.js';
 
 const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -153,6 +154,16 @@ async function updateContent(contentId, contentObject) {
   });
 }
 
+async function createBalance(balanceObject) {
+  return await balance.create({
+    balanceType: balanceObject.balanceType,
+    recipientId: balanceObject.recipientId,
+    amount: balanceObject.amount,
+    originatorType: balanceObject.originatorType || 'orchestrator',
+    originatorId: balanceObject.originatorId || balanceObject.recipientId,
+  });
+}
+
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
 }
@@ -182,4 +193,5 @@ export default {
   updateContent,
   createRecoveryToken,
   createFirewallTestFunctions,
+  createBalance,
 };

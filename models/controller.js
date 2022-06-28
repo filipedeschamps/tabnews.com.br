@@ -12,6 +12,7 @@ import {
   ForbiddenError,
   UnauthorizedError,
   TooManyRequestsError,
+  UnprocessableEntityError,
 } from '/errors/index.js';
 
 async function injectRequestMetadata(request, response, next) {
@@ -49,7 +50,12 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, request, response) {
-  if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
+  if (
+    error instanceof ValidationError ||
+    error instanceof NotFoundError ||
+    error instanceof ForbiddenError ||
+    error instanceof UnprocessableEntityError
+  ) {
     const errorObject = { ...error, requestId: request.context.requestId };
     logger.info(snakeize(errorObject));
     return response.status(error.statusCode).json(snakeize(errorObject));

@@ -627,6 +627,7 @@ const schemas = {
           'create:content:text_child',
           'update:content:text_root',
           'update:content:text_child',
+          'update:content:tabcoins',
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child'
@@ -742,6 +743,23 @@ const schemas = {
           'number.min': `"tabcash" deve possuir um valor mínimo de -2147483648.`,
           'number.max': `"tabcash" deve possuir um valor máximo de 2147483647.`,
           'number.unsafe': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+        }),
+    });
+  },
+
+  transaction_type: function () {
+    return Joi.object({
+      transaction_type: Joi.string()
+        .trim()
+        .valid('credit', 'debit')
+        .invalid(null)
+        .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"transaction_type" é um campo obrigatório.`,
+          'string.empty': `"transaction_type" não pode estar em branco.`,
+          'string.base': `"transaction_type" deve ser do tipo String.`,
+          'any.invalid': `"transaction_type" possui o valor inválido "null".`,
+          'any.only': `"transaction_type" deve possuir um dos seguintes valores: "credit" e "debit".`,
         }),
     });
   },

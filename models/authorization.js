@@ -31,6 +31,7 @@ const availableFeatures = new Set([
   'create:content:text_root',
   'create:content:text_child',
   'read:content:list',
+  'read:content:tabcoins',
 ]);
 
 function can(user, feature, resource) {
@@ -217,6 +218,12 @@ function filterOutput(user, feature, output) {
   if (feature === 'read:content') {
     filteredOutputValues = validator(output, {
       content: 'required',
+    });
+  }
+
+  if (feature === 'read:content:tabcoins') {
+    filteredOutputValues = validator(output, {
+      tabcoins: 'required',
     });
   }
 
