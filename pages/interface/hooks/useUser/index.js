@@ -19,6 +19,8 @@ export function UserProvider({ children }) {
           id: responseBody.id,
           username: responseBody.username,
           features: responseBody.features,
+          tabcoins: responseBody.tabcoins,
+          tabcash: responseBody.tabcash,
         };
         setUser(fetchedUser);
         localStorage.setItem('user', JSON.stringify(fetchedUser));

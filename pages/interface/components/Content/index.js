@@ -85,7 +85,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 }
 
 function ViewMode({ setComponentMode, contentObject, viewFrame }) {
-  const { user } = useUser();
+  const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
 
@@ -112,6 +112,9 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     });
 
     const responseBody = await response.json();
+
+    fetchUser();
+
     if (response.status === 200) {
       setComponentMode('deleted');
       return;
@@ -130,31 +133,37 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
   function ViewModeOptionsMenu() {
     return (
-      <ActionMenu>
-        <ActionMenu.Anchor>
-          <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
-        </ActionMenu.Anchor>
+      <Box sx={{ position: 'relative' }}>
+        <Box sx={{ position: 'absolute', right: 0 }}>
+          {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
+            flickering after this menu appears */}
+          <ActionMenu>
+            <ActionMenu.Anchor>
+              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+            </ActionMenu.Anchor>
 
-        <ActionMenu.Overlay>
-          <ActionList>
-            <ActionList.Item
-              onClick={() => {
-                setComponentMode('edit');
-              }}>
-              <ActionList.LeadingVisual>
-                <PencilIcon />
-              </ActionList.LeadingVisual>
-              Editar
-            </ActionList.Item>
-            <ActionList.Item variant="danger" onClick={handleClickDelete}>
-              <ActionList.LeadingVisual>
-                <TrashIcon />
-              </ActionList.LeadingVisual>
-              Apagar
-            </ActionList.Item>
-          </ActionList>
-        </ActionMenu.Overlay>
-      </ActionMenu>
+            <ActionMenu.Overlay>
+              <ActionList>
+                <ActionList.Item
+                  onClick={() => {
+                    setComponentMode('edit');
+                  }}>
+                  <ActionList.LeadingVisual>
+                    <PencilIcon />
+                  </ActionList.LeadingVisual>
+                  Editar
+                </ActionList.Item>
+                <ActionList.Item variant="danger" onClick={handleClickDelete}>
+                  <ActionList.LeadingVisual>
+                    <TrashIcon />
+                  </ActionList.LeadingVisual>
+                  Apagar
+                </ActionList.Item>
+              </ActionList>
+            </ActionMenu.Overlay>
+          </ActionMenu>
+        </Box>
+      </Box>
     );
   }
 
@@ -163,7 +172,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
+        gap: 1,
         width: '100%',
         borderWidth: viewFrame ? 1 : 0,
         p: viewFrame ? 4 : 0,
@@ -178,7 +187,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
           </Flash>
         )}
 
-        <Box sx={{ height: 25, display: 'flex', alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
           <Box sx={{ flex: 'auto' }}>
             <BranchName sx={{ mr: 2 }} href={`/${contentObject.username}`}>
               {contentObject.username}
@@ -217,7 +226,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 }
 
 function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode }) {
-  const { user } = useUser();
+  const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
@@ -305,6 +314,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         setGlobalErrorMessage(undefined);
 
         const responseBody = await response.json();
+        fetchUser();
 
         if (response.status === 200) {
           localStorage.removeItem(localStorageKey);
@@ -315,6 +325,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
         if (response.status === 201) {
           localStorage.removeItem(localStorageKey);
+
           if (!responseBody.parent_id) {
             localStorage.setItem('justPublishedNewRootContent', true);
             router.push(`/${responseBody.username}/${responseBody.slug}`);
@@ -346,7 +357,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         setIsPosting(false);
       }
     },
-    [contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user]
+    [contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser]
   );
 
   const handleChange = useCallback(
