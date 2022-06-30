@@ -699,7 +699,8 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
 async function findChildrenTree(options) {
   options.where = validateWhereSchema(options?.where);
   const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenTree = flatListToTree(childrenFlatList);
+  const childrenFlatListRanked = rankContentList(childrenFlatList);
+  const childrenTree = flatListToTree(childrenFlatListRanked);
   return childrenTree.children;
 
   async function recursiveDatabaseLookup(options) {
@@ -822,6 +823,43 @@ async function findChildrenTree(options) {
     }
 
     return tree;
+  }
+}
+
+function rankContentList(contentList) {
+  const rankedContentList = contentList.map(injectScoreProperty).sort(sortByScore);
+
+  return rankedContentList;
+
+  function injectScoreProperty(contentObject) {
+    return {
+      ...contentObject,
+      score: getContentScore(contentObject),
+    };
+  }
+
+  function sortByScore(first, second) {
+    return second.score - first.score;
+  }
+
+  // Inspired by:
+  // https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
+  // https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
+  function getContentScore(contentObject) {
+    const tabcoins = contentObject.tabcoins;
+    const secondsSinceEpoch = Math.floor(new Date() / 1000);
+    const publishedAtInSeconds = Math.floor(new Date(contentObject.published_at) / 1000);
+    const ageInSeconds = secondsSinceEpoch - publishedAtInSeconds;
+    const ageBase = 60;
+    const boostPeriodInMinutes = 60 * 5; // 5 minutes
+    const initialBoost = ageInSeconds <= boostPeriodInMinutes ? 5 : 1;
+    const gravity = 1.4;
+
+    console.log(`(${tabcoins} + ${initialBoost}) / Math.pow(${ageInSeconds}, ${gravity});`);
+    const scoreDecimals = (tabcoins + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
+    const finalScore = scoreDecimals * 10000;
+    console.log(finalScore);
+    return finalScore;
   }
 }
 
