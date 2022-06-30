@@ -477,6 +477,24 @@ const schemas = {
     });
   },
 
+  strategy: function () {
+    return Joi.object({
+      strategy: Joi.string()
+        .trim()
+        .valid('new', 'old', 'best')
+        .default('best')
+        .invalid(null)
+        .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"strategy" é um campo obrigatório.`,
+          'string.empty': `"strategy" não pode estar em branco.`,
+          'string.base': `"strategy" deve ser do tipo String.`,
+          'any.invalid': `"strategy" possui o valor inválido "null".`,
+          'any.only': `"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".`,
+        }),
+    });
+  },
+
   // TODO: refactor this in the future for
   // an Array just like Sequelize.
   order: function () {

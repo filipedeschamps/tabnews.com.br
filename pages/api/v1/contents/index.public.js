@@ -25,6 +25,7 @@ function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
     page: 'optional',
     per_page: 'optional',
+    strategy: 'optional',
   });
 
   request.query = cleanValues;
@@ -36,7 +37,7 @@ async function getHandler(request, response) {
   const userTryingToList = request.context.user;
 
   const results = await content.findWithStrategy({
-    strategy: 'descending',
+    strategy: request.query.strategy,
     where: {
       parent_id: null,
       status: 'published',

@@ -10,6 +10,11 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/contents', () => {
+  beforeEach(async () => {
+    await orchestrator.dropAllTables();
+    await orchestrator.runPendingMigrations();
+  });
+
   describe('Anonymous user', () => {
     test('With no content', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
@@ -19,10 +24,29 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody).toEqual([]);
     });
 
-    test('With 2 entries and default strategy "descending"', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
+    test('With invalid strategy', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=invalid`);
+      const responseBody = await response.json();
 
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: '"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'strategy',
+        type: 'any.only',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('With 2 "published" entries and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const firstRootContent = await orchestrator.createContent({
@@ -65,7 +89,7 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
@@ -120,10 +144,105 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
     });
 
-    test('With 3 children 3 level deep', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
+    test('With 2 "published" entries and strategy "old"', async () => {
+      const defaultUser = await orchestrator.createUser();
 
+      const firstRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo criado',
+        status: 'published',
+      });
+
+      const secondRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo criado',
+        status: 'published',
+      });
+
+      const thirdRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Terceiro conteúdo criado',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
+               porque quando um conteúdo possui o "status" como "draft", ele não
+               esta pronto para ser listado publicamente.`,
+        status: 'draft',
+      });
+
+      const NotRootContentPublished = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: firstRootContent.id,
+        title: 'Quarto conteúdo criado',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
+               porque quando um conteúdo possui um "parent_id",
+               significa que ele é uma resposta a um outro conteúdo.`,
+        status: 'published',
+      });
+
+      const NotRootContentDraft = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: firstRootContent.id,
+        title: 'Quinto conteúdo criado',
+        body: `Este conteúdo não somente não deve aparecer na lista principal,
+               como também não deve ser contabilizado no "children_deep_count".`,
+        status: 'draft',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=old`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: firstRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'primeiro-conteudo-criado',
+          title: 'Primeiro conteúdo criado',
+          body: firstRootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 1,
+        },
+        {
+          id: secondRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'segundo-conteudo-criado',
+          title: 'Segundo conteúdo criado',
+          body: secondRootContent.body,
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 0,
+        },
+      ]);
+
+      expect(uuidVersion(responseBody[0].id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].id)).toEqual(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
+      expect(responseBody[1].published_at > responseBody[0].published_at).toEqual(true);
+    });
+
+    test('With 3 children 3 level deep and strategy', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const rootContent = await orchestrator.createContent({
@@ -190,10 +309,7 @@ describe('GET /api/v1/contents', () => {
       ]);
     });
 
-    test('With 60 entries and default "page" and "per_page"', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
-
+    test('With 60 entries, default "page", "per_page" and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 60;
@@ -206,7 +322,7 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
       const responseBody = await response.json();
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
@@ -219,19 +335,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '30',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=30',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=30',
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=30',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=30',
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=30',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=30',
         },
       });
 
@@ -240,10 +359,7 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[29].title).toEqual('Conteúdo #31');
     });
 
-    test('With 9 entries and custom "page" and "per_page" (navigating using Link Header)', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
-
+    test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 9;
@@ -256,7 +372,7 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1&per_page=3`);
+      const page1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1&per_page=3&strategy=new`);
       const page1Body = await page1.json();
 
       const page1LinkHeader = parseLinkHeader(page1.headers.get('Link'));
@@ -269,19 +385,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         next: {
           page: '2',
           per_page: '3',
           rel: 'next',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 
@@ -303,25 +422,29 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         prev: {
           page: '1',
           per_page: '3',
           rel: 'prev',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         next: {
           page: '3',
           per_page: '3',
           rel: 'next',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 
@@ -343,19 +466,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         prev: {
           page: '2',
           per_page: '3',
           rel: 'prev',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 
@@ -386,10 +512,7 @@ describe('GET /api/v1/contents', () => {
       expect(lastPageBody).toEqual(page3Body);
     });
 
-    test('With 9 entries but "page" out of bounds', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
-
+    test('With 9 entries but "page" out of bounds and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 9;
@@ -402,7 +525,7 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page4 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=4&per_page=3`);
+      const page4 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=4&per_page=3`);
       const page4Body = await page4.json();
 
       const page4LinkHeader = parseLinkHeader(page4.headers.get('Link'));
@@ -415,19 +538,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         prev: {
           page: '3',
           per_page: '3',
           rel: 'prev',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 

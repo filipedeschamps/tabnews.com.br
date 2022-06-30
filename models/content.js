@@ -185,23 +185,35 @@ async function findOne(values, options = {}) {
 
 async function findWithStrategy(options = {}) {
   const strategies = {
-    descending: getDescending,
-    ascending: getAscending,
+    new: getNew,
+    old: getOld,
+    best: getBest,
   };
 
   return await strategies[options.strategy](options);
 
-  async function getDescending(options = {}) {
+  async function getNew(options = {}) {
     const results = {};
 
-    options.order = 'created_at DESC';
+    options.order = 'published_at DESC';
     results.rows = await findAll(options);
     results.pagination = await getPagination(options);
 
     return results;
   }
 
-  async function getAscending(options = {}) {
+  async function getOld(options = {}) {
+    const results = {};
+
+    options.order = 'published_at ASC';
+    results.rows = await findAll(options);
+    results.pagination = await getPagination(options);
+
+    return results;
+  }
+
+  // WIP
+  async function getBest(options = {}) {
     const results = {};
 
     options.order = 'created_at ASC';
@@ -221,6 +233,7 @@ async function getPagination(options) {
   const lastPage = Math.ceil(totalRows / options.per_page);
   const nextPage = options.page >= lastPage ? null : options.page + 1;
   const previousPage = options.page <= 1 ? null : options.page - 1;
+  const strategy = options.strategy;
 
   return {
     currentPage: options.page,
@@ -230,6 +243,7 @@ async function getPagination(options) {
     nextPage: nextPage,
     previousPage: previousPage,
     lastPage: lastPage,
+    strategy: strategy,
   };
 }
 

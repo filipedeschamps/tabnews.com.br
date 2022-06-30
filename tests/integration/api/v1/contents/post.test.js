@@ -1316,7 +1316,7 @@ describe('POST /api/v1/contents', () => {
         body: JSON.stringify({
           title: 'Titulo',
           body: 'Corpo',
-          source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=ascending',
+          source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         }),
       });
 
@@ -1332,7 +1332,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
-        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=ascending',
+        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,

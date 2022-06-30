@@ -2174,7 +2174,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=ascending',
+            source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
           }),
         }
       );
@@ -2191,7 +2191,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
-        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=ascending',
+        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,

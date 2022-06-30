@@ -108,22 +108,22 @@ function logRequest(request, response, next) {
 
 function injectPaginationHeaders(pagination, endpoint, response) {
   const links = [];
-  const baseUrl = `${webserver.getHost()}${endpoint}`;
+  const baseUrl = `${webserver.getHost()}${endpoint}?strategy=${pagination.strategy}`;
 
   if (pagination.firstPage) {
-    links.push(`<${baseUrl}?page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
+    links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
   }
 
   if (pagination.previousPage) {
-    links.push(`<${baseUrl}?page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
+    links.push(`<${baseUrl}&page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
   }
 
   if (pagination.nextPage) {
-    links.push(`<${baseUrl}?page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
+    links.push(`<${baseUrl}&page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
   }
 
   if (pagination.lastPage) {
-    links.push(`<${baseUrl}?page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
+    links.push(`<${baseUrl}&page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
   }
 
   const linkHeaderString = links.join(', ');
