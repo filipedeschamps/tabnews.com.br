@@ -7,7 +7,7 @@ import PublishedSince from 'pages/interface/components/PublishedSince';
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
