@@ -13,6 +13,10 @@ export default function TabCoinButtons({ content }) {
   const [contentObject, setContentObject] = useState(content);
   const [isPosting, setIsPosting] = useState(false);
 
+  useEffect(() => {
+    setContentObject(content);
+  }, [content]);
+
   const { reward: rewardCredit, isAnimating: isAnimatingCredit } = useReward(`reward-${contentObject.id}`, 'confetti', {
     position: 'absolute',
     lifetime: 100,
