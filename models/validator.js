@@ -528,6 +528,7 @@ const schemas = {
       'owner_id',
       'username',
       '$or',
+      'attributes',
     ]) {
       const keyValidationFunction = schemas[key];
       whereSchema = whereSchema.concat(keyValidationFunction());
@@ -569,6 +570,14 @@ const schemas = {
           'array.base': `"#or" deve ser do tipo Array.`,
         })
         .shared(statusSchemaWithId),
+    });
+  },
+
+  attributes: function () {
+    return Joi.object({
+      attributes: Joi.object({
+        exclude: Joi.array().items(Joi.string().valid('body')),
+      }),
     });
   },
 

@@ -101,7 +101,6 @@ describe('GET /api/v1/contents', () => {
           parent_id: null,
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
-          body: secondRootContent.body,
           status: 'published',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
@@ -121,7 +120,6 @@ describe('GET /api/v1/contents', () => {
           parent_id: null,
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
-          body: firstRootContent.body,
           status: 'published',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
@@ -199,7 +197,6 @@ describe('GET /api/v1/contents', () => {
           parent_id: null,
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
-          body: firstRootContent.body,
           status: 'published',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
@@ -219,7 +216,6 @@ describe('GET /api/v1/contents', () => {
           parent_id: null,
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
-          body: secondRootContent.body,
           status: 'published',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
@@ -292,7 +288,6 @@ describe('GET /api/v1/contents', () => {
           parent_id: null,
           slug: 'conteudo-raiz',
           title: 'Conteúdo raiz',
-          body: rootContent.body,
           status: 'published',
           source_url: null,
           created_at: rootContent.created_at.toISOString(),
@@ -357,6 +352,78 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody.length).toEqual(30);
       expect(responseBody[0].title).toEqual('Conteúdo #60');
       expect(responseBody[29].title).toEqual('Conteúdo #31');
+    });
+
+    test('With 60 entries, default "page", "per_page" and strategy "best" (default)', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const numberOfContents = 60;
+      const contentList = [];
+
+      for (let item = 0; item < numberOfContents; item++) {
+        const contentCreated = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: `Conteúdo #${item + 1}`,
+          status: 'published',
+        });
+
+        contentList.push(contentCreated);
+      }
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[30].id, // Conteúdo #31
+        amount: 2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[31].id, // Conteúdo #32
+        amount: 1,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[59].id, // Conteúdo #60
+        amount: -1,
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+      const responseBody = await response.json();
+
+      const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+      const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
+
+      expect(response.status).toEqual(200);
+      expect(responseTotalRowsHeader).toEqual('60');
+      expect(responseLinkHeader).toStrictEqual({
+        first: {
+          page: '1',
+          per_page: '30',
+          rel: 'first',
+          strategy: 'best',
+          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=1&per_page=30',
+        },
+        next: {
+          page: '2',
+          per_page: '30',
+          rel: 'next',
+          strategy: 'best',
+          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=2&per_page=30',
+        },
+        last: {
+          page: '2',
+          per_page: '30',
+          rel: 'last',
+          strategy: 'best',
+          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=2&per_page=30',
+        },
+      });
+
+      expect(responseBody.length).toEqual(30);
+      expect(responseBody[0].title).toEqual('Conteúdo #31');
+      expect(responseBody[1].title).toEqual('Conteúdo #32');
+      expect(responseBody[29].title).toEqual('Conteúdo #60');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {

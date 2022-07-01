@@ -52,6 +52,9 @@ export async function getStaticProps(context) {
         parent_id: null,
         status: 'published',
       },
+      attributes: {
+        exclude: ['body'],
+      },
       page: context.params.page,
       per_page: context.params.per_page,
     });

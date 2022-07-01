@@ -42,6 +42,9 @@ async function getHandler(request, response) {
       parent_id: null,
       status: 'published',
     },
+    attributes: {
+      exclude: ['body'],
+    },
     page: request.query.page,
     per_page: request.query.per_page,
   });

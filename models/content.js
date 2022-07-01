@@ -82,6 +82,7 @@ async function findAll(values = {}, options = {}) {
       count: 'optional',
       $or: 'optional',
       limit: 'optional',
+      attributes: 'optional',
     });
 
     return cleanValues;
@@ -104,7 +105,7 @@ async function findAll(values = {}, options = {}) {
         contents.parent_id as parent_id,
         contents.slug as slug,
         contents.title as title,
-        contents.body as body,
+        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body as body,' : ''}
         contents.status as status,
         contents.source_url as source_url,
         contents.created_at as created_at,
@@ -212,12 +213,13 @@ async function findWithStrategy(options = {}) {
     return results;
   }
 
-  // WIP
   async function getBest(options = {}) {
     const results = {};
 
-    options.order = 'created_at ASC';
-    results.rows = await findAll(options);
+    options.order = 'published_at DESC';
+    const contentList = await findAll(options);
+    const rankedContentList = rankContentListByBest(contentList);
+    results.rows = rankedContentList;
     results.pagination = await getPagination(options);
 
     return results;
@@ -713,7 +715,7 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
 async function findChildrenTree(options) {
   options.where = validateWhereSchema(options?.where);
   const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenFlatListRanked = rankContentList(childrenFlatList);
+  const childrenFlatListRanked = rankContentListByBest(childrenFlatList);
   const childrenTree = flatListToTree(childrenFlatListRanked);
   return childrenTree.children;
 
@@ -840,7 +842,7 @@ async function findChildrenTree(options) {
   }
 }
 
-function rankContentList(contentList) {
+function rankContentListByBest(contentList) {
   const rankedContentList = contentList.map(injectScoreProperty).sort(sortByScore);
 
   return rankedContentList;
@@ -869,10 +871,8 @@ function rankContentList(contentList) {
     const initialBoost = ageInSeconds <= boostPeriodInMinutes ? 5 : 1;
     const gravity = 1.4;
 
-    console.log(`(${tabcoins} + ${initialBoost}) / Math.pow(${ageInSeconds}, ${gravity});`);
     const scoreDecimals = (tabcoins + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
     const finalScore = scoreDecimals * 10000;
-    console.log(finalScore);
     return finalScore;
   }
 }
