@@ -32,18 +32,6 @@ export default function TabCoinButtons({ content }) {
     emoji: ['😡'],
   });
 
-  useEffect(() => {
-    if (isAnimatingCredit) {
-      rewardCredit();
-    }
-  }, [isAnimatingCredit, rewardCredit]);
-
-  useEffect(() => {
-    if (isAnimatingDebit) {
-      rewardDebit();
-    }
-  }, [isAnimatingDebit, rewardDebit]);
-
   async function transactTabCoin(transactionType) {
     setIsPosting(true);
 
