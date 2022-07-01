@@ -866,12 +866,15 @@ function rankContentListByBest(contentList) {
     const secondsSinceEpoch = Math.floor(new Date() / 1000);
     const publishedAtInSeconds = Math.floor(new Date(contentObject.published_at) / 1000);
     const ageInSeconds = secondsSinceEpoch - publishedAtInSeconds;
-    const ageBase = 60;
-    const boostPeriodInMinutes = 60 * 5; // 5 minutes
-    const initialBoost = ageInSeconds <= boostPeriodInMinutes ? 5 : 1;
-    const gravity = 1.4;
+    const ageBase = 60 * 60 * 1; // 1 hour
+    const boostPeriodInSeconds = 60 * 10; // 10 minutes
+    const initialBoost = ageInSeconds < boostPeriodInSeconds ? 10 : 1;
+    const tabcoinsAntiGravity = 1.5;
+    const tabcoinsWithAntiGravity = Math.pow(Math.abs(tabcoins), tabcoinsAntiGravity);
+    const tabcoinsWithCorrectSign = tabcoins > 0 ? tabcoinsWithAntiGravity : tabcoinsWithAntiGravity * -1;
+    const gravity = 1.8;
 
-    const scoreDecimals = (tabcoins + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
+    const scoreDecimals = (tabcoinsWithCorrectSign + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
     const finalScore = scoreDecimals * 10000;
     return finalScore;
   }

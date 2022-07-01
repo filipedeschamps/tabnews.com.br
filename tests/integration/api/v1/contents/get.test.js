@@ -384,6 +384,18 @@ describe('GET /api/v1/contents', () => {
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
+        recipientId: contentList[49].id, // Conteúdo #50
+        amount: -2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[50].id, // Conteúdo #51
+        amount: -3,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
         recipientId: contentList[59].id, // Conteúdo #60
         amount: -1,
       });
@@ -423,7 +435,9 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody.length).toEqual(30);
       expect(responseBody[0].title).toEqual('Conteúdo #31');
       expect(responseBody[1].title).toEqual('Conteúdo #32');
-      expect(responseBody[29].title).toEqual('Conteúdo #60');
+      expect(responseBody[27].title).toEqual('Conteúdo #60');
+      expect(responseBody[28].title).toEqual('Conteúdo #50');
+      expect(responseBody[29].title).toEqual('Conteúdo #51');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
