@@ -85,7 +85,7 @@ export default function TabCoinButtons({ content }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        mt: contentObject.title ? '12px' : '2px',
+        mt: contentObject.title ? '8px' : '0px',
       }}>
       <Box>
         <IconButton

@@ -81,13 +81,6 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
         <Box
           sx={{
             width: '100%',
-            wordWrap: 'break-word',
-          }}></Box>
-
-        <Box
-          sx={{
-            width: '100%',
-            wordWrap: 'break-word',
             display: 'flex',
           }}>
           <Box
@@ -109,7 +102,9 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
               }}
             />
           </Box>
-          <Box sx={{ flex: 1 }}>
+
+          {/* 36px is the size of the TabCoin column */}
+          <Box sx={{ width: 'calc(100% - 36px)' }}>
             <Content content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -166,7 +161,9 @@ function RenderChildrenTree({ childrenList, level }) {
             }}
           />
         </Box>
-        <Box sx={{ flex: 1 }}>
+
+        {/* 36px is the size of the TabCoin column */}
+        <Box sx={{ width: 'calc(100% - 36px)' }}>
           <Content content={child} mode="view" />
 
           <Box sx={{ mt: 4 }}>

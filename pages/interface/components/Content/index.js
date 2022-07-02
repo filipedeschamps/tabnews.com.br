@@ -179,6 +179,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
         borderRadius: '6px',
         borderColor: 'border.default',
         borderStyle: 'solid',
+        wordBreak: 'break-word',
       }}>
       <Box>
         {globalErrorMessage && (
@@ -216,7 +217,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
       </Box>
       {contentObject.source_url && (
         <Box>
-          <Text as="p" fontWeight="bold">
+          <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
             <LinkIcon size={16} /> Fonte: <Link href={contentObject.source_url}>{contentObject.source_url}</Link>
           </Text>
         </Box>
