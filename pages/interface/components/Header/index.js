@@ -50,7 +50,7 @@ export default function HeaderComponent() {
                 <SquareFillIcon size={16} />
               </Box>
               <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
-                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins.toLocaleString('pt-BR')}</Text>
+                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins?.toLocaleString('pt-BR')}</Text>
               </Tooltip>
             </Box>
           </Header.Item>
@@ -67,7 +67,7 @@ export default function HeaderComponent() {
                 <SquareFillIcon size={16} />
               </Box>
               <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
-                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash.toLocaleString('pt-BR')}</Text>
+                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash?.toLocaleString('pt-BR')}</Text>
               </Tooltip>
             </Box>
           </Header.Item>
