@@ -32,16 +32,16 @@ const cache = {
   openedConnectionsLastUpdate: null,
 };
 
-async function query(query, params) {
+async function query(query, options = {}) {
   let client;
 
   try {
-    client = await tryToGetNewClientFromPool();
-    return await client.query(query, params);
+    client = options.transaction ? options.transaction : await tryToGetNewClientFromPool();
+    return await client.query(query);
   } catch (error) {
     throw parseQueryErrorAndLog(error, query);
   } finally {
-    if (client) {
+    if (client && !options.transaction) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
       if (tooManyConnections) {
@@ -111,10 +111,10 @@ async function checkForTooManyConnections(client) {
   }
 
   async function getOpenedConnections() {
-    const openConnectionsResult = await client.query(
-      'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
-      [process.env.POSTGRES_DB]
-    );
+    const openConnectionsResult = await client.query({
+      text: 'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
+      values: [process.env.POSTGRES_DB],
+    });
     return openConnectionsResult.rows[0].opened_connections;
   }
 }
@@ -157,6 +157,10 @@ function parseQueryErrorAndLog(error, query) {
     '23505', // unique constraint violation
   ];
 
+  if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
+    expectedErrorsCode.push('42883'); // undefined_function
+  }
+
   const errorToReturn = new ServiceError({
     message: error.message,
     context: {
@@ -173,7 +177,12 @@ function parseQueryErrorAndLog(error, query) {
   return errorToReturn;
 }
 
+async function transaction() {
+  return await tryToGetNewClientFromPool();
+}
+
 export default Object.freeze({
   query,
   getNewClient,
+  transaction,
 });

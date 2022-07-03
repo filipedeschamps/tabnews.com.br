@@ -27,13 +27,20 @@ describe('POST /api/v1/users', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: 'uniqueUserName',
+        features: ['read:activation_token'],
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.username).toEqual('uniqueUserName');
-      expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody).not.toHaveProperty('password');
-      expect(responseBody).not.toHaveProperty('email');
 
       const userInDatabase = await user.findOneByUsername('uniqueUserName');
       const passwordsMatch = await password.compare('validpassword', userInDatabase.password);
@@ -61,14 +68,20 @@ describe('POST /api/v1/users', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: 'postWithUnknownKey',
+        features: ['read:activation_token'],
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.username).toEqual('postWithUnknownKey');
-      expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody).not.toHaveProperty('password');
-      expect(responseBody).not.toHaveProperty('email');
-      expect(responseBody).not.toHaveProperty('unknownKey');
 
       const userInDatabase = await user.findOneById(responseBody.id);
       expect(userInDatabase.email).toEqual('postwithunknownkey@gmail.com');
@@ -90,13 +103,20 @@ describe('POST /api/v1/users', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: 'extraSpaceInTheEnd',
+        features: ['read:activation_token'],
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.username).toEqual('extraSpaceInTheEnd');
-      expect(responseBody.features).toEqual(['read:activation_token']);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody).not.toHaveProperty('password');
-      expect(responseBody).not.toHaveProperty('email');
 
       const userInDatabase = await user.findOneByUsername('extraSpaceInTheEnd');
       const passwordsMatch = await password.compare('validpassword', userInDatabase.password);

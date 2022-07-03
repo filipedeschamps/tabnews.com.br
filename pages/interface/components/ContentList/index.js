@@ -7,7 +7,7 @@ import PublishedSince from 'pages/interface/components/PublishedSince';
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
@@ -58,8 +58,12 @@ export default function ContentList({ contentList, pagination, paginationBasePat
   );
 
   function RenderItems() {
-    function ChildrenDeepCount({ count }) {
+    function ChildrenDeepCountText({ count }) {
       return count !== 1 ? `${count} comentários` : `${count} comentário`;
+    }
+
+    function TabCoinsText({ count }) {
+      return Math.abs(count) !== 1 ? `${count} tabcoins` : `${count} tabcoin`;
     }
 
     return list.map((contentObject, index) => {
@@ -81,7 +85,11 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Box>
             <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
               <Text>
-                <ChildrenDeepCount count={contentObject.children_deep_count} />
+                <TabCoinsText count={contentObject.tabcoins} />
+              </Text>
+              {' · '}
+              <Text>
+                <ChildrenDeepCountText count={contentObject.children_deep_count} />
               </Text>
               {' · '}
               <Link sx={{ color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>

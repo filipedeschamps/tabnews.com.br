@@ -3,68 +3,78 @@ import slug from 'slug';
 import database from 'infra/database.js';
 import validator from 'models/validator.js';
 import user from 'models/user.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
+import balance from 'models/balance.js';
+import { ValidationError } from 'errors/index.js';
 
-async function findAll(options = {}) {
-  options = validateOptions(options);
-  await replaceUsernameWithOwnerId(options);
-  const offset = (options.page - 1) * options.per_page;
+async function findAll(values = {}, options = {}) {
+  values = validateValues(values);
+  await replaceUsernameWithOwnerId(values);
+  const offset = (values.page - 1) * values.per_page;
 
   const query = {
     values: [],
   };
 
-  if (!options.count) {
-    query.values = [options.limit || options.per_page, offset];
+  if (!values.count) {
+    query.values = [values.limit || values.per_page, offset];
   }
-  const selectClause = buildSelectClause(options);
-  const whereClause = buildWhereClause(options?.where);
-  const orderByClause = buildOrderByClause(options?.order);
+  const selectClause = buildSelectClause(values);
+  const whereClause = buildWhereClause(values?.where);
+  const orderByClause = buildOrderByClause(values?.order);
 
   query.text = `
       ${selectClause}
       ${whereClause}
       ${orderByClause}
 
-      ${options.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
+      ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
       ;`;
 
-  if (options.where) {
-    Object.keys(options.where).forEach((key) => {
+  if (values.where) {
+    Object.keys(values.where).forEach((key) => {
       if (key === '$or') {
-        options.where[key].forEach(($orObject) => {
+        values.where[key].forEach(($orObject) => {
           query.values.push(Object.values($orObject)[0]);
         });
       } else {
-        query.values.push(options.where[key]);
+        query.values.push(values.where[key]);
       }
     });
   }
 
-  const results = await database.query(query);
+  const results = await database.query(query, { transaction: options.transaction });
 
-  if (options.count) {
+  if (values.count) {
     return results.rows.length > 0 ? results.rows[0].total_rows : 0;
   }
 
   // TODO: this need to be optimized in the future.
   // Too many travels to the database just to get one value.
   for await (const contentObject of results.rows) {
-    contentObject.children_deep_count = await findChildrenCount({ where: { id: contentObject.id } });
+    contentObject.children_deep_count = await findChildrenCount(
+      {
+        where: {
+          id: contentObject.id,
+        },
+      },
+      {
+        transaction: options.transaction,
+      }
+    );
   }
 
   return results.rows;
 
-  async function replaceUsernameWithOwnerId(options) {
-    if (options?.where?.username) {
-      const userOwner = await user.findOneByUsername(options.where.username);
-      options.where.owner_id = userOwner.id;
-      delete options.where.username;
+  async function replaceUsernameWithOwnerId(values) {
+    if (values?.where?.username) {
+      const userOwner = await user.findOneByUsername(values.where.username);
+      values.where.owner_id = userOwner.id;
+      delete values.where.username;
     }
   }
 
-  function validateOptions(options) {
-    const cleanOptions = validator(options, {
+  function validateValues(values) {
+    const cleanValues = validator(values, {
       page: 'optional',
       per_page: 'optional',
       order: 'optional',
@@ -72,13 +82,14 @@ async function findAll(options = {}) {
       count: 'optional',
       $or: 'optional',
       limit: 'optional',
+      attributes: 'optional',
     });
 
-    return cleanOptions;
+    return cleanValues;
   }
 
-  function buildSelectClause(options) {
-    if (options.count) {
+  function buildSelectClause(values) {
+    if (values.count) {
       return `
         SELECT
           COUNT(*) OVER()::INTEGER as total_rows
@@ -94,16 +105,18 @@ async function findAll(options = {}) {
         contents.parent_id as parent_id,
         contents.slug as slug,
         contents.title as title,
-        contents.body as body,
+        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body as body,' : ''}
         contents.status as status,
         contents.source_url as source_url,
         contents.created_at as created_at,
         contents.updated_at as updated_at,
         contents.published_at as published_at,
+        contents.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
-        parent_user.username as parent_username
+        parent_user.username as parent_username,
+        get_current_balance('content:tabcoin', contents.id) as tabcoins
       FROM
         contents
       INNER JOIN
@@ -165,35 +178,48 @@ async function findAll(options = {}) {
   }
 }
 
-async function findOne(options) {
-  options.limit = 1;
-  const rows = await findAll(options);
+async function findOne(values, options = {}) {
+  values.limit = 1;
+  const rows = await findAll(values, options);
   return rows[0];
 }
 
 async function findWithStrategy(options = {}) {
   const strategies = {
-    descending: getDescending,
-    ascending: getAscending,
+    new: getNew,
+    old: getOld,
+    best: getBest,
   };
 
   return await strategies[options.strategy](options);
 
-  async function getDescending(options = {}) {
+  async function getNew(options = {}) {
     const results = {};
 
-    options.order = 'created_at DESC';
+    options.order = 'published_at DESC';
     results.rows = await findAll(options);
     results.pagination = await getPagination(options);
 
     return results;
   }
 
-  async function getAscending(options = {}) {
+  async function getOld(options = {}) {
     const results = {};
 
-    options.order = 'created_at ASC';
+    options.order = 'published_at ASC';
     results.rows = await findAll(options);
+    results.pagination = await getPagination(options);
+
+    return results;
+  }
+
+  async function getBest(options = {}) {
+    const results = {};
+
+    options.order = 'published_at DESC';
+    const contentList = await findAll(options);
+    const rankedContentList = rankContentListByBest(contentList);
+    results.rows = rankedContentList;
     results.pagination = await getPagination(options);
 
     return results;
@@ -209,6 +235,7 @@ async function getPagination(options) {
   const lastPage = Math.ceil(totalRows / options.per_page);
   const nextPage = options.page >= lastPage ? null : options.page + 1;
   const previousPage = options.page <= 1 ? null : options.page - 1;
+  const strategy = options.strategy;
 
   return {
     currentPage: options.page,
@@ -218,10 +245,11 @@ async function getPagination(options) {
     nextPage: nextPage,
     previousPage: previousPage,
     lastPage: lastPage,
+    strategy: strategy,
   };
 }
 
-async function create(postedContent) {
+async function create(postedContent, options = {}) {
   populateSlug(postedContent);
   populateStatus(postedContent);
   const validContent = validateCreateSchema(postedContent);
@@ -229,15 +257,35 @@ async function create(postedContent) {
   checkRootContentTitle(validContent);
 
   if (validContent.parent_id) {
-    await checkIfParentIdExists(validContent);
+    await checkIfParentIdExists(validContent, {
+      transaction: options.transaction,
+    });
   }
 
   populatePublishedAtValue(null, validContent);
 
-  const newContent = await runInsertQuery(validContent);
+  const newContent = await runInsertQuery(validContent, {
+    transaction: options.transaction,
+  });
+
+  await creditOrDebitTabCoins(null, newContent, {
+    eventId: options.eventId,
+    transaction: options.transaction,
+  });
+
+  newContent.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'content:tabcoin',
+      recipientId: newContent.id,
+    },
+    {
+      transaction: options.transaction,
+    }
+  );
+
   return newContent;
 
-  async function runInsertQuery(content) {
+  async function runInsertQuery(content, options) {
     const query = {
       text: `
       WITH
@@ -286,7 +334,7 @@ async function create(postedContent) {
     };
 
     try {
-      const results = await database.query(query);
+      const results = await database.query(query, { transaction: options.transaction });
       return results.rows[0];
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
@@ -328,12 +376,15 @@ function populateStatus(postedContent) {
   postedContent.status = postedContent.status || 'draft';
 }
 
-async function checkIfParentIdExists(content) {
-  const existingContent = await findOne({
-    where: {
-      id: content.parent_id,
+async function checkIfParentIdExists(content, options) {
+  const existingContent = await findOne(
+    {
+      where: {
+        id: content.parent_id,
+      },
     },
-  });
+    options
+  );
 
   if (!existingContent) {
     throw new ValidationError({
@@ -414,14 +465,108 @@ function populatePublishedAtValue(oldContent, newContent) {
   }
 }
 
-async function update(contentId, postedContent) {
+async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
+  // We should not credit or debit if the parent content is from the same user.
+  // TODO: in the future, we should check using ids instead of usernames.
+  if (newContent.username === newContent.parent_username) {
+    return;
+  }
+
+  // We should not credit or debit if the content has never been published before.
+  // and is being directly deleted, example: "draft" -> "deleted".
+  if (oldContent && !oldContent.published_at && newContent.status === 'deleted') {
+    return;
+  }
+
+  // We should debit if the content was once published, but now is being deleted.
+  if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
+    await balance.create(
+      {
+        balanceType: 'user:tabcoin',
+        recipientId: newContent.owner_id,
+        amount: -5,
+        originatorType: options.eventId ? 'event' : 'content',
+        originatorId: options.eventId ? options.eventId : newContent.id,
+      },
+      {
+        transaction: options.transaction,
+      }
+    );
+    return;
+  }
+
+  // We should credit if the content already existed and is now being published for the first time.
+  if (oldContent && !oldContent.published_at && newContent.status === 'published') {
+    await balance.create(
+      {
+        balanceType: 'user:tabcoin',
+        recipientId: newContent.owner_id,
+        amount: 5,
+        originatorType: options.eventId ? 'event' : 'content',
+        originatorId: options.eventId ? options.eventId : newContent.id,
+      },
+      {
+        transaction: options.transaction,
+      }
+    );
+
+    await balance.create(
+      {
+        balanceType: 'content:tabcoin',
+        recipientId: newContent.id,
+        amount: 1,
+        originatorType: options.eventId ? 'event' : 'content',
+        originatorId: options.eventId ? options.eventId : newContent.id,
+      },
+      {
+        transaction: options.transaction,
+      }
+    );
+    return;
+  }
+
+  // We should credit if the content is being created directly with "published" status.
+  if (!oldContent && newContent.published_at) {
+    await balance.create(
+      {
+        balanceType: 'user:tabcoin',
+        recipientId: newContent.owner_id,
+        amount: 5,
+        originatorType: options.eventId ? 'event' : 'content',
+        originatorId: options.eventId ? options.eventId : newContent.id,
+      },
+      {
+        transaction: options.transaction,
+      }
+    );
+
+    await balance.create(
+      {
+        balanceType: 'content:tabcoin',
+        recipientId: newContent.id,
+        amount: 1,
+        originatorType: options.eventId ? 'event' : 'content',
+        originatorId: options.eventId ? options.eventId : newContent.id,
+      },
+      {
+        transaction: options.transaction,
+      }
+    );
+    return;
+  }
+}
+
+async function update(contentId, postedContent, options = {}) {
   const validPostedContent = validateUpdateSchema(postedContent);
 
-  const oldContent = await findOne({
-    where: {
-      id: contentId,
+  const oldContent = await findOne(
+    {
+      where: {
+        id: contentId,
+      },
     },
-  });
+    options
+  );
 
   const newContent = { ...oldContent, ...validPostedContent };
 
@@ -430,16 +575,34 @@ async function update(contentId, postedContent) {
   checkForParentIdRecursion(newContent);
 
   if (newContent.parent_id) {
-    await checkIfParentIdExists(newContent);
+    await checkIfParentIdExists(newContent, {
+      transaction: options.transaction,
+    });
   }
 
   populatePublishedAtValue(oldContent, newContent);
   populateDeletedAtValue(newContent);
 
-  const updatedContent = await runUpdateQuery(newContent);
+  const updatedContent = await runUpdateQuery(newContent, options);
+
+  await creditOrDebitTabCoins(oldContent, updatedContent, {
+    eventId: options.eventId,
+    transaction: options.transaction,
+  });
+
+  updatedContent.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'content:tabcoin',
+      recipientId: updatedContent.id,
+    },
+    {
+      transaction: options.transaction,
+    }
+  );
+
   return updatedContent;
 
-  async function runUpdateQuery(content) {
+  async function runUpdateQuery(content, options = {}) {
     const query = {
       text: `
       WITH
@@ -497,7 +660,7 @@ async function update(contentId, postedContent) {
       ],
     };
     try {
-      const results = await database.query(query);
+      const results = await database.query(query, { transaction: options.transaction });
       return results.rows[0];
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
@@ -552,7 +715,8 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
 async function findChildrenTree(options) {
   options.where = validateWhereSchema(options?.where);
   const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenTree = flatListToTree(childrenFlatList);
+  const childrenFlatListRanked = rankContentListByBest(childrenFlatList);
+  const childrenTree = flatListToTree(childrenFlatListRanked);
   return childrenTree.children;
 
   async function recursiveDatabaseLookup(options) {
@@ -570,7 +734,8 @@ async function findChildrenTree(options) {
             source_url,
             created_at,
             updated_at,
-            published_at
+            published_at,
+            deleted_at
         FROM
           contents
         WHERE
@@ -588,7 +753,8 @@ async function findChildrenTree(options) {
             contents.source_url,
             contents.created_at,
             contents.updated_at,
-            contents.published_at
+            contents.published_at,
+            contents.deleted_at
           FROM
             contents
           INNER JOIN
@@ -609,10 +775,12 @@ async function findChildrenTree(options) {
         children.created_at as created_at,
         children.updated_at as updated_at,
         children.published_at as published_at,
+        children.deleted_at as deleted_at,
         users.username as username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
-        parent_user.username as parent_username
+        parent_user.username as parent_username,
+        get_current_balance('content:tabcoin', children.id) as tabcoins
       FROM
         children
       INNER JOIN
@@ -674,12 +842,50 @@ async function findChildrenTree(options) {
   }
 }
 
-async function findChildrenCount(options) {
-  options.where = validateWhereSchema(options?.where);
-  const childrenCount = await recursiveDatabaseLookup(options);
+function rankContentListByBest(contentList) {
+  const rankedContentList = contentList.map(injectScoreProperty).sort(sortByScore);
+
+  return rankedContentList;
+
+  function injectScoreProperty(contentObject) {
+    return {
+      ...contentObject,
+      score: getContentScore(contentObject),
+    };
+  }
+
+  function sortByScore(first, second) {
+    return second.score - first.score;
+  }
+
+  // Inspired by:
+  // https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
+  // https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
+  function getContentScore(contentObject) {
+    const tabcoins = contentObject.tabcoins;
+    const secondsSinceEpoch = Math.floor(new Date() / 1000);
+    const publishedAtInSeconds = Math.floor(new Date(contentObject.published_at) / 1000);
+    const ageInSeconds = secondsSinceEpoch - publishedAtInSeconds;
+    const ageBase = 60 * 60 * 1; // 1 hour
+    const boostPeriodInSeconds = 60 * 10; // 10 minutes
+    const initialBoost = ageInSeconds < boostPeriodInSeconds ? 10 : 1;
+    const tabcoinsAntiGravity = 1.5;
+    const tabcoinsWithAntiGravity = Math.pow(Math.abs(tabcoins), tabcoinsAntiGravity);
+    const tabcoinsWithCorrectSign = tabcoins > 0 ? tabcoinsWithAntiGravity : tabcoinsWithAntiGravity * -1;
+    const gravity = 1.8;
+
+    const scoreDecimals = (tabcoinsWithCorrectSign + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
+    const finalScore = scoreDecimals * 10000;
+    return finalScore;
+  }
+}
+
+async function findChildrenCount(values, options = {}) {
+  values.where = validateWhereSchema(values?.where);
+  const childrenCount = await recursiveDatabaseLookup(values, options);
   return childrenCount;
 
-  async function recursiveDatabaseLookup(options) {
+  async function recursiveDatabaseLookup(values, options = {}) {
     const query = {
       text: `
       WITH RECURSIVE children AS (
@@ -703,14 +909,14 @@ async function findChildrenCount(options) {
             contents.status = 'published'
       )
       SELECT
-        count(children.id)
+        count(children.id)::integer
       FROM
         children
       WHERE
         children.id NOT IN ($1);`,
-      values: [options.where.id],
+      values: [values.where.id],
     };
-    const results = await database.query(query);
+    const results = await database.query(query, { transaction: options.transaction });
     return results.rows[0].count;
   }
 

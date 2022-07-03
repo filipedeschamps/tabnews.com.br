@@ -28,19 +28,35 @@ describe('GET /api/v1/users', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: firstUser.id,
+          username: firstUser.username,
+          features: firstUser.features,
+          tabcoins: firstUser.tabcoins,
+          tabcash: firstUser.tabcash,
+          created_at: firstUser.created_at.toISOString(),
+          updated_at: firstUser.updated_at.toISOString(),
+        },
+        {
+          id: secondUser.id,
+          username: secondUser.username,
+          features: secondUser.features,
+          tabcoins: secondUser.tabcoins,
+          tabcash: secondUser.tabcash,
+          created_at: secondUser.created_at.toISOString(),
+          updated_at: secondUser.updated_at.toISOString(),
+        },
+      ]);
 
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(responseBody[0].username).toEqual(firstUser.username);
-      expect(responseBody[0].features).toEqual(firstUser.features);
       expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
       expect(responseBody[0]).not.toHaveProperty('password');
       expect(responseBody[0]).not.toHaveProperty('email');
 
       expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(responseBody[1].username).toEqual(secondUser.username);
-      expect(responseBody[1].features).toEqual(secondUser.features);
       expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
       expect(responseBody[1]).not.toHaveProperty('password');

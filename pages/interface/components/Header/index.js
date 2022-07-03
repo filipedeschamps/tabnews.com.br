@@ -1,4 +1,5 @@
-import { Header, Box, ActionMenu, ActionList } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
 
@@ -37,12 +38,55 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <Header.Item sx={{ mr: 2 }}>
+            <Box
+              sx={{
+                fontSize: 0,
+                alignItems: 'center',
+                display: 'inline-flex',
+                fontWeight: 'bold',
+              }}>
+              <Box sx={{ color: 'accent.emphasis', display: 'inline-flex' }}>
+                <SquareFillIcon size={16} />
+              </Box>
+              <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
+                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins.toLocaleString('pt-BR')}</Text>
+              </Tooltip>
+            </Box>
+          </Header.Item>
+
           <Header.Item>
+            <Box
+              sx={{
+                fontSize: 0,
+                alignItems: 'center',
+                display: 'inline-flex',
+                fontWeight: 'bold',
+              }}>
+              <Box sx={{ color: 'success.emphasis', display: 'inline-flex' }}>
+                <SquareFillIcon size={16} />
+              </Box>
+              <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
+                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash.toLocaleString('pt-BR')}</Text>
+              </Tooltip>
+            </Box>
+          </Header.Item>
+
+          <Header.Item sx={{ mr: 0 }}>
             <ActionMenu>
-              <ActionMenu.Button>{user.username}</ActionMenu.Button>
+              <ActionMenu.Anchor>
+                <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
+              </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>
                 <ActionList>
+                  <ActionList.LinkItem href={`/${user.username}`}>
+                    <ActionList.LeadingVisual>
+                      <HomeIcon size={16} />
+                    </ActionList.LeadingVisual>
+                    <Truncate>{user.username}</Truncate>
+                  </ActionList.LinkItem>
+                  <ActionList.Divider />
                   <ActionList.LinkItem href="/publicar">Publicar novo conteúdo</ActionList.LinkItem>
                   <ActionList.LinkItem
                     href="/perfil"

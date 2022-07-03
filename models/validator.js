@@ -477,6 +477,24 @@ const schemas = {
     });
   },
 
+  strategy: function () {
+    return Joi.object({
+      strategy: Joi.string()
+        .trim()
+        .valid('new', 'old', 'best')
+        .default('best')
+        .invalid(null)
+        .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"strategy" é um campo obrigatório.`,
+          'string.empty': `"strategy" não pode estar em branco.`,
+          'string.base': `"strategy" deve ser do tipo String.`,
+          'any.invalid': `"strategy" possui o valor inválido "null".`,
+          'any.only': `"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".`,
+        }),
+    });
+  },
+
   // TODO: refactor this in the future for
   // an Array just like Sequelize.
   order: function () {
@@ -510,6 +528,7 @@ const schemas = {
       'owner_id',
       'username',
       '$or',
+      'attributes',
     ]) {
       const keyValidationFunction = schemas[key];
       whereSchema = whereSchema.concat(keyValidationFunction());
@@ -551,6 +570,14 @@ const schemas = {
           'array.base': `"#or" deve ser do tipo Array.`,
         })
         .shared(statusSchemaWithId),
+    });
+  },
+
+  attributes: function () {
+    return Joi.object({
+      attributes: Joi.object({
+        exclude: Joi.array().items(Joi.string().valid('body')),
+      }),
     });
   },
 
@@ -609,6 +636,7 @@ const schemas = {
       'parent_slug',
       'parent_username',
       'children_deep_count',
+      'tabcoins',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
@@ -624,6 +652,9 @@ const schemas = {
           'create:user',
           'create:content:text_root',
           'create:content:text_child',
+          'update:content:text_root',
+          'update:content:text_child',
+          'update:content:tabcoins',
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child'
@@ -669,6 +700,18 @@ const schemas = {
           }),
         },
         {
+          is: 'update:content:text_root',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'update:content:text_child',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
           is: 'firewall:block_users',
           then: Joi.object({
             from_rule: Joi.string().required(),
@@ -690,6 +733,61 @@ const schemas = {
           }),
         },
       ]),
+    });
+  },
+
+  tabcoins: function () {
+    return Joi.object({
+      tabcoins: Joi.number()
+        .integer()
+        .min(-2147483648)
+        .max(2147483647)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins" é um campo obrigatório.`,
+          'string.empty': `"tabcoins" não pode estar em branco.`,
+          'number.base': `"tabcoins" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins" deve ser um Inteiro.`,
+          'number.min': `"tabcoins" deve possuir um valor mínimo de -2147483648.`,
+          'number.max': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+          'number.unsafe': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+        }),
+    });
+  },
+
+  tabcash: function () {
+    return Joi.object({
+      tabcash: Joi.number()
+        .integer()
+        .min(-2147483648)
+        .max(2147483647)
+        .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcash" é um campo obrigatório.`,
+          'string.empty': `"tabcash" não pode estar em branco.`,
+          'number.base': `"tabcash" deve ser do tipo Number.`,
+          'number.integer': `"tabcash" deve ser um Inteiro.`,
+          'number.min': `"tabcash" deve possuir um valor mínimo de -2147483648.`,
+          'number.max': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+          'number.unsafe': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+        }),
+    });
+  },
+
+  transaction_type: function () {
+    return Joi.object({
+      transaction_type: Joi.string()
+        .trim()
+        .valid('credit', 'debit')
+        .invalid(null)
+        .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"transaction_type" é um campo obrigatório.`,
+          'string.empty': `"transaction_type" não pode estar em branco.`,
+          'string.base': `"transaction_type" deve ser do tipo String.`,
+          'any.invalid': `"transaction_type" possui o valor inválido "null".`,
+          'any.only': `"transaction_type" deve possuir um dos seguintes valores: "credit" e "debit".`,
+        }),
     });
   },
 };

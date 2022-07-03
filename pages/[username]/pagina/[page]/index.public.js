@@ -13,7 +13,7 @@ export default function Home({ contentListFound, pagination, username }) {
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${username}/pagina`}
-          revalidatePath={`/api/v1/contents/${username}?page=${pagination.currentPage}`}
+          revalidatePath={`/api/v1/contents/${username}?strategy=new&page=${pagination.currentPage}`}
         />
       </DefaultLayout>
     </>
@@ -47,7 +47,7 @@ export async function getStaticProps(context) {
 
   try {
     results = await content.findWithStrategy({
-      strategy: 'descending',
+      strategy: 'new',
       where: {
         username: context.params.username,
         parent_id: null,

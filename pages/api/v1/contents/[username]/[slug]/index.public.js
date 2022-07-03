@@ -4,6 +4,8 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
+import database from 'infra/database.js';
+import event from 'models/event.js';
 import { ForbiddenError, NotFoundError } from 'errors/index.js';
 
 export default nextConnect({
@@ -133,9 +135,48 @@ async function patchHandler(request, response) {
     filteredBodyValues = authorization.filterInput(userTryingToPatch, 'update:content', unfilteredBodyValues);
   }
 
-  const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues);
+  const transaction = await database.transaction();
 
-  const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:content', updatedContent);
+  try {
+    await transaction.query('BEGIN');
 
-  return response.status(200).json(secureOutputValues);
+    const currentEvent = await event.create(
+      {
+        type: filteredBodyValues.parent_id ? 'update:content:text_child' : 'update:content:text_root',
+        originatorUserId: request.context.user.id,
+        originatorIp: request.context.clientIp,
+      },
+      {
+        transaction: transaction,
+      }
+    );
+
+    const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues, {
+      eventId: currentEvent.id,
+      transaction: transaction,
+    });
+
+    await event.updateMetadata(
+      currentEvent.id,
+      {
+        metadata: {
+          id: updatedContent.id,
+        },
+      },
+      {
+        transaction: transaction,
+      }
+    );
+
+    await transaction.query('COMMIT');
+    await transaction.release();
+
+    const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:content', updatedContent);
+
+    return response.status(200).json(secureOutputValues);
+  } catch (error) {
+    await transaction.query('ROLLBACK');
+    await transaction.release();
+    throw error;
+  }
 }

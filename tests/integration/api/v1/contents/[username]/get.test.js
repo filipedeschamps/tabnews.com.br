@@ -76,7 +76,7 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(responseBody).toEqual([]);
     });
 
-    test('"username" existent with 4 contents, but only 2 "published" and "root"', async () => {
+    test('"username" existent with 4 contents, but only 2 "root" "published" and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const firstRootContent = await orchestrator.createContent({
@@ -110,7 +110,7 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
@@ -128,6 +128,8 @@ describe('GET /api/v1/contents/[username]', () => {
           created_at: secondRootContent.created_at.toISOString(),
           updated_at: secondRootContent.updated_at.toISOString(),
           published_at: secondRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
           username: defaultUser.username,
           parent_title: null,
           parent_slug: null,
@@ -146,6 +148,8 @@ describe('GET /api/v1/contents/[username]', () => {
           created_at: firstRootContent.created_at.toISOString(),
           updated_at: firstRootContent.updated_at.toISOString(),
           published_at: firstRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
           username: defaultUser.username,
           parent_title: null,
           parent_slug: null,
@@ -161,7 +165,7 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
     });
 
-    test('"username" existent with 60 contents and default pagination', async () => {
+    test('"username" existent with 60 contents, default pagination and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 60;
@@ -174,7 +178,7 @@ describe('GET /api/v1/contents/[username]', () => {
         });
       }
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new`);
       const responseBody = await response.json();
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
@@ -187,19 +191,22 @@ describe('GET /api/v1/contents/[username]', () => {
           page: '1',
           per_page: '30',
           rel: 'first',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?page=1&per_page=30`,
+          strategy: 'new',
+          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?page=2&per_page=30`,
+          strategy: 'new',
+          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?page=2&per_page=30`,
+          strategy: 'new',
+          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
         },
       });
 

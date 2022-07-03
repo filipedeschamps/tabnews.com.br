@@ -45,10 +45,10 @@ async function checkDatabaseDependency() {
     const firstQueryDuration = performance.now() - firstQueryTimer;
 
     const secondQueryTimer = performance.now();
-    const openConnectionsResult = await database.query(
-      'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
-      [process.env.POSTGRES_DB]
-    );
+    const openConnectionsResult = await database.query({
+      text: 'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
+      values: [process.env.POSTGRES_DB],
+    });
     const openConnectionsValue = openConnectionsResult.rows[0].opened_connections;
     const secondQueryDuration = performance.now() - secondQueryTimer;
 

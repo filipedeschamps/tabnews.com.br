@@ -31,6 +31,7 @@ const availableFeatures = new Set([
   'create:content:text_root',
   'create:content:text_child',
   'read:content:list',
+  'read:content:tabcoins',
 ]);
 
 function can(user, feature, resource) {
@@ -170,6 +171,8 @@ function filterOutput(user, feature, output) {
       id: output.id,
       username: output.username,
       features: output.features,
+      tabcoins: output.tabcoins,
+      tabcash: output.tabcash,
       created_at: output.created_at,
       updated_at: output.updated_at,
     };
@@ -182,6 +185,8 @@ function filterOutput(user, feature, output) {
         username: output.username,
         email: output.email,
         features: output.features,
+        tabcoins: output.tabcoins,
+        tabcash: output.tabcash,
         created_at: output.created_at,
         updated_at: output.updated_at,
       };
@@ -193,6 +198,8 @@ function filterOutput(user, feature, output) {
       id: user.id,
       username: user.username,
       features: user.features,
+      tabcoins: user.tabcoins,
+      tabcash: user.tabcash,
       created_at: user.created_at,
       updated_at: user.updated_at,
     }));
@@ -211,6 +218,12 @@ function filterOutput(user, feature, output) {
   if (feature === 'read:content') {
     filteredOutputValues = validator(output, {
       content: 'required',
+    });
+  }
+
+  if (feature === 'read:content:tabcoins') {
+    filteredOutputValues = validator(output, {
+      tabcoins: 'required',
     });
   }
 

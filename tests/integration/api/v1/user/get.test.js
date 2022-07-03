@@ -47,6 +47,8 @@ describe('GET /api/v1/user', () => {
         username: defaultUser.username,
         email: defaultUser.email,
         features: defaultUser.features,
+        tabcoins: defaultUser.tabcoins,
+        tabcash: defaultUser.tabcash,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       });

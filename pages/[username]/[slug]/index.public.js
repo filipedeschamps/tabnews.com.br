@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { DefaultLayout, Content } from 'pages/interface/index.js';
+import { DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
@@ -77,17 +77,36 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
             </Link>
           </Box>
         )}
+
         <Box
           sx={{
             width: '100%',
-            borderRadius: '6px',
-            borderWidth: 1,
-            borderColor: 'border.default',
-            borderStyle: 'solid',
-            padding: 4,
-            wordWrap: 'break-word',
+            display: 'flex',
           }}>
-          <Content content={contentFound} mode="view" />
+          <Box
+            sx={{
+              pr: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}>
+            <TabCoinButtons content={contentFound} />
+            <Box
+              sx={{
+                borderWidth: 0,
+                borderRightWidth: 1,
+                borderColor: 'border.muted',
+                borderStyle: 'dotted',
+                width: '50%',
+                height: '100%',
+              }}
+            />
+          </Box>
+
+          {/* 36px is the size of the TabCoin column */}
+          <Box sx={{ width: 'calc(100% - 36px)' }}>
+            <Content content={contentFound} mode="view" />
+          </Box>
         </Box>
 
         <Box sx={{ width: '100%' }}>
@@ -117,26 +136,42 @@ function RenderChildrenTree({ childrenList, level }) {
     return (
       <Box
         sx={{
-          maxWidth: '100%',
-          borderRadius: '6px',
-          borderWidth: 1,
-          borderColor: 'border.default',
-          borderStyle: 'solid',
-          mt: 4,
-          p: 4,
+          width: '100%',
           wordWrap: 'break-word',
+          display: 'flex',
+          mt: 4,
         }}
         key={child.id}>
-        <Content content={child} mode="view" />
-
         <Box
           sx={{
-            mt: 4,
+            pr: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}>
-          <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
+          <TabCoinButtons content={child} />
+          <Box
+            sx={{
+              borderWidth: 0,
+              borderRightWidth: 1,
+              borderColor: 'border.muted',
+              borderStyle: 'dotted',
+              width: '50%',
+              height: '100%',
+            }}
+          />
         </Box>
 
-        {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
+        {/* 36px is the size of the TabCoin column */}
+        <Box sx={{ width: 'calc(100% - 36px)' }}>
+          <Content content={child} mode="view" />
+
+          <Box sx={{ mt: 4 }}>
+            <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
+          </Box>
+
+          {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
+        </Box>
       </Box>
     );
   });
