@@ -6,6 +6,7 @@ import authorization from 'models/authorization.js';
 import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
 import activation from 'models/activation.js';
 import validator from 'models/validator.js';
+import session from 'models/session';
 
 export default nextConnect({
   attachParams: true,
@@ -16,6 +17,7 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), getHandler)
+  .delete(deleteHandler)
   .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
 
 async function getHandler(request, response) {
@@ -25,6 +27,16 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
 
   return response.status(200).json(secureOutputValues);
+}
+
+async function deleteHandler(request, response) {
+  const sessionObject = request.context.session;
+  if (sessionObject) {
+    session.deleteSession(sessionObject.id);
+  }
+
+  session.clearSessionIdCookie(response);
+  return response.status(200).json({});
 }
 
 function postValidationHandler(request, response, next) {

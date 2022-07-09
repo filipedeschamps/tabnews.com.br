@@ -28,6 +28,15 @@ function setSessionIdCookieInResponse(sessionToken, response) {
   ]);
 }
 
+// deleteSession porque `delete` é uma palavra reservada e não pode ser utilizada.
+async function deleteSession(id) {
+  const query = {
+    text: `DELETE FROM sessions WHERE id = $1;`,
+    values: [id],
+  };
+  await database.query(query);
+}
+
 // TODO: mark session as invalid also in Database.
 function clearSessionIdCookie(response) {
   response.setHeader('Set-Cookie', [
@@ -118,6 +127,7 @@ async function renew(sessionId, response) {
 export default Object.freeze({
   create,
   setSessionIdCookieInResponse,
+  deleteSession,
   clearSessionIdCookie,
   findOneValidByToken,
   findOneById,
