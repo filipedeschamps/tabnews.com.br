@@ -390,7 +390,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     const isPublished = contentObject?.status === 'published';
     setComponentMode(isPublished ? 'view' : 'compact');
   }, [confirm, contentObject?.status, localStorageKey, newData, setComponentMode]);
-
+  const appendTextToBody = (text) => handleChange((newData.body ?? '') + text);
   return (
     <Box sx={{ mb: 4, width: '100%' }}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -423,7 +423,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           {/* <Editor> is not part of Primer, so error messages and styling need to be created manually */}
           <FormControl id="body">
             <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
-            <Box onDrop={dropEvent} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
+            <Box
+              onDrop={(e) => dropEvent(e, appendTextToBody)}
+              className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
               <Editor value={newData.body} plugins={bytemdPluginList} onChange={handleChange} mode="tab" />
             </Box>
 
