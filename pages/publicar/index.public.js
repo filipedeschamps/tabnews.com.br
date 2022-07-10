@@ -35,7 +35,11 @@ export default function Post() {
       <Heading as="h1" sx={{ mb: 3 }}>
         Publicar novo conteúdo
       </Heading>
-      <Content mode="edit" />
+      <Content mode="edit" dropEvent={onDragNDrop} />
     </DefaultLayout>
   );
+}
+
+function onDragNDrop(e) {
+  console.log('Dropped image!', e);
 }

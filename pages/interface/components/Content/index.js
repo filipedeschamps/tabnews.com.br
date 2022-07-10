@@ -33,7 +33,7 @@ import 'bytemd/dist/index.min.css';
 import 'highlight.js/styles/github.css';
 import 'github-markdown-css/github-markdown-light.css';
 
-export default function Content({ content, mode = 'view', viewFrame = false }) {
+export default function Content({ content, mode = 'view', viewFrame = false, dropEvent = () => {} }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -77,6 +77,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
         mode={mode}
+        dropEvent={dropEvent}
       />
     );
   } else if (componentMode === 'deleted') {
@@ -226,7 +227,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode, dropEvent = () => {} }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
@@ -422,7 +423,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           {/* <Editor> is not part of Primer, so error messages and styling need to be created manually */}
           <FormControl id="body">
             <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
-            <Box className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
+            <Box onDrop={dropEvent} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
               <Editor value={newData.body} plugins={bytemdPluginList} onChange={handleChange} mode="tab" />
             </Box>
 
