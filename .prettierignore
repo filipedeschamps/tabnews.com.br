@@ -1,3 +1,5 @@
 node_modules
 .next
 pages/pocs
+.husky
+public/museu

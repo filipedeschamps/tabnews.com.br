@@ -12,7 +12,7 @@ export default function Home({ contentListFound, pagination }) {
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"
-          revalidatePath="/api/v1/contents"
+          revalidatePath="/api/v1/contents?strategy=best"
         />
       </DefaultLayout>
     </>
@@ -36,10 +36,13 @@ export async function getStaticProps(context) {
   }
 
   const results = await content.findWithStrategy({
-    strategy: 'descending',
+    strategy: 'best',
     where: {
       parent_id: null,
       status: 'published',
+    },
+    attributes: {
+      exclude: ['body'],
     },
     page: context.params.page,
     per_page: context.params.per_page,
@@ -54,9 +57,6 @@ export async function getStaticProps(context) {
       contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
       pagination: results.pagination,
     },
-
-    // TODO: instead of `revalidate`, understand how to use this:
-    // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
     revalidate: 1,
   };
 }

@@ -1,7 +1,8 @@
 import { v4 as uuidV4 } from 'uuid';
+import snakeize from 'snakeize';
+
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
-import snakeize from 'snakeize';
 import webserver from 'infra/webserver.js';
 
 import {
@@ -10,10 +11,35 @@ import {
   ValidationError,
   ForbiddenError,
   UnauthorizedError,
+  TooManyRequestsError,
+  UnprocessableEntityError,
 } from '/errors/index.js';
 
-async function injectRequestId(request, response, next) {
-  request.context = { ...request.context, requestId: uuidV4() };
+async function injectRequestMetadata(request, response, next) {
+  request.context = {
+    ...request.context,
+    requestId: uuidV4(),
+    clientIp: extractAnonymousIpFromRequest(request),
+  };
+
+  function extractAnonymousIpFromRequest(request) {
+    let ip = request.headers['x-real-ip'] || request.connection.remoteAddress;
+
+    if (ip === '::1') {
+      ip = '127.0.0.1';
+    }
+
+    if (ip.substr(0, 7) == '::ffff:') {
+      ip = ip.substr(7);
+    }
+
+    const ipParts = ip.split('.');
+    ipParts[3] = '0';
+    const anonymizedIp = ipParts.join('.');
+
+    return anonymizedIp;
+  }
+
   next();
 }
 
@@ -24,7 +50,12 @@ async function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, request, response) {
-  if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof ForbiddenError) {
+  if (
+    error instanceof ValidationError ||
+    error instanceof NotFoundError ||
+    error instanceof ForbiddenError ||
+    error instanceof UnprocessableEntityError
+  ) {
     const errorObject = { ...error, requestId: request.context.requestId };
     logger.info(snakeize(errorObject));
     return response.status(error.statusCode).json(snakeize(errorObject));
@@ -34,6 +65,12 @@ function onErrorHandler(error, request, response) {
     const errorObject = { ...error, requestId: request.context.requestId };
     logger.info(snakeize(errorObject));
     session.clearSessionIdCookie(response);
+    return response.status(error.statusCode).json(snakeize(errorObject));
+  }
+
+  if (error instanceof TooManyRequestsError) {
+    const errorObject = { ...error, requestId: request.context.requestId };
+    logger.info(snakeize(errorObject));
     return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
@@ -71,22 +108,22 @@ function logRequest(request, response, next) {
 
 function injectPaginationHeaders(pagination, endpoint, response) {
   const links = [];
-  const baseUrl = `${webserver.getHost()}${endpoint}`;
+  const baseUrl = `${webserver.getHost()}${endpoint}?strategy=${pagination.strategy}`;
 
   if (pagination.firstPage) {
-    links.push(`<${baseUrl}?page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
+    links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
   }
 
   if (pagination.previousPage) {
-    links.push(`<${baseUrl}?page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
+    links.push(`<${baseUrl}&page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
   }
 
   if (pagination.nextPage) {
-    links.push(`<${baseUrl}?page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
+    links.push(`<${baseUrl}&page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
   }
 
   if (pagination.lastPage) {
-    links.push(`<${baseUrl}?page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
+    links.push(`<${baseUrl}&page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
   }
 
   const linkHeaderString = links.join(', ');
@@ -96,7 +133,7 @@ function injectPaginationHeaders(pagination, endpoint, response) {
 }
 
 export default Object.freeze({
-  injectRequestId,
+  injectRequestMetadata,
   onNoMatchHandler,
   onErrorHandler,
   logRequest,

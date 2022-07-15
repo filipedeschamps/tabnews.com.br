@@ -311,7 +311,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published')
+        .valid('draft', 'published', 'deleted')
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -321,7 +321,7 @@ const schemas = {
           'string.min': `"status" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"status" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"status" possui o valor inválido "null".`,
-          'any.only': `"status" deve possuir um dos seguintes valores: "draft" ou "published".`,
+          'any.only': `"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
         }),
     });
   },
@@ -398,6 +398,19 @@ const schemas = {
     });
   },
 
+  deleted_at: function () {
+    return Joi.object({
+      deleted_at: Joi.date()
+        .allow(null)
+        .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"deleted_at" é um campo obrigatório.`,
+          'string.empty': `"deleted_at" não pode estar em branco.`,
+          'string.base': `"deleted_at" deve ser do tipo Date.`,
+        }),
+    });
+  },
+
   expires_at: function () {
     return Joi.object({
       expires_at: Joi.date()
@@ -464,6 +477,24 @@ const schemas = {
     });
   },
 
+  strategy: function () {
+    return Joi.object({
+      strategy: Joi.string()
+        .trim()
+        .valid('new', 'old', 'best')
+        .default('best')
+        .invalid(null)
+        .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"strategy" é um campo obrigatório.`,
+          'string.empty': `"strategy" não pode estar em branco.`,
+          'string.base': `"strategy" deve ser do tipo String.`,
+          'any.invalid': `"strategy" possui o valor inválido "null".`,
+          'any.only': `"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".`,
+        }),
+    });
+  },
+
   // TODO: refactor this in the future for
   // an Array just like Sequelize.
   order: function () {
@@ -483,16 +514,70 @@ const schemas = {
 
   where: function () {
     let whereSchema = Joi.object({}).optional().min(1).messages({
-      'object.base': `Body deve ser do tipo Object.`,
+      'object.base': `"where" deve ser do tipo Object.`,
     });
 
-    for (const key of ['id', 'parent_id', 'slug', 'title', 'body', 'status', 'source_url', 'owner_id', 'username']) {
+    for (const key of [
+      'id',
+      'parent_id',
+      'slug',
+      'title',
+      'body',
+      'status',
+      'source_url',
+      'owner_id',
+      'username',
+      '$or',
+      'attributes',
+    ]) {
       const keyValidationFunction = schemas[key];
       whereSchema = whereSchema.concat(keyValidationFunction());
     }
 
     return Joi.object({
       where: whereSchema,
+    });
+  },
+
+  limit: function () {
+    return Joi.object({
+      limit: Joi.number()
+        .integer()
+        .min(1)
+        .max(9007199254740990)
+        .default(null)
+        .when('$required.limit', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"limit" é um campo obrigatório.`,
+          'string.empty': `"limit" não pode estar em branco.`,
+          'number.base': `"limit" deve ser do tipo Number.`,
+          'number.integer': `"limit" deve ser um Inteiro.`,
+          'number.min': `"limit" deve possuir um valor mínimo de 1.`,
+          'number.max': `"limit" deve possuir um valor máximo de 9007199254740990.`,
+          'number.unsafe': `"limit" deve possuir um valor máximo de 9007199254740990.`,
+        }),
+    });
+  },
+
+  $or: function () {
+    const statusSchemaWithId = schemas.status().id('status');
+
+    return Joi.object({
+      $or: Joi.array()
+        .optional()
+        .items(Joi.link('#status'))
+        .messages({
+          'array.base': `"#or" deve ser do tipo Array.`,
+        })
+        .shared(statusSchemaWithId),
+    });
+  },
+
+  attributes: function () {
+    return Joi.object({
+      attributes: Joi.object({
+        exclude: Joi.array().items(Joi.string().valid('body')),
+      }),
     });
   },
 
@@ -505,6 +590,17 @@ const schemas = {
           'any.required': `"count" é um campo obrigatório.`,
           'string.empty': `"count" não pode estar em branco.`,
           'boolean.base': `"count" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
+  children_deep_count: function () {
+    return Joi.object({
+      children_deep_count: Joi.number()
+        .when('$required.children_deep_count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"children_deep_count" é um campo obrigatório.`,
+          'number.integer': `"children_deep_count" deve ser um Inteiro.`,
         }),
     });
   },
@@ -534,15 +630,164 @@ const schemas = {
       'created_at',
       'updated_at',
       'published_at',
+      'deleted_at',
       'username',
       'parent_title',
       'parent_slug',
       'parent_username',
+      'children_deep_count',
+      'tabcoins',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
     }
 
     return contentSchema;
+  },
+
+  event: function () {
+    return Joi.object({
+      type: Joi.string()
+        .valid(
+          'create:user',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content:text_root',
+          'update:content:text_child',
+          'update:content:tabcoins',
+          'firewall:block_users',
+          'firewall:block_contents:text_root',
+          'firewall:block_contents:text_child'
+        )
+        .messages({
+          'any.required': `"type" é um campo obrigatório.`,
+          'string.empty': `"type" não pode estar em branco.`,
+          'string.base': `"type" deve ser do tipo String.`,
+          'any.only': `"type" não possui um valor válido.`,
+        }),
+      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional().messages({
+        'string.empty': `"originatorId" não pode estar em branco.`,
+        'string.base': `"originatorId" deve ser do tipo String.`,
+        'string.guid': `"originatorId" deve possuir um token UUID na versão 4.`,
+      }),
+      originatorIp: Joi.string()
+        .ip({
+          version: ['ipv4', 'ipv6'],
+        })
+        .optional()
+        .messages({
+          'string.empty': `"originatorIp" não pode estar em branco.`,
+          'string.base': `"originatorIp" deve ser do tipo String.`,
+          'string.ip': `"originatorIp" deve possuir um IP válido`,
+        }),
+      metadata: Joi.when('type', [
+        {
+          is: 'create:user',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'create:content:text_root',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'create:content:text_child',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'update:content:text_root',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'update:content:text_child',
+          then: Joi.object({
+            id: Joi.string().required(),
+          }),
+        },
+        {
+          is: 'firewall:block_users',
+          then: Joi.object({
+            from_rule: Joi.string().required(),
+            users: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'firewall:block_contents:text_root',
+          then: Joi.object({
+            from_rule: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'firewall:block_contents:text_child',
+          then: Joi.object({
+            from_rule: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
+      ]),
+    });
+  },
+
+  tabcoins: function () {
+    return Joi.object({
+      tabcoins: Joi.number()
+        .integer()
+        .min(-2147483648)
+        .max(2147483647)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins" é um campo obrigatório.`,
+          'string.empty': `"tabcoins" não pode estar em branco.`,
+          'number.base': `"tabcoins" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins" deve ser um Inteiro.`,
+          'number.min': `"tabcoins" deve possuir um valor mínimo de -2147483648.`,
+          'number.max': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+          'number.unsafe': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+        }),
+    });
+  },
+
+  tabcash: function () {
+    return Joi.object({
+      tabcash: Joi.number()
+        .integer()
+        .min(-2147483648)
+        .max(2147483647)
+        .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcash" é um campo obrigatório.`,
+          'string.empty': `"tabcash" não pode estar em branco.`,
+          'number.base': `"tabcash" deve ser do tipo Number.`,
+          'number.integer': `"tabcash" deve ser um Inteiro.`,
+          'number.min': `"tabcash" deve possuir um valor mínimo de -2147483648.`,
+          'number.max': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+          'number.unsafe': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+        }),
+    });
+  },
+
+  transaction_type: function () {
+    return Joi.object({
+      transaction_type: Joi.string()
+        .trim()
+        .valid('credit', 'debit')
+        .invalid(null)
+        .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"transaction_type" é um campo obrigatório.`,
+          'string.empty': `"transaction_type" não pode estar em branco.`,
+          'string.base': `"transaction_type" deve ser do tipo String.`,
+          'any.invalid': `"transaction_type" possui o valor inválido "null".`,
+          'any.only': `"transaction_type" deve possuir um dos seguintes valores: "credit" e "debit".`,
+        }),
+    });
   },
 };

@@ -1,12 +1,18 @@
 const { join, resolve } = require('path');
 import database from 'infra/database.js';
 import migrationRunner from 'node-pg-migrate';
+import logger from 'infra/logger.js';
 
 const defaultConfigurations = {
   dir: join(resolve('.'), 'infra', 'migrations'),
   direction: 'up',
   migrationsTable: 'migrations',
-  log: () => {},
+  verbose: true,
+  log: (log) => {
+    logger.info({
+      migration: log,
+    });
+  },
 };
 
 async function listPendingMigrations() {

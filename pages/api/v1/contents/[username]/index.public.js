@@ -10,7 +10,7 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestId)
+  .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler);
@@ -20,6 +20,7 @@ function getValidationHandler(request, response, next) {
     username: 'required',
     page: 'optional',
     per_page: 'optional',
+    strategy: 'optional',
   });
 
   request.query = cleanValues;
@@ -32,7 +33,7 @@ async function getHandler(request, response) {
   const userTryingToGet = request.context.user;
 
   const results = await content.findWithStrategy({
-    strategy: 'descending',
+    strategy: request.query.strategy,
     where: {
       username: request.query.username,
       parent_id: null,

@@ -7,7 +7,7 @@ import PublishedSince from 'pages/interface/components/PublishedSince';
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: false });
+  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
@@ -58,6 +58,14 @@ export default function ContentList({ contentList, pagination, paginationBasePat
   );
 
   function RenderItems() {
+    function ChildrenDeepCountText({ count }) {
+      return count !== 1 ? `${count} comentários` : `${count} comentário`;
+    }
+
+    function TabCoinsText({ count }) {
+      return Math.abs(count) !== 1 ? `${count} tabcoins` : `${count} tabcoin`;
+    }
+
     return list.map((contentObject, index) => {
       const itemCount = index + 1 + listNumberOffset;
       return (
@@ -75,13 +83,19 @@ export default function ContentList({ contentList, pagination, paginationBasePat
                 {contentObject.title}
               </Link>
             </Box>
-            <Box>
-              <Link sx={{ fontSize: 0, color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>
+            <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+              <Text>
+                <TabCoinsText count={contentObject.tabcoins} />
+              </Text>
+              {' · '}
+              <Text>
+                <ChildrenDeepCountText count={contentObject.children_deep_count} />
+              </Text>
+              {' · '}
+              <Link sx={{ color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>
                 {contentObject.username}
               </Link>
-              <Text
-                sx={{ fontSize: 0, color: 'neutral.emphasis' }}
-                href={`/${contentObject.username}/${contentObject.slug}`}>
+              <Text>
                 <PublishedSince date={contentObject.published_at} />
               </Text>
             </Box>

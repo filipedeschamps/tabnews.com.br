@@ -1,9 +1,5 @@
 # tabnews.com.br
 
-## Diário de Desenvolvimento
-
-- [Acessar o diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)
-
 ## Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
@@ -88,7 +84,7 @@ npm run dev
 npm run test:watch
 ```
 
-Caso não queira "watch" todos os testes e queira isolar apenas 1 arquivo de teste (ou um grupo de testes), localize o nome dos arquivos e inclua eles no comando anterior, por exemplo:
+Caso não queira dar `watch` em todos os testes e queira isolar apenas 1 arquivo de teste (ou um grupo de testes), você pode utilizar um simples `regex` para dar `match` no que quiser, por exemplo:
 
 ```bash
 # Rodar apenas /tests/api/v1/_use-cases/registration-flow.test.js
@@ -98,13 +94,32 @@ npm run test:watch -- registration-flow
 npm run test:watch -- v1/users/
 
 # Rodar apenas /tests/api/v1/users/[username]/patch.test.js
-npm run test:watch -- username]/patch
+npm run test:watch -- username./patch
+
+# tests/integration/api/v1/contents/[username]/[slug]/get.test.js
+npm run test:watch -- contents/.username./.slug./get
 ```
 
 Observações:
 
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
-- A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá fazer o _escape_ deles adicionando o caractere `\` na frente, por exemplo: `\[`.
+- A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá usar `regex` para evitar usar esses caracteres, como por exemplo utilizar o `.` que representa o `match` com qualquer caractere. Isto foi utilizado nos exemplos acima para evitar os caracteres `[` e `]` dos arquivos.
+
+## Criar novas Migrations
+
+Você pode utilizar o script `migration:create`, por exemplo:
+
+```
+npm run migration:create alter table users add tabcoins
+```
+
+Isto irá resultar em:
+
+```
+Created migration -- ./infra/migrations/1655399502254_alter-table-users-add-tabcoins.js
+```
+
+Caso esta nova migração esteja válida, ela será automaticamente executada na próxima vez que você rodar o comando `npm run dev`. Caso contrário, o serviço não irá subir e os logs de erro estarão registrados no arquivo `migrations.log` encontrado na raiz do projeto.
 
 ## Commit das alterações
 
@@ -115,3 +130,7 @@ Para ser auxiliado no padrão de commit que utilizamos, rode o comando abaixo e 
 ```bash
 npm run commit
 ```
+
+## Diário de Desenvolvimento
+
+- [Acessar o diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)

@@ -10,6 +10,11 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/contents', () => {
+  beforeEach(async () => {
+    await orchestrator.dropAllTables();
+    await orchestrator.runPendingMigrations();
+  });
+
   describe('Anonymous user', () => {
     test('With no content', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
@@ -19,7 +24,29 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody).toEqual([]);
     });
 
-    test('With 2 entries and default strategy "descending"', async () => {
+    test('With invalid strategy', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=invalid`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: '"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'strategy',
+        type: 'any.only',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('With 2 "published" entries and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const firstRootContent = await orchestrator.createContent({
@@ -43,7 +70,7 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const NotRootContent = await orchestrator.createContent({
+      const NotRootContentPublished = await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
@@ -53,51 +80,231 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
+      const NotRootContentDraft = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: firstRootContent.id,
+        title: 'Quinto conteúdo criado',
+        body: `Este conteúdo não somente não deve aparecer na lista principal,
+               como também não deve ser contabilizado no "children_deep_count".`,
+        status: 'draft',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: secondRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'segundo-conteudo-criado',
+          title: 'Segundo conteúdo criado',
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 0,
+        },
+        {
+          id: firstRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'primeiro-conteudo-criado',
+          title: 'Primeiro conteúdo criado',
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 1,
+        },
+      ]);
+
+      expect(uuidVersion(responseBody[0].id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].id)).toEqual(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+    });
+
+    test('With 2 "published" entries and strategy "old"', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const firstRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo criado',
+        status: 'published',
+      });
+
+      const secondRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo criado',
+        status: 'published',
+      });
+
+      const thirdRootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Terceiro conteúdo criado',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
+               porque quando um conteúdo possui o "status" como "draft", ele não
+               esta pronto para ser listado publicamente.`,
+        status: 'draft',
+      });
+
+      const NotRootContentPublished = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: firstRootContent.id,
+        title: 'Quarto conteúdo criado',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
+               porque quando um conteúdo possui um "parent_id",
+               significa que ele é uma resposta a um outro conteúdo.`,
+        status: 'published',
+      });
+
+      const NotRootContentDraft = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: firstRootContent.id,
+        title: 'Quinto conteúdo criado',
+        body: `Este conteúdo não somente não deve aparecer na lista principal,
+               como também não deve ser contabilizado no "children_deep_count".`,
+        status: 'draft',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=old`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: firstRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'primeiro-conteudo-criado',
+          title: 'Primeiro conteúdo criado',
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 1,
+        },
+        {
+          id: secondRootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'segundo-conteudo-criado',
+          title: 'Segundo conteúdo criado',
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 0,
+        },
+      ]);
+
+      expect(uuidVersion(responseBody[0].id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].id)).toEqual(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
+      expect(responseBody[1].published_at > responseBody[0].published_at).toEqual(true);
+    });
+
+    test('With 3 children 3 level deep and strategy', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo raiz',
+        status: 'published',
+      });
+
+      const level1Content = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        body: 'Nível 1',
+        status: 'published',
+      });
+
+      const level2Content = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: level1Content.id,
+        body: 'Nível 2',
+        status: 'published',
+      });
+
+      const level3Content = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: level2Content.id,
+        body: 'Nível 3',
+        status: 'published',
+      });
+
+      const level4ContentDeleted = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        parent_id: level2Content.id,
+        body: 'Nível 4 (vai ser deletado e não deve ser contabilizado)',
+        status: 'published',
+      });
+      await orchestrator.updateContent(level4ContentDeleted.id, { status: 'deleted' });
+
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(responseBody[0].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[0].username).toEqual(defaultUser.username);
-      expect(responseBody[0].parent_id).toEqual(secondRootContent.parent_id);
-      expect(responseBody[0].parent_title).toEqual(secondRootContent.parent_title);
-      expect(responseBody[0].parent_slug).toEqual(secondRootContent.parent_slug);
-      expect(responseBody[0].parent_username).toEqual(secondRootContent.parent_username);
-      expect(responseBody[0].slug).toEqual(secondRootContent.slug);
-      expect(responseBody[0].title).toEqual(secondRootContent.title);
-      expect(responseBody[0].body).toEqual(secondRootContent.body);
-      expect(responseBody[0].status).toEqual(secondRootContent.status);
-      expect(responseBody[0].source_url).toEqual(secondRootContent.source_url);
-      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].published_at)).not.toEqual(NaN);
-
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(responseBody[1].owner_id).toEqual(defaultUser.id);
-      expect(responseBody[1].username).toEqual(defaultUser.username);
-      expect(responseBody[1].parent_id).toEqual(firstRootContent.parent_id);
-      expect(responseBody[1].parent_title).toEqual(firstRootContent.parent_title);
-      expect(responseBody[1].parent_slug).toEqual(firstRootContent.parent_slug);
-      expect(responseBody[1].parent_username).toEqual(firstRootContent.parent_username);
-      expect(responseBody[1].slug).toEqual(firstRootContent.slug);
-      expect(responseBody[1].title).toEqual(firstRootContent.title);
-      expect(responseBody[1].body).toEqual(firstRootContent.body);
-      expect(responseBody[1].status).toEqual(firstRootContent.status);
-      expect(responseBody[1].source_url).toEqual(firstRootContent.source_url);
-      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].published_at)).not.toEqual(NaN);
-
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(responseBody).toStrictEqual([
+        {
+          id: rootContent.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'conteudo-raiz',
+          title: 'Conteúdo raiz',
+          status: 'published',
+          source_url: null,
+          created_at: rootContent.created_at.toISOString(),
+          updated_at: rootContent.updated_at.toISOString(),
+          published_at: rootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          username: defaultUser.username,
+          parent_title: null,
+          parent_slug: null,
+          parent_username: null,
+          children_deep_count: 3,
+        },
+      ]);
     });
 
-    test('With 60 entries and default "page" and "per_page"', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
-
+    test('With 60 entries, default "page", "per_page" and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 60;
@@ -109,6 +316,89 @@ describe('GET /api/v1/contents', () => {
           status: 'published',
         });
       }
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
+      const responseBody = await response.json();
+
+      const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+      const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
+
+      expect(response.status).toEqual(200);
+      expect(responseTotalRowsHeader).toEqual('60');
+      expect(responseLinkHeader).toStrictEqual({
+        first: {
+          page: '1',
+          per_page: '30',
+          rel: 'first',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=30',
+        },
+        next: {
+          page: '2',
+          per_page: '30',
+          rel: 'next',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=30',
+        },
+        last: {
+          page: '2',
+          per_page: '30',
+          rel: 'last',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=30',
+        },
+      });
+
+      expect(responseBody.length).toEqual(30);
+      expect(responseBody[0].title).toEqual('Conteúdo #60');
+      expect(responseBody[29].title).toEqual('Conteúdo #31');
+    });
+
+    test('With 60 entries, default "page", "per_page" and strategy "best" (default)', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const numberOfContents = 60;
+      const contentList = [];
+
+      for (let item = 0; item < numberOfContents; item++) {
+        const contentCreated = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: `Conteúdo #${item + 1}`,
+          status: 'published',
+        });
+
+        contentList.push(contentCreated);
+      }
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[30].id, // Conteúdo #31
+        amount: 2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[31].id, // Conteúdo #32
+        amount: 1,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[49].id, // Conteúdo #50
+        amount: -2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[50].id, // Conteúdo #51
+        amount: -3,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[59].id, // Conteúdo #60
+        amount: -1,
+      });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
       const responseBody = await response.json();
@@ -123,31 +413,34 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '30',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=30',
+          strategy: 'best',
+          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=1&per_page=30',
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=30',
+          strategy: 'best',
+          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=2&per_page=30',
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=30',
+          strategy: 'best',
+          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=2&per_page=30',
         },
       });
 
       expect(responseBody.length).toEqual(30);
-      expect(responseBody[0].title).toEqual('Conteúdo #60');
-      expect(responseBody[29].title).toEqual('Conteúdo #31');
+      expect(responseBody[0].title).toEqual('Conteúdo #31');
+      expect(responseBody[1].title).toEqual('Conteúdo #32');
+      expect(responseBody[27].title).toEqual('Conteúdo #60');
+      expect(responseBody[28].title).toEqual('Conteúdo #50');
+      expect(responseBody[29].title).toEqual('Conteúdo #51');
     });
 
-    test('With 9 entries and custom "page" and "per_page" (navigating using Link Header)', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
-
+    test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 9;
@@ -160,7 +453,7 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1&per_page=3`);
+      const page1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1&per_page=3&strategy=new`);
       const page1Body = await page1.json();
 
       const page1LinkHeader = parseLinkHeader(page1.headers.get('Link'));
@@ -173,19 +466,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         next: {
           page: '2',
           per_page: '3',
           rel: 'next',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 
@@ -207,25 +503,29 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         prev: {
           page: '1',
           per_page: '3',
           rel: 'prev',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         next: {
           page: '3',
           per_page: '3',
           rel: 'next',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 
@@ -247,19 +547,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         prev: {
           page: '2',
           per_page: '3',
           rel: 'prev',
-          url: 'http://localhost:3000/api/v1/contents?page=2&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 
@@ -290,10 +593,7 @@ describe('GET /api/v1/contents', () => {
       expect(lastPageBody).toEqual(page3Body);
     });
 
-    test('With 9 entries but "page" out of bounds', async () => {
-      await orchestrator.dropAllTables();
-      await orchestrator.runPendingMigrations();
-
+    test('With 9 entries but "page" out of bounds and strategy "new"', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 9;
@@ -306,7 +606,7 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page4 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=4&per_page=3`);
+      const page4 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=4&per_page=3`);
       const page4Body = await page4.json();
 
       const page4LinkHeader = parseLinkHeader(page4.headers.get('Link'));
@@ -319,19 +619,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '3',
           rel: 'first',
-          url: 'http://localhost:3000/api/v1/contents?page=1&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
         },
         prev: {
           page: '3',
           per_page: '3',
           rel: 'prev',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
-          url: 'http://localhost:3000/api/v1/contents?page=3&per_page=3',
+          strategy: 'new',
+          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
         },
       });
 

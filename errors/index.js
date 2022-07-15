@@ -1,7 +1,19 @@
 import { v4 as uuid } from 'uuid';
 
 class BaseError extends Error {
-  constructor({ message, stack, action, statusCode, errorId, requestId, context, errorUniqueCode, key, type }) {
+  constructor({
+    message,
+    stack,
+    action,
+    statusCode,
+    errorId,
+    requestId,
+    context,
+    errorUniqueCode,
+    key,
+    type,
+    databaseErrorCode,
+  }) {
     super();
     this.name = this.constructor.name;
     this.message = message;
@@ -14,6 +26,7 @@ class BaseError extends Error {
     this.errorUniqueCode = errorUniqueCode;
     this.key = key;
     this.type = type;
+    this.databaseErrorCode = databaseErrorCode;
   }
 }
 
@@ -47,7 +60,7 @@ export class NotFoundError extends BaseError {
 }
 
 export class ServiceError extends BaseError {
-  constructor({ message, action, stack, context, statusCode, errorUniqueCode }) {
+  constructor({ message, action, stack, context, statusCode, errorUniqueCode, databaseErrorCode }) {
     super({
       message: message || 'Serviço indisponível no momento.',
       action: action || 'Verifique se o serviço está disponível.',
@@ -55,6 +68,7 @@ export class ServiceError extends BaseError {
       statusCode: statusCode || 503,
       context: context,
       errorUniqueCode: errorUniqueCode,
+      databaseErrorCode: databaseErrorCode,
     });
   }
 }
@@ -92,6 +106,30 @@ export class ForbiddenError extends BaseError {
       message: message || 'Você não possui permissão para executar esta ação.',
       action: action || 'Verifique se você possui permissão para executar esta ação.',
       statusCode: 403,
+      stack: stack,
+      errorUniqueCode: errorUniqueCode,
+    });
+  }
+}
+
+export class TooManyRequestsError extends BaseError {
+  constructor({ message, action, stack, errorUniqueCode }) {
+    super({
+      message: message || 'Você realizou muitas requisições recentemente.',
+      action: action || 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
+      statusCode: 429,
+      stack: stack,
+      errorUniqueCode: errorUniqueCode,
+    });
+  }
+}
+
+export class UnprocessableEntityError extends BaseError {
+  constructor({ message, action, stack, errorUniqueCode }) {
+    super({
+      message: message || 'Não foi possível realizar esta operação.',
+      action: action || 'Os dados enviados estão corretos, porém não foi possível realizar esta operação.',
+      statusCode: 422,
       stack: stack,
       errorUniqueCode: errorUniqueCode,
     });

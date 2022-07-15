@@ -7,7 +7,7 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestId)
+  .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .get(getHandler);
 

@@ -1,22 +1,49 @@
-import Joi from 'joi';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import validator from 'models/validator.js';
+import balance from 'models/balance.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll() {
   const query = {
-    text: 'SELECT * FROM users ORDER BY created_at ASC;',
+    text: `
+      SELECT
+        *
+      FROM
+        users
+      CROSS JOIN LATERAL (
+        SELECT
+          get_current_balance('user:tabcoin', users.id) as tabcoins,
+          get_current_balance('user:tabcash', users.id) as tabcash
+      ) as balance
+      ORDER BY
+        created_at ASC
+      ;`,
   };
   const results = await database.query(query);
   return results.rows;
 }
 
-//TODO: validate and filter single inputs like
-// this one.
 async function findOneByUsername(username) {
   const query = {
-    text: 'SELECT * FROM users WHERE LOWER(username) = LOWER($1) LIMIT 1;',
+    text: `
+      WITH user_found AS (
+        SELECT
+          *
+        FROM
+          users
+        WHERE
+          LOWER(username) = LOWER($1)
+        LIMIT
+          1
+      )
+      SELECT
+        user_found.*,
+        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
+        get_current_balance('user:tabcash', user_found.id) as tabcash
+      FROM
+        user_found
+      ;`,
     values: [username],
   };
 
@@ -35,10 +62,26 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
-// TODO: validate email
 async function findOneByEmail(email) {
   const query = {
-    text: 'SELECT * FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1;',
+    text: `
+      WITH user_found AS (
+        SELECT
+          *
+        FROM
+          users
+        WHERE
+          LOWER(email) = LOWER($1)
+        LIMIT
+          1
+      )
+      SELECT
+        user_found.*,
+        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
+        get_current_balance('user:tabcash', user_found.id) as tabcash
+      FROM
+        user_found
+      ;`,
     values: [email],
   };
 
@@ -60,7 +103,24 @@ async function findOneByEmail(email) {
 // TODO: validate userId
 async function findOneById(userId) {
   const query = {
-    text: 'SELECT * FROM users WHERE id = $1 LIMIT 1;',
+    text: `
+      WITH user_found AS (
+        SELECT
+          *
+        FROM
+          users
+        WHERE
+          id = $1
+        LIMIT
+          1
+      )
+      SELECT
+        user_found.*,
+        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
+        get_current_balance('user:tabcash', user_found.id) as tabcash
+      FROM
+        user_found
+      ;`,
     values: [userId],
   };
 
@@ -93,11 +153,24 @@ async function create(postedUserData) {
 
   async function runInsertQuery(validUserData) {
     const query = {
-      text: 'INSERT INTO users (username, email, password, features) VALUES($1, $2, $3, $4) RETURNING *;',
+      text: `
+        INSERT INTO
+          users (username, email, password, features)
+        VALUES
+          ($1, $2, $3, $4)
+        RETURNING
+          *
+        ;`,
       values: [validUserData.username, validUserData.email, validUserData.password, validUserData.features],
     };
+
     const results = await database.query(query);
-    return results.rows[0];
+    const newUser = results.rows[0];
+
+    newUser.tabcoins = 0;
+    newUser.tabcash = 0;
+
+    return newUser;
   }
 }
 
@@ -326,14 +399,19 @@ async function update(username, postedUserData) {
 
   async function runUpdateQuery(currentUser, userWithUpdatedValues) {
     const query = {
-      text: `UPDATE users SET
-                  username = $1,
-                  email = $2,
-                  password = $3,
-                  updated_at = (now() at time zone 'utc')
-                  WHERE
-                    id = $4
-                  RETURNING *;`,
+      text: `
+        UPDATE
+          users
+        SET
+          username = $1,
+          email = $2,
+          password = $3,
+          updated_at = (now() at time zone 'utc')
+        WHERE
+          id = $4
+        RETURNING
+          *
+      ;`,
       values: [
         userWithUpdatedValues.username,
         userWithUpdatedValues.email,
@@ -343,7 +421,12 @@ async function update(username, postedUserData) {
     };
 
     const results = await database.query(query);
-    return results.rows[0];
+
+    const updatedUser = results.rows[0];
+    updatedUser.tabcoins = await balance.getTotal('user:tabcoin', updatedUser.id);
+    updatedUser.tabcash = await balance.getTotal('user:tabcash', updatedUser.id);
+
+    return updatedUser;
   }
 }
 
@@ -404,11 +487,17 @@ async function removeFeatures(userId, features) {
   // TODO: Refactor this function to use a single query
   for (const feature of features) {
     const query = {
-      text: `UPDATE users SET
-                 features = array_remove(features, $1),
-                 updated_at = (now() at time zone 'utc')
-             WHERE id = $2
-            RETURNING *;`,
+      text: `
+        UPDATE
+          users
+        SET
+          features = array_remove(features, $1),
+          updated_at = (now() at time zone 'utc')
+        WHERE
+          id = $2
+        RETURNING
+          *
+      ;`,
       values: [feature, userId],
     };
 
@@ -416,20 +505,34 @@ async function removeFeatures(userId, features) {
     lastUpdatedUser = results.rows[0];
   }
 
+  lastUpdatedUser.tabcoins = await balance.getTotal('user:tabcoin', lastUpdatedUser.id);
+  lastUpdatedUser.tabcash = await balance.getTotal('user:tabcash', lastUpdatedUser.id);
+
   return lastUpdatedUser;
 }
 
 async function addFeatures(userId, features) {
   const query = {
-    text: `UPDATE users SET
-               features = array_cat(features, $1),
-               updated_at = (now() at time zone 'utc')
-           WHERE id = $2
-          RETURNING *;`,
+    text: `
+      UPDATE
+        users
+      SET
+        features = array_cat(features, $1),
+        updated_at = (now() at time zone 'utc')
+      WHERE
+        id = $2
+      RETURNING
+        *
+    ;`,
     values: [features, userId],
   };
 
   const results = await database.query(query);
+
+  const updatedUser = results.rows[0];
+  updatedUser.tabcoins = await balance.getTotal('user:tabcoin', updatedUser.id);
+  updatedUser.tabcash = await balance.getTotal('user:tabcash', updatedUser.id);
+
   return results.rows[0];
 }
 

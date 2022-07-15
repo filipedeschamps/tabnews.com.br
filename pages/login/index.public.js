@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { DefaultLayout, useUser } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
 
 export default function Login() {
@@ -12,6 +12,7 @@ export default function Login() {
 }
 
 function LoginForm() {
+  const { user, fetchUser } = useUser();
   const router = useRouter();
 
   const emailRef = useRef('');
@@ -21,6 +22,16 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
+
+  useEffect(() => {
+    if (user && router) {
+      if (router.query?.redirect) {
+        router.push(router.query.redirect);
+      } else {
+        router.push('/publicar');
+      }
+    }
+  }, [user, router]);
 
   function detectCapsLock(event) {
     if (event.getModifierState('CapsLock')) {
@@ -62,11 +73,7 @@ function LoginForm() {
       const responseBody = await response.json();
 
       if (response.status === 201) {
-        if (router.query?.redirect) {
-          router.push(router.query.redirect);
-        } else {
-          router.push('/publicar');
-        }
+        fetchUser();
         return;
       }
 

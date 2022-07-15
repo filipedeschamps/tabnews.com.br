@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import fetch from 'cross-fetch';
 import retry from 'async-retry';
 import faker from '@faker-js/faker';
@@ -8,6 +9,7 @@ import activation from 'models/activation.js';
 import session from 'models/session.js';
 import content from 'models/content.js';
 import recovery from 'models/recovery.js';
+import balance from 'models/balance.js';
 
 const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -140,8 +142,39 @@ async function createContent(contentObject) {
   });
 }
 
+async function updateContent(contentId, contentObject) {
+  return await content.update(contentId, {
+    parent_id: contentObject?.parent_id || undefined,
+    owner_id: contentObject?.owner_id || undefined,
+    title: contentObject?.title || undefined,
+    slug: contentObject?.slug || undefined,
+    body: contentObject?.body || undefined,
+    status: contentObject?.status || undefined,
+    source_url: contentObject?.source_url || undefined,
+  });
+}
+
+async function createBalance(balanceObject) {
+  return await balance.create({
+    balanceType: balanceObject.balanceType,
+    recipientId: balanceObject.recipientId,
+    amount: balanceObject.amount,
+    originatorType: balanceObject.originatorType || 'orchestrator',
+    originatorId: balanceObject.originatorId || balanceObject.recipientId,
+  });
+}
+
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
+}
+
+async function createFirewallTestFunctions() {
+  const procedures = fs.readdirSync('infra/stored-procedures');
+
+  for (const procedureFile of procedures) {
+    const procedureQuery = fs.readFileSync(`infra/stored-procedures/${procedureFile}`, 'utf8');
+    await database.query(procedureQuery);
+  }
 }
 
 export default {
@@ -157,5 +190,8 @@ export default {
   addFeaturesToUser,
   removeFeaturesFromUser,
   createContent,
+  updateContent,
   createRecoveryToken,
+  createFirewallTestFunctions,
+  createBalance,
 };

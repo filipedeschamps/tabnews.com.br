@@ -383,21 +383,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: firstUserContent.id,
+        owner_id: firstUser.id,
+        parent_id: null,
+        slug: 'conteudo-do-primeiro-usuario-antes-do-patch',
+        title: 'Tentando atualizar o dono do conteúdo.',
+        body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
+        status: 'published',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        username: firstUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.id).toEqual(firstUserContent.id);
-      expect(responseBody.owner_id).toEqual(firstUser.id);
-      expect(responseBody.username).toEqual(firstUser.username);
-      expect(responseBody.owner_id).not.toEqual(secondUser.id);
-      expect(responseBody.username).not.toEqual(secondUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('conteudo-do-primeiro-usuario-antes-do-patch');
-      expect(responseBody.title).toEqual('Tentando atualizar o dono do conteúdo.');
-      expect(responseBody.body).toEqual('Campo "owner_id" da request deveria ser ignorado e pego através da sessão.');
-      expect(responseBody.status).toEqual('published');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody.published_at).toEqual(firstUserContent.published_at.toISOString());
@@ -432,21 +439,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body novo',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body novo');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -552,21 +568,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Espaço no início e no fim',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Espaço no início e no fim');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -636,22 +661,205 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'slug-novo',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('slug-novo');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+    });
+
+    test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo',
+        body: 'Primeiro conteúdo',
+        slug: 'primeiro-conteudo',
+        status: 'published',
+      });
+
+      const secondContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        slug: 'segundo-conteudo',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            slug: 'primeiro-conteudo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O conteúdo enviado parece ser duplicado.',
+        action: 'Utilize um "title" ou "slug" diferente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo',
+        body: 'Primeiro conteúdo',
+        slug: 'primeiro-conteudo',
+        status: 'draft',
+      });
+
+      const secondContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        slug: 'segundo-conteudo',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            slug: 'primeiro-conteudo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O conteúdo enviado parece ser duplicado.',
+        action: 'Utilize um "title" ou "slug" diferente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const firstContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Primeiro conteúdo',
+        body: 'Primeiro conteúdo',
+        slug: 'primeiro-conteudo',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(firstContent.id, {
+        status: 'deleted',
+      });
+
+      const secondContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        slug: 'segundo-conteudo',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            slug: 'primeiro-conteudo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'primeiro-conteudo',
+        title: 'Segundo conteúdo',
+        body: 'Segundo conteúdo',
+        status: 'published',
+        tabcoins: 1,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
     });
 
     test('Content with "slug" containing a blank String', async () => {
@@ -830,21 +1038,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título novo',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título novo');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -883,6 +1100,53 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "title", but current content is "deleted"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título velho',
+        body: 'Body velho',
+      });
+
+      await orchestrator.updateContent(defaultUserContent.id, {
+        status: 'deleted',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Título novo',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(404);
+
+      expect(responseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        status_code: 404,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_unique_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+        key: 'slug',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
     test('Content with "title" containing more than 256 characters', async () => {
@@ -995,22 +1259,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: childContent.id,
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        slug: 'child-old-title',
+        title: null,
+        body: 'Child old body',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: rootContent.title,
+        parent_slug: rootContent.slug,
+        parent_username: rootContent.username,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.id).toEqual(childContent.id);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.parent_title).toEqual(rootContent.title);
-      expect(responseBody.parent_slug).toEqual(rootContent.slug);
-      expect(responseBody.parent_username).toEqual(rootContent.username);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(rootContent.id);
-      expect(responseBody.slug).toEqual('child-old-title');
-      expect(responseBody.title).toEqual(null);
-      expect(responseBody.body).toEqual('Child old body');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1042,21 +1314,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título válido, mas com espaços em branco no início e no fim',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título válido, mas com espaços em branco no início e no fim');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1088,23 +1369,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual(
-        `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`
-      );
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1136,21 +1424,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1183,18 +1480,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'published',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('published');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
@@ -1230,18 +1537,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
@@ -1293,18 +1610,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const republishedResponseBody = await republishedResponse.json();
 
       expect(republishedResponse.status).toEqual(200);
+
+      expect(republishedResponseBody).toStrictEqual({
+        id: republishedResponseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'published',
+        source_url: null,
+        created_at: republishedResponseBody.created_at,
+        updated_at: republishedResponseBody.updated_at,
+        published_at: republishedResponseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(republishedResponseBody.id)).toEqual(4);
-      expect(republishedResponseBody.owner_id).toEqual(defaultUser.id);
-      expect(republishedResponseBody.username).toEqual(defaultUser.username);
-      expect(republishedResponseBody.parent_id).toEqual(null);
-      expect(republishedResponseBody.parent_title).toEqual(null);
-      expect(republishedResponseBody.parent_slug).toEqual(null);
-      expect(republishedResponseBody.parent_username).toEqual(null);
-      expect(republishedResponseBody.slug).toEqual('titulo-velho');
-      expect(republishedResponseBody.title).toEqual('Título velho');
-      expect(republishedResponseBody.body).toEqual('Body velho');
-      expect(republishedResponseBody.status).toEqual('published');
-      expect(republishedResponseBody.source_url).toEqual(null);
       expect(Date.parse(republishedResponseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(republishedResponseBody.updated_at)).not.toEqual(NaN);
       expect(Date.parse(republishedResponseBody.published_at)).not.toEqual(NaN);
@@ -1312,6 +1639,120 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(draftResponseBody.published_at).toEqual(republishedResponseBody.published_at);
       expect(draftResponseBody.updated_at > originalContent.updated_at.toISOString()).toEqual(true);
       expect(republishedResponseBody.updated_at > draftResponseBody.updated_at).toEqual(true);
+    });
+
+    test('Content with "status" "published" set to "deleted"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 1,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+    });
+
+    test('Content with "status" "published" set to "deleted", than "published"', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const originalContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${originalContent.slug}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          status: 'deleted',
+        }),
+      });
+
+      const republishedResponse = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${originalContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'published',
+          }),
+        }
+      );
+
+      const republishedResponseBody = await republishedResponse.json();
+
+      expect(republishedResponse.status).toEqual(404);
+      expect(republishedResponseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        status_code: 404,
+        error_id: republishedResponseBody.error_id,
+        request_id: republishedResponseBody.request_id,
+        error_unique_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+        key: 'slug',
+      });
+      expect(uuidVersion(republishedResponseBody.error_id)).toEqual(4);
+      expect(uuidVersion(republishedResponseBody.request_id)).toEqual(4);
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {
@@ -1344,7 +1785,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"status" deve possuir um dos seguintes valores: "draft" ou "published".');
+      expect(responseBody.message).toEqual(
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+      );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -1381,7 +1824,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"status" deve possuir um dos seguintes valores: "draft" ou "published".');
+      expect(responseBody.message).toEqual(
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+      );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -1418,7 +1863,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"status" deve possuir um dos seguintes valores: "draft" ou "published".');
+      expect(responseBody.message).toEqual(
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+      );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -1453,21 +1900,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: 'http://www.tabnews.com.br/',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual('http://www.tabnews.com.br/');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1499,21 +1955,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: 'https://www.tabnews.com.br/museu',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual('https://www.tabnews.com.br/museu');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1545,21 +2010,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'um-baita-de-um-top-level-domain',
+        title: 'Um baita de um Top-Level Domain',
+        body: 'O maior TLD que foi encontrado no dia do commit possuía 18 caracteres',
+        status: 'draft',
+        source_url: 'https://nic.northwesternmutual/',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('um-baita-de-um-top-level-domain');
-      expect(responseBody.title).toEqual('Um baita de um Top-Level Domain');
-      expect(responseBody.body).toEqual('O maior TLD que foi encontrado no dia do commit possuía 18 caracteres');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual('https://nic.northwesternmutual/');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1700,7 +2174,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=ascending',
+            source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
           }),
         }
       );
@@ -1708,18 +2182,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual('https://www.tabnews.com.br/api/v1/contents?strategy=ascending');
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody.published_at).toEqual(null);
@@ -1790,21 +2274,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-velho',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('titulo-velho');
-      expect(responseBody.title).toEqual('Título velho');
-      expect(responseBody.body).toEqual('Body velho');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1841,21 +2334,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        slug: 'child-content-title',
+        title: 'Child content title',
+        body: 'Child content body',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: rootContent.title,
+        parent_slug: rootContent.slug,
+        parent_username: rootContent.username,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(rootContent.id);
-      expect(responseBody.parent_title).toEqual(rootContent.title);
-      expect(responseBody.parent_slug).toEqual(rootContent.slug);
-      expect(responseBody.parent_username).toEqual(rootContent.username);
-      expect(responseBody.slug).toEqual('child-content-title');
-      expect(responseBody.title).toEqual('Child content title');
-      expect(responseBody.body).toEqual('Child content body');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -1893,21 +2395,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'child-content-title',
+        title: 'Child content title',
+        body: 'Child content body',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.owner_id).toEqual(defaultUser.id);
-      expect(responseBody.username).toEqual(defaultUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('child-content-title');
-      expect(responseBody.title).toEqual('Child content title');
-      expect(responseBody.body).toEqual('Child content body');
-      expect(responseBody.status).toEqual('draft');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
     });
 
@@ -2215,25 +2726,868 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: secondUserContent.id,
+        owner_id: secondUser.id,
+        parent_id: null,
+        slug: 'conteudo-do-segundo-usuario-antes-do-patch',
+        title: 'Novo title.',
+        body: 'Novo body.',
+        status: 'published',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        username: secondUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
       expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(responseBody.id).toEqual(secondUserContent.id);
-      expect(responseBody.owner_id).toEqual(secondUser.id);
-      expect(responseBody.username).toEqual(secondUser.username);
-      expect(responseBody.owner_id).not.toEqual(privilegedUser.id);
-      expect(responseBody.username).not.toEqual(privilegedUser.username);
-      expect(responseBody.parent_id).toEqual(null);
-      expect(responseBody.parent_title).toEqual(null);
-      expect(responseBody.parent_slug).toEqual(null);
-      expect(responseBody.parent_username).toEqual(null);
-      expect(responseBody.slug).toEqual('conteudo-do-segundo-usuario-antes-do-patch');
-      expect(responseBody.title).toEqual('Novo title.');
-      expect(responseBody.body).toEqual('Novo body.');
-      expect(responseBody.status).toEqual('published');
-      expect(responseBody.source_url).toEqual(null);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
       expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
-      expect(Date.parse(responseBody.updated_at)).toBeGreaterThan(Date.parse(secondUserContent.updated_at));
+      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
+    });
+
+    describe('TabCoins', () => {
+      test('"root" content updated from "draft" to "draft" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'draft',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content updated from "draft" to "published" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'published',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content updated from "draft" to "deleted" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content updated from "published" to "deleted" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content updated from "published" to "draft", and then "published" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const draftContentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'draft',
+            }),
+          }
+        );
+
+        const draftContentResponseBody = await draftContentResponse.json();
+
+        expect(draftContentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const publishedContentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'published',
+            }),
+          }
+        );
+
+        const publishedContentResponseBody = await publishedContentResponse.json();
+
+        expect(publishedContentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "draft" to "draft" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'draft',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "draft" to "published" status (same user)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'published',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "draft" to "published" status (different user)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(0);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'published',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "draft" to "deleted" status (same user)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "draft" to "deleted" status (different user)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'draft',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(0);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "published" to "deleted" status (same user)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "published" to "deleted" status (different user)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "published" to "draft", and then "published" status (same user)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          parent_id: rootContent.id,
+          owner_id: defaultUser.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const draftContentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'draft',
+            }),
+          }
+        );
+
+        const draftContentResponseBody = await draftContentResponse.json();
+
+        expect(draftContentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const publishedContentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'published',
+            }),
+          }
+        );
+
+        const publishedContentResponseBody = await publishedContentResponse.json();
+
+        expect(publishedContentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "published" to "draft", and then "published" status (different user)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          parent_id: rootContent.id,
+          owner_id: secondUser.id,
+          title: 'Child',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const draftContentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'draft',
+            }),
+          }
+        );
+
+        const draftContentResponseBody = await draftContentResponse.json();
+
+        expect(draftContentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const publishedContentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'published',
+            }),
+          }
+        );
+
+        const publishedContentResponseBody = await publishedContentResponse.json();
+
+        expect(publishedContentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
     });
   });
 });
