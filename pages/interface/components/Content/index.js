@@ -507,6 +507,11 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         .bytemd-fullscreen.bytemd {
           z-index: 100;
         }
+
+        .tippy-box {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+            'Segoe UI Emoji';
+        }
       `}</style>
     </Box>
   );
