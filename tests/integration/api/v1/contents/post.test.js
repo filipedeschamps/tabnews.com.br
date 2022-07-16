@@ -1172,8 +1172,8 @@ describe('POST /api/v1/contents', () => {
         },
         body: JSON.stringify({
           title: 'Um baita de um Top-Level Domain',
-          body: 'O maior TLD que foi encontrado no dia do commit possuía 18 caracteres',
-          source_url: 'https://nic.northwesternmutual/',
+          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+          source_url: 'http://nic.xn--vermgensberatung-pwb/',
         }),
       });
 
@@ -1187,9 +1187,9 @@ describe('POST /api/v1/contents', () => {
         parent_id: null,
         slug: 'um-baita-de-um-top-level-domain',
         title: 'Um baita de um Top-Level Domain',
-        body: 'O maior TLD que foi encontrado no dia do commit possuía 18 caracteres',
+        body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
         status: 'draft',
-        source_url: 'https://nic.northwesternmutual/',
+        source_url: 'http://nic.xn--vermgensberatung-pwb/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1206,6 +1206,85 @@ describe('POST /api/v1/contents', () => {
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
     });
 
+    test('Content with "source_url" containing a valid short URL', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'URL bem curta',
+          body: 'Por exemplo o encurtador do Telegram',
+          source_url: 'https://t.me',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'url-bem-curta',
+        title: 'URL bem curta',
+        body: 'Por exemplo o encurtador do Telegram',
+        status: 'draft',
+        source_url: 'https://t.me',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "source_url" containing a invalid short TLD', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Um Top-Level Domain menor que o permitido',
+          body: 'TLDs precisam ter pelo menos dois caracteres',
+          source_url: 'https://invalidtl.d',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "source_url" containing a invalid long TLD', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -1219,8 +1298,8 @@ describe('POST /api/v1/contents', () => {
         },
         body: JSON.stringify({
           title: 'Um Top-Level Domain maior que o permitido',
-          body: 'O maior TLD que foi encontrado no dia do commit possuía 18 caracteres',
-          source_url: 'https://tldco.mdezenovecaracteres',
+          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+          source_url: 'http://tl.dcomvinteecincocaracteres',
         }),
       });
 
@@ -1253,6 +1332,38 @@ describe('POST /api/v1/contents', () => {
           title: 'Titulo',
           body: 'Corpo',
           source_url: 'ftp://www.tabnews.com.br',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "source_url" not containing a protocol', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          source_url: 'www.tabnews.com.br',
         }),
       });
 
@@ -1333,6 +1444,53 @@ describe('POST /api/v1/contents', () => {
         body: 'Corpo',
         status: 'draft',
         source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "source_url" containing fragment component', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo',
+        title: 'Titulo',
+        body: 'Corpo',
+        status: 'draft',
+        source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
