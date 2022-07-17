@@ -361,6 +361,7 @@ function getSlug(title) {
     '.': '-',
     ',': '-',
     '&': 'e',
+    _: '-',
   });
 
   const generatedSlug = slug(title, {
