@@ -40,6 +40,7 @@ export async function getStaticProps(context) {
     console.log(error);
     return {
       notFound: true,
+      revalidate: 1,
     };
   }
 
@@ -60,6 +61,7 @@ export async function getStaticProps(context) {
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
+        revalidate: 1,
       };
     }
 

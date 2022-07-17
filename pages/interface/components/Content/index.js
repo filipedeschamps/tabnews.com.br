@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/router';
 
 import {
@@ -238,6 +238,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     source_url: contentObject?.source_url || '',
   });
 
+  const editorRef = useRef();
+
   const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
 
   const confirm = useConfirm();
@@ -390,6 +392,21 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     setComponentMode(isPublished ? 'view' : 'compact');
   }, [confirm, contentObject?.status, localStorageKey, newData, setComponentMode]);
 
+  const onKeyDown = useCallback(
+    (event) => {
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        handleSubmit(event);
+      }
+    },
+    [handleSubmit]
+  );
+
+  useEffect(() => {
+    const textareaElement = editorRef.current.querySelector('textarea');
+    textareaElement.addEventListener('keydown', onKeyDown);
+    return () => textareaElement.removeEventListener('keydown', onKeyDown);
+  }, [onKeyDown]);
+
   return (
     <Box sx={{ mb: 4, width: '100%' }}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -401,6 +418,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               <FormControl.Label visuallyHidden>Título</FormControl.Label>
               <TextInput
                 onChange={handleChange}
+                onKeyDown={onKeyDown}
                 name="title"
                 size="large"
                 autoCorrect="off"
@@ -422,7 +440,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           {/* <Editor> is not part of Primer, so error messages and styling need to be created manually */}
           <FormControl id="body">
             <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
-            <Box className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
+            <Box ref={editorRef} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
               <Editor value={newData.body} plugins={bytemdPluginList} onChange={handleChange} mode="tab" />
             </Box>
 
@@ -436,6 +454,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
               <TextInput
                 onChange={handleChange}
+                onKeyDown={onKeyDown}
                 name="source_url"
                 size="large"
                 autoCorrect="off"
@@ -506,6 +525,11 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
         .bytemd-fullscreen.bytemd {
           z-index: 100;
+        }
+
+        .tippy-box {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+            'Segoe UI Emoji';
         }
       `}</style>
     </Box>
