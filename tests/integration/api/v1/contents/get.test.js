@@ -37,7 +37,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'strategy',
         type: 'any.only',
       });
@@ -654,7 +654,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'page',
         type: 'number.base',
       });
@@ -676,7 +676,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'page',
         type: 'number.min',
       });
@@ -698,7 +698,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'page',
         type: 'number.max',
       });
@@ -720,7 +720,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'page',
         type: 'number.unsafe',
       });
@@ -742,7 +742,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'page',
         type: 'number.integer',
       });
@@ -764,7 +764,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'per_page',
         type: 'number.base',
       });
@@ -786,7 +786,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'per_page',
         type: 'number.min',
       });
@@ -808,7 +808,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'per_page',
         type: 'number.max',
       });
@@ -830,7 +830,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'per_page',
         type: 'number.unsafe',
       });
@@ -852,7 +852,7 @@ describe('GET /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'per_page',
         type: 'number.integer',
       });
