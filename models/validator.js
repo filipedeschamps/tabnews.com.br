@@ -332,7 +332,7 @@ const schemas = {
         .allow(null)
         .trim()
         .max(2000)
-        .pattern(/^(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,18}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
+        .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([\/?#]\S*)?$/u)
         .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"source_url" é um campo obrigatório.`,
