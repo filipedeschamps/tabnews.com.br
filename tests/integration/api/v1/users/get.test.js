@@ -1,8 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import password from 'models/password.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -12,43 +10,98 @@ beforeAll(async () => {
 
 describe('GET /api/v1/users', () => {
   describe('Anonymous user', () => {
-    test('Retrieving blank user list', async () => {
+    test('Anonymous user trying to retrieve user list', async () => {
+      let defaultUser = await orchestrator.createUser();
+      defaultUser = await orchestrator.activateUser(defaultUser);
+      let privilegedUser = await orchestrator.createUser();
+      privilegedUser = await orchestrator.activateUser(privilegedUser);
+      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
+
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody).toEqual([]);
+      expect(response.status).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:user:list".');
+      expect(responseBody.status_code).toEqual(403);
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
+  });
 
-    test('Retrieving user list with 2 users', async () => {
-      const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
+  describe('Default user', () => {
+    test('User without "read:user:list" feature', async () => {
+      let defaultUser = await orchestrator.createUser();
+      defaultUser = await orchestrator.activateUser(defaultUser);
+      let privilegedUser = await orchestrator.createUser();
+      privilegedUser = await orchestrator.activateUser(privilegedUser);
+      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
+      let defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+      });
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:user:list".');
+      expect(responseBody.status_code).toEqual(403);
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+    });
+  });
+
+  describe('User with "read:user:list" feature', () => {
+    test('Retrieving user list with users', async () => {
+      let defaultUser = await orchestrator.createUser();
+      defaultUser = await orchestrator.activateUser(defaultUser);
+      let privilegedUser = await orchestrator.createUser();
+      privilegedUser = await orchestrator.activateUser(privilegedUser);
+      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
+
+      let privilegedUserSession = await orchestrator.createSession(privilegedUser);
+
+      const firstUser = {
+        id: defaultUser.id,
+        username: defaultUser.username,
+        features: defaultUser.features,
+        tabcoins: defaultUser.tabcoins,
+        tabcash: defaultUser.tabcash,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: defaultUser.updated_at.toISOString(),
+      };
+      const secondUser = {
+        id: privilegedUser.id,
+        username: privilegedUser.username,
+        features: privilegedUser.features,
+        tabcoins: privilegedUser.tabcoins,
+        tabcash: privilegedUser.tabcash,
+        created_at: privilegedUser.created_at.toISOString(),
+        updated_at: privilegedUser.updated_at.toISOString(),
+      };
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${privilegedUserSession.token}`,
+        },
+      });
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
 
-      expect(responseBody).toStrictEqual([
-        {
-          id: firstUser.id,
-          username: firstUser.username,
-          features: firstUser.features,
-          tabcoins: firstUser.tabcoins,
-          tabcash: firstUser.tabcash,
-          created_at: firstUser.created_at.toISOString(),
-          updated_at: firstUser.updated_at.toISOString(),
-        },
-        {
-          id: secondUser.id,
-          username: secondUser.username,
-          features: secondUser.features,
-          tabcoins: secondUser.tabcoins,
-          tabcash: secondUser.tabcash,
-          created_at: secondUser.created_at.toISOString(),
-          updated_at: secondUser.updated_at.toISOString(),
-        },
-      ]);
+      expect(responseBody).toStrictEqual(expect.arrayContaining([firstUser, secondUser]));
 
       expect(uuidVersion(responseBody[0].id)).toEqual(4);
       expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);

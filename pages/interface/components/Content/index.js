@@ -402,9 +402,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 
   useEffect(() => {
-    const textareaElement = editorRef.current.querySelector('textarea');
-    textareaElement.addEventListener('keydown', onKeyDown);
-    return () => textareaElement.removeEventListener('keydown', onKeyDown);
+    const editorElement = editorRef.current;
+    editorElement?.addEventListener('keydown', onKeyDown);
+    return () => editorElement?.removeEventListener('keydown', onKeyDown);
   }, [onKeyDown]);
 
   return (
