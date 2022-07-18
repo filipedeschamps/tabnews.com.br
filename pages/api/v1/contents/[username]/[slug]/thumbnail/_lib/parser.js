@@ -1,11 +1,21 @@
-export function parseRequest(req) {
-  let { title, parentTitle, author, comments, date } = req.query;
+import removeMarkdown from 'remove-markdown';
 
+export function parseContent(content) {
+  let title = content.title;
+  if (!title) {
+    title = removeMarkdown(content.body).substring(0, 120).replace(/\s+/g, ' ');
+  }
   // Regex to wrap text: stackoverflow.com/a/51506718
   title = title.replace(/(?![^\n]{1,30}$)([^\n]{1,30})\s/g, '$1_').split('_');
   title = title.length <= 3 ? title : [title[0], title[1], title[2] + '...'];
 
-  parentTitle = parentTitle?.length > 30 ? parentTitle.substring(0, 30) + '...' : parentTitle;
+  let parent_title = content.parent_title;
+  if (content.parent_slug) {
+    parent_title = (parent_title ?? content.parent_username).substring(0, 40);
+  }
+  parent_title = parent_title?.length > 30 ? parent_title.substring(0, 30) + '...' : parent_title;
+
+  const date = new Date(content.updated_at).toLocaleDateString('pt-BR');
 
   // Measure author text width: https://bl.ocks.org/tophtucker/62f93a4658387bb61e4510c37e2e97cf
   function measureText(string, fontSize = 32) {
@@ -31,10 +41,10 @@ export function parseRequest(req) {
 
   return {
     title,
-    parentTitle,
-    author,
-    authorWidth: measureText(author),
-    comments,
+    parentTitle: parent_title,
+    username: content.username,
+    usernameWidth: measureText(content.username),
+    comments: content.children_deep_count,
     date,
   };
 }

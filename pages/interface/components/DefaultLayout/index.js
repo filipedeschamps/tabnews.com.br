@@ -27,20 +27,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
 
     updatedMetadata.title = `${content.title ?? cleanBody.substring(0, 80)} · ${content.username} · TabNews`;
     updatedMetadata.description = cleanBody.substring(0, 190);
-    updatedMetadata.image = [
-      `${webserverHost}/image.png`,
-      `?title=${content.title ?? cleanBody.substring(0, 120)}`,
-      `&author=${content.username}`,
-      `&comments=${content.children_deep_count}`,
-      `&date=${new Date(content.published_at).toLocaleDateString('pt-BR')}`,
-    ].join('');
-
-    if (content.parent_slug) {
-      const parentTitle = content.parent_title ?? content.parent_username;
-      updatedMetadata.image += `&parentTitle=${parentTitle.substring(0, 40)}`;
-    }
-
-    updatedMetadata.image = encodeURI(updatedMetadata.image);
+    updatedMetadata.image = `${webserverHost}/api/v1/contents/${content.username}/${content.slug}/thumbnail`;
   }
 
   return (
