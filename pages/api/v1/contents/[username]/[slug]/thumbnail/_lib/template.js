@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-key */
 
-export function renderTemplate({ title, parentTitle, author, authorWidth, comments, date }) {
+export function renderTemplate({ title, parentTitle, username, usernameWidth, comments, date }) {
   return (
     <svg width="1200" height="628" xmlns="http://www.w3.org/2000/svg">
       {/* background */}
@@ -22,12 +22,12 @@ export function renderTemplate({ title, parentTitle, author, authorWidth, commen
         fill="#212529"
       />
 
-      {/* author container */}
-      <rect x="140" y="511" width={authorWidth + 20} height="68" rx="8" fill="#C7D9EC" />
+      {/* username container */}
+      <rect x="140" y="511" width={usernameWidth + 20} height="68" rx="8" fill="#C7D9EC" />
 
-      {/* author */}
+      {/* username */}
       <text x="150" y="555" fill="#424C56" fontSize="32">
-        <tspan>{author}</tspan>
+        <tspan>{username}</tspan>
       </text>
 
       {/* comments icon */}

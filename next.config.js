@@ -14,12 +14,4 @@ module.exports = {
   serverRuntimeConfig: {
     PROJECT_ROOT: __dirname,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/image.png',
-        destination: '/api/og-image',
-      },
-    ];
-  },
 };
