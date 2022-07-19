@@ -52,7 +52,7 @@ async function postHandler(request, response) {
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'CONTROLLER:CONTENT:TABCOINS:CONTENT_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:CONTENT_NOT_FOUND',
       key: 'slug',
     });
   }
@@ -62,7 +62,7 @@ async function postHandler(request, response) {
       message: `Você não pode realizar esta operação em conteúdos de sua própria autoria.`,
       action: 'Realize esta operação em conteúdos de outros usuários.',
       stack: new Error().stack,
-      errorUniqueCode: 'CONTROLLER:CONTENT:TABCOINS:OWN_CONTENT',
+      errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:OWN_CONTENT',
       key: 'tabcoins',
     });
   }

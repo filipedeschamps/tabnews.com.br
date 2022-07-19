@@ -103,7 +103,7 @@ async function activateUserByUserId(userId) {
       message: `Você não pode mais ler tokens de ativação.`,
       action: 'Verifique se você já está logado ou tentando ativar novamente o seu ou outro usuário que já está ativo.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:ACTIVATION:ACTIVATE_USER_BY_USER_ID:FEATURE_NOT_FOUND',
+      errorLocationCode: 'MODEL:ACTIVATION:ACTIVATE_USER_BY_USER_ID:FEATURE_NOT_FOUND',
     });
   }
 
@@ -160,7 +160,7 @@ async function findOneValidTokenById(tokenId) {
       message: `O token de ativação utilizado não foi encontrado no sistema ou expirou.`,
       action: 'Faça login novamente para receber um novo token por email.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:ACTIVATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+      errorLocationCode: 'MODEL:ACTIVATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
       key: 'token_id',
     });
   }
