@@ -84,7 +84,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+        error_location_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
         key: 'token_id',
       });
 
@@ -122,7 +122,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+        error_location_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
         key: 'token_id',
       });
 
@@ -154,7 +154,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+        error_location_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
         key: 'token_id',
       });
 
@@ -185,7 +185,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'token_id',
         type: 'any.required',
       });
@@ -217,7 +217,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'token_id',
         type: 'string.base',
       });
@@ -246,7 +246,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'token_id',
         type: 'string.guid',
       });
@@ -278,7 +278,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'password',
         type: 'any.required',
       });
@@ -305,7 +305,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'object',
         type: 'object.base',
       });
@@ -335,7 +335,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'token_id',
         type: 'any.required',
       });

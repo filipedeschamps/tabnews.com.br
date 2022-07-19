@@ -34,7 +34,7 @@ async function send({ from, to, subject, text }) {
       action: 'Verifique se o serviço de emails está disponível.',
       stack: error.stack,
       context: mailOptions,
-      errorUniqueCode: 'INFRA:EMAIl:SEND',
+      errorLocationCode: 'INFRA:EMAIl:SEND',
     });
     logger.error(errorObject);
     throw errorObject;

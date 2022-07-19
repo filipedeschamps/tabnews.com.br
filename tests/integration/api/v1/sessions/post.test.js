@@ -80,7 +80,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION');
     });
 
     test('Using a valid email and password, but not activated user', async () => {
@@ -109,7 +109,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED');
     });
 
     test('Using a valid email and password, but wrong password', async () => {
@@ -140,7 +140,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.status_code).toEqual(401);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
     });
 
     test('Using a valid email and password, but wrong email', async () => {
@@ -171,7 +171,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.status_code).toEqual(401);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH');
     });
 
     test('Using a valid password, but without email', async () => {
@@ -194,7 +194,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('email');
     });
 
@@ -219,7 +219,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('email');
     });
 
@@ -244,7 +244,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('email');
     });
 
@@ -269,7 +269,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('email');
     });
 
@@ -293,7 +293,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('password');
     });
 
@@ -318,7 +318,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('password');
     });
 
@@ -343,7 +343,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('password');
     });
 
@@ -368,7 +368,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('password');
     });
 
@@ -393,7 +393,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('password');
     });
 
@@ -411,7 +411,7 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('object');
     });
   });
