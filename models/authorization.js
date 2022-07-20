@@ -310,7 +310,7 @@ function canRequest(feature) {
       throw new ForbiddenError({
         message: `Usuário não pode executar esta operação.`,
         action: `Verifique se este usuário possui a feature "${feature}".`,
-        errorUniqueCode: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
+        errorLocationCode: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
     }
 

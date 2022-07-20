@@ -59,7 +59,7 @@ async function patchHandler(request, response) {
     throw new ForbiddenError({
       message: 'Você não possui permissão para atualizar outro usuário.',
       action: 'Verifique se você possui a feature "update:user:others".',
-      errorUniqueCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
+      errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
     });
   }
 

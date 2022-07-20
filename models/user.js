@@ -54,7 +54,7 @@ async function findOneByUsername(username) {
       message: `O "username" informado não foi encontrado no sistema.`,
       action: 'Verifique se o "username" está digitado corretamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+      errorLocationCode: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
       key: 'username',
     });
   }
@@ -92,7 +92,7 @@ async function findOneByEmail(email) {
       message: `O email informado não foi encontrado no sistema.`,
       action: 'Verifique se o "email" está digitado corretamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
+      errorLocationCode: 'MODEL:USER:FIND_ONE_BY_EMAIL:NOT_FOUND',
       key: 'email',
     });
   }
@@ -131,7 +131,7 @@ async function findOneById(userId) {
       message: `O id "${userId}" não foi encontrado no sistema.`,
       action: 'Verifique se o "id" está digitado corretamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:USER:FIND_ONE_BY_ID:NOT_FOUND',
+      errorLocationCode: 'MODEL:USER:FIND_ONE_BY_ID:NOT_FOUND',
       key: 'id',
     });
   }
@@ -366,7 +366,7 @@ function checkBlockedUsernames(username) {
       message: `Este nome de usuário não está disponível para uso.`,
       action: 'Escolha outro nome de usuário e tente novamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME',
+      errorLocationCode: 'MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME',
       key: 'username',
     });
   }
@@ -452,7 +452,7 @@ async function validateUniqueUsername(username) {
     throw new ValidationError({
       message: `O "username" informado já está sendo usado.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
       key: 'username',
     });
   }
@@ -470,7 +470,7 @@ async function validateUniqueEmail(email) {
     throw new ValidationError({
       message: `O email informado já está sendo usado.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
+      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
       key: 'email',
     });
   }

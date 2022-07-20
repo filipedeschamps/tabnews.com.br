@@ -126,7 +126,7 @@ async function getNewClient() {
   } catch (error) {
     const errorObject = new ServiceError({
       message: error.message,
-      errorUniqueCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
+      errorLocationCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
       stack: new Error().stack,
     });
     logger.error(snakeize(errorObject));
@@ -166,7 +166,7 @@ function parseQueryErrorAndLog(error, query) {
     context: {
       query: query.text,
     },
-    errorUniqueCode: 'INFRA:DATABASE:QUERY',
+    errorLocationCode: 'INFRA:DATABASE:QUERY',
     databaseErrorCode: error.code,
   });
 

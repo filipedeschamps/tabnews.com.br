@@ -44,7 +44,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status_code: 403,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
+        error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
     });
   });
@@ -86,7 +86,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'transaction_type',
         type: 'any.required',
       });
@@ -130,7 +130,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status_code: 422,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+        error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
       });
     });
 

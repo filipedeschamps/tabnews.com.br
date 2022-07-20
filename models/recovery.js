@@ -26,7 +26,7 @@ async function findUserByUsernameOrEmail({ username, email }) {
       throw new ValidationError({
         message: `O "${username ? 'username' : 'email'}" informado não foi encontrado no sistema.`,
         key: username ? 'username' : 'email',
-        errorUniqueCode: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+        errorLocationCode: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
       });
     }
   }
@@ -85,7 +85,7 @@ async function resetUserPassword(secureInputValues) {
     message: `O token de recuperação de senha não foi encontrado ou já foi utilizado.`,
     action: 'Solicite uma nova recuperação de senha.',
     stack: new Error().stack,
-    errorUniqueCode: 'MODEL:RECOVERY:RESET_USER_PASSWORD:NOT_FOUND',
+    errorLocationCode: 'MODEL:RECOVERY:RESET_USER_PASSWORD:NOT_FOUND',
     key: 'token_id',
   });
 }
@@ -127,7 +127,7 @@ async function findOneValidTokenById(tokenId) {
       message: `O token de recuperação de senha utilizado não foi encontrado no sistema ou expirou.`,
       action: 'Solicite uma nova recuperação de senha.',
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+      errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
       key: 'token_id',
     });
   }

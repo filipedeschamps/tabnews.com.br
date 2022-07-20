@@ -12,7 +12,7 @@ export default function validator(object, keys) {
     throw new ValidationError({
       message: 'Não foi possível interpretar o valor enviado.',
       action: 'Verifique se o valor enviado é um JSON válido.',
-      errorUniqueCode: 'MODEL:VALIDATOR:ERROR_PARSING_JSON',
+      errorLocationCode: 'MODEL:VALIDATOR:ERROR_PARSING_JSON',
       stack: new Error().stack,
       key: 'object',
     });
@@ -40,7 +40,7 @@ export default function validator(object, keys) {
     throw new ValidationError({
       message: error.details[0].message,
       key: error.details[0].context.key || error.details[0].context.type || 'object',
-      errorUniqueCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+      errorLocationCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
       stack: new Error().stack,
       type: error.details[0].type,
     });
@@ -332,7 +332,7 @@ const schemas = {
         .allow(null)
         .trim()
         .max(2000)
-        .pattern(/^(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,18}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
+        .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([\/?#]\S*)?$/u)
         .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"source_url" é um campo obrigatório.`,

@@ -79,7 +79,7 @@ function onErrorHandler(error, request, response) {
     errorId: error.errorId,
     stack: error.stack,
     statusCode: error.statusCode,
-    errorUniqueCode: error.errorUniqueCode,
+    errorLocationCode: error.errorLocationCode,
   });
 
   // TODO: Understand why `snakeize` is not logging the
