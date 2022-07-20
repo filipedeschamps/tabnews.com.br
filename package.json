@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@bytemd/plugin-breaks": "1.15.0",
+    "@bytemd/plugin-breaks": "1.16.0",
     "@bytemd/plugin-gemoji": "1.15.0",
     "@bytemd/plugin-gfm": "1.15.0",
     "@bytemd/plugin-highlight-ssr": "1.15.0",
