@@ -1632,6 +1632,52 @@ describe('POST /api/v1/contents', () => {
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
     });
 
+    test('"root" content with "title" containing custom slug special characters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b',
+          body: 'Body',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'under-score-5-por-cento-e-1-e-10-email-dominio-com-item1-item2-a-e-b-a-e-b',
+        title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b',
+        body: 'Body',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        username: defaultUser.username,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
     test('"root" content with "title" not declared', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);

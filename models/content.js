@@ -360,7 +360,8 @@ function getSlug(title) {
     '@': '-',
     '.': '-',
     ',': '-',
-    '&': 'e',
+    '&': ' e ',
+    _: '-',
   });
 
   const generatedSlug = slug(title, {
