@@ -17,7 +17,7 @@ async function comparePasswords(providedPassword, passwordHash) {
     throw new UnauthorizedError({
       message: `A senha informada não confere com a senha do usuário.`,
       action: `Verifique se a senha informada está correta e tente novamente.`,
-      errorUniqueCode: 'MODEL:AUTHENTICATION:COMPARE_PASSWORDS:PASSWORD_MISMATCH',
+      errorLocationCode: 'MODEL:AUTHENTICATION:COMPARE_PASSWORDS:PASSWORD_MISMATCH',
     });
   }
 }
@@ -44,7 +44,7 @@ async function injectAnonymousOrUser(request, response, next) {
       throw new ForbiddenError({
         message: `Você não possui permissão para executar esta ação.`,
         action: `Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".`,
-        errorUniqueCode: 'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
+        errorLocationCode: 'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
       });
     }
 

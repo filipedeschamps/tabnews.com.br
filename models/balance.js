@@ -87,7 +87,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
     throw new UnprocessableEntityError({
       message: `Não foi possível adicionar TabCoins nesta publicação.`,
       action: `Você precisa de pelo menos ${Math.abs(tabCoinsToDebitFromUser)} TabCoins para realizar esta ação.`,
-      errorUniqueCode: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+      errorLocationCode: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
     });
   }
 

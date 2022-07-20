@@ -391,7 +391,7 @@ async function checkIfParentIdExists(content, options) {
       message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
       action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
+      errorLocationCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
       statusCode: 400,
       key: 'parent_id',
     });
@@ -404,7 +404,7 @@ function parseQueryErrorToCustomError(error) {
       message: `O conteúdo enviado parece ser duplicado.`,
       action: `Utilize um "title" ou "slug" diferente.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+      errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
       key: 'slug',
     });
@@ -429,7 +429,7 @@ function validateCreateSchema(content) {
       message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
       key: 'status',
       type: 'any.only',
-      errorUniqueCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
     });
   }
 
@@ -441,7 +441,7 @@ function checkRootContentTitle(content) {
     throw new ValidationError({
       message: `"title" é um campo obrigatório.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE',
+      errorLocationCode: 'MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE',
       statusCode: 400,
       key: 'title',
     });
@@ -687,7 +687,7 @@ function checkForParentIdRecursion(content) {
       message: `"parent_id" não deve apontar para o próprio conteúdo.`,
       action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
+      errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
       statusCode: 400,
       key: 'parent_id',
     });
@@ -705,7 +705,7 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
     throw new ValidationError({
       message: `Não é possível alterar informações de um conteúdo já deletado.`,
       stack: new Error().stack,
-      errorUniqueCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_DELETED',
+      errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_DELETED',
       statusCode: 400,
       key: 'status',
     });

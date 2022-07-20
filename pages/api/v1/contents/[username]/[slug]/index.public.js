@@ -47,7 +47,7 @@ async function getHandler(request, response) {
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
       key: 'slug',
     });
   }
@@ -96,7 +96,7 @@ async function patchHandler(request, response) {
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
       stack: new Error().stack,
-      errorUniqueCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
       key: 'slug',
     });
   }
@@ -105,7 +105,7 @@ async function patchHandler(request, response) {
     throw new ForbiddenError({
       message: 'Você não possui permissão para atualizar o conteúdo de outro usuário.',
       action: 'Verifique se você possui a feature "update:content:others".',
-      errorUniqueCode: 'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
+      errorLocationCode: 'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
     });
   }
 
@@ -116,7 +116,7 @@ async function patchHandler(request, response) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos na raiz do site.',
         action: 'Verifique se você possui a feature "create:content:text_root".',
-        errorUniqueCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
+        errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       });
     }
 
@@ -128,7 +128,7 @@ async function patchHandler(request, response) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos dentro de outros conteúdos.',
         action: 'Verifique se você possui a feature "create:content:text_child".',
-        errorUniqueCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
+        errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       });
     }
 

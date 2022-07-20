@@ -12,7 +12,7 @@ export default function validator(object, keys) {
     throw new ValidationError({
       message: 'Não foi possível interpretar o valor enviado.',
       action: 'Verifique se o valor enviado é um JSON válido.',
-      errorUniqueCode: 'MODEL:VALIDATOR:ERROR_PARSING_JSON',
+      errorLocationCode: 'MODEL:VALIDATOR:ERROR_PARSING_JSON',
       stack: new Error().stack,
       key: 'object',
     });
@@ -40,7 +40,7 @@ export default function validator(object, keys) {
     throw new ValidationError({
       message: error.details[0].message,
       key: error.details[0].context.key || error.details[0].context.type || 'object',
-      errorUniqueCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+      errorLocationCode: 'MODEL:VALIDATOR:FINAL_SCHEMA',
       stack: new Error().stack,
       type: error.details[0].type,
     });

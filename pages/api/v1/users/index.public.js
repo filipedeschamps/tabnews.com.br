@@ -17,7 +17,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getHandler)
+  .get(authorization.canRequest('read:user:list'), getHandler)
   .post(
     postValidationHandler,
     authorization.canRequest('create:user'),

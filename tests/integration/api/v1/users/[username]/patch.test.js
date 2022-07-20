@@ -37,7 +37,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -69,7 +69,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER');
     });
 
     test('Patching itself with a valid and unique username', async () => {
@@ -175,7 +175,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('O "username" informado já está sendo usado.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -207,7 +207,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('O "username" informado já está sendo usado.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -237,7 +237,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" possui o valor inválido "null".');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -267,7 +267,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" não pode estar em branco.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -297,7 +297,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve ser do tipo String.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -327,7 +327,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -357,7 +357,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve conter no mínimo 3 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -387,7 +387,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('"username" deve conter no máximo 30 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -419,7 +419,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.action).toEqual('Escolha outro nome de usuário e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME');
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME');
       expect(responseBody.key).toEqual('username');
     });
 
@@ -442,7 +442,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('object');
@@ -468,7 +468,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('object');
@@ -496,7 +496,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_unique_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('object');

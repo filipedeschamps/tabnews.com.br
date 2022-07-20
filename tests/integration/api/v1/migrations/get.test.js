@@ -22,7 +22,7 @@ describe('GET /api/v1/migrations', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -49,7 +49,7 @@ describe('GET /api/v1/migrations', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -100,7 +100,7 @@ describe('GET /api/v1/migrations', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
-        expect(responseBody.error_unique_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+        expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
       });
     });
   });

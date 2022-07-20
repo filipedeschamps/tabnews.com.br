@@ -91,7 +91,7 @@ async function postHandler(request, response) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para criar conteúdos na raiz do site.',
         action: 'Verifique se você possui a feature "create:content:text_root".',
-        errorUniqueCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
+        errorLocationCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       });
     }
 
@@ -103,7 +103,7 @@ async function postHandler(request, response) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
         action: 'Verifique se você possui a feature "create:content:text_child".',
-        errorUniqueCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
+        errorLocationCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       });
     }
 

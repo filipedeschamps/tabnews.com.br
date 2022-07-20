@@ -53,7 +53,7 @@ async function postHandler(request, response) {
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
       action: `Verifique se os dados enviados estão corretos.`,
-      errorUniqueCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+      errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
   }
 
@@ -62,7 +62,7 @@ async function postHandler(request, response) {
     throw new ForbiddenError({
       message: `O seu usuário ainda não está ativado.`,
       action: `Verifique seu email, pois acabamos de enviar um novo convite de ativação.`,
-      errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED',
+      errorLocationCode: 'CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED',
     });
   }
 
@@ -70,7 +70,7 @@ async function postHandler(request, response) {
     throw new ForbiddenError({
       message: `Você não possui permissão para fazer login.`,
       action: `Verifique se este usuário possui a feature "create:session".`,
-      errorUniqueCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
+      errorLocationCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
     });
   }
 

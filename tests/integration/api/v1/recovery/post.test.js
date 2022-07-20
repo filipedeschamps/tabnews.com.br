@@ -76,7 +76,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
         key: 'username',
       });
 
@@ -107,7 +107,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'username',
         type: 'string.alphanum',
       });
@@ -180,7 +180,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
         key: 'email',
       });
 
@@ -211,7 +211,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'email',
         type: 'string.email',
       });
@@ -243,7 +243,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'object',
         type: 'object.min',
       });
@@ -268,7 +268,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'object',
         type: 'object.base',
       });
@@ -298,7 +298,7 @@ describe('POST /api/v1/recovery', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_unique_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'object',
         type: 'object.min',
       });
