@@ -1,7 +1,6 @@
 const { join, resolve } = require('path');
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renderAsync } from '@resvg/resvg-js';
-import getConfig from 'next/config';
 import nextConnect from 'next-connect';
 import { renderTemplate } from './_lib/template';
 import { parseContent } from './_lib/parser';

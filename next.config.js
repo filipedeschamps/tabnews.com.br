@@ -3,15 +3,14 @@ module.exports = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: { nftTracing: true },
+  experimental: {
+    nftTracing: true,
+  },
   compiler: {
     styledComponents: true,
   },
   i18n: {
     locales: ['pt-br'],
     defaultLocale: 'pt-br',
-  },
-  serverRuntimeConfig: {
-    PROJECT_ROOT: __dirname,
   },
 };
