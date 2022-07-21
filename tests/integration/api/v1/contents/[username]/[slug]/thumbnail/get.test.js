@@ -1,6 +1,5 @@
 const { join, resolve } = require('path');
 import { readFileSync } from 'fs';
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
@@ -83,7 +82,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       });
 
       jest.useFakeTimers({
-        now: Date.parse('2022-01-01T00:00:00.000Z'),
+        now: Date.parse('2022-01-01T12:00:00.000Z'),
         advanceTimers: true,
       });
 
