@@ -1,13 +1,9 @@
-const { join, resolve } = require('path');
-import { renderToStaticMarkup } from 'react-dom/server';
-import { renderAsync } from '@resvg/resvg-js';
 import nextConnect from 'next-connect';
-import { renderTemplate } from './_lib/template';
-import { parseContent } from './_lib/parser';
 import controller from 'models/controller';
 import authentication from 'models/authentication';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
+import thumbnail from 'models/thumbnail.js';
 import { NotFoundError } from 'errors/index.js';
 
 export default nextConnect({
@@ -50,27 +46,10 @@ async function getHandler(request, response) {
     });
   }
 
-  const parsedContent = parseContent(contentFound);
-  const svg = renderToStaticMarkup(renderTemplate(parsedContent));
-
-  const result = await renderAsync(svg, {
-    fitTo: {
-      mode: 'width',
-      value: 1280,
-    },
-    font: {
-      fontFiles: [
-        join(resolve('.'), 'fonts', 'Roboto-Regular.ttf'),
-        join(resolve('.'), 'fonts', 'Roboto-Bold.ttf'),
-        join(resolve('.'), 'fonts', 'NotoEmoji-Bold.ttf'),
-      ],
-      loadSystemFonts: false,
-      defaultFontFamily: 'Roboto',
-    },
-  });
+  const thumbnailPng = await thumbnail.asPng(contentFound);
 
   response.statusCode = 200;
   response.setHeader('Content-Type', `image/png`);
   response.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
-  response.end(result.asPng());
+  response.end(thumbnailPng);
 }
