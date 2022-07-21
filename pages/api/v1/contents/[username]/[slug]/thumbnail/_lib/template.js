@@ -53,8 +53,8 @@ export function renderTemplate({ title, parentTitle, username, usernameWidth, co
 function renderPostHeader(title) {
   return (
     <text y="54" fill="#212529" fontSize="75" fontWeight="bold">
-      {title.map((line) => (
-        <tspan x="60" dy={100}>
+      {title.map((line, index) => (
+        <tspan x="60" dy={100} key={index}>
           {line}
         </tspan>
       ))}
@@ -80,7 +80,7 @@ function renderCommentHeader(title, parentTitle) {
       {/* title */}
       <text y="155" fill="#212529" fontSize="75" fontWeight="bold">
         {title.map((line, index) => (
-          <tspan x={60} dy={90}>
+          <tspan x={60} dy={90} key={index}>
             {line}
           </tspan>
         ))}

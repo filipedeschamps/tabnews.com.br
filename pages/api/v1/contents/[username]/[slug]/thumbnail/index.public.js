@@ -1,4 +1,4 @@
-import { join } from 'path';
+const { join, resolve } = require('path');
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renderAsync } from '@resvg/resvg-js';
 import getConfig from 'next/config';
@@ -61,9 +61,9 @@ async function getHandler(request, response) {
     },
     font: {
       fontFiles: [
-        join(getConfig().serverRuntimeConfig.PROJECT_ROOT, 'public', 'fonts', 'Roboto-Regular.ttf'),
-        join(getConfig().serverRuntimeConfig.PROJECT_ROOT, 'public', 'fonts', 'Roboto-Bold.ttf'),
-        join(getConfig().serverRuntimeConfig.PROJECT_ROOT, 'public', 'fonts', 'NotoEmoji-Bold.ttf'),
+        join(resolve('.'), 'fonts', 'Roboto-Regular.ttf'),
+        join(resolve('.'), 'fonts', 'Roboto-Bold.ttf'),
+        join(resolve('.'), 'fonts', 'NotoEmoji-Bold.ttf'),
       ],
       loadSystemFonts: false,
       defaultFontFamily: 'Roboto',
