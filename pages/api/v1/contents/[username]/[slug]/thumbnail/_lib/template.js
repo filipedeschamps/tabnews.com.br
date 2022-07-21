@@ -6,12 +6,7 @@ export function renderTemplate({ title, parentTitle, username, usernameWidth, co
       {/* background */}
       <rect width="1200" height="628" fill="#F5F5F5" />
 
-      {/* left bar */}
-      <path
-        d="M17.4004 31.4064C35.3534 35.7471 48 51.8158 48 70.2862L48 622C48 644.091 30.0914 662 7.99998 662L-27 662C-49.0914 662 -67 644.091 -67 622L-67 61.8238C-67 35.9288 -42.7694 16.8585 -17.5996 22.9441L17.4004 31.4064Z"
-        fill="#212529"
-      />
-
+      {/* title */}
       {!!parentTitle ? renderCommentHeader(title, parentTitle) : renderPostHeader(title)}
 
       {/* tabnews icon */}
@@ -23,10 +18,10 @@ export function renderTemplate({ title, parentTitle, username, usernameWidth, co
       />
 
       {/* username container */}
-      <rect x="140" y="511" width={usernameWidth + 20} height="68" rx="8" fill="#C7D9EC" />
+      <rect x="60" y="511" width={usernameWidth + 20} height="68" rx="8" fill="#C7D9EC" />
 
       {/* username */}
-      <text x="150" y="555" fill="#424C56" fontSize="32">
+      <text x="70" y="555" fill="#424C56" fontSize="32">
         <tspan>{username}</tspan>
       </text>
 
@@ -57,10 +52,10 @@ export function renderTemplate({ title, parentTitle, username, usernameWidth, co
 
 function renderPostHeader(title) {
   return (
-    <text y="80" fill="#212529" fontSize="56" fontWeight="bold">
-      {title.map((s) => (
-        <tspan x="140" dy={80}>
-          {s}
+    <text y="54" fill="#212529" fontSize="75" fontWeight="bold">
+      {title.map((line) => (
+        <tspan x="60" dy={100}>
+          {line}
         </tspan>
       ))}
     </text>
@@ -72,27 +67,21 @@ function renderCommentHeader(title, parentTitle) {
     <>
       {/* reference */}
       <text fill="#424C56" fontSize="32">
-        <tspan x="140" y="123.938">
+        <tspan x="60" y="123.938">
           Em resposta a
         </tspan>
       </text>
       <text fill="#424C56" fontSize="32" textDecoration="underline">
-        <tspan x="350.125" y="123.938">
+        <tspan x="275" y="123.938">
           {parentTitle}
         </tspan>
       </text>
 
       {/* title */}
-      <path
-        d="m152.581 247.943.262-.607-.455-.479c-3.314-3.486-5.388-8.376-5.388-13.693 0-12.463 11.93-22.831 27-22.831s27 10.368 27 22.831c0 13.834-15.418 27.194-37.089 21.265l-.276-.076-.274.082-15.593 4.66 4.813-11.152z"
-        stroke="#8EA1B4"
-        fill="#F5F5F5"
-        strokeWidth="2"
-      />
-      <text y="175" fill="#212529" fontSize="56" fontWeight="bold">
-        {title.map((s, index) => (
-          <tspan x={index === 0 ? 225 : 140} dy={80}>
-            {s}
+      <text y="155" fill="#212529" fontSize="75" fontWeight="bold">
+        {title.map((line, index) => (
+          <tspan x={60} dy={90}>
+            {line}
           </tspan>
         ))}
       </text>

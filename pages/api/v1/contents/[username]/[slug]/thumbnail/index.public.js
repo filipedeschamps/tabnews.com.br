@@ -21,7 +21,7 @@ export default nextConnect({
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler);
 
-function getValidationHandler(request, _, next) {
+function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
     username: 'required',
     slug: 'required',
@@ -43,10 +43,10 @@ async function getHandler(request, response) {
 
   if (!contentFound) {
     throw new NotFoundError({
-      message: `O conteúdo informado não foi encontrado no sistema.`,
-      action: 'Verifique se o "slug" está digitado corretamente.',
+      message: `Este conteúdo não está disponível.`,
+      action: 'Verifique se o "slug" está digitado corretamente ou considere o fato do conteúdo ter sido despublicado.',
       stack: new Error().stack,
-      errorUniqueCode: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:SLUG_NOT_FOUND',
       key: 'slug',
     });
   }
