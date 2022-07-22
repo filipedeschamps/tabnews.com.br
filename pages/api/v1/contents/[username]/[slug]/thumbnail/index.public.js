@@ -50,6 +50,5 @@ async function getHandler(request, response) {
 
   response.statusCode = 200;
   response.setHeader('Content-Type', `image/png`);
-  response.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
   response.end(thumbnailPng);
 }
