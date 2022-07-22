@@ -92,9 +92,10 @@ export default function ContentList({ contentList, pagination, paginationBasePat
                 <ChildrenDeepCountText count={contentObject.children_deep_count} />
               </Text>
               {' · '}
-              <Link sx={{ color: 'neutral.emphasis', mr: 1 }} href={`/${contentObject.username}`}>
+              <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.username}`}>
                 {contentObject.username}
               </Link>
+              {' · '}
               <Text>
                 <PublishedSince date={contentObject.published_at} />
               </Text>
