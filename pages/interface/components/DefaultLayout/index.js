@@ -23,18 +23,11 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   let updatedMetadata = { ...defaultMetadata, ...metadata };
 
   if (content) {
-    const cleanBody = removeMarkdown(content.body);
-    if (content.title) {
-      updatedMetadata.title = `${content.title} · ${content.username}`;
-    } else {
-      updatedMetadata.title = `${cleanBody.replace(/\s+/g, ' ').substring(0, 80)} · ${content.username}`;
-    }
+    const cleanBody = removeMarkdown(content.body).replace(/\s+/g, ' ');
 
-    updatedMetadata.description = cleanBody.replace(/\s+/g, ' ').substring(0, 190);
-  }
-
-  if (updatedMetadata.title && updatedMetadata.title != defaultMetadata.title) {
-    updatedMetadata.title = `${updatedMetadata.title} · TabNews`;
+    updatedMetadata.title = `${content.title ?? cleanBody.substring(0, 80)} · ${content.username} · TabNews`;
+    updatedMetadata.description = cleanBody.substring(0, 190);
+    updatedMetadata.image = `${webserverHost}/api/v1/contents/${content.username}/${content.slug}/thumbnail`;
   }
 
   return (

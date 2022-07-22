@@ -31,7 +31,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('From "root" content with "deleted" status', async () => {
@@ -56,7 +56,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('From "root" content with "published" status with no children', async () => {

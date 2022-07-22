@@ -90,7 +90,7 @@ export default function TabCoinButtons({ content }) {
       <Box>
         <IconButton
           variant="invisible"
-          aria-label="Search"
+          aria-label="Creditar TabCoin"
           icon={ChevronUpIcon}
           size="small"
           sx={{ color: 'fg.subtle' }}
@@ -114,7 +114,7 @@ export default function TabCoinButtons({ content }) {
       <Box>
         <IconButton
           variant="invisible"
-          aria-label="Search"
+          aria-label="Debitar TabCoin"
           icon={ChevronDownIcon}
           size="small"
           sx={{ color: 'fg.subtle' }}

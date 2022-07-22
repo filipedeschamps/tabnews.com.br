@@ -22,7 +22,7 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_unique_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
     });
 
     test('"username" existent, but with no content at all', async () => {
