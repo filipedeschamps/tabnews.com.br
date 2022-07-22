@@ -21,7 +21,7 @@ async function getHandler(request, response) {
     statusCode = 503;
   }
 
-  response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate');
+  response.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
 
   return response.status(statusCode).json({
     updated_at: formatISO(Date.now()),
