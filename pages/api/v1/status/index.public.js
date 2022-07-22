@@ -3,6 +3,7 @@ import { formatISO } from 'date-fns';
 import controller from 'models/controller.js';
 import health from 'models/health.js';
 import thumbnail from 'models/thumbnail.js';
+import authentication from 'models/authentication';
 
 export default nextConnect({
   attachParams: true,
@@ -10,6 +11,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
+  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getHandler);
 
