@@ -1,6 +1,5 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller';
-import authentication from 'models/authentication';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import thumbnail from 'models/thumbnail.js';
@@ -12,7 +11,6 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler);
 
