@@ -35,6 +35,9 @@ export default function DefaultLayout({ children, metadata }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="icon" href={favicon} type="image/png" />
         <link rel="apple-touch-icon" href={favicon}></link>
+
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
       </Head>
       {children}
     </>
