@@ -1,6 +1,9 @@
+// eslint-disable-next-line import/order
 const nodemailer = require('nodemailer');
-import { ServiceError } from 'errors/index.js';
+
 import logger from './logger.js';
+
+import { ServiceError } from 'errors/index.js';
 
 const transporterConfiguration = {
   host: process.env.EMAIL_SMTP_HOST,

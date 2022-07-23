@@ -1,8 +1,8 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
 import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { DefaultLayout, ContentList } from 'pages/interface/index.js';
 
 export default function Home({ contentListFound, pagination }) {
   return (

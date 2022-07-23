@@ -1,9 +1,10 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller';
-import validator from 'models/validator.js';
-import content from 'models/content.js';
-import thumbnail from 'models/thumbnail.js';
+
 import { NotFoundError } from 'errors/index.js';
+import content from 'models/content.js';
+import controller from 'models/controller';
+import thumbnail from 'models/thumbnail.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,

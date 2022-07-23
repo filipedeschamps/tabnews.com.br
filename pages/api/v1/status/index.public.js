@@ -1,5 +1,6 @@
-import nextConnect from 'next-connect';
 import { formatISO } from 'date-fns';
+import nextConnect from 'next-connect';
+
 import controller from 'models/controller.js';
 import health from 'models/health.js';
 

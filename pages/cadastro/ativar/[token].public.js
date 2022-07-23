@@ -1,9 +1,10 @@
-import Confetti from 'react-confetti';
-import fetch from 'cross-fetch';
 import { Box, Flash } from '@primer/react';
-import { DefaultLayout } from 'pages/interface/index.js';
-import { useEffect, useState } from 'react';
+import fetch from 'cross-fetch';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import Confetti from 'react-confetti';
+
+import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function ActiveUser() {
   const router = useRouter();

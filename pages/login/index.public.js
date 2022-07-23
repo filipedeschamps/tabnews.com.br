@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { DefaultLayout, useUser } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { useRouter } from 'next/router';
+import { useState, useRef, useEffect } from 'react';
+
+import { DefaultLayout, useUser } from 'pages/interface/index.js';
 
 export default function Login() {
   return (

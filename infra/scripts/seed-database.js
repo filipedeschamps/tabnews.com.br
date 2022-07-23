@@ -1,7 +1,8 @@
 const fs = require('node:fs');
-const { join, resolve } = require('path');
+const { join, resolve } = require('node:path');
 
 const { Client } = require('pg');
+
 const client = new Client({
   connectionString: 'postgres://local_user:local_password@localhost:54320/tabnews',
   connectionTimeoutMillis: 5000,

@@ -1,5 +1,5 @@
-import database from 'infra/database.js';
 import { UnprocessableEntityError } from 'errors/index.js';
+import database from 'infra/database.js';
 
 async function create({ balanceType, recipientId, amount, originatorType, originatorId }, options = {}) {
   const query = {

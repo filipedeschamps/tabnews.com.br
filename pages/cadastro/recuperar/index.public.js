@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/router';
-import { DefaultLayout } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { useRouter } from 'next/router';
+import { useState, useRef } from 'react';
+
+import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function RecoverPassword() {
   return (

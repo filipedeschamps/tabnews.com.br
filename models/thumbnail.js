@@ -1,6 +1,7 @@
-import { join, resolve } from 'path';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { join, resolve } from 'node:path';
+
 import { renderAsync } from '@resvg/resvg-js';
+import { renderToStaticMarkup } from 'react-dom/server';
 import removeMarkdown from 'remove-markdown';
 
 async function asPng(contentObject) {

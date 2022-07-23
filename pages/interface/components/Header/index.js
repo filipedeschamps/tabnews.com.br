@@ -1,6 +1,7 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
+import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { CgTab } from 'react-icons/cg';
+
 import { useUser } from 'pages/interface/index.js';
 
 export default function HeaderComponent() {

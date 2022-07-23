@@ -4,11 +4,38 @@
     "next/core-web-vitals",
     "prettier",
     "plugin:primer-react/recommended",
-    "plugin:jsx-a11y/recommended"
+    "plugin:jsx-a11y/recommended",
+    "plugin:import/recommended"
   ],
   "plugins": ["jsx-a11y"],
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["errors", "./errors"],
+          ["fonts", "./fonts"],
+          ["infra", "./infra"],
+          ["models", "./models"],
+          ["tests", "./tests"],
+          ["pages", "./pages"]
+        ]
+      }
+    }
+  },
   "rules": {
     "react/no-unescaped-entities": "off",
-    "import/no-anonymous-default-export": "off"
+    "import/no-anonymous-default-export": "off",
+    "import/no-unresolved": "off",
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "parent", "sibling", "index"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ]
   }
 }

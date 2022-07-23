@@ -1,8 +1,9 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import controller from 'models/controller.js';
 import validator from 'models/validator.js';
 
 export default nextConnect({

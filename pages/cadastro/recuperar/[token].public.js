@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react';
-import fetch from 'cross-fetch';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
-import { DefaultLayout } from 'pages/interface/index.js';
+import fetch from 'cross-fetch';
 import { useRouter } from 'next/router';
+import { useState, useRef } from 'react';
+
+import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function RecoverPassword() {
   return (

@@ -1,7 +1,8 @@
 import { Box, Heading, Text } from '@primer/react';
 import { useState, useEffect } from 'react';
-import { DefaultLayout } from 'pages/interface/index.js';
 import Confetti from 'react-confetti';
+
+import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function ConfirmSignup() {
   const [confettiWidth, setConfettiWidth] = useState(0);

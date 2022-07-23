@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Box, Text, IconButton } from '@primer/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
-import { useReward } from 'react-rewards';
+import { Box, Text, IconButton } from '@primer/react';
 import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+import { useReward } from 'react-rewards';
 
 import { useUser } from 'pages/interface/index.js';
 

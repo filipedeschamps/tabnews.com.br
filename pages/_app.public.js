@@ -1,5 +1,6 @@
 import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
+
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 
 async function SWRFetcher(resource, init) {

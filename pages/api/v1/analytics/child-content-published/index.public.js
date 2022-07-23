@@ -1,6 +1,7 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import database from 'infra/database.js';
+import controller from 'models/controller.js';
 
 export default nextConnect({
   attachParams: true,

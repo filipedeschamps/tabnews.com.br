@@ -1,4 +1,5 @@
 import Joi from 'joi';
+
 import { ValidationError } from 'errors/index.js';
 
 export default function validator(object, keys) {

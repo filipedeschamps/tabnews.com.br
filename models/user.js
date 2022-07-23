@@ -1,8 +1,8 @@
+import { ValidationError, NotFoundError } from 'errors/index.js';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
-import validator from 'models/validator.js';
 import balance from 'models/balance.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 async function findAll() {
   const query = {

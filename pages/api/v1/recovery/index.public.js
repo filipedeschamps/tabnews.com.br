@@ -1,7 +1,8 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import controller from 'models/controller.js';
 import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
 

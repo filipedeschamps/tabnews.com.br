@@ -1,7 +1,9 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
+
 import cookie from 'cookie';
-import database from 'infra/database.js';
+
 import { UnauthorizedError } from 'errors/index.js';
+import database from 'infra/database.js';
 import validator from 'models/validator.js';
 
 async function create(userId) {

@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useRouter } from 'next/router';
-
+// Markdown Editor dependencies:
+import breaksPlugin from '@bytemd/plugin-breaks';
+import gemojiPlugin from '@bytemd/plugin-gemoji';
+import gfmPlugin from '@bytemd/plugin-gfm';
+import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
+// eslint-disable-next-line import/default
+import mermaidPlugin from '@bytemd/plugin-mermaid';
+import { Editor, Viewer } from '@bytemd/react';
+import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import {
   FormControl,
   Box,
@@ -17,18 +23,13 @@ import {
   Tooltip,
   useConfirm,
 } from '@primer/react';
-import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import PublishedSince from 'pages/interface/components/PublishedSince';
+import { useRouter } from 'next/router';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
+import PublishedSince from 'pages/interface/components/PublishedSince';
 import { useUser } from 'pages/interface/index.js';
 
 // Markdown Editor dependencies:
-import { Editor, Viewer } from '@bytemd/react';
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
-import breaksPlugin from '@bytemd/plugin-breaks';
-import gemojiPlugin from '@bytemd/plugin-gemoji';
 import 'bytemd/dist/index.min.css';
 import 'highlight.js/styles/github.css';
 import 'github-markdown-css/github-markdown-light.css';

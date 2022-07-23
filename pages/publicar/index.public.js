@@ -1,8 +1,9 @@
-import useSWR from 'swr';
-import { useRouter } from 'next/router';
-import { DefaultLayout, Content, useUser } from 'pages/interface/index.js';
 import { Box, Heading, Flash, Link } from '@primer/react';
+import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import useSWR from 'swr';
+
+import { DefaultLayout, Content, useUser } from 'pages/interface/index.js';
 
 export default function Post() {
   const router = useRouter();

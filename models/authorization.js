@@ -1,5 +1,5 @@
-import validator from 'models/validator.js';
 import { ValidationError, ForbiddenError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 const availableFeatures = new Set([
   // USER

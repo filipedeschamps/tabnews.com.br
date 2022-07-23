@@ -1,6 +1,6 @@
-import useSWR from 'swr';
-import { Box, Link, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
+import { Box, Link, Text } from '@primer/react';
+import useSWR from 'swr';
 
 import PublishedSince from 'pages/interface/components/PublishedSince';
 

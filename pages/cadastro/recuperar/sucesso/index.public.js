@@ -1,4 +1,5 @@
 import { Box, Heading, Link, Text } from '@primer/react';
+
 import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function ConfirmRecoverPassword() {

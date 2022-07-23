@@ -1,13 +1,14 @@
-import useSWR from 'swr';
+import { Box, Link } from '@primer/react';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import validator from 'models/validator.js';
-import authorization from 'models/authorization.js';
+import useSWR from 'swr';
+
 import { NotFoundError } from 'errors/index.js';
-import { Box, Link } from '@primer/react';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import { DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
 
 export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback }) {
   const { data: contentFound } = useSWR(

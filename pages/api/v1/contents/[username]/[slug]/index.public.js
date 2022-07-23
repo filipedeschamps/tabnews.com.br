@@ -1,12 +1,13 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
+import { ForbiddenError, NotFoundError } from 'errors/index.js';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
 import content from 'models/content.js';
-import database from 'infra/database.js';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import { ForbiddenError, NotFoundError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,

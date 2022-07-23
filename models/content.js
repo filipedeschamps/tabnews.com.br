@@ -1,10 +1,11 @@
-import { v4 as uuidV4 } from 'uuid';
 import slug from 'slug';
-import database from 'infra/database.js';
-import validator from 'models/validator.js';
-import user from 'models/user.js';
-import balance from 'models/balance.js';
+import { v4 as uuidV4 } from 'uuid';
+
 import { ValidationError } from 'errors/index.js';
+import database from 'infra/database.js';
+import balance from 'models/balance.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);

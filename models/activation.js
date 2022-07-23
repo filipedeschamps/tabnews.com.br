@@ -1,8 +1,8 @@
-import email from 'infra/email.js';
+import { ForbiddenError, NotFoundError } from 'errors/index.js';
 import database from 'infra/database.js';
-import user from 'models/user.js';
+import email from 'infra/email.js';
 import authorization from 'models/authorization.js';
-import { NotFoundError, ForbiddenError } from 'errors/index.js';
+import user from 'models/user.js';
 
 async function createAndSendActivationEmail(user) {
   const tokenObject = await create(user);
