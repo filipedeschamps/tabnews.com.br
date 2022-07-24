@@ -2,36 +2,21 @@
 
 ## Documentação API
 
-## Visão Geral:
-- [Introdução](#introducao)
-- [Change log](#changelog)
-- [Exemplos](#exemplos)
-- [Obter lista de posts da página inicial](#homeContents)
-- [Obter lista de posts de um determinado usuário](#userContents)
-- [Obter informações de um post](#rootData)
-- [Obter conteúdos children (comentários) de um post](#childrenData)
-- [Obter lista com informações de quantos usuários, posts e/ou comentários foram criados em determinado dia (status)](#statusData)
-- [Logar usuário](#logar)
-- [Criar usuário](#criarUsuario)
-- [Publicar conteúdo](#postContent)
-<br>
-​
-<h2 id="introducao">Introdução</h2>
-A API do TabNews é uma API que retorna diversas informações em relação aos conteúdos criados lá, além de ser possível logar, cadastrar e criar conteúdos.<br>
-​
-A comunicação é feita através de HTTPS usando GET ou POST. Tanto a solicitação quanto a resposta são formatadas como JSON e o tipo de conteúdo de ambas é application/json.
-​
-<h2 id="changelog">Change log</h2>
--
-​
-<h2 id="exemplos">Exemplos</h2>
-Os exemplos a seguir mostram casos de usos comuns.
-<br>
-<br>
-​
-<h2 id="homeContents">Obter lista de posts da página inicial</h2>
-​
+## Introdução
+A API do TabNews é uma API que retorna diversas informações em relação aos conteúdos criados lá, além de ser possível logar, cadastrar e criar conteúdos.
 
+A comunicação é feita através de HTTPS usando GET ou POST. Tanto a solicitação quanto a resposta são formatadas como JSON e o tipo de conteúdo de ambas é application/json.
+
+<br>
+## Change log
+-
+
+<br>
+## Exemplos
+Os exemplos a seguir mostram casos de usos comuns.
+
+<br>
+## Obter lista de posts da página inicial
 ```
 https://www.tabnews.com.br/api/v1/contents?page={pagina}&per_page={porPagina}&strategy={estrategia} 
 ```
@@ -41,12 +26,9 @@ https://www.tabnews.com.br/api/v1/contents?page={pagina}&per_page={porPagina}&st
 | {pagina}    | Página que você deseja acessar|
 | {porPagina} | Quantos conteúdos devem ser retornados por página|
 | {estrategia} | Classificação dos conteúdos (new, old ou best)|
-<br>
-<br>
-​
-<h2 id="userContents">Obter lista de posts de um determinado usuário</h2>
-​
 
+<br>
+## Obter lista de posts de um determinado usuário
 ```
 https://www.tabnews.com.br/api/v1/contents/{user}?page={pagina}&per_page={porPagina}&strategy={estrategia} 
 ```
@@ -57,25 +39,20 @@ https://www.tabnews.com.br/api/v1/contents/{user}?page={pagina}&per_page={porPag
 | {pagina}    | Página que você deseja acessar|
 | {porPagina} | Quantos conteúdos devem ser retornados por página|
 | {estrategia} | Classificação dos conteúdos (new, old ou best)|
-<br>
-<br>
-​
-<h2 id="rootData">Obter conteúdo de uma publicação</h2>
-​
 
+<br>
+## Obter conteúdo de uma publicação
 ```
 https://www.tabnews.com.br/api/v1/contents/{user}/{slug}
 ```
+
 | Parâmetros: |  |
 |--------------|----------------------------|
 | {user} | Usuário que você deseja obter o post |
 | {slug} | Slug do post que você deseja obter |
-<br>
-<br>
-​
-<h2 id="childrenData">Obter comentários de uma publicação</h2>
-​
 
+<br>
+## Obter comentários de uma publicação
 ```
 https://www.tabnews.com.br/api/v1/contents/{user}/{slug}/children
 ```
@@ -83,30 +60,28 @@ https://www.tabnews.com.br/api/v1/contents/{user}/{slug}/children
 |--------------|----------------------------|
 | {user} | Usuário que você deseja obter os comentários do post |
 | {slug} | Slug do post que você deseja obter os comentários |
+
 <br>
-<br>
-​
-<h2 id="statusData">Obter lista com informações de quantos usuários, posts e/ou comentários foram criados em determinado dia (status)</h2>
-​
+## Obter lista com informações de quantos usuários, posts e/ou comentários foram criados em determinado dia (status)
 
 Para obter quantos usuários foram criados (por dia):
 ```
 https://www.tabnews.com.br/api/v1/analytics/users-created
 ```
-​
+
 Para obter quantas publicações foram feitas (por dia):
 ```
 https://www.tabnews.com.br/api/v1/analytics/root-content-published
 ```
-​
+
 Para obter quantos usuários foram criados (por dia):
 ```
 https://www.tabnews.com.br/api/v1/analytics/child-content-published
 ```
 
-<h2 id="logar">Logar usuário</br>
-
-```
+<br>
+## Logar usuário
+```javascript
 const data = {email: "{insira o email aqui}", password: "{insira a senha aqui}"}
 
 fetch('https://www.tabnews.com.br/api/v1/sessions', {
@@ -127,7 +102,7 @@ fetch('https://www.tabnews.com.br/api/v1/sessions', {
 ```
 
 Caso ocorra tudo certo ele deve retornar algo parecido com:
-```
+```json
 Data:
 {
   "id": "6fbeca8f-13f1-43e3-b3**-************",
@@ -139,7 +114,8 @@ Data:
 ```
 
 Caso ocorra algum erro ele deve retornar algo como:
-```Error:
+```json
+Error:
 {}
 Data:
 {
@@ -152,10 +128,9 @@ Data:
   "error_location_code": "CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH"
 }
 ```
-<br>
-<br>
 
-<h2 id="criarUsuario">Criar usuário</h2>
+<br>
+## Criar usuário
 
 ```javascript
 const data = {username: "{insira o username aqui}", email: "{insira o email aqui}", password: "{insira a senha aqui}"}
@@ -177,11 +152,8 @@ fetch('https://www.tabnews.com.br/api/v1/users', {
   });
   ```
 ⚠O usuário terá que confirmar o email para acessar a conta⚠
-<br>
-<br>
-<br>
-<br>
 
+<br>
 ## Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
