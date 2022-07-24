@@ -16,8 +16,9 @@ export default function ContentList({ contentList, pagination, paginationBasePat
     <>
       <Box
         sx={{
-          display: 'table',
-          borderSpacing: '0 0.5rem',
+          display: 'grid',
+          gap: '0.5rem',
+          gridTemplateColumns: 'auto 1fr',
         }}>
         {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
       </Box>
@@ -68,41 +69,39 @@ export default function ContentList({ contentList, pagination, paginationBasePat
 
     return list.map((contentObject, index) => {
       const itemCount = index + 1 + listNumberOffset;
-      return (
-        <Box as="article" key={contentObject.id} sx={{ display: 'table-row' }}>
-          <Box sx={{ display: 'table-cell', pr: 2, textAlign: 'right' }}>
-            <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
-              {itemCount}.
+      return [
+        <Box key={itemCount} sx={{ lineHeight: '1.25rem', textAlign: 'right' }}>
+          <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
+            {itemCount}.
+          </Text>
+        </Box>,
+        <Box as="article" key={contentObject.id} sx={{ lineHeight: '1.25rem', overflow: 'auto' }}>
+          <Box sx={{ overflow: 'auto' }}>
+            <Link
+              sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', wordWrap: 'break-word' }}
+              href={`/${contentObject.username}/${contentObject.slug}`}>
+              {contentObject.title}
+            </Link>
+          </Box>
+          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+            <Text>
+              <TabCoinsText count={contentObject.tabcoins} />
+            </Text>
+            {' · '}
+            <Text>
+              <ChildrenDeepCountText count={contentObject.children_deep_count} />
+            </Text>
+            {' · '}
+            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.username}`}>
+              {contentObject.username}
+            </Link>
+            {' · '}
+            <Text>
+              <PublishedSince date={contentObject.published_at} />
             </Text>
           </Box>
-          <Box sx={{ display: 'table-cell', lineHeight: '20px' }}>
-            <Box>
-              <Link
-                sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold' }}
-                href={`/${contentObject.username}/${contentObject.slug}`}>
-                {contentObject.title}
-              </Link>
-            </Box>
-            <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
-              <Text>
-                <TabCoinsText count={contentObject.tabcoins} />
-              </Text>
-              {' · '}
-              <Text>
-                <ChildrenDeepCountText count={contentObject.children_deep_count} />
-              </Text>
-              {' · '}
-              <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.username}`}>
-                {contentObject.username}
-              </Link>
-              {' · '}
-              <Text>
-                <PublishedSince date={contentObject.published_at} />
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-      );
+        </Box>,
+      ];
     });
   }
 
