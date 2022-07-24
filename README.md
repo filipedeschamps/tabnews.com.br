@@ -1,6 +1,6 @@
 # tabnews.com.br
-
-## Documentação API:
+<details>
+<summary><h2>Documentação API </h2> (clique para ler a documentação)</summary>
 
 ### Introdução
 A API do TabNews é uma API que retorna diversas informações em relação aos conteúdos criados lá, além de ser possível logar, cadastrar e criar conteúdos.
@@ -155,7 +155,9 @@ fetch('https://www.tabnews.com.br/api/v1/users', {
 <br>
 <br>
 
-## Instalar e rodar o projeto
+</details>
+
+<details><summary><h2>Instalar e rodar o projeto</h2> (clique para ler tudo)</summary>
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
 
@@ -285,6 +287,8 @@ Para ser auxiliado no padrão de commit que utilizamos, rode o comando abaixo e 
 ```bash
 npm run commit
 ```
+
+</details>
 
 ## Diário de Desenvolvimento
 
