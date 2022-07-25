@@ -48,7 +48,7 @@ export function parseContent(content) {
     parent_title = (parent_title ?? content.parent_username).substring(0, 60);
   }
 
-  parent_title = parent_title?.length > 50 ? parent_title.substring(0, 50) + '...' : parent_title;
+  parent_title = parent_title?.length > 36 ? parent_title.substring(0, 36) + '...' : parent_title;
 
   const date = new Date(content.published_at).toLocaleDateString('pt-BR');
 
