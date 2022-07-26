@@ -49,15 +49,17 @@ export function UserProvider({ children }) {
   }, [fetchUser]);
 
   const logout = useCallback(async () => {
-    console.log('logout');
     try {
-      const response = await fetch(sessionEndpoint, { method: 'DELETE' });
+      const response = await fetch(sessionEndpoint, {
+        method: 'DELETE',
+      });
+
       if (response.status === 200) {
         localStorage.removeItem('user');
         setUser(null);
       }
-    } catch (e) {
-      setError(e);
+    } catch (error) {
+      setError(error);
     }
   }, []);
 
