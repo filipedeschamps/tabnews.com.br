@@ -70,12 +70,12 @@ export default function ContentList({ contentList, pagination, paginationBasePat
     return list.map((contentObject, index) => {
       const itemCount = index + 1 + listNumberOffset;
       return [
-        <Box key={itemCount} sx={{ lineHeight: '1.25rem', textAlign: 'right' }}>
+        <Box key={itemCount} sx={{ textAlign: 'right' }}>
           <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
             {itemCount}.
           </Text>
         </Box>,
-        <Box as="article" key={contentObject.id} sx={{ lineHeight: '1.25rem', overflow: 'auto' }}>
+        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
           <Box sx={{ overflow: 'auto' }}>
             <Link
               sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', wordWrap: 'break-word' }}
