@@ -17,7 +17,7 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), getHandler)
-  .delete(deleteHandler)
+  .delete(authorization.canRequest('read:session'), deleteHandler)
   .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
 
 async function getHandler(request, response) {
@@ -30,13 +30,15 @@ async function getHandler(request, response) {
 }
 
 async function deleteHandler(request, response) {
+  const authenticatedUser = request.context.user;
   const sessionObject = request.context.session;
-  if (sessionObject) {
-    session.deleteSession(sessionObject.id);
-  }
 
+  const expiredSession = await session.expireById(sessionObject.id);
   session.clearSessionIdCookie(response);
-  return response.status(200).json({});
+
+  const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', expiredSession);
+
+  return response.status(200).json(secureOutputValues);
 }
 
 function postValidationHandler(request, response, next) {
