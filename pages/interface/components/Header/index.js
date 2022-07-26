@@ -7,7 +7,7 @@ export default function HeaderComponent() {
   const { user, isLoading } = useUser();
 
   return (
-    <Header sx={{ overflow: 'auto' }}>
+    <Header>
       <Header.Item>
         <Header.Link href="/" fontSize={2}>
           <CgTab size={32} />
