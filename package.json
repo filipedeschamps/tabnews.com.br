@@ -20,7 +20,7 @@
     "next": "12.1.6",
     "next-connect": "0.12.2",
     "node-pg-migrate": "6.2.1",
-    "nodemailer": "6.7.5",
+    "nodemailer": "6.7.7",
     "parse-link-header": "2.0.0",
     "pg": "8.7.3",
     "pino": "7.11.0",
