@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import { DefaultLayout } from './interface/index.js';
 import { Box, Link } from '@primer/react';
-import botSleepyFaceDarkTransparent from '/public/brand/bot-sleepy-face-dark-transparent.svg';
+import botDeadFaceDarkTransparent from '/public/brand/bot-dead-face-dark-transparent.svg';
 
-export default function Custom404() {
+export default function Custom500() {
   return (
     <>
-      <DefaultLayout metadata={{ title: '404 - Página não encontrada' }}>
+      <DefaultLayout metadata={{ title: '500 - Erro de servidor' }}>
         <Box
           sx={{
             height: 'calc(90vh - 64px)',
@@ -19,11 +19,11 @@ export default function Custom404() {
           }}>
           <Box sx={{ display: 'flex', alignItems: 'center', alignContent: 'center' }}>
             <Image
-              src={botSleepyFaceDarkTransparent.src}
+              src={botDeadFaceDarkTransparent.src}
               height={'100px'}
               width={'100px'}
               sx={{ opacity: '0.7' }}
-              alt="Ícone do Bot triste"
+              alt="Ícone do Bot desacordado"
             />
             <Box
               sx={{
@@ -35,9 +35,9 @@ export default function Custom404() {
                 borderStyle: 'solid',
                 paddingRight: '10px',
               }}></Box>
-            <h1>404</h1>
+            <h1>500</h1>
           </Box>
-          <h2>Página não encontrada</h2>
+          <h2>Erro intero de servidor</h2>
           <Link href="/">Retornar à tela inicial</Link>
         </Box>
       </DefaultLayout>
