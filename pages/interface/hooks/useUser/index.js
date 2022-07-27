@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 const userEndpoint = '/api/v1/user';
+const sessionEndpoint = '/api/v1/sessions';
 
 const UserContext = createContext();
 
@@ -47,11 +48,27 @@ export function UserProvider({ children }) {
     })();
   }, [fetchUser]);
 
+  const logout = useCallback(async () => {
+    try {
+      const response = await fetch(sessionEndpoint, {
+        method: 'DELETE',
+      });
+
+      if (response.status === 200) {
+        localStorage.removeItem('user');
+        setUser(null);
+      }
+    } catch (error) {
+      setError(error);
+    }
+  }, []);
+
   const userContextValue = {
     user,
     isLoading,
     error,
     fetchUser,
+    logout,
   };
 
   return <UserContext.Provider value={userContextValue}>{children}</UserContext.Provider>;

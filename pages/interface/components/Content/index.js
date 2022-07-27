@@ -43,7 +43,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [mode]);
 
   useEffect(() => {
-    setContentObject(content);
+    setContentObject((contentObject) => {
+      return { ...contentObject, ...content };
+    });
   }, [content]);
 
   const localStorageKey = useMemo(() => {
@@ -210,9 +212,13 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
           </Box>
         </Box>
 
-        {!contentObject?.parent_id && contentObject?.title && <Heading as="h1">{contentObject.title}</Heading>}
+        {!contentObject?.parent_id && contentObject?.title && (
+          <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
+            {contentObject.title}
+          </Heading>
+        )}
       </Box>
-      <Box>
+      <Box sx={{ overflow: 'auto' }}>
         <Viewer value={contentObject.body} plugins={bytemdPluginList} />
       </Box>
       {contentObject.source_url && (

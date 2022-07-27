@@ -28,6 +28,26 @@ function setSessionIdCookieInResponse(sessionToken, response) {
   ]);
 }
 
+async function expireById(id) {
+  const query = {
+    text: `
+      UPDATE
+        sessions
+      SET
+        expires_at = created_at - interval '1 day',
+        updated_at = now()
+      WHERE
+        id = $1
+      RETURNING
+        *
+      ;`,
+    values: [id],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
 // TODO: mark session as invalid also in Database.
 function clearSessionIdCookie(response) {
   response.setHeader('Set-Cookie', [
@@ -118,6 +138,7 @@ async function renew(sessionId, response) {
 export default Object.freeze({
   create,
   setSessionIdCookieInResponse,
+  expireById,
   clearSessionIdCookie,
   findOneValidByToken,
   findOneById,
