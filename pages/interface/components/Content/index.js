@@ -43,7 +43,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [mode]);
 
   useEffect(() => {
-    setContentObject(content);
+    setContentObject((contentObject) => {
+      return { ...contentObject, ...content };
+    });
   }, [content]);
 
   const localStorageKey = useMemo(() => {
