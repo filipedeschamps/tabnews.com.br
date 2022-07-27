@@ -1,12 +1,12 @@
 import Image from 'next/image';
-import { DefaultLayout } from './interface/index.js';
+import { DefaultLayout } from 'pages/interface/index.js';
 import { Box, Link } from '@primer/react';
-import botDeadFaceDarkTransparent from '/public/brand/bot-dead-face-dark-transparent.svg';
+import botDeadFaceDarkTransparent from 'public/brand/bot-dead-face-dark-transparent.svg';
 
 export default function Custom500() {
   return (
     <>
-      <DefaultLayout metadata={{ title: '500 - Erro de servidor' }}>
+      <DefaultLayout metadata={{ title: '500 - Erro Interno Não Esperado' }}>
         <Box
           sx={{
             height: 'calc(90vh - 64px)',
@@ -37,7 +37,7 @@ export default function Custom500() {
               }}></Box>
             <h1>500</h1>
           </Box>
-          <h2>Erro intero de servidor</h2>
+          <h2>Um erro interno não esperado aconteceu.</h2>
           <Link href="/">Retornar à tela inicial</Link>
         </Box>
       </DefaultLayout>

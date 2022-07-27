@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import { DefaultLayout } from './interface/index.js';
+import { DefaultLayout } from 'pages/interface/index.js';
 import { Box, Link } from '@primer/react';
-import botSleepyFaceDarkTransparent from '/public/brand/bot-sleepy-face-dark-transparent.svg';
+import botSleepyFaceDarkTransparent from 'public/brand/bot-sleepy-face-dark-transparent.svg';
 
 export default function Custom404() {
   return (
