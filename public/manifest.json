@@ -1,0 +1,17 @@
+{
+  "name": "TabNews",
+  "short_name": "TabNews",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [
+    {
+      "sizes": "57x57",
+      "src": "/apple-touch-icon.png"
+    },
+    {
+      "src": "/favicon-mobile.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
