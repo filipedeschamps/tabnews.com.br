@@ -1644,7 +1644,7 @@ describe('POST /api/v1/contents', () => {
           cookie: `session_id=${sessionObject.token}`,
         },
         body: JSON.stringify({
-          title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b',
+          title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
           body: 'Body',
         }),
       });
@@ -1657,8 +1657,8 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'under-score-5-por-cento-e-1-e-10-email-dominio-com-item1-item2-a-e-b-a-e-b',
-        title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b',
+        slug: 'under-score-5-por-cento-e-1-e-10-email-dominio-com-item1-item2-a-e-b-a-e-b-mil',
+        title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
         body: 'Body',
         status: 'draft',
         source_url: null,
