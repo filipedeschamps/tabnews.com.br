@@ -1,0 +1,123 @@
+{
+  "paths": {
+    "/v1/sessions": {
+      "post": {
+        "summary": "Login",
+        "description": "Login na plataforma Tabnews",
+        "parameters": [
+          {
+            "email": "user@test.com.br",
+            "description": "Emais cadastrado na plataforma",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "password": "myPassword",
+            "description": "Senha cadastrada na plataforma",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LoginResponse": {
+        "title": "LoginResponse",
+        "required": ["id", "token", "expires_at", "created_at", "updated_at"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": "6fbeca8f-13f1-43e3-b3**-************",
+          "token": "e5fba39f8c4ec21cfd50d94ec8f659ed3258e301afe51240786d9ecddc8d35aeecae391ffe73e38d8c**************",
+          "expires_at": "yyyy-mm-ddT14:34:08.664Z",
+          "created_at": "yyyy-mm-ddT14:34:08.664Z",
+          "updated_at": "yyyy-mm-ddT14:34:08.664Z"
+        }
+      },
+
+      "LoginError": {
+        "title": "LoginError",
+        "required": ["name", "message", "action", "status_code", "error_id", "request_id", "error_location_code"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "status_code": {
+            "type": "string"
+          },
+          "error_id": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "error_location_code": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "name": "UnauthorizedError",
+          "message": "Dados não conferem.",
+          "action": "Verifique se os dados enviados estão corretos.",
+          "status_code": 401,
+          "error_id": "4a61276a-8dfc-41cc-a563-7fa4975*****",
+          "request_id": "fe12a267-aa3c-4fad-8375-2fe92d6*****",
+          "error_location_code": "CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH"
+        }
+      }
+    }
+  }
+}

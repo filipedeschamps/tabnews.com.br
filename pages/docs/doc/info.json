@@ -1,0 +1,31 @@
+{
+  "openapi": "3.0.5",
+  "info": {
+    "title": "TABNEWS",
+    "description": "Tenho uma Newsletter gratuita que faço com meu irmão Gustavo Deschamps, onde apesar de ter uma aceitação muito acima do que a gente esperava, ao mesmo tempo é um material que dá muito trabalho para ser produzido e ficamos extremamente frustrados quando, por exemplo, um mesmo provedor de email decide entregar esse material para alguns usuários, mas não para outros, e sem padrão algum. E por conta disso, decidimos criar o TabNews para resolver esse problema, mas spoiler alert, não resolve, continue lendo para entender.",
+    "termsOfService": "https://tabnews.com.br/",
+    "version": "1.0.0",
+    "contact": {
+      "url": "https:/https://www.tabnews.com.br/"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/filipedeschamps/tabnews.com.br/blob/master/LICENSE"
+    }
+  },
+  "tags": [
+    {
+      "name": "Tabnews",
+      "description": "Conteúdos para quem vive de programação e tecnologia.",
+      "externalDocs": {
+        "description": "Github",
+        "url": "https://github.com/filipedeschamps/tabnews.com.br"
+      }
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://tabnews.com.br/api"
+    }
+  ]
+}
