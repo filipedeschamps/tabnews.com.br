@@ -87,7 +87,7 @@
     ]
   },
   "engines": {
-    "node": "16.15.0"
+    "node": "16"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
