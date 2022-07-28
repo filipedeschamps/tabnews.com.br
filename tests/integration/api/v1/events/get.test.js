@@ -1,8 +1,8 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
-import orchestrator from 'tests/orchestrator.js';
 import event from 'models/event.js';
+import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

@@ -1,6 +1,7 @@
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
+import { setTimeout } from 'timers/promises';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {

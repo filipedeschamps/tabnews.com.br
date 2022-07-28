@@ -1,11 +1,10 @@
-// eslint-disable-next-line import/order
-const { join, resolve } = require('node:path');
-import { readFileSync } from 'node:fs';
-
 import fetch from 'cross-fetch';
+import { readFileSync } from 'node:fs';
 import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
+
+const { join, resolve } = require('node:path');
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

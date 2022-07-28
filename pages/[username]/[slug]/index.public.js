@@ -8,7 +8,7 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
+import { Content, DefaultLayout, TabCoinButtons } from 'pages/interface/index.js';
 
 export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback }) {
   const { data: contentFound } = useSWR(

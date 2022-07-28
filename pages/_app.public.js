@@ -1,4 +1,4 @@
-import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
+import { BaseStyles, SSRProvider, ThemeProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
 
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';

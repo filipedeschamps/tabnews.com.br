@@ -1,5 +1,5 @@
-import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import { HomeIcon, PersonFillIcon, SquareFillIcon } from '@primer/octicons-react';
+import { ActionList, ActionMenu, Box, Header, IconButton, Text, Tooltip, Truncate } from '@primer/react';
 import { CgTab } from 'react-icons/cg';
 
 import { useUser } from 'pages/interface/index.js';

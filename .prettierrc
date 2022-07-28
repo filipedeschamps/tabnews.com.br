@@ -1,5 +1,9 @@
 {
   "printWidth": 120,
   "singleQuote": true,
-  "bracketSameLine": true
+  "bracketSameLine": true,
+  "importOrder": ["^(errors|fonts|infra|models|models|tests|pages)/(.*)$", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true
 }

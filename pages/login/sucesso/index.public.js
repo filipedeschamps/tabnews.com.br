@@ -1,5 +1,5 @@
 import { Box, Heading, Text } from '@primer/react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
 
 import { DefaultLayout } from 'pages/interface/index.js';

@@ -1,7 +1,7 @@
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { Box, Button, Flash, FormControl, Heading, TextInput } from '@primer/react';
 import fetch from 'cross-fetch';
 import { useRouter } from 'next/router';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { DefaultLayout } from 'pages/interface/index.js';
 

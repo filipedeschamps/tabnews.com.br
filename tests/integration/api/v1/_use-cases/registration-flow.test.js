@@ -1,11 +1,12 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import authentication from 'models/authentication';
+
 import activation from 'models/activation.js';
-import session from 'models/session.js';
+import authentication from 'models/authentication';
 import password from 'models/password.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
+import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

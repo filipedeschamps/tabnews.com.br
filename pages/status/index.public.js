@@ -1,5 +1,5 @@
 import { Box, Heading, Label, LabelGroup, Truncate } from '@primer/react';
-import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
 
 import { DefaultLayout } from 'pages/interface/index.js';

@@ -1,8 +1,7 @@
-import fs from 'node:fs';
-
 import faker from '@faker-js/faker';
 import retry from 'async-retry';
 import fetch from 'cross-fetch';
+import fs from 'node:fs';
 
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';

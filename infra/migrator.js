@@ -1,10 +1,9 @@
-// eslint-disable-next-line import/order
-const { join, resolve } = require('node:path');
-
 import migrationRunner from 'node-pg-migrate';
 
 import database from 'infra/database.js';
 import logger from 'infra/logger.js';
+
+const { join, resolve } = require('node:path');
 
 const defaultConfigurations = {
   dir: join(resolve('.'), 'infra', 'migrations'),

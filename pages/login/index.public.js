@@ -1,6 +1,6 @@
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { Box, Button, Flash, FormControl, Heading, Link, Text, TextInput } from '@primer/react';
 import { useRouter } from 'next/router';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { DefaultLayout, useUser } from 'pages/interface/index.js';
 

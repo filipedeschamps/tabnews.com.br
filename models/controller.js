@@ -1,19 +1,18 @@
-import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
-
-import session from 'models/session.js';
-import logger from 'infra/logger.js';
-import webserver from 'infra/webserver.js';
+import { v4 as uuidV4 } from 'uuid';
 
 import {
+  ForbiddenError,
   InternalServerError,
   NotFoundError,
-  ValidationError,
-  ForbiddenError,
-  UnauthorizedError,
   TooManyRequestsError,
+  UnauthorizedError,
   UnprocessableEntityError,
-} from '/errors/index.js';
+  ValidationError,
+} from 'errors/index.js';
+import logger from 'infra/logger.js';
+import webserver from 'infra/webserver.js';
+import session from 'models/session.js';
 
 async function injectRequestMetadata(request, response, next) {
   request.context = {
