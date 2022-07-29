@@ -10,7 +10,7 @@ async function createAndSendRecoveryEmail(secureInputValues) {
   const tokenObject = await create(userFound);
   await sendEmailToUser(userFound, tokenObject.id);
 
-  return tokenObject; 
+  return tokenObject;
 }
 
 async function findUserByUsernameOrEmail({ username, email }) {
@@ -78,7 +78,7 @@ async function resetUserPassword(secureInputValues) {
 
   if (!tokenObject.used) {
     const userToken = await markTokenAsUsed(tokenObject.id);
-    await session.expireAllFromUser(tokenObject.user_id)
+    await session.expireAllFromUserId(tokenObject.user_id)
     await updateUserPassword(tokenObject.user_id, secureInputValues.password);
     return userToken;
   }

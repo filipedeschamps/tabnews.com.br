@@ -48,7 +48,7 @@ async function expireById(id) {
   return results.rows[0];
 }
 
-async function expireAllFromUser(userId) {
+async function expireAllFromUserId(userId) {
   const query = {
     text: `
       UPDATE
@@ -159,7 +159,7 @@ export default Object.freeze({
   create,
   setSessionIdCookieInResponse,
   expireById,
-  expireAllFromUser,
+  expireAllFromUserId,
   clearSessionIdCookie,
   findOneValidByToken,
   findOneById,
