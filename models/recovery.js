@@ -2,6 +2,7 @@ import email from 'infra/email.js';
 import database from 'infra/database.js';
 import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
+import session from 'models/session';
 import { NotFoundError, ValidationError } from 'errors/index.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
@@ -9,7 +10,7 @@ async function createAndSendRecoveryEmail(secureInputValues) {
   const tokenObject = await create(userFound);
   await sendEmailToUser(userFound, tokenObject.id);
 
-  return tokenObject;
+  return tokenObject; 
 }
 
 async function findUserByUsernameOrEmail({ username, email }) {
@@ -77,6 +78,7 @@ async function resetUserPassword(secureInputValues) {
 
   if (!tokenObject.used) {
     const userToken = await markTokenAsUsed(tokenObject.id);
+    await session.expireAllFromUser(tokenObject.user_id)
     await updateUserPassword(tokenObject.user_id, secureInputValues.password);
     return userToken;
   }
