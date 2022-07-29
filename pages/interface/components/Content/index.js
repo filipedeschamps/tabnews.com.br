@@ -218,7 +218,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
           </Heading>
         )}
       </Box>
-      <Box sx={{ overflow: 'auto' }}>
+      <Box sx={{ overflow: 'hidden' }}>
         <Viewer value={contentObject.body} plugins={bytemdPluginList} />
       </Box>
       {contentObject.source_url && (
