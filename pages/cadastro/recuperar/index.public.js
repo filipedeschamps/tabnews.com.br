@@ -103,6 +103,7 @@ function RecoverPasswordForm() {
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            block={true}
             aria-label="Seu usuário ou e-mail"
           />
           {['userInput', 'email', 'username'].includes(errorObject?.key) && (
@@ -115,7 +116,13 @@ function RecoverPasswordForm() {
         </FormControl>
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <Button variant="primary" size="large" type="submit" disabled={isLoading} aria-label="Recuperar">
+          <Button
+            variant="primary"
+            size="large"
+            type="submit"
+            disabled={isLoading}
+            sx={{ width: '100%' }}
+            aria-label="Recuperar">
             Recuperar
           </Button>
         </FormControl>
