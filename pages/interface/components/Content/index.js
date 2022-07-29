@@ -434,6 +434,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 aria-label="Título"
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
+                block={true}
                 value={newData.title}
               />
 
@@ -446,7 +447,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           {/* <Editor> is not part of Primer, so error messages and styling need to be created manually */}
           <FormControl id="body">
             <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
-            <Box ref={editorRef} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
+            <Box sx={{ width: '100%' }} ref={editorRef} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
               <Editor value={newData.body} plugins={bytemdPluginList} onChange={handleChange} mode="tab" />
             </Box>
 
@@ -468,6 +469,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 spellCheck={false}
                 placeholder="Fonte (opcional)"
                 aria-label="Fonte (opcional)"
+                block={true}
                 value={newData.source_url}
               />
 
@@ -498,11 +500,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           height: ${mode === 'edit' ? 'calc(100vh - 350px)' : 'calc(100vh - 600px)'};
           min-height: 200px;
           border-radius: 6px;
+          padding: 1px;
+          border: 1px solid #d0d7de;
         }
 
         .bytemd:focus-within {
           border-color: #0969da;
-          box-shadow: 0 0 0 3px rgb(9 105 218 / 30%);
+          box-shadow: inset 0 0 0 1px #0969da;
         }
 
         .is-invalid .bytemd {

@@ -123,6 +123,7 @@ function SignUpForm() {
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            block={true}
             aria-label="Seu nome de usuário"
           />
           {errorObject?.key === 'username' && (
@@ -143,6 +144,7 @@ function SignUpForm() {
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
+            block={true}
             aria-label="Seu email"
           />
           {errorObject?.key === 'email' && (
@@ -163,6 +165,7 @@ function SignUpForm() {
             autoCapitalize="off"
             spellCheck={false}
             size="large"
+            block={true}
             aria-label="Sua senha"
           />
           {capsLockWarningMessage && (
@@ -184,6 +187,7 @@ function SignUpForm() {
             autoCapitalize="off"
             spellCheck={false}
             size="large"
+            block={true}
             aria-label="Repita a senha"
           />
           {errorObject?.key === 'password_confirm' && (
@@ -192,7 +196,13 @@ function SignUpForm() {
         </FormControl>
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
-          <Button variant="primary" size="large" type="submit" disabled={isLoading} aria-label="Criar cadastro">
+          <Button
+            variant="primary"
+            size="large"
+            type="submit"
+            disabled={isLoading}
+            sx={{ width: '100%' }}
+            aria-label="Criar cadastro">
             Criar cadastro
           </Button>
         </FormControl>
