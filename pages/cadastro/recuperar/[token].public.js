@@ -120,6 +120,7 @@ function RecoverPasswordForm() {
             autoCapitalize="off"
             spellCheck={false}
             size="large"
+            block={true}
             aria-label="Sua senha"
           />
           {capsLockWarningMessage && (
@@ -144,6 +145,7 @@ function RecoverPasswordForm() {
             autoCapitalize="off"
             spellCheck={false}
             size="large"
+            block={true}
             aria-label="Repita a senha"
           />
           {errorObject?.key === 'password_confirm' && (
@@ -152,7 +154,13 @@ function RecoverPasswordForm() {
         </FormControl>
         <FormControl>
           <FormControl.Label visuallyHidden>Alterar senha</FormControl.Label>
-          <Button variant="primary" size="large" type="submit" disabled={isLoading} aria-label="Alterar senha">
+          <Button
+            variant="primary"
+            size="large"
+            type="submit"
+            disabled={isLoading}
+            sx={{ width: '100%' }}
+            aria-label="Alterar senha">
             Alterar senha
           </Button>
         </FormControl>

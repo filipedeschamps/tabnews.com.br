@@ -113,6 +113,7 @@ function LoginForm() {
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck={false}
+              block={true}
               aria-label="Seu email"
             />
             {errorObject?.key === 'email' && (
@@ -132,6 +133,7 @@ function LoginForm() {
               autoCapitalize="off"
               spellCheck={false}
               size="large"
+              block={true}
               aria-label="Sua senha"
             />
             {capsLockWarningMessage && (
@@ -143,7 +145,13 @@ function LoginForm() {
           </FormControl>
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
-            <Button variant="primary" size="large" type="submit" disabled={isLoading} aria-label="Login">
+            <Button
+              variant="primary"
+              size="large"
+              type="submit"
+              disabled={isLoading}
+              sx={{ width: '100%' }}
+              aria-label="Login">
               Login
             </Button>
           </FormControl>
