@@ -2,7 +2,7 @@ version: '2.4'
 services:
   postgres_dev:
     container_name: 'postgres-dev'
-    image: 'postgres:14.1-alpine'
+    image: 'postgres:9.5.2'
     env_file:
       - ../.env
     ports:

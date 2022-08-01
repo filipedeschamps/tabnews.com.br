@@ -8,8 +8,12 @@ concurrency:
 
 jobs:
   tests:
+    strategy:
+      matrix:
+        node: [16]
+        os: [ubuntu-latest, windows-2019]
     name: Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -25,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: ${{ matrix.node }}
           cache: 'npm'
       - run: npm ci
       - run: npm run dev & npx jest --runInBand
