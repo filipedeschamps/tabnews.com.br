@@ -1,8 +1,8 @@
 import useSWR from 'swr';
-import { Box, Link, Text } from '@primer/react';
+import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
 
-import PublishedSince from 'pages/interface/components/PublishedSince';
+import { Link, PublishedSince } from 'pages/interface';
 
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
