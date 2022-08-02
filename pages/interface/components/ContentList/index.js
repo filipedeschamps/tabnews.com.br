@@ -76,10 +76,21 @@ export default function ContentList({ contentList, pagination, paginationBasePat
           </Text>
         </Box>,
         <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
-          <Box sx={{ overflow: 'auto' }}>
-            <Link
-              sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', wordWrap: 'break-word' }}
-              href={`/${contentObject.username}/${contentObject.slug}`}>
+          <Box
+            sx={{
+              overflow: 'auto',
+              fontWeight: 'semibold',
+              fontSize: 2,
+              '> a': {
+                ':link': {
+                  color: 'fg.default',
+                },
+                ':visited': {
+                  color: 'fg.subtle',
+                },
+              },
+            }}>
+            <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.username}/${contentObject.slug}`}>
               {contentObject.title}
             </Link>
           </Box>
