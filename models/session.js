@@ -48,6 +48,26 @@ async function expireById(id) {
   return results.rows[0];
 }
 
+async function expireAllFromUserId(userId) {
+  const query = {
+    text: `
+      UPDATE
+        sessions
+      SET
+        expires_at = created_at - interval '1 day',
+        updated_at = now()
+      WHERE
+        user_id = ${userId}
+      RETURNING
+        *
+      ;`,
+    values: [userId],
+  };
+
+  const results = await database.query(query);
+  return results;
+}
+
 // TODO: mark session as invalid also in Database.
 function clearSessionIdCookie(response) {
   response.setHeader('Set-Cookie', [
@@ -139,6 +159,7 @@ export default Object.freeze({
   create,
   setSessionIdCookieInResponse,
   expireById,
+  expireAllFromUserId,
   clearSessionIdCookie,
   findOneValidByToken,
   findOneById,
