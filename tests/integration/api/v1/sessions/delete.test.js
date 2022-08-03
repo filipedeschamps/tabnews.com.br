@@ -68,6 +68,19 @@ describe('DELETE /api/v1/sessions', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
+      // First: test if the session is working
+      const validSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+        method: 'GET',
+        headers: {
+          cookie: `session_id=${sessionObject.token}`,
+        },
+      });
+
+      expect(validSessionResponse.status).toBe(200);
+      const validSessionResponseBody = await validSessionResponse.json();
+      expect(validSessionResponseBody.id).toBe(defaultUser.id);
+
+      // Second: delete the session
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
         method: 'DELETE',
         headers: {
@@ -90,6 +103,16 @@ describe('DELETE /api/v1/sessions', () => {
       expect(responseBody.expires_at < sessionObject.expires_at.toISOString()).toEqual(true);
       expect(responseBody.expires_at < sessionObject.created_at.toISOString()).toEqual(true);
       expect(responseBody.updated_at > sessionObject.updated_at.toISOString()).toEqual(true);
+
+      // Third: test if the session is not working anymore
+      const invalidSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+        method: 'GET',
+        headers: {
+          cookie: `session_id=${sessionObject.token}`,
+        },
+      });
+
+      expect(invalidSessionResponse.status).toBe(401);
     });
   });
 
