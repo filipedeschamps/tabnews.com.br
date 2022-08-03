@@ -54,6 +54,71 @@ describe('PATCH /api/v1/recovery', () => {
       expect(defaultUser.password).not.toEqual(updatedUserInDatabase.password);
     });
 
+    test('With valid information and multiple active sessions', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const session1Object = await orchestrator.createSession(defaultUser);
+      const session2Object = await orchestrator.createSession(defaultUser);
+
+      // First: test if both sessions are working
+      const validSession1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+        method: 'GET',
+        headers: {
+          cookie: `session_id=${session1Object.token}`,
+        },
+      });
+
+      const validSession2Response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+        method: 'GET',
+        headers: {
+          cookie: `session_id=${session2Object.token}`,
+        },
+      });
+
+      expect(validSession1Response.status).toBe(200);
+      const validSession1ResponseBody = await validSession1Response.json();
+      expect(validSession1ResponseBody.id).toBe(defaultUser.id);
+
+      expect(validSession2Response.status).toBe(200);
+      const validSession2ResponseBody = await validSession2Response.json();
+      expect(validSession2ResponseBody.id).toBe(defaultUser.id);
+
+      // Second: define new password for user using the recovery endpoint
+      const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
+
+      const recoveryResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: recoveryToken.id,
+          password: 'newValidPassword',
+        }),
+      });
+
+      expect(recoveryResponse.status).toEqual(200);
+
+      // Third: test if both sessions are invalid
+      const invalidSession1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+        method: 'GET',
+        headers: {
+          cookie: `session_id=${session1Object.token}`,
+        },
+      });
+
+      const invalidSession2Response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+        method: 'GET',
+        headers: {
+          cookie: `session_id=${session2Object.token}`,
+        },
+      });
+
+      expect(invalidSession1Response.status).toBe(401);
+      expect(invalidSession2Response.status).toBe(401);
+    });
+
     test('With valid information, but used token', async () => {
       const defaultUser = await orchestrator.createUser();
       const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);

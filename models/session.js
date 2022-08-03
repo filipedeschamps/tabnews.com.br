@@ -57,7 +57,8 @@ async function expireAllFromUserId(userId) {
         expires_at = created_at - interval '1 day',
         updated_at = now()
       WHERE
-        user_id = ${userId}
+        user_id = $1
+        AND expires_at >= now()
       RETURNING
         *
       ;`,
