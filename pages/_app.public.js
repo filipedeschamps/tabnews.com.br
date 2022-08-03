@@ -1,6 +1,7 @@
 import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
+import NextNProgress from 'nextjs-progressbar';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -19,6 +20,7 @@ function MyApp({ Component, pageProps }) {
         <SSRProvider>
           <ThemeProvider preventSSRMismatch colorMode="day">
             <BaseStyles>
+              <NextNProgress options={{ showSpinner: false }} />
               <Component {...pageProps} />
             </BaseStyles>
           </ThemeProvider>
