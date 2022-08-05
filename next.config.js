@@ -13,4 +13,12 @@ module.exports = {
     locales: ['pt-br'],
     defaultLocale: 'pt-br',
   },
+  async rewrites() {
+    return [
+      {
+        source: '/rss',
+        destination: '/api/v1/rss',
+      },
+    ];
+  },
 };
