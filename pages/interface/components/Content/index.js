@@ -105,7 +105,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
       status: 'deleted',
     };
 
-    const response = await fetch(`/api/v1/contents/${contentObject.username}/${contentObject.slug}`, {
+    const response = await fetch(`/api/v1/contents/${contentObject.owner_username}/${contentObject.slug}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -192,8 +192,8 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
           <Box sx={{ flex: 'auto' }}>
-            <BranchName sx={{ mr: 2 }} href={`/${contentObject.username}`}>
-              {contentObject.username}
+            <BranchName sx={{ mr: 2 }} href={`/${contentObject.owner_username}`}>
+              {contentObject.owner_username}
             </BranchName>
 
             <Tooltip
@@ -201,7 +201,9 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
                 dateStyle: 'full',
                 timeStyle: 'short',
               })}>
-              <Link href={`/${contentObject.username}/${contentObject.slug}`} sx={{ fontSize: 0, color: 'fg.muted' }}>
+              <Link
+                href={`/${contentObject.owner_username}/${contentObject.slug}`}
+                sx={{ fontSize: 0, color: 'fg.muted' }}>
                 <PublishedSince date={contentObject.published_at} />
               </Link>
             </Tooltip>
@@ -288,7 +290,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
       const requestMethod = contentObject?.id ? 'PATCH' : 'POST';
       const requestUrl = contentObject?.id
-        ? `/api/v1/contents/${contentObject.username}/${contentObject.slug}`
+        ? `/api/v1/contents/${contentObject.owner_username}/${contentObject.slug}`
         : `/api/v1/contents`;
       const requestBody = {
         status: 'published',
@@ -337,7 +339,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           if (!responseBody.parent_id) {
             localStorage.setItem('justPublishedNewRootContent', true);
-            router.push(`/${responseBody.username}/${responseBody.slug}`);
+            router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
             return;
           }
 

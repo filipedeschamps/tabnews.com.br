@@ -87,6 +87,27 @@ const schemas = {
     });
   },
 
+  owner_username: function () {
+    return Joi.object({
+      owner_username: Joi.string()
+        .alphanum()
+        .min(3)
+        .max(30)
+        .trim()
+        .invalid(null)
+        .when('$required.owner_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"owner_username" é um campo obrigatório.`,
+          'string.empty': `"owner_username" não pode estar em branco.`,
+          'string.base': `"owner_username" deve ser do tipo String.`,
+          'string.alphanum': `"owner_username" deve conter apenas caracteres alfanuméricos.`,
+          'string.min': `"owner_username" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"owner_username" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"owner_username" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
   parent_username: function () {
     return Joi.object({
       parent_username: Joi.string()
@@ -632,6 +653,7 @@ const schemas = {
       'published_at',
       'deleted_at',
       'username',
+      'owner_username',
       'parent_title',
       'parent_slug',
       'parent_username',

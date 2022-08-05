@@ -90,7 +90,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
                 },
               },
             }}>
-            <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.username}/${contentObject.slug}`}>
+            <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
               {contentObject.title}
             </Link>
           </Box>
@@ -103,8 +103,8 @@ export default function ContentList({ contentList, pagination, paginationBasePat
               <ChildrenDeepCountText count={contentObject.children_deep_count} />
             </Text>
             {' · '}
-            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.username}`}>
-              {contentObject.username}
+            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+              {contentObject.owner_username}
             </Link>
             {' · '}
             <Text>
