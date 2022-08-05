@@ -164,6 +164,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel1.published_at.toISOString(),
           deleted_at: null,
           username: firstUser.username,
+          owner_username: firstUser.username,
           children: [
             {
               id: childBranchBLevel2Content2.id,
@@ -184,6 +185,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content2.published_at.toISOString(),
               deleted_at: null,
               username: secondUser.username,
+              owner_username: secondUser.username,
               children: [],
               children_deep_count: 0,
             },
@@ -206,6 +208,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchBLevel2Content1.published_at.toISOString(),
               deleted_at: null,
               username: firstUser.username,
+              owner_username: firstUser.username,
               children: [],
               children_deep_count: 0,
             },
@@ -230,6 +233,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchALevel1.published_at.toISOString(),
           deleted_at: null,
           username: firstUser.username,
+          owner_username: firstUser.username,
           children: [
             {
               id: childBranchALevel2.id,
@@ -249,6 +253,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               published_at: childBranchALevel2.published_at.toISOString(),
               deleted_at: null,
               username: firstUser.username,
+              owner_username: firstUser.username,
               children: [
                 {
                   id: childBranchALevel3.id,
@@ -268,6 +273,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
                   published_at: childBranchALevel3.published_at.toISOString(),
                   deleted_at: null,
                   username: firstUser.username,
+                  owner_username: firstUser.username,
                   children: [],
                   children_deep_count: 0,
                 },
@@ -366,6 +372,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content2.published_at.toISOString(),
           deleted_at: null,
           username: secondUser.username,
+          owner_username: secondUser.username,
           children: [],
           children_deep_count: 0,
         },
@@ -388,6 +395,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           published_at: childBranchBLevel2Content1.published_at.toISOString(),
           deleted_at: null,
           username: firstUser.username,
+          owner_username: firstUser.username,
           children: [],
           children_deep_count: 0,
         },

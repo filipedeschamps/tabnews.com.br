@@ -113,6 +113,7 @@ async function findAll(values = {}, options = {}) {
         contents.published_at as published_at,
         contents.deleted_at as deleted_at,
         users.username as username,
+        users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
         parent_user.username as parent_username,
@@ -309,6 +310,7 @@ async function create(postedContent, options = {}) {
         inserted_content.published_at as published_at,
         inserted_content.deleted_at as deleted_at,
         users.username as username,
+        users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
         parent_user.username as parent_username
@@ -637,6 +639,7 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.published_at as published_at,
         updated_content.deleted_at as deleted_at,
         users.username as username,
+        users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
         parent_user.username as parent_username
@@ -779,6 +782,7 @@ async function findChildrenTree(options) {
         children.published_at as published_at,
         children.deleted_at as deleted_at,
         users.username as username,
+        users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
         parent_user.username as parent_username,
