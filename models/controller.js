@@ -44,7 +44,7 @@ async function injectRequestMetadata(request, response, next) {
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.context.requestId });
+  const errorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
   logger.info(snakeize(errorObject));
   return response.status(errorObject.statusCode).json(snakeize(errorObject));
 }
