@@ -11,7 +11,7 @@ export default function HeaderComponent() {
       <Header.Item>
         <Header.Link href="/" fontSize={2}>
           <CgTab size={32} />
-          <Box sx={{ ml: 2 }}>TabNews</Box>
+          <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
         </Header.Link>
       </Header.Item>
 
