@@ -7,23 +7,20 @@ import validator from 'models/validator.js';
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
-      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Melhores` }}>
+      <DefaultLayout
+        metadata={{
+          title: 'Recentes',
+          description: 'Publicações no TabNews ordenadas pelas mais recentes.',
+        }}>
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
-          paginationBasePath="/pagina"
-          revalidatePath={`/api/v1/contents?strategy=best&page=${pagination.currentPage}`}
+          paginationBasePath="/recentes/pagina"
+          revalidatePath="/api/v1/contents?strategy=new"
         />
       </DefaultLayout>
     </>
   );
-}
-
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
 }
 
 export async function getStaticProps(context) {
@@ -44,10 +41,13 @@ export async function getStaticProps(context) {
   }
 
   const results = await content.findWithStrategy({
-    strategy: 'best',
+    strategy: 'new',
     where: {
       parent_id: null,
       status: 'published',
+    },
+    attributes: {
+      exclude: ['body'],
     },
     page: context.params.page,
     per_page: context.params.per_page,
@@ -62,9 +62,6 @@ export async function getStaticProps(context) {
       contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
       pagination: results.pagination,
     },
-
-    // TODO: instead of `revalidate`, understand how to use this:
-    // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
     revalidate: 1,
   };
 }

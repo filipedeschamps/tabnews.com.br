@@ -15,6 +15,12 @@ export default function HeaderComponent() {
         </Header.Link>
       </Header.Item>
 
+      <Header.Item>
+        <Header.Link href="/recentes" fontSize={2}>
+          Recentes
+        </Header.Link>
+      </Header.Item>
+
       <Header.Item full>
         <Header.Link href="/status" fontSize={2}>
           Status
