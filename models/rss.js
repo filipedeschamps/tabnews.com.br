@@ -1,41 +1,53 @@
-import { Viewer } from '@bytemd/react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Viewer } from '@bytemd/react';
+import removeMarkdown from 'remove-markdown';
 
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';
-function generateRssFeed(posts) {
-  const tabnewsUrl = webserver.getHost();
+
+function generateRss2(contentList) {
+  const webserverHost = webserver.getHost();
+
+  // TODO: make this property flexible in the future to
+  // support things like: `/[username]/rss`
+  const feedURL = `${webserverHost}/recentes/rss`;
+
   const feed = new Feed({
     title: 'TabNews',
-    description: 'Conteudos para quem trabalha com tecnologia',
-    id: tabnewsUrl,
-    link: tabnewsUrl,
-    image: `${tabnewsUrl}/default-image-share.png`,
-    favicon: `${tabnewsUrl}/favicon.ico`,
-    copyright: `This software is completely free and open-source on the GPL 3.0 license`,
-    generator: "npm 'feed' package",
+    description: 'Conteúdos para quem trabalha com Programação e Tecnologia',
+    id: feedURL,
+    link: feedURL,
+    image: `${webserverHost}/default-image-share.png`,
+    favicon: `${webserverHost}/favicon-mobile.png`,
+    language: 'pt',
+    updated: contentList.length > 0 ? new Date(contentList[0].updated_at) : new Date(),
     feedLinks: {
-      rss2: `${tabnewsUrl}/rss/xml`,
-      json: `${tabnewsUrl}/rss/json`,
+      rss2: feedURL,
     },
   });
-  posts.forEach((post) => {
-    const postUrl = `${tabnewsUrl}/${post.username}/${post.slug}`;
+
+  contentList.forEach((contentObject) => {
+    const contentUrl = `${webserverHost}/${contentObject.username}/${contentObject.slug}`;
+
     feed.addItem({
-      title: post.title,
-      id: post.id,
-      link: postUrl,
-      description: post.body.substring(0, 10) + '...',
-      content: renderToStaticMarkup(<Viewer value={post.body} />).replace(/[\r\n]/gm, ''),
+      title: contentObject.title,
+      id: contentObject.id,
+      link: contentUrl,
+      description: removeMarkdown(contentObject.body).replace(/\s+/g, ' ').substring(0, 190) + '...',
+      content: renderToStaticMarkup(<Viewer value={contentObject.body} />).replace(/[\r\n]/gm, ''),
       author: [
         {
-          name: post.username,
-          link: `${tabnewsUrl}/${post.username}`,
+          name: contentObject.username,
+          link: `${webserverHost}/${contentObject.username}`,
         },
       ],
-      date: new Date(post.published_at),
+      date: new Date(contentObject.published_at),
     });
   });
-  return feed;
+
+  return feed.rss2();
 }
-export default { generateRssFeed };
+
+export default Object.freeze({
+  generateRss2,
+});

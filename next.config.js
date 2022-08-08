@@ -13,11 +13,25 @@ module.exports = {
     locales: ['pt-br'],
     defaultLocale: 'pt-br',
   },
-  async rewrites() {
+  async redirects() {
     return [
       {
         source: '/rss',
-        destination: '/api/v1/rss',
+        destination: '/recentes/rss',
+        permanent: true,
+      },
+      {
+        source: '/rss.xml',
+        destination: '/recentes/rss',
+        permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/recentes/rss',
+        destination: '/api/v1/contents/rss',
       },
     ];
   },
