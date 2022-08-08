@@ -1,5 +1,6 @@
 module.exports = {
   pageExtensions: ['public.js'],
+  poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
