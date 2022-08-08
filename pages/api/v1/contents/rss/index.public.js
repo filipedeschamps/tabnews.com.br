@@ -33,5 +33,6 @@ async function handleRequest(request, response) {
   const rss2 = rss.generateRss2(secureContentListFound);
 
   response.setHeader('Content-Type', 'text/xml');
+  response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate');
   response.status(200).send(rss2);
 }
