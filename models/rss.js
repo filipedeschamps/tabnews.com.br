@@ -1,6 +1,6 @@
-var showdown = require('showdown');
-var converter = new showdown.Converter();
-// See: https://dev.to/j471n/how-to-add-rss-feed-in-nextjs-blog-34j1
+import { Viewer } from '@bytemd/react';
+import { renderToStaticMarkup } from 'react-dom/server';
+
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';
 function generateRssFeed(posts) {
@@ -26,7 +26,7 @@ function generateRssFeed(posts) {
       id: post.id,
       link: postUrl,
       description: post.body.substring(0, 10) + '...',
-      content: converter.makeHtml(post.body),
+      content: renderToStaticMarkup(<Viewer value={post.body} />).replace(/[\r\n]/gm, ''),
       author: [
         {
           name: post.username,
