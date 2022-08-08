@@ -40,7 +40,7 @@ describe('GET /recentes/rss', () => {
         <language>pt</language>
         <image>
             <title>TabNews</title>
-            <url>http://localhost:3000/default-image-share.png</url>
+            <url>http://localhost:3000/favicon-mobile.png</url>
             <link>http://localhost:3000/recentes/rss</link>
         </image>
     </channel>
@@ -56,7 +56,7 @@ describe('GET /recentes/rss', () => {
         status: 'published',
         body: `# Corpo com HTML
 
-É **importante** lidar corretamente com o \`HTML\`.`,
+É **importante** lidar corretamente com o \`HTML\`, incluindo estilos ~~especiais~~ do \`GFM\`.`,
       });
 
       const secondRootContent = await orchestrator.createContent({
@@ -91,7 +91,7 @@ describe('GET /recentes/rss', () => {
         <language>pt</language>
         <image>
             <title>TabNews</title>
-            <url>http://localhost:3000/default-image-share.png</url>
+            <url>http://localhost:3000/favicon-mobile.png</url>
             <link>http://localhost:3000/recentes/rss</link>
         </image>
         <item>
@@ -107,8 +107,8 @@ describe('GET /recentes/rss', () => {
             <link>http://localhost:3000/${firstRootContent.owner_username}/${firstRootContent.slug}</link>
             <guid>${firstRootContent.id}</guid>
             <pubDate>${new Date(firstRootContent.published_at).toUTCString()}</pubDate>
-            <description><![CDATA[Corpo com HTML É importante lidar corretamente com o HTML....]]></description>
-            <content:encoded><![CDATA[<div class="markdown-body"><h1>Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>.</p></div>]]></content:encoded>
+            <description><![CDATA[Corpo com HTML É importante lidar corretamente com o HTML, incluindo estilos especiais do GFM....]]></description>
+            <content:encoded><![CDATA[<div class="markdown-body"><h1>Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>, incluindo estilos <del>especiais</del> do <code>GFM</code>.</p></div>]]></content:encoded>
         </item>
     </channel>
 </rss>`);
