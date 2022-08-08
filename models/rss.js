@@ -17,7 +17,7 @@ function generateRss2(contentList) {
     description: 'Conteúdos para quem trabalha com Programação e Tecnologia',
     id: feedURL,
     link: feedURL,
-    image: `${webserverHost}/default-image-share.png`,
+    image: `${webserverHost}/favicon-mobile.png`,
     favicon: `${webserverHost}/favicon-mobile.png`,
     language: 'pt',
     updated: contentList.length > 0 ? new Date(contentList[0].updated_at) : new Date(),
