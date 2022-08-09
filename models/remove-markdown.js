@@ -1,3 +1,6 @@
+// Original code from: https://github.com/stiang/remove-markdown
+// With a fix by @aprendendofelipe https://github.com/stiang/remove-markdown/pull/57
+
 export default function removeMarkdown(md, options) {
   options = options || {};
   options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
