@@ -29,6 +29,9 @@ import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
 import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
+import byteMDLocale from 'bytemd/locales/pt_BR.json';
+import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
+import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import 'bytemd/dist/index.min.css';
 import 'highlight.js/styles/github.css';
 import 'github-markdown-css/github-markdown-light.css';
@@ -248,7 +251,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
   const editorRef = useRef();
 
-  const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
+  const bytemdPluginList = [
+    gfmPlugin({ locale: gfmLocale }),
+    highlightSsrPlugin(),
+    mermaidPlugin({ locale: mermaidLocale }),
+    breaksPlugin(),
+    gemojiPlugin(),
+  ];
 
   const confirm = useConfirm();
 
@@ -450,7 +459,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           <FormControl id="body">
             <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
             <Box sx={{ width: '100%' }} ref={editorRef} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
-              <Editor value={newData.body} plugins={bytemdPluginList} onChange={handleChange} mode="tab" />
+              <Editor
+                value={newData.body}
+                plugins={bytemdPluginList}
+                onChange={handleChange}
+                mode="tab"
+                locale={byteMDLocale}
+              />
             </Box>
 
             {errorObject?.key === 'body' && (
@@ -526,7 +541,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         }
 
         .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(1),
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(2),
         .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(4) {
           display: none;
         }
