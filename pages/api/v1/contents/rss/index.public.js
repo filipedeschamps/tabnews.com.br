@@ -32,7 +32,7 @@ async function handleRequest(request, response) {
   const secureContentListFound = authorization.filterOutput(userTryingToList, 'read:content:list', contentListFound);
   const rss2 = rss.generateRss2(secureContentListFound);
 
-  response.setHeader('Content-Type', 'text/xml');
+  response.setHeader('Content-Type', 'text/xml; charset=utf-8');
   response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate');
   response.status(200).send(rss2);
 }
