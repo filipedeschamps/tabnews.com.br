@@ -1,4 +1,3 @@
-import rss from 'models/rss';
 import fetch from 'cross-fetch';
 import orchestrator from 'tests/orchestrator.js';
 
