@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Viewer } from '@bytemd/react';
-import removeMarkdown from 'remove-markdown';
+import removeMarkdown from 'models/remove-markdown';
 
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';

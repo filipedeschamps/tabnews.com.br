@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { Box } from '@primer/react';
 
-import removeMarkdown from 'remove-markdown';
+import removeMarkdown from 'models/remove-markdown';
 import webserver from 'infra/webserver.js';
 import { BaseLayout, Header } from 'pages/interface/index.js';
 

@@ -1,7 +1,7 @@
 import { join, resolve } from 'path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renderAsync } from '@resvg/resvg-js';
-import removeMarkdown from 'remove-markdown';
+import removeMarkdown from 'models/remove-markdown';
 
 async function asPng(contentObject) {
   const parsedContent = parseContent(contentObject);
