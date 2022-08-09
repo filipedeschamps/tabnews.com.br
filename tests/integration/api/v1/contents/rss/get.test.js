@@ -96,7 +96,7 @@ describe('GET /recentes/rss', () => {
         <item>
             <title><![CDATA[Conteúdo #2 (mais novo)]]></title>
             <link>http://localhost:3000/${secondRootContent.owner_username}/${secondRootContent.slug}</link>
-            <guid>${secondRootContent.id}</guid>
+            <guid>http://localhost:3000/${secondRootContent.owner_username}/${secondRootContent.slug}</guid>
             <pubDate>${new Date(secondRootContent.published_at).toUTCString()}</pubDate>
             <description><![CDATA[Este é um corpo bastante longo, vamos ver como que a propriedade description irá reagir, pois por padrão ela deverá cortar após um número X de caracteres. Não vou tomar nota aqui da quantida...]]></description>
             <content:encoded><![CDATA[<div class="markdown-body"><p>Este é um corpo bastante longo, vamos ver como que a propriedade description irá reagir, pois por padrão ela deverá cortar após um número X de caracteres. Não vou tomar nota aqui da quantidade exata de caracteres, pois isso pode mudar ao longo do tempo.</p></div>]]></content:encoded>
@@ -104,7 +104,7 @@ describe('GET /recentes/rss', () => {
         <item>
             <title><![CDATA[Conteúdo #1 (mais antigo)]]></title>
             <link>http://localhost:3000/${firstRootContent.owner_username}/${firstRootContent.slug}</link>
-            <guid>${firstRootContent.id}</guid>
+            <guid>http://localhost:3000/${firstRootContent.owner_username}/${firstRootContent.slug}</guid>
             <pubDate>${new Date(firstRootContent.published_at).toUTCString()}</pubDate>
             <description><![CDATA[Corpo com HTML É importante lidar corretamente com o HTML, incluindo estilos especiais do GFM....]]></description>
             <content:encoded><![CDATA[<div class="markdown-body"><h1>Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>, incluindo estilos <del>especiais</del> do <code>GFM</code>.</p></div>]]></content:encoded>

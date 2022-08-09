@@ -38,7 +38,7 @@ function generateRss2(contentList) {
 
     feed.addItem({
       title: contentObject.title,
-      id: contentObject.id,
+      id: contentUrl,
       link: contentUrl,
       description: removeMarkdown(contentObject.body).replace(/\s+/g, ' ').substring(0, 190) + '...',
       content: renderToStaticMarkup(<Viewer value={contentObject.body} plugins={bytemdPluginList} />).replace(
