@@ -1,10 +1,14 @@
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { useMediaQuery } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, metadata }) {
   const { type, title, description, image, url, noIndex, author, published_time, modified_time } = metadata;
   const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
   const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
+
+  const router = useRouter();
+  const pathName = router.pathname;
 
   return (
     <>
@@ -13,6 +17,10 @@ export default function DefaultLayout({ children, metadata }) {
         <meta name="title" content={title} />
         {description && <meta name="description" content={description} />}
         <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index follow'} />
+
+        {(pathName === '/' || pathName === '/recentes') && (
+          <link rel="alternate" type="application/rss+xml" title="TabNews: Recentes" href="/recentes/rss" />
+        )}
 
         <meta property="og:site_name" content="TabNews" />
         <meta property="og:type" content={type} />
