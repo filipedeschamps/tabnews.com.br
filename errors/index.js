@@ -89,10 +89,11 @@ export class ValidationError extends BaseError {
 }
 
 export class UnauthorizedError extends BaseError {
-  constructor({ message, action, stack, errorLocationCode }) {
+  constructor({ message, action, requestId, stack, errorLocationCode }) {
     super({
       message: message || 'Usuário não autenticado.',
       action: action || 'Verifique se você está autenticado com uma sessão ativa e tente novamente.',
+      requestId: requestId,
       statusCode: 401,
       stack: stack,
       errorLocationCode: errorLocationCode,
@@ -101,10 +102,11 @@ export class UnauthorizedError extends BaseError {
 }
 
 export class ForbiddenError extends BaseError {
-  constructor({ message, action, stack, errorLocationCode }) {
+  constructor({ message, action, requestId, stack, errorLocationCode }) {
     super({
       message: message || 'Você não possui permissão para executar esta ação.',
       action: action || 'Verifique se você possui permissão para executar esta ação.',
+      requestId: requestId,
       statusCode: 403,
       stack: stack,
       errorLocationCode: errorLocationCode,

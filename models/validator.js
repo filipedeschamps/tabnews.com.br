@@ -313,7 +313,7 @@ const schemas = {
     return Joi.object({
       body: Joi.string()
         .min(1)
-        .max(20000)
+        .max(16000)
         .trim()
         .invalid(null)
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
