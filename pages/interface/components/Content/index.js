@@ -406,8 +406,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     setErrorObject(undefined);
     localStorage.removeItem(localStorageKey);
     const isPublished = contentObject?.status === 'published';
-    setComponentMode(isPublished ? 'view' : 'compact');
-  }, [confirm, contentObject?.status, localStorageKey, newData, setComponentMode]);
+    const isChild = !!contentObject?.parent_id;
+    if (isPublished) {
+      setComponentMode('view');
+    } else if (isChild) {
+      setComponentMode('compact');
+    } else if (router) {
+      router.push('/');
+    }
+  }, [confirm, contentObject, localStorageKey, newData, router, setComponentMode]);
 
   const onKeyDown = useCallback(
     (event) => {
