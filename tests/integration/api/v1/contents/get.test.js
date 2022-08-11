@@ -16,6 +16,40 @@ describe('GET /api/v1/contents', () => {
   });
 
   describe('Anonymous user', () => {
+    test('With CORS and Security Headers enabled', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+
+      // https://github.com/facebook/jest/issues/8475#issuecomment-537830532
+      // to avoid "Received: serializes to the same string" error.
+      const responseHeaders = JSON.parse(JSON.stringify(response.headers.raw()));
+
+      // I'm testing with `toStrictEqual()` to know when new properties are
+      // added or leaked to the response headers.
+      expect(responseHeaders).toStrictEqual({
+        'x-dns-prefetch-control': ['on'],
+        'strict-transport-security': ['max-age=63072000; includeSubDomains; preload'],
+        'x-xss-protection': ['1; mode=block'],
+        'x-frame-options': ['SAMEORIGIN'],
+        'permissions-policy': ['camera=(), microphone=(), geolocation=()'],
+        'x-content-type-options': ['nosniff'],
+        'referrer-policy': ['origin-when-cross-origin'],
+        'access-control-allow-credentials': ['true'],
+        'access-control-allow-origin': ['*'],
+        'access-control-allow-methods': ['GET,OPTIONS,PATCH,DELETE,POST,PUT'],
+        'access-control-allow-headers': [
+          'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+        ],
+        link: ['<http://localhost:3000/api/v1/contents?strategy=best&page=1&per_page=30>; rel="first"'],
+        'x-pagination-total-rows': ['0'],
+        'content-type': ['application/json; charset=utf-8'],
+        etag: responseHeaders.etag,
+        'content-length': ['2'],
+        vary: ['Accept-Encoding'],
+        date: responseHeaders.date,
+        connection: ['close'],
+      });
+    });
+
     test('With no content', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
       const responseBody = await response.json();
