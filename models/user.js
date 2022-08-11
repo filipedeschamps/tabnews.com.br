@@ -243,7 +243,7 @@ function checkBlockedUsernames(username) {
     'conta',
     'contas',
     'anuncio',
-    'anucios',
+    'anuncios',
     'anuncie',
     'anunciar',
     'afiliado',
