@@ -3141,6 +3141,136 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
+      test('"root" content with positive tabcoins updated from "published" to "deleted" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'content:tabcoin',
+          recipientId: defaultUserContent.id,
+          amount: 10,
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: defaultUser.id,
+          amount: 10,
+        });
+
+        const contentFirstGetResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        );
+        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
+        expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
+
+        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
+        const userFirstGetResponseBody = await userFirstGetResponse.json();
+        expect(userFirstGetResponseBody.tabcoins).toEqual(11);
+
+        const contentSecondResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentSecondResponseBody = await contentSecondResponse.json();
+
+        expect(contentSecondResponseBody.tabcoins).toEqual(11);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content with negative tabcoins updated from "published" to "deleted" status', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'content:tabcoin',
+          recipientId: defaultUserContent.id,
+          amount: -10,
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: defaultUser.id,
+          amount: -10,
+        });
+
+        const contentFirstGetResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        );
+        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
+        expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
+
+        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
+        const userFirstGetResponseBody = await userFirstGetResponse.json();
+        expect(userFirstGetResponseBody.tabcoins).toEqual(-9);
+
+        const contentSecondResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentSecondResponseBody = await contentSecondResponse.json();
+
+        expect(contentSecondResponseBody.tabcoins).toEqual(-9);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(-10);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
       test('"root" content updated from "published" to "draft", and then "published" status', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
