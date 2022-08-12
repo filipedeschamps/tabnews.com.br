@@ -3051,7 +3051,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
@@ -3180,7 +3180,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const publishedContentResponse = await fetch(
@@ -3210,7 +3210,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3262,7 +3262,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
@@ -3314,7 +3314,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(5);
+        expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
@@ -3378,7 +3378,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3412,7 +3412,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const contentResponse = await fetch(
@@ -3442,7 +3442,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3540,7 +3540,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const contentResponse = await fetch(
@@ -3570,7 +3570,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3604,7 +3604,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const contentResponse = await fetch(
@@ -3686,7 +3686,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const publishedContentResponse = await fetch(
@@ -3716,7 +3716,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3768,7 +3768,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(5);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const publishedContentResponse = await fetch(
@@ -3798,7 +3798,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(5);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
     });
