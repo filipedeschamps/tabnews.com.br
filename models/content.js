@@ -476,19 +476,21 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     return;
   }
 
-  // We should not credit or debit if the content has never been published before.
+  // We should not credit or debit if the content has never been published before
   // and is being directly deleted, example: "draft" -> "deleted".
   if (oldContent && !oldContent.published_at && newContent.status === 'deleted') {
     return;
   }
 
   // We should debit if the content was once published, but now is being deleted.
+  // We also need to debit all tabcoins gained from the content if positive or at
+  // least debit the original tabcoin gained from the creation of the content.
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: -5,
+        amount: oldContent.tabcoins > 0 ? oldContent.tabcoins * -1 : -1,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -505,7 +507,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: 5,
+        amount: 1,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -535,7 +537,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: 5,
+        amount: 1,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
