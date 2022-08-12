@@ -282,7 +282,7 @@ describe('POST /api/v1/contents', () => {
         },
         body: JSON.stringify({
           title: 'Título normal',
-          body: 'A'.repeat(16001),
+          body: 'A'.repeat(20001),
         }),
       });
 

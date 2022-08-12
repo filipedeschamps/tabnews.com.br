@@ -525,7 +525,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'A'.repeat(16001),
+            body: 'A'.repeat(20001),
           }),
         }
       );
