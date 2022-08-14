@@ -2209,7 +2209,7 @@ describe('POST /api/v1/contents', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcoins).toEqual(2);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
@@ -2297,7 +2297,7 @@ describe('POST /api/v1/contents', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcoins).toEqual(2);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
@@ -2340,7 +2340,7 @@ describe('POST /api/v1/contents', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcoins).toEqual(2);
         expect(userResponseBody.tabcash).toEqual(0);
       });
     });
