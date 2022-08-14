@@ -1,8 +1,13 @@
 tasks:
   - name: Run Dev Server
     init: nvm install && npm install
-    command: npm run dev
 ports:
   - port: 3000
-    onOpen: open-browser
+    onOpen: notify
+    visibility: private
+  - port: 1080
+    onOpen: ignore
+    visibility: private
+  - port: 1025
+    onOpen: ignore
     visibility: private
