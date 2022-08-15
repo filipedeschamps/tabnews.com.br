@@ -3,7 +3,7 @@ import rateLimit from 'infra/rate-limit.js';
 import snakeize from 'snakeize';
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/api/v1/sessions'],
 };
 
 export async function middleware(request) {
