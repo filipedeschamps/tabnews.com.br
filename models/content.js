@@ -470,6 +470,9 @@ function populatePublishedAtValue(oldContent, newContent) {
 }
 
 async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
+  const userDefaultEarnings = 2;
+  const contentDefaultEarnings = 1;
+
   // We should not credit or debit if the parent content is from the same user.
   // TODO: in the future, we should check using ids instead of usernames.
   if (newContent.username === newContent.parent_username) {
@@ -482,15 +485,25 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     return;
   }
 
-  // We should debit if the content was once published, but now is being deleted.
-  // We also need to debit all tabcoins gained from the content if positive or at
-  // least debit the original tabcoin gained from the creation of the content.
+  // We should debit if the content was once "published", but now is being "deleted".
+  // 1) If content `tabcoins` is positive, we need to extract the `contentDefaultEarnings`
+  // from it and then debit all additional tabcoins from the user, including `userDefaultEarnings`.
+  // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
+  // creation of the content represented in `userDefaultEarnings`.
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
+    let amountToDebit;
+
+    if (oldContent.tabcoins > 0) {
+      amountToDebit = (oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings) * -1;
+    } else {
+      amountToDebit = userDefaultEarnings * -1;
+    }
+
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: oldContent.tabcoins > 0 ? oldContent.tabcoins * -1 : -1,
+        amount: amountToDebit,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -507,7 +520,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: 1,
+        amount: userDefaultEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -520,7 +533,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       {
         balanceType: 'content:tabcoin',
         recipientId: newContent.id,
-        amount: 1,
+        amount: contentDefaultEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -537,7 +550,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: 1,
+        amount: userDefaultEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -550,7 +563,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       {
         balanceType: 'content:tabcoin',
         recipientId: newContent.id,
-        amount: 1,
+        amount: contentDefaultEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
