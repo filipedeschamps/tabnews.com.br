@@ -115,11 +115,12 @@ export class ForbiddenError extends BaseError {
 }
 
 export class TooManyRequestsError extends BaseError {
-  constructor({ message, action, stack, errorLocationCode }) {
+  constructor({ message, action, context, stack, errorLocationCode }) {
     super({
       message: message || 'Você realizou muitas requisições recentemente.',
       action: action || 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
       statusCode: 429,
+      context: context,
       stack: stack,
       errorLocationCode: errorLocationCode,
     });
