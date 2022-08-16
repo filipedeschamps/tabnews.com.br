@@ -1,7 +1,7 @@
 import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
 import { SWRConfig } from 'swr';
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
-import NextNProgress from 'nextjs-progressbar';
+import NextNProgress from 'pages/interface/components/Progressbar/index.js';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
