@@ -494,16 +494,16 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     let amountToDebit;
 
     if (oldContent.tabcoins > 0) {
-      amountToDebit = (oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings) * -1;
+      amountToDebit = oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings;
     } else {
-      amountToDebit = userDefaultEarnings * -1;
+      amountToDebit = userDefaultEarnings;
     }
 
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: amountToDebit,
+        amount: amountToDebit * -1,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
