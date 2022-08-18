@@ -6,6 +6,7 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
 import authorization from 'models/authorization.js';
+import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { Box, Link } from '@primer/react';
 
@@ -239,6 +240,9 @@ export async function getStaticProps(context) {
   });
 
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+
+  const cleanBody = removeMarkdown(secureContentValues.body).replace(/\s+/g, ' ');
+  secureContentValues.body = cleanBody;
 
   return {
     props: {
