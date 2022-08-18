@@ -24,7 +24,7 @@ export async function middleware(request) {
 
     return NextResponse.next();
   } catch (error) {
-    console.error(snakeize(error));
+    console.error(snakeize({ message: error.message, ...error }));
     return NextResponse.next();
   }
 }

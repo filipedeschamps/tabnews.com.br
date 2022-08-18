@@ -23,26 +23,15 @@ async function check(request) {
   const ip = getIP(request);
   const method = request.method;
   const path = request.nextUrl.pathname;
-  const generalIdentifier = `${ip}`;
-  const specificIdentifier = `${ip}:${method}:${path}`;
-  const limits = getLimits();
+  const limit = getLimit(method, path, ip);
 
   try {
-    if (method === 'POST' && path === '/api/v1/sessions') {
-      const rateLimit = new Ratelimit({
-        redis: Redis.fromEnv(),
-        limiter: Ratelimit.slidingWindow(limits.postSessions.requests, limits.postSessions.window),
-      });
-
-      return await rateLimit.limit(specificIdentifier);
-    }
-
     const generalRateLimit = new Ratelimit({
       redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(limits.general.requests, limits.general.window),
+      limiter: Ratelimit.slidingWindow(limit.requests, limit.window),
     });
 
-    return await generalRateLimit.limit(generalIdentifier);
+    return await generalRateLimit.limit(limit.identifier);
   } catch (error) {
     throw new ServiceError({
       message: error.message,
@@ -64,26 +53,29 @@ function getIP(request) {
   return xff ? (Array.isArray(xff) ? xff[0] : xff.split(',')[0]) : '127.0.0.1';
 }
 
-function getLimits() {
+function getLimit(method, path, ip) {
   const defaultLimits = {
     general: {
       requests: 1000,
       window: '5 m',
     },
-    postSessions: {
+    'POST /api/v1/sessions': {
       requests: 50,
       window: '30 m',
     },
   };
 
-  const limits = process.env.RATE_LIMITS ? JSON.parse(process.env.RATE_LIMITS) : defaultLimits;
+  const configurationFromEnvironment = process.env.RATE_LIMITS ? JSON.parse(process.env.RATE_LIMITS) : {};
+  const configuration = { ...defaultLimits, ...configurationFromEnvironment };
+  const limitKey = configuration[`${method} ${path}`] ? `${method} ${path}` : 'general';
 
-  // `process.env.RATE_LIMITS` can exist without all the keys
-  // so we must fill them with the default values.
-  limits.general ? limits.general : defaultLimits.general;
-  limits.postSessions ? limits.postSessions : defaultLimits.postSessions;
+  const limit = {
+    requests: configuration[limitKey].requests,
+    window: configuration[limitKey].window,
+    identifier: limitKey === 'general' ? `${ip}` : `${ip}:${method}:${path}`,
+  };
 
-  return limits;
+  return limit;
 }
 
 export default Object.freeze({
