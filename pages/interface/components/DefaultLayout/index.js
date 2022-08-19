@@ -15,7 +15,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
     description: null,
     published_time: content ? content.published_at : null,
     modified_time: content ? content.updated_at : null,
-    author: content ? content.username : null,
+    author: content ? content.owner_username : null,
     type: content ? 'article' : 'website',
     noIndex: false,
   };
@@ -25,9 +25,9 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   if (content) {
     const cleanBody = removeMarkdown(content.body).replace(/\s+/g, ' ');
 
-    updatedMetadata.title = `${content.title ?? cleanBody.substring(0, 80)} · ${content.username}`;
+    updatedMetadata.title = `${content.title ?? cleanBody.substring(0, 80)} · ${content.owner_username}`;
     updatedMetadata.description = cleanBody.substring(0, 190);
-    updatedMetadata.image = `${webserverHost}/api/v1/contents/${content.username}/${content.slug}/thumbnail`;
+    updatedMetadata.image = `${webserverHost}/api/v1/contents/${content.owner_username}/${content.slug}/thumbnail`;
   }
 
   if (updatedMetadata.title != defaultMetadata.title) {

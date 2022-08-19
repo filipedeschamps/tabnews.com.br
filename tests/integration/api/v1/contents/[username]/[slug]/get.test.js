@@ -102,7 +102,6 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         updated_at: defaultUserContent.updated_at.toISOString(),
         published_at: defaultUserContent.published_at.toISOString(),
         deleted_at: null,
-        username: defaultUser.username,
         owner_username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -211,7 +210,6 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         updated_at: rootContent.updated_at.toISOString(),
         published_at: rootContent.published_at.toISOString(),
         deleted_at: null,
-        username: defaultUser.username,
         owner_username: defaultUser.username,
         parent_title: null,
         parent_slug: null,
@@ -295,11 +293,10 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         updated_at: childContent.updated_at.toISOString(),
         published_at: childContent.published_at.toISOString(),
         deleted_at: null,
-        username: defaultUser.username,
         owner_username: defaultUser.username,
         parent_title: rootContent.title,
         parent_slug: rootContent.slug,
-        parent_username: rootContent.username,
+        parent_username: rootContent.owner_username,
         children_deep_count: 0,
       });
     });
@@ -366,11 +363,10 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         updated_at: childContent.updated_at.toISOString(),
         published_at: childContent.published_at.toISOString(),
         deleted_at: null,
-        username: defaultUser.username,
         owner_username: defaultUser.username,
         parent_title: rootContent.title,
         parent_slug: rootContent.slug,
-        parent_username: rootContent.username,
+        parent_username: rootContent.owner_username,
         children_deep_count: 2,
       });
 

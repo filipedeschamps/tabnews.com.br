@@ -11,7 +11,7 @@ import { Box, Link } from '@primer/react';
 
 export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback }) {
   const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.username}/${contentFoundFallback.slug}`,
+    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
       fallbackData: contentFoundFallback,
       revalidateOnFocus: false,
@@ -21,7 +21,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
 
   // TODO: understand why enabling "revalidateOn..." breaks children rendering.
   const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.username}/${contentFoundFallback.slug}/children`,
+    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
     {
       fallbackData: childrenFallback,
       revalidateOnFocus: false,
@@ -204,7 +204,7 @@ export async function getStaticProps(context) {
   try {
     contentFound = await content.findOne({
       where: {
-        username: context.params.username,
+        owner_username: context.params.username,
         slug: context.params.slug,
         status: 'published',
       },
@@ -246,8 +246,6 @@ export async function getStaticProps(context) {
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
     },
 
-    // TODO: instead of `revalidate`, understand how to use this:
-    // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
     revalidate: 1,
   };
 }

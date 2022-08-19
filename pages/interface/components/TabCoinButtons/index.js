@@ -45,7 +45,7 @@ export default function TabCoinButtons({ content }) {
     }
 
     try {
-      const response = await fetch(`/api/v1/contents/${contentObject.username}/${contentObject.slug}/tabcoins`, {
+      const response = await fetch(`/api/v1/contents/${contentObject.owner_username}/${contentObject.slug}/tabcoins`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
