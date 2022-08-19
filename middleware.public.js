@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import rateLimit from 'infra/rate-limit.js';
 import snakeize from 'snakeize';
 
+// TODO: Add `/api/v1/contents` when Next.js fix this:
+// https://github.com/vercel/next.js/issues/39262
+// Actually, configure matcher to `/api/:path*` after they fix this bug.
 export const config = {
-  matcher: ['/api/v1/sessions'],
+  matcher: ['/api/v1/activation', '/api/v1/recovery', '/api/v1/sessions', '/api/v1/users', '/api/v1/user'],
 };
 
 export async function middleware(request) {

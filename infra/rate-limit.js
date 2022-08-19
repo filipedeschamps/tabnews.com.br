@@ -59,7 +59,31 @@ function getLimit(method, path, ip) {
       requests: 1000,
       window: '5 m',
     },
+    'PATCH /api/v1/activation': {
+      requests: 50,
+      window: '30 m',
+    },
+    'POST /api/v1/contents': {
+      requests: 50,
+      window: '30 m',
+    },
+    'POST /api/v1/recovery': {
+      requests: 50,
+      window: '30 m',
+    },
+    'PATCH /api/v1/recovery': {
+      requests: 50,
+      window: '30 m',
+    },
+    'DELETE /api/v1/sessions': {
+      requests: 50,
+      window: '30 m',
+    },
     'POST /api/v1/sessions': {
+      requests: 50,
+      window: '30 m',
+    },
+    'POST /api/v1/users': {
       requests: 50,
       window: '30 m',
     },
