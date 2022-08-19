@@ -34,7 +34,7 @@ function generateRss2(contentList) {
   });
 
   contentList.forEach((contentObject) => {
-    const contentUrl = `${webserverHost}/${contentObject.username}/${contentObject.slug}`;
+    const contentUrl = `${webserverHost}/${contentObject.owner_username}/${contentObject.slug}`;
 
     feed.addItem({
       title: contentObject.title,
@@ -47,8 +47,8 @@ function generateRss2(contentList) {
       ),
       author: [
         {
-          name: contentObject.username,
-          link: `${webserverHost}/${contentObject.username}`,
+          name: contentObject.owner_username,
+          link: `${webserverHost}/${contentObject.owner_username}`,
         },
       ],
       date: new Date(contentObject.published_at),

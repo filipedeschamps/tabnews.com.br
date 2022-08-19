@@ -50,7 +50,7 @@ export async function getStaticProps(context) {
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        username: context.params.username,
+        owner_username: context.params.username,
         parent_id: null,
         status: 'published',
       },
@@ -79,8 +79,6 @@ export async function getStaticProps(context) {
       username: context.params.username,
     },
 
-    // TODO: instead of `revalidate`, understand how to use this:
-    // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
     revalidate: 1,
   };
 }

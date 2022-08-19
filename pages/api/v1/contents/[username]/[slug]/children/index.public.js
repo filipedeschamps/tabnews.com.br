@@ -33,7 +33,7 @@ async function getHandler(request, response) {
 
   const contentFound = await content.findOne({
     where: {
-      username: request.query.username,
+      owner_username: request.query.username,
       slug: request.query.slug,
       status: 'published',
     },

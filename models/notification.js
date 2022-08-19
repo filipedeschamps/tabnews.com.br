@@ -20,7 +20,7 @@ async function sendReplyEmailToParentUser(createdContent) {
         name: 'TabNews',
         address: 'contato@tabnews.com.br',
       },
-      subject: `"${createdContent.username}" comentou na sua postagem!`,
+      subject: `"${createdContent.owner_username}" comentou na sua postagem!`,
       text: `Olá, ${rootContentUser.username}!
 
 Para ler o comentário, utilize o link abaixo:
@@ -34,10 +34,10 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
   }
 }
 
-function getChildContendUrl({ username, slug }) {
+function getChildContendUrl({ owner_username, slug }) {
   let webserverHost = webserver.getHost();
 
-  return `${webserverHost}/${username}/${slug}`;
+  return `${webserverHost}/${owner_username}/${slug}`;
 }
 
 export default Object.freeze({

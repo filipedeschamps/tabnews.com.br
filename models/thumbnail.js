@@ -79,8 +79,8 @@ export function parseContent(content) {
   return {
     title,
     parentTitle: parent_title,
-    username: content.username,
-    usernameWidth: measureText(content.username),
+    username: content.owner_username,
+    usernameWidth: measureText(content.owner_username),
     comments: content.children_deep_count,
     date,
   };

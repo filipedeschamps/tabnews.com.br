@@ -548,6 +548,7 @@ const schemas = {
       'source_url',
       'owner_id',
       'username',
+      'owner_username',
       '$or',
       'attributes',
     ]) {
@@ -652,7 +653,6 @@ const schemas = {
       'updated_at',
       'published_at',
       'deleted_at',
-      'username',
       'owner_username',
       'parent_title',
       'parent_slug',

@@ -28,14 +28,13 @@ function getValidationHandler(request, response, next) {
   next();
 }
 
-// TODO: cache the response
 async function getHandler(request, response) {
   const userTryingToGet = request.context.user;
 
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
     where: {
-      username: request.query.username,
+      owner_username: request.query.username,
       parent_id: null,
       status: 'published',
     },

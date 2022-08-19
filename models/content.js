@@ -8,7 +8,7 @@ import { ValidationError } from 'errors/index.js';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
-  await replaceUsernameWithOwnerId(values);
+  await replaceOwnerUsernameWithOwnerId(values);
   const offset = (values.page - 1) * values.per_page;
 
   const query = {
@@ -65,11 +65,11 @@ async function findAll(values = {}, options = {}) {
 
   return results.rows;
 
-  async function replaceUsernameWithOwnerId(values) {
-    if (values?.where?.username) {
-      const userOwner = await user.findOneByUsername(values.where.username);
+  async function replaceOwnerUsernameWithOwnerId(values) {
+    if (values?.where?.owner_username) {
+      const userOwner = await user.findOneByUsername(values.where.owner_username);
       values.where.owner_id = userOwner.id;
-      delete values.where.username;
+      delete values.where.owner_username;
     }
   }
 
@@ -112,7 +112,6 @@ async function findAll(values = {}, options = {}) {
         contents.updated_at as updated_at,
         contents.published_at as published_at,
         contents.deleted_at as deleted_at,
-        users.username as username,
         users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -309,7 +308,6 @@ async function create(postedContent, options = {}) {
         inserted_content.updated_at as updated_at,
         inserted_content.published_at as published_at,
         inserted_content.deleted_at as deleted_at,
-        users.username as username,
         users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -475,7 +473,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
   // We should not credit or debit if the parent content is from the same user.
   // TODO: in the future, we should check using ids instead of usernames.
-  if (newContent.username === newContent.parent_username) {
+  if (newContent.owner_username === newContent.parent_username) {
     return;
   }
 
@@ -653,7 +651,6 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.updated_at as updated_at,
         updated_content.published_at as published_at,
         updated_content.deleted_at as deleted_at,
-        users.username as username,
         users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
@@ -796,7 +793,6 @@ async function findChildrenTree(options) {
         children.updated_at as updated_at,
         children.published_at as published_at,
         children.deleted_at as deleted_at,
-        users.username as username,
         users.username as owner_username,
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
