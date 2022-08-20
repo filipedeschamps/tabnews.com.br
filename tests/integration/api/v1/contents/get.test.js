@@ -39,7 +39,7 @@ describe('GET /api/v1/contents', () => {
         'access-control-allow-headers': [
           'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
         ],
-        link: ['<http://localhost:3000/api/v1/contents?strategy=best&page=1&per_page=30>; rel="first"'],
+        link: ['<http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="first"'],
         'x-pagination-total-rows': ['0'],
         'content-type': ['application/json; charset=utf-8'],
         etag: responseHeaders.etag,
@@ -66,7 +66,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".',
+        message: '"strategy" deve possuir um dos seguintes valores: "new", "old" ou "relevant".',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
@@ -388,7 +388,7 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[29].title).toEqual('Conteúdo #31');
     });
 
-    test('With 60 entries, default "page", "per_page" and strategy "best" (default)', async () => {
+    test('With 60 entries, default "page", "per_page" and strategy "relevant" (default)', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const numberOfContents = 60;
@@ -447,22 +447,22 @@ describe('GET /api/v1/contents', () => {
           page: '1',
           per_page: '30',
           rel: 'first',
-          strategy: 'best',
-          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=1&per_page=30',
+          strategy: 'relevant',
+          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30',
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
-          strategy: 'best',
-          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=2&per_page=30',
+          strategy: 'relevant',
+          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=2&per_page=30',
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
-          strategy: 'best',
-          url: 'http://localhost:3000/api/v1/contents?strategy=best&page=2&per_page=30',
+          strategy: 'relevant',
+          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=2&per_page=30',
         },
       });
 
