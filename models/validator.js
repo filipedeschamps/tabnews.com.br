@@ -502,8 +502,9 @@ const schemas = {
     return Joi.object({
       strategy: Joi.string()
         .trim()
-        .valid('new', 'old', 'best')
-        .default('best')
+        // TODO: remove 'best' strategy in the near future
+        .valid('new', 'old', 'best', 'relevant')
+        .default('relevant')
         .invalid(null)
         .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -511,7 +512,7 @@ const schemas = {
           'string.empty': `"strategy" não pode estar em branco.`,
           'string.base': `"strategy" deve ser do tipo String.`,
           'any.invalid': `"strategy" possui o valor inválido "null".`,
-          'any.only': `"strategy" deve possuir um dos seguintes valores: "new", "old" ou "best".`,
+          'any.only': `"strategy" deve possuir um dos seguintes valores: "new", "old" ou "relevant".`,
         }),
     });
   },
