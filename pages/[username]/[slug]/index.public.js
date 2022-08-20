@@ -10,7 +10,11 @@ import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { Box, Link } from '@primer/react';
 
-export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback }) {
+export default function Post({
+  contentFound: contentFoundFallback,
+  childrenFound: childrenFallback,
+  sanitizedMetadata,
+}) {
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -65,7 +69,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
           gravity={0.15}
         />
       )}
-      <DefaultLayout content={contentFound}>
+      <DefaultLayout content={sanitizedMetadata}>
         {contentFound.parent_slug && (
           <Box sx={{ fontSize: 1, mb: 3 }}>
             Em resposta a{' '}
@@ -242,12 +246,21 @@ export async function getStaticProps(context) {
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 
   const cleanBody = removeMarkdown(secureContentValues.body).replace(/\s+/g, ' ');
-  secureContentValues.body = cleanBody;
+
+  const sanitizedMetadata = {
+    title: secureContentValues.title ?? cleanBody.substring(0, 80),
+    body: cleanBody.substring(0, 190),
+    slug: secureContentValues.slug,
+    owner_username: secureContentValues.owner_username,
+    published_at: secureContentValues.published_at,
+    updated_at: secureContentValues.updated_at,
+  };
 
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentValues)),
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
+      sanitizedMetadata: JSON.parse(JSON.stringify(sanitizedMetadata)),
     },
 
     revalidate: 1,
