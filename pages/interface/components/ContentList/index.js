@@ -2,7 +2,7 @@ import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
 
-import { Link, PublishedSince } from 'pages/interface';
+import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
@@ -14,14 +14,18 @@ export default function ContentList({ contentList, pagination, paginationBasePat
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: '0.5rem',
-          gridTemplateColumns: 'auto 1fr',
-        }}>
-        {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
-      </Box>
+      {list.length > 0 ? (
+        <Box
+          sx={{
+            display: 'grid',
+            gap: '0.5rem',
+            gridTemplateColumns: 'auto 1fr',
+          }}>
+          <RenderItems />
+        </Box>
+      ) : (
+        <RenderEmptyMessage />
+      )}
 
       <Box
         sx={{
@@ -117,10 +121,6 @@ export default function ContentList({ contentList, pagination, paginationBasePat
   }
 
   function RenderEmptyMessage() {
-    return (
-      <Box sx={{ textAlign: 'center', width: '100%', mt: 10 }}>
-        <Text>Nenhum conteúdo encontrado.</Text>
-      </Box>
-    );
+    return <EmptyState title="Nenhum conteúdo encontrado" />;
   }
 }
