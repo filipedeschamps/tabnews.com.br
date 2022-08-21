@@ -1,10 +1,10 @@
 import { Box } from '@primer/react';
-import { MetaTags, Header } from 'pages/interface/index.js';
+import { Head, Header } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (
     <>
-      <MetaTags metadata={metadata} />
+      {metadata && <Head metadata={metadata} />}
       <Header />
       <Box
         maxWidth={containerWidth}
