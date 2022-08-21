@@ -1,38 +1,10 @@
-import { useRouter } from 'next/router';
 import { Box } from '@primer/react';
+import { MetaTags, Header } from 'pages/interface/index.js';
 
-import webserver from 'infra/webserver.js';
-import { BaseLayout, Header } from 'pages/interface/index.js';
-
-export default function DefaultLayout({ children, containerWidth = 'large', metadata, content }) {
-  const router = useRouter();
-  const webserverHost = webserver.getHost();
-  const defaultMetadata = {
-    title: 'TabNews: Conteúdos para quem trabalha com Programação e Tecnologia',
-    image: `${webserverHost}/default-image-share.png`,
-    url: `${webserverHost}${router.asPath}`,
-    description: null,
-    published_time: content ? content.published_at : null,
-    modified_time: content ? content.updated_at : null,
-    author: content ? content.owner_username : null,
-    type: content ? 'article' : 'website',
-    noIndex: false,
-  };
-
-  let updatedMetadata = { ...defaultMetadata, ...metadata };
-
-  if (content) {
-    updatedMetadata.title = `${content.title} · ${content.owner_username}`;
-    updatedMetadata.description = content.body;
-    updatedMetadata.image = `${webserverHost}/api/v1/contents/${content.owner_username}/${content.slug}/thumbnail`;
-  }
-
-  if (updatedMetadata.title != defaultMetadata.title) {
-    updatedMetadata.title = `${updatedMetadata.title} · TabNews`;
-  }
-
+export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (
-    <BaseLayout metadata={updatedMetadata}>
+    <>
+      <MetaTags metadata={metadata} />
       <Header />
       <Box
         maxWidth={containerWidth}
@@ -44,6 +16,6 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
         }}>
         {children}
       </Box>
-    </BaseLayout>
+    </>
   );
 }

@@ -9,12 +9,9 @@ import authorization from 'models/authorization.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { Box, Link } from '@primer/react';
+import webserver from 'infra/webserver.js';
 
-export default function Post({
-  contentFound: contentFoundFallback,
-  childrenFound: childrenFallback,
-  sanitizedMetadata,
-}) {
+export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback, contentMetadata }) {
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -69,7 +66,7 @@ export default function Post({
           gravity={0.15}
         />
       )}
-      <DefaultLayout content={sanitizedMetadata}>
+      <DefaultLayout metadata={contentMetadata}>
         {contentFound.parent_slug && (
           <Box sx={{ fontSize: 1, mb: 3 }}>
             Em resposta a{' '}
@@ -245,22 +242,26 @@ export async function getStaticProps(context) {
 
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 
-  const cleanBody = removeMarkdown(secureContentValues.body).replace(/\s+/g, ' ');
+  const oneLineBody = removeMarkdown(secureContentValues.body).replace(/\s+/g, ' ');
 
-  const sanitizedMetadata = {
-    title: secureContentValues.title ?? cleanBody.substring(0, 80),
-    body: cleanBody.substring(0, 190),
-    slug: secureContentValues.slug,
-    owner_username: secureContentValues.owner_username,
-    published_at: secureContentValues.published_at,
-    updated_at: secureContentValues.updated_at,
+  const webserverHost = webserver.getHost();
+
+  const contentMetadata = {
+    title: `${secureContentValues.title ?? oneLineBody.substring(0, 80)} · ${secureContentValues.owner_username}`,
+    image: `${webserverHost}/api/v1/contents/${secureContentValues.owner_username}/${secureContentValues.slug}/thumbnail`,
+    url: `${webserverHost}/${secureContentValues.owner_username}/${secureContentValues.slug}`,
+    description: oneLineBody.substring(0, 190),
+    published_time: secureContentValues.published_at,
+    modified_time: secureContentValues.updated_at,
+    author: secureContentValues.owner_username,
+    type: 'article',
   };
 
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentValues)),
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
-      sanitizedMetadata: JSON.parse(JSON.stringify(sanitizedMetadata)),
+      contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
 
     revalidate: 1,
