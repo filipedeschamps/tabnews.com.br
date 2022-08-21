@@ -4,26 +4,41 @@ import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
 
 async function sendReplyEmailToParentUser(createdContent) {
-  const rootContent = await content.findOne({
+  const parentContent = await content.findOne({
     where: {
       id: createdContent.parent_id,
     },
   });
 
-  if (rootContent.owner_id !== createdContent.owner_id) {
-    const rootContentUser = await user.findOneById(rootContent.owner_id);
+  if (parentContent.owner_id !== createdContent.owner_id) {
+    const parentContentUser = await user.findOneById(parentContent.owner_id);
     const childContendUrl = getChildContendUrl(createdContent);
+    const rootContent = await content.findRootContent({
+      where: {
+        id: createdContent.id,
+      },
+    });
+
+    const subject = getSubject({
+      createdContent,
+      rootContent,
+    });
+
+    const bodyReplyLine = getBodyReplyLine({
+      createdContent,
+      rootContent,
+    });
 
     await email.send({
-      to: rootContentUser.email,
+      to: parentContentUser.email,
       from: {
         name: 'TabNews',
         address: 'contato@tabnews.com.br',
       },
-      subject: `"${createdContent.owner_username}" comentou na sua postagem!`,
-      text: `Olá, ${rootContentUser.username}!
+      subject: subject,
+      text: `Olá, ${parentContentUser.username}!
 
-Para ler o comentário, utilize o link abaixo:
+${bodyReplyLine}
 
 ${childContendUrl}
 
@@ -32,6 +47,21 @@ Equipe TabNews
 Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
     });
   }
+}
+
+function getSubject({ createdContent, rootContent }) {
+  const sanitizedRootContentTitle =
+    rootContent.title.length > 30 ? `${rootContent.title.substring(0, 30)}...` : rootContent.title;
+
+  return `"${createdContent.owner_username}" comentou em "${sanitizedRootContentTitle}"`;
+}
+
+function getBodyReplyLine({ createdContent, rootContent }) {
+  if (createdContent.parent_id === rootContent.id) {
+    return `${createdContent.owner_username} respondeu à sua publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
+  }
+
+  return `${createdContent.owner_username} respondeu ao seu comentário na publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
 }
 
 function getChildContendUrl({ owner_username, slug }) {
