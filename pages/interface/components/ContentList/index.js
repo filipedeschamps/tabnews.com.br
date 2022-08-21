@@ -4,7 +4,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
 
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
+export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
   const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
@@ -24,7 +24,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
           <RenderItems />
         </Box>
       ) : (
-        <RenderEmptyMessage />
+        <RenderEmptyMessage {...emptyStateProps} />
       )}
 
       <Box
@@ -120,7 +120,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
     });
   }
 
-  function RenderEmptyMessage() {
-    return <EmptyState title="Nenhum conteúdo encontrado" />;
+  function RenderEmptyMessage(props) {
+    return <EmptyState title="Nenhum conteúdo encontrado" {...props} />;
   }
 }
