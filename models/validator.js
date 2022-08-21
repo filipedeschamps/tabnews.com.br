@@ -112,6 +112,7 @@ const schemas = {
     return Joi.object({
       parent_username: Joi.string()
         .allow(null)
+        .default(null)
         .alphanum()
         .min(3)
         .max(30)
@@ -256,6 +257,7 @@ const schemas = {
     return Joi.object({
       parent_slug: Joi.string()
         .allow(null)
+        .default(null)
         .min(1)
         .max(256)
         .trim()
@@ -295,6 +297,7 @@ const schemas = {
     return Joi.object({
       parent_title: Joi.string()
         .allow(null)
+        .default(null)
         .min(1)
         .max(256)
         .trim()

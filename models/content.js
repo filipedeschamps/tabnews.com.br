@@ -959,11 +959,81 @@ async function findChildrenCount(values, options = {}) {
   }
 }
 
+async function findRootContent(values, options = {}) {
+  values.where = validateWhereSchema(values?.where);
+  const rootContentFound = await recursiveDatabaseLookup(values, options);
+  return rootContentFound;
+
+  function validateWhereSchema(where) {
+    const cleanValues = validator(where, {
+      id: 'required',
+    });
+
+    return cleanValues;
+  }
+
+  async function recursiveDatabaseLookup(values, options = {}) {
+    const query = {
+      text: `
+      WITH RECURSIVE child_to_root_tree AS (
+        SELECT
+          *
+        FROM
+          contents
+        WHERE
+          id = $1
+          AND parent_id IS NOT NULL
+      UNION ALL
+        SELECT
+          contents.*
+        FROM
+          contents
+        JOIN
+          child_to_root_tree
+        ON
+          contents.id = child_to_root_tree.parent_id
+      )
+      SELECT
+        child_to_root_tree.*,
+        users.username as owner_username,
+        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins
+      FROM
+        child_to_root_tree
+      INNER JOIN
+        users ON child_to_root_tree.owner_id = users.id
+      WHERE
+        parent_id IS NULL;
+      ;`,
+      values: [values.where.id],
+    };
+
+    const results = await database.query(query, { transaction: options.transaction });
+    const contentObject = results.rows[0];
+
+    // TODO: this need to be optimized in the future.
+    if (contentObject) {
+      contentObject.children_deep_count = await findChildrenCount(
+        {
+          where: {
+            id: contentObject.id,
+          },
+        },
+        {
+          transaction: options.transaction,
+        }
+      );
+    }
+
+    return contentObject;
+  }
+}
+
 export default Object.freeze({
   findAll,
   findOne,
   findChildrenTree,
   findWithStrategy,
+  findRootContent,
   create,
   update,
 });
