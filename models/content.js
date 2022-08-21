@@ -189,6 +189,7 @@ async function findWithStrategy(options = {}) {
     new: getNew,
     old: getOld,
     best: getBest,
+    relevant: getRelevant,
   };
 
   return await strategies[options.strategy](options);
@@ -218,7 +219,19 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at DESC';
     const contentList = await findAll(options);
-    const rankedContentList = rankContentListByBest(contentList);
+    const rankedContentList = rankContentListByRelevance(contentList);
+    results.rows = rankedContentList;
+    results.pagination = await getPagination(options);
+
+    return results;
+  }
+
+  async function getRelevant(options = {}) {
+    const results = {};
+
+    options.order = 'published_at DESC';
+    const contentList = await findAll(options);
+    const rankedContentList = rankContentListByRelevance(contentList);
     results.rows = rankedContentList;
     results.pagination = await getPagination(options);
 
@@ -732,7 +745,7 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
 async function findChildrenTree(options) {
   options.where = validateWhereSchema(options?.where);
   const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenFlatListRanked = rankContentListByBest(childrenFlatList);
+  const childrenFlatListRanked = rankContentListByRelevance(childrenFlatList);
   const childrenTree = flatListToTree(childrenFlatListRanked);
   return childrenTree.children;
 
@@ -859,7 +872,7 @@ async function findChildrenTree(options) {
   }
 }
 
-function rankContentListByBest(contentList) {
+function rankContentListByRelevance(contentList) {
   const rankedContentList = contentList.map(injectScoreProperty).sort(sortByScore);
 
   return rankedContentList;
