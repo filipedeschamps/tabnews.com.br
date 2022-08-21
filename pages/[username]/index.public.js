@@ -1,11 +1,18 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
+import { DefaultLayout, ContentList, useUser } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import { NotFoundError } from 'errors/index.js';
+import { FaUser } from 'react-icons/fa';
+import { useRouter } from 'next/router';
 
 export default function Home({ contentListFound, pagination, username }) {
+  const { user } = useUser();
+  const { push } = useRouter();
+
+  const isAuthenticatedUser = user && user.username === username;
+
   return (
     <>
       <DefaultLayout metadata={{ title: `${username}` }}>
@@ -14,6 +21,15 @@ export default function Home({ contentListFound, pagination, username }) {
           pagination={pagination}
           paginationBasePath={`/${username}/pagina`}
           revalidatePath={`/api/v1/contents/${username}?strategy=new`}
+          emptyStateProps={{
+            title: 'Nenhum conteúdo encontrado',
+            description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhuma publicação`,
+            icon: FaUser,
+            action: isAuthenticatedUser && {
+              text: 'Publicar conteúdo',
+              onClick: () => push('/publicar'),
+            },
+          }}
         />
       </DefaultLayout>
     </>
