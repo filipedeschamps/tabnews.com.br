@@ -272,7 +272,7 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[1].published_at > responseBody[0].published_at).toEqual(true);
     });
 
-    test('With 3 children 3 level deep and strategy', async () => {
+    test('With 3 children 3 level deep and default strategy', async () => {
       const defaultUser = await orchestrator.createUser();
 
       const rootContent = await orchestrator.createContent({
