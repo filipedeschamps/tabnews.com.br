@@ -8,7 +8,7 @@ import { FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 
 export default function Home({ contentListFound, pagination, username }) {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const { push } = useRouter();
 
   const isAuthenticatedUser = user && user.username === username;
@@ -22,6 +22,7 @@ export default function Home({ contentListFound, pagination, username }) {
           paginationBasePath={`/${username}/pagina`}
           revalidatePath={`/api/v1/contents/${username}?strategy=new`}
           emptyStateProps={{
+            isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',
             description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhuma publicação`,
             icon: FaUser,
