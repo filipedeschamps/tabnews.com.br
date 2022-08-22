@@ -2,9 +2,9 @@ import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
 
-import { Link, PublishedSince } from 'pages/interface';
+import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath }) {
+export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
   const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
@@ -14,47 +14,53 @@ export default function ContentList({ contentList, pagination, paginationBasePat
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: '0.5rem',
-          gridTemplateColumns: 'auto 1fr',
-        }}>
-        {list.length > 0 ? <RenderItems /> : <RenderEmptyMessage />}
-      </Box>
+      {list.length > 0 ? (
+        <Box
+          sx={{
+            display: 'grid',
+            gap: '0.5rem',
+            gridTemplateColumns: 'auto 1fr',
+          }}>
+          <RenderItems />
+        </Box>
+      ) : (
+        <RenderEmptyMessage {...emptyStateProps} />
+      )}
 
-      <Box
-        sx={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'center',
-          gap: 4,
-          m: 4,
-        }}>
-        {pagination.previousPage ? (
-          <Link href={previousPageUrl}>
-            <ChevronLeftIcon size={16} />
-            Anterior
-          </Link>
-        ) : (
-          <Text color="fg.muted">
-            <ChevronLeftIcon size={16} />
-            Anterior
-          </Text>
-        )}
+      {list.length > 0 ? (
+        <Box
+          sx={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
+            gap: 4,
+            m: 4,
+          }}>
+          {pagination.previousPage ? (
+            <Link href={previousPageUrl}>
+              <ChevronLeftIcon size={16} />
+              Anterior
+            </Link>
+          ) : (
+            <Text color="fg.muted">
+              <ChevronLeftIcon size={16} />
+              Anterior
+            </Text>
+          )}
 
-        {pagination.nextPage ? (
-          <Link href={nextPageUrl}>
-            Próximo
-            <ChevronRightIcon size={16} />
-          </Link>
-        ) : (
-          <Text color="fg.muted">
-            Próximo
-            <ChevronRightIcon size={16} />
-          </Text>
-        )}
-      </Box>
+          {pagination.nextPage ? (
+            <Link href={nextPageUrl}>
+              Próximo
+              <ChevronRightIcon size={16} />
+            </Link>
+          ) : (
+            <Text color="fg.muted">
+              Próximo
+              <ChevronRightIcon size={16} />
+            </Text>
+          )}
+        </Box>
+      ) : null}
     </>
   );
 
@@ -116,11 +122,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
     });
   }
 
-  function RenderEmptyMessage() {
-    return (
-      <Box sx={{ textAlign: 'center', width: '100%', mt: 10 }}>
-        <Text>Nenhum conteúdo encontrado.</Text>
-      </Box>
-    );
+  function RenderEmptyMessage(props) {
+    return <EmptyState title="Nenhum conteúdo encontrado" {...props} />;
   }
 }
