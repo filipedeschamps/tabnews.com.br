@@ -132,26 +132,36 @@ function InReplyToLinks({ rootContent, content }) {
   return (
     <>
       {content.parent_id && rootContent.id === content.parent_id && (
-        <Box sx={{ fontSize: 1, mb: 3 }}>
-          <CommentIcon verticalAlign="middle" size="small" /> Em resposta a{' '}
-          <Link href={`/${content.parent_username}/${content.parent_slug}`}>
-            <strong>
-              {content.parent_title ? content.parent_title : `/${content.parent_username}/${content.parent_slug}`}
-            </strong>
-          </Link>
+        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+          <Box sx={{ pl: '6px', pr: '14px' }}>
+            <CommentIcon verticalAlign="middle" size="small" />
+          </Box>
+          <Box>
+            Em resposta a{' '}
+            <Link href={`/${content.parent_username}/${content.parent_slug}`}>
+              <strong>
+                {content.parent_title ? content.parent_title : `/${content.parent_username}/${content.parent_slug}`}
+              </strong>
+            </Link>
+          </Box>
         </Box>
       )}
 
       {content.parent_id && rootContent.id !== content.parent_id && (
-        <Box sx={{ fontSize: 1, mb: 3 }}>
-          <CommentDiscussionIcon verticalAlign="middle" size="small" /> Respondendo a{' '}
-          <Link href={`/${content.parent_username}/${content.parent_slug}`}>
-            <strong>este comentário</strong>
-          </Link>{' '}
-          dentro da publicação{' '}
-          <Link href={`/${rootContent.owner_username}/${rootContent.slug}`}>
-            <strong>{rootContent.title}</strong>
-          </Link>
+        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+          <Box sx={{ pl: '7px', pr: '13px' }}>
+            <CommentDiscussionIcon verticalAlign="middle" size="small" />
+          </Box>
+          <Box>
+            Respondendo a{' '}
+            <Link href={`/${content.parent_username}/${content.parent_slug}`}>
+              <strong>este comentário</strong>
+            </Link>{' '}
+            dentro da publicação{' '}
+            <Link href={`/${rootContent.owner_username}/${rootContent.slug}`}>
+              <strong>{rootContent.title}</strong>
+            </Link>
+          </Box>
         </Box>
       )}
     </>
