@@ -996,7 +996,42 @@ async function findRootContent(values, options = {}) {
       SELECT
         child_to_root_tree.*,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins
+        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins,
+
+        -- Originally this query returned the root content object to the server and
+        -- afterward made an additional roundtrip to the database using the
+        -- findChildrenCount() method to get the children count. Now we perform a
+        -- subquery that is not performant but everything is embedded in one travel.
+        -- https://github.com/filipedeschamps/tabnews.com.br/blob/3ab1c65fdfc03d079791d17fde693010ab4caa60/models/content.js#L1013
+        (
+          WITH RECURSIVE children AS (
+            SELECT
+                id,
+                parent_id
+            FROM
+              contents
+            WHERE
+              contents.id = child_to_root_tree.id AND
+              contents.status = 'published'
+            UNION ALL
+              SELECT
+                contents.id,
+                contents.parent_id
+              FROM
+                contents
+              INNER JOIN
+                children ON contents.parent_id = children.id
+              WHERE
+                contents.status = 'published'
+          )
+          SELECT
+            count(children.id)::integer
+          FROM
+            children
+          WHERE
+            children.id NOT IN (child_to_root_tree.id)
+      ) as children_deep_count
+
       FROM
         child_to_root_tree
       INNER JOIN
@@ -1008,23 +1043,7 @@ async function findRootContent(values, options = {}) {
     };
 
     const results = await database.query(query, { transaction: options.transaction });
-    const contentObject = results.rows[0];
-
-    // TODO: this need to be optimized in the future.
-    if (contentObject) {
-      contentObject.children_deep_count = await findChildrenCount(
-        {
-          where: {
-            id: contentObject.id,
-          },
-        },
-        {
-          transaction: options.transaction,
-        }
-      );
-    }
-
-    return contentObject;
+    return results.rows[0];
   }
 }
 
