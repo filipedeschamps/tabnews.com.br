@@ -7,7 +7,7 @@ import validator from 'models/validator.js';
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
-      <DefaultLayout metadata={{ description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.' }}>
+      <DefaultLayout>
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
