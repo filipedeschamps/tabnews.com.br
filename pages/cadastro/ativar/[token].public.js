@@ -83,7 +83,7 @@ export default function ActiveUser() {
           gravity={0.15}
         />
       )}
-      <DefaultLayout containerWidth="medium">
+      <DefaultLayout containerWidth="medium" metadata={{ title: 'Ativar cadastro' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
           {isLoading ? (
             <Flash variant="default">Verificando Token de Ativação...</Flash>

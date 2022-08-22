@@ -6,10 +6,12 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
 import authorization from 'models/authorization.js';
+import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { Box, Link } from '@primer/react';
+import webserver from 'infra/webserver.js';
 
-export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback }) {
+export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback, contentMetadata }) {
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -64,7 +66,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
           gravity={0.15}
         />
       )}
-      <DefaultLayout content={contentFound}>
+      <DefaultLayout metadata={contentMetadata}>
         {contentFound.parent_slug && (
           <Box sx={{ fontSize: 1, mb: 3 }}>
             Em resposta a{' '}
@@ -240,10 +242,26 @@ export async function getStaticProps(context) {
 
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 
+  const oneLineBody = removeMarkdown(secureContentValues.body).replace(/\s+/g, ' ');
+
+  const webserverHost = webserver.getHost();
+
+  const contentMetadata = {
+    title: `${secureContentValues.title ?? oneLineBody.substring(0, 80)} · ${secureContentValues.owner_username}`,
+    image: `${webserverHost}/api/v1/contents/${secureContentValues.owner_username}/${secureContentValues.slug}/thumbnail`,
+    url: `${webserverHost}/${secureContentValues.owner_username}/${secureContentValues.slug}`,
+    description: oneLineBody.substring(0, 190),
+    published_time: secureContentValues.published_at,
+    modified_time: secureContentValues.updated_at,
+    author: secureContentValues.owner_username,
+    type: 'article',
+  };
+
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentValues)),
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
+      contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
 
     revalidate: 1,
