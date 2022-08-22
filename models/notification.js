@@ -51,17 +51,17 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
 
 function getSubject({ createdContent, rootContent }) {
   const sanitizedRootContentTitle =
-    rootContent.title.length > 30 ? `${rootContent.title.substring(0, 30)}...` : rootContent.title;
+    rootContent.title.length > 55 ? `${rootContent.title.substring(0, 55)}...` : rootContent.title;
 
   return `"${createdContent.owner_username}" comentou em "${sanitizedRootContentTitle}"`;
 }
 
 function getBodyReplyLine({ createdContent, rootContent }) {
   if (createdContent.parent_id === rootContent.id) {
-    return `${createdContent.owner_username} respondeu à sua publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
+    return `"${createdContent.owner_username}" respondeu à sua publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
   }
 
-  return `${createdContent.owner_username} respondeu ao seu comentário na publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
+  return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
 }
 
 function getChildContendUrl({ owner_username, slug }) {

@@ -2162,10 +2162,12 @@ describe('POST /api/v1/contents', () => {
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
-        expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título longo do conteúdo raiz,..."`);
+        expect(getLastEmail.subject).toBe(
+          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`
+        );
         expect(getLastEmail.text.includes(`Olá, ${firstUser.username}`)).toBe(true);
         expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes(`${secondUser.username} respondeu à sua publicação`)).toBe(true);
+        expect(getLastEmail.text.includes(`"${secondUser.username}" respondeu à sua publicação`)).toBe(true);
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
 
@@ -2213,10 +2215,10 @@ describe('POST /api/v1/contents', () => {
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
-        expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "Testando resposta ao conteúdo ..."`);
+        expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "Testando resposta ao conteúdo child"`);
         expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
         expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes(`${firstUser.username} respondeu ao seu comentário na publicação`)).toBe(
+        expect(getLastEmail.text.includes(`"${firstUser.username}" respondeu ao seu comentário na publicação`)).toBe(
           true
         );
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
