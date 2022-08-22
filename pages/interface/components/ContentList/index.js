@@ -27,38 +27,40 @@ export default function ContentList({ contentList, pagination, paginationBasePat
         <RenderEmptyMessage {...emptyStateProps} />
       )}
 
-      <Box
-        sx={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'center',
-          gap: 4,
-          m: 4,
-        }}>
-        {pagination.previousPage ? (
-          <Link href={previousPageUrl}>
-            <ChevronLeftIcon size={16} />
-            Anterior
-          </Link>
-        ) : (
-          <Text color="fg.muted">
-            <ChevronLeftIcon size={16} />
-            Anterior
-          </Text>
-        )}
+      {list.length > 0 ? (
+        <Box
+          sx={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
+            gap: 4,
+            m: 4,
+          }}>
+          {pagination.previousPage ? (
+            <Link href={previousPageUrl}>
+              <ChevronLeftIcon size={16} />
+              Anterior
+            </Link>
+          ) : (
+            <Text color="fg.muted">
+              <ChevronLeftIcon size={16} />
+              Anterior
+            </Text>
+          )}
 
-        {pagination.nextPage ? (
-          <Link href={nextPageUrl}>
-            Próximo
-            <ChevronRightIcon size={16} />
-          </Link>
-        ) : (
-          <Text color="fg.muted">
-            Próximo
-            <ChevronRightIcon size={16} />
-          </Text>
-        )}
-      </Box>
+          {pagination.nextPage ? (
+            <Link href={nextPageUrl}>
+              Próximo
+              <ChevronRightIcon size={16} />
+            </Link>
+          ) : (
+            <Text color="fg.muted">
+              Próximo
+              <ChevronRightIcon size={16} />
+            </Text>
+          )}
+        </Box>
+      ) : null}
     </>
   );
 

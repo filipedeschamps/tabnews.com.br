@@ -24,7 +24,7 @@ export default function Home({ contentListFound, pagination, username }) {
           emptyStateProps={{
             isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',
-            description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhuma publicação`,
+            description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhuma publicação.`,
             icon: FaUser,
             action: isAuthenticatedUser && {
               text: 'Publicar conteúdo',
