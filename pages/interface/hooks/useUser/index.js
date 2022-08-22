@@ -55,7 +55,7 @@ export function UserProvider({ children }) {
       });
 
       if (response.status === 200) {
-        localStorage.removeItem('user');
+        localStorage.clear();
         setUser(null);
       }
     } catch (error) {
