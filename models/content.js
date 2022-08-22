@@ -48,21 +48,6 @@ async function findAll(values = {}, options = {}) {
     return results.rows.length > 0 ? results.rows[0].total_rows : 0;
   }
 
-  // TODO: this need to be optimized in the future.
-  // Too many travels to the database just to get one value.
-  for await (const contentObject of results.rows) {
-    contentObject.children_deep_count = await findChildrenCount(
-      {
-        where: {
-          id: contentObject.id,
-        },
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
-  }
-
   return results.rows;
 
   async function replaceOwnerUsernameWithOwnerId(values) {
@@ -116,7 +101,41 @@ async function findAll(values = {}, options = {}) {
         parent_content.title as parent_title,
         parent_content.slug as parent_slug,
         parent_user.username as parent_username,
-        get_current_balance('content:tabcoin', contents.id) as tabcoins
+        get_current_balance('content:tabcoin', contents.id) as tabcoins,
+
+        -- Originally this query returned a list of contents to the server and
+        -- afterward made an additional roundtrip to the database for every item using
+        -- the findChildrenCount() method to get the children count. Now we perform a
+        -- subquery that is not performant but everything is embedded in one travel.
+        -- https://github.com/filipedeschamps/tabnews.com.br/blob/de65be914f0fd7b5eed8905718e4ab286b10557e/models/content.js#L51
+        (
+          WITH RECURSIVE children AS (
+            SELECT
+                id,
+                parent_id
+            FROM
+              contents as all_contents
+            WHERE
+              all_contents.id = contents.id AND
+              all_contents.status = 'published'
+            UNION ALL
+              SELECT
+                all_contents.id,
+                all_contents.parent_id
+              FROM
+                contents as all_contents
+              INNER JOIN
+                children ON all_contents.parent_id = children.id
+              WHERE
+                all_contents.status = 'published'
+          )
+          SELECT
+            count(children.id)::integer
+          FROM
+            children
+          WHERE
+            children.id NOT IN (contents.id)
+        ) as children_deep_count
       FROM
         contents
       INNER JOIN
