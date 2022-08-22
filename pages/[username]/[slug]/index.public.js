@@ -1,17 +1,23 @@
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
+import { Link, DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
 import authorization from 'models/authorization.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
-import { Box, Link } from '@primer/react';
+import { Box } from '@primer/react';
+import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
 
-export default function Post({ contentFound: contentFoundFallback, childrenFound: childrenFallback, contentMetadata }) {
+export default function Post({
+  contentFound: contentFoundFallback,
+  childrenFound: childrenFallback,
+  contentMetadata,
+  rootContentFound,
+}) {
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -67,18 +73,7 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
         />
       )}
       <DefaultLayout metadata={contentMetadata}>
-        {contentFound.parent_slug && (
-          <Box sx={{ fontSize: 1, mb: 3 }}>
-            Em resposta a{' '}
-            <Link href={`/${contentFound.parent_username}/${contentFound.parent_slug}`}>
-              <strong>
-                {contentFound.parent_title
-                  ? contentFound.parent_title
-                  : `/${contentFound.parent_username}/${contentFound.parent_slug}`}
-              </strong>
-            </Link>
-          </Box>
-        )}
+        <InReplyToLinks rootContent={rootContentFound} content={contentFound} />
 
         <Box
           sx={{
@@ -129,6 +124,46 @@ export default function Post({ contentFound: contentFoundFallback, childrenFound
           <RenderChildrenTree childrenList={children} level={0} />
         </Box>
       </DefaultLayout>
+    </>
+  );
+}
+
+function InReplyToLinks({ rootContent, content }) {
+  return (
+    <>
+      {content.parent_id && rootContent.id === content.parent_id && (
+        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+          <Box sx={{ pl: '6px', pr: '14px' }}>
+            <CommentIcon verticalAlign="middle" size="small" />
+          </Box>
+          <Box>
+            Em resposta a{' '}
+            <Link href={`/${content.parent_username}/${content.parent_slug}`}>
+              <strong>
+                {content.parent_title ? content.parent_title : `/${content.parent_username}/${content.parent_slug}`}
+              </strong>
+            </Link>
+          </Box>
+        </Box>
+      )}
+
+      {content.parent_id && rootContent.id !== content.parent_id && (
+        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+          <Box sx={{ pl: '7px', pr: '13px' }}>
+            <CommentDiscussionIcon verticalAlign="middle" size="small" />
+          </Box>
+          <Box>
+            Respondendo a{' '}
+            <Link href={`/${content.parent_username}/${content.parent_slug}`}>
+              <strong>este comentário</strong>
+            </Link>{' '}
+            dentro da publicação{' '}
+            <Link href={`/${rootContent.owner_username}/${rootContent.slug}`}>
+              <strong>{rootContent.title}</strong>
+            </Link>
+          </Box>
+        </Box>
+      )}
     </>
   );
 }
@@ -232,7 +267,7 @@ export async function getStaticProps(context) {
     throw error;
   }
 
-  const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+  const secureContentFound = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
 
   const childrenFound = await content.findChildrenTree({
     where: {
@@ -242,28 +277,42 @@ export async function getStaticProps(context) {
 
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 
-  const oneLineBody = removeMarkdown(secureContentValues.body).replace(/\s+/g, ' ');
+  const oneLineBody = removeMarkdown(secureContentFound.body).replace(/\s+/g, ' ');
 
   const webserverHost = webserver.getHost();
 
   const contentMetadata = {
-    title: `${secureContentValues.title ?? oneLineBody.substring(0, 80)} · ${secureContentValues.owner_username}`,
-    image: `${webserverHost}/api/v1/contents/${secureContentValues.owner_username}/${secureContentValues.slug}/thumbnail`,
-    url: `${webserverHost}/${secureContentValues.owner_username}/${secureContentValues.slug}`,
+    title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
+    image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
+    url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
     description: oneLineBody.substring(0, 190),
-    published_time: secureContentValues.published_at,
-    modified_time: secureContentValues.updated_at,
-    author: secureContentValues.owner_username,
+    published_time: secureContentFound.published_at,
+    modified_time: secureContentFound.updated_at,
+    author: secureContentFound.owner_username,
     type: 'article',
   };
 
+  let secureContentRootFound = null;
+
+  if (secureContentFound.parent_id) {
+    const rootContentFound = await content.findRootContent({
+      where: {
+        id: secureContentFound.id,
+      },
+    });
+
+    if (rootContentFound) {
+      secureContentRootFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
+    }
+  }
+
   return {
     props: {
-      contentFound: JSON.parse(JSON.stringify(secureContentValues)),
+      contentFound: JSON.parse(JSON.stringify(secureContentFound)),
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
+      rootContentFound: JSON.parse(JSON.stringify(secureContentRootFound)),
     },
-
     revalidate: 1,
   };
 }

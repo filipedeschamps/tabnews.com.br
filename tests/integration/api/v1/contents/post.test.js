@@ -2080,7 +2080,7 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail).toBe(null);
       });
 
-      test('My "root" content replied by other user', async () => {
+      test('My "root" content with short "title" replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
         const firstUser = await orchestrator.createUser();
@@ -2091,7 +2091,7 @@ describe('POST /api/v1/contents', () => {
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
-          title: 'Conteúdo raiz',
+          title: 'Título curto do conteúdo raiz',
           status: 'published',
         });
 
@@ -2102,7 +2102,7 @@ describe('POST /api/v1/contents', () => {
             cookie: `session_id=${secondUserSessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o comentário dele.',
+            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
             parent_id: rootContent.id,
             status: 'published',
           }),
@@ -2117,8 +2117,110 @@ describe('POST /api/v1/contents', () => {
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
-        expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou na sua postagem!`);
+        expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título curto do conteúdo raiz"`);
         expect(getLastEmail.text.includes(firstUser.username)).toBe(true);
+        expect(getLastEmail.text.includes(secondUser.username)).toBe(true);
+        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
+        expect(getLastEmail.text.includes('respondeu à sua publicação')).toBe(true);
+        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+      });
+
+      test('My "root" content with long "title" replied by other user', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Título longo do conteúdo raiz, deveria cortar o título para caber título no email',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await response.json();
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
+
+        expect(response.status).toBe(201);
+        expect(responseBody.parent_id).toBe(rootContent.id);
+        expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
+        expect(getLastEmail.subject).toBe(
+          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`
+        );
+        expect(getLastEmail.text.includes(`Olá, ${firstUser.username}`)).toBe(true);
+        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
+        expect(getLastEmail.text.includes(`"${secondUser.username}" respondeu à sua publicação`)).toBe(true);
+        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+      });
+
+      test('My "child" content replied by other user', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Testando resposta ao conteúdo child',
+          status: 'published',
+        });
+
+        const childContentFromSecondUser = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          body: 'Este conteúdo será respondido pelo "firstUser" no passo seguinte.',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
+            parent_id: childContentFromSecondUser.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await response.json();
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
+
+        expect(response.status).toBe(201);
+        expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
+        expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
+        expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "Testando resposta ao conteúdo child"`);
+        expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
+        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
+        expect(getLastEmail.text.includes(`"${firstUser.username}" respondeu ao seu comentário na publicação`)).toBe(
+          true
+        );
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
     });

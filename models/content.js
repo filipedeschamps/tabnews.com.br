@@ -959,11 +959,100 @@ async function findChildrenCount(values, options = {}) {
   }
 }
 
+async function findRootContent(values, options = {}) {
+  values.where = validateWhereSchema(values?.where);
+  const rootContentFound = await recursiveDatabaseLookup(values, options);
+  return rootContentFound;
+
+  function validateWhereSchema(where) {
+    const cleanValues = validator(where, {
+      id: 'required',
+    });
+
+    return cleanValues;
+  }
+
+  async function recursiveDatabaseLookup(values, options = {}) {
+    const query = {
+      text: `
+      WITH RECURSIVE child_to_root_tree AS (
+        SELECT
+          *
+        FROM
+          contents
+        WHERE
+          id = $1
+          AND parent_id IS NOT NULL
+      UNION ALL
+        SELECT
+          contents.*
+        FROM
+          contents
+        JOIN
+          child_to_root_tree
+        ON
+          contents.id = child_to_root_tree.parent_id
+      )
+      SELECT
+        child_to_root_tree.*,
+        users.username as owner_username,
+        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins,
+
+        -- Originally this query returned the root content object to the server and
+        -- afterward made an additional roundtrip to the database using the
+        -- findChildrenCount() method to get the children count. Now we perform a
+        -- subquery that is not performant but everything is embedded in one travel.
+        -- https://github.com/filipedeschamps/tabnews.com.br/blob/3ab1c65fdfc03d079791d17fde693010ab4caa60/models/content.js#L1013
+        (
+          WITH RECURSIVE children AS (
+            SELECT
+                id,
+                parent_id
+            FROM
+              contents
+            WHERE
+              contents.id = child_to_root_tree.id AND
+              contents.status = 'published'
+            UNION ALL
+              SELECT
+                contents.id,
+                contents.parent_id
+              FROM
+                contents
+              INNER JOIN
+                children ON contents.parent_id = children.id
+              WHERE
+                contents.status = 'published'
+          )
+          SELECT
+            count(children.id)::integer
+          FROM
+            children
+          WHERE
+            children.id NOT IN (child_to_root_tree.id)
+      ) as children_deep_count
+
+      FROM
+        child_to_root_tree
+      INNER JOIN
+        users ON child_to_root_tree.owner_id = users.id
+      WHERE
+        parent_id IS NULL;
+      ;`,
+      values: [values.where.id],
+    };
+
+    const results = await database.query(query, { transaction: options.transaction });
+    return results.rows[0];
+  }
+}
+
 export default Object.freeze({
   findAll,
   findOne,
   findChildrenTree,
   findWithStrategy,
+  findRootContent,
   create,
   update,
 });
