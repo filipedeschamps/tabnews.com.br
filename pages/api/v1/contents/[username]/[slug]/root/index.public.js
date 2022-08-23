@@ -47,13 +47,7 @@ async function getHandler(request, response) {
     });
   }
 
-  const rootContentFound = await content.findRootContent({
-    where: {
-      id: contentFound.id,
-    },
-  });
-
-  if (!rootContentFound) {
+  if (contentFound && !contentFound.parent_id) {
     throw new NotFoundError({
       message: `O conteúdo requisitado já é o conteúdo raiz.`,
       action:
@@ -63,6 +57,12 @@ async function getHandler(request, response) {
       key: 'parent_id',
     });
   }
+
+  const rootContentFound = await content.findRootContent({
+    where: {
+      id: contentFound.id,
+    },
+  });
 
   if (rootContentFound && rootContentFound.status !== 'published') {
     throw new NotFoundError({
