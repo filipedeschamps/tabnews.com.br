@@ -90,7 +90,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
-        message: 'O conteúdo requisitado já é o conteúdo raiz.',
+        message: 'O conteúdo requisitado é um conteúdo raiz.',
         action:
           'Busque apenas por conteúdos com "parent_id", pois este conteúdo não possui níveis superiores na árvore de conteúdos.',
         status_code: 404,

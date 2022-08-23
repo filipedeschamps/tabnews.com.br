@@ -292,7 +292,7 @@ export async function getStaticProps(context) {
     type: 'article',
   };
 
-  let secureContentRootFound = null;
+  let secureRootContentFound = null;
 
   if (secureContentFound.parent_id) {
     const rootContentFound = await content.findRootContent({
@@ -302,7 +302,7 @@ export async function getStaticProps(context) {
     });
 
     if (rootContentFound) {
-      secureContentRootFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
+      secureRootContentFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
     }
   }
 
@@ -310,8 +310,8 @@ export async function getStaticProps(context) {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
+      rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
-      rootContentFound: JSON.parse(JSON.stringify(secureContentRootFound)),
     },
     revalidate: 1,
   };

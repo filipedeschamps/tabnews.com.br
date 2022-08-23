@@ -49,7 +49,7 @@ async function getHandler(request, response) {
 
   if (contentFound && !contentFound.parent_id) {
     throw new NotFoundError({
-      message: `O conteúdo requisitado já é o conteúdo raiz.`,
+      message: `O conteúdo requisitado é um conteúdo raiz.`,
       action:
         'Busque apenas por conteúdos com "parent_id", pois este conteúdo não possui níveis superiores na árvore de conteúdos.',
       stack: new Error().stack,
@@ -63,13 +63,6 @@ async function getHandler(request, response) {
       id: contentFound.id,
     },
   });
-
-  if (rootContentFound && rootContentFound.status !== 'published') {
-    rootContentFound.title = '[Não disponível]';
-    rootContentFound.slug = 'nao-disponivel';
-    rootContentFound.body = '[Não disponível]';
-    rootContentFound.source_url = null;
-  }
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
 
