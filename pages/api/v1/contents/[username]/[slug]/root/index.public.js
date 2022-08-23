@@ -65,13 +65,10 @@ async function getHandler(request, response) {
   });
 
   if (rootContentFound && rootContentFound.status !== 'published') {
-    throw new NotFoundError({
-      message: `O conteúdo raiz não está mais disponível publicamente.`,
-      action: 'Enquanto o conteúdo raiz não possuir um status público, ele não poderá ser acessado.',
-      stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:ROOT:GET_HANDLER:ROOT_NOT_FOUND',
-      key: 'status',
-    });
+    rootContentFound.title = '[Não disponível]';
+    rootContentFound.slug = 'nao-disponivel';
+    rootContentFound.body = '[Não disponível]';
+    rootContentFound.source_url = null;
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);

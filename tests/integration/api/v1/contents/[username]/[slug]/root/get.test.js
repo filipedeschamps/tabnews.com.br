@@ -371,7 +371,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
     });
 
-    test('From "child" content 3 level deep, with root "deleted"', async () => {
+    test('From "child" content 3 level deep, but "root" with "draft" status', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
@@ -380,10 +380,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         title: 'Root content title',
         body: 'Root content body',
         status: 'published',
-      });
-
-      await orchestrator.updateContent(rootContent.id, {
-        status: 'deleted',
+        source_url: 'https://www.tabnews.com.br/',
       });
 
       const childContentLevel1 = await orchestrator.createContent({
@@ -410,23 +407,107 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         status: 'published',
       });
 
+      const rootContentDeleted = await orchestrator.updateContent(rootContent.id, {
+        status: 'draft',
+      });
+
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
       );
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
-        name: 'NotFoundError',
-        message: 'O conteúdo raiz não está mais disponível publicamente.',
-        action: 'Enquanto o conteúdo raiz não possuir um status público, ele não poderá ser acessado.',
-        status_code: 404,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:ROOT:GET_HANDLER:ROOT_NOT_FOUND',
-        key: 'status',
+        id: rootContent.id,
+        parent_id: null,
+        owner_id: firstUser.id,
+        slug: 'nao-disponivel',
+        title: '[Não disponível]',
+        body: '[Não disponível]',
+        status: 'draft',
+        source_url: null,
+        published_at: rootContent.published_at.toISOString(),
+        created_at: rootContent.created_at.toISOString(),
+        updated_at: rootContentDeleted.updated_at.toISOString(),
+        deleted_at: null,
+        owner_username: firstUser.username,
+        tabcoins: 1,
+        children_deep_count: 0,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
+      });
+    });
+
+    test('From "child" content 3 level deep, but "root" with "deleted" status', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root content title',
+        body: 'Root content body',
+        status: 'published',
+        source_url: 'https://www.tabnews.com.br/',
+      });
+
+      const childContentLevel1 = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        parent_id: rootContent.id,
+        title: 'Child content title Level 1',
+        body: 'Child content body Level 1',
+        status: 'published',
+      });
+
+      const childContentLevel2 = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        parent_id: childContentLevel1.id,
+        title: 'Child content title Level 2',
+        body: 'Child content body Level 2',
+        status: 'published',
+      });
+
+      const childContentLevel3 = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        parent_id: childContentLevel2.id,
+        title: 'Child content title Level 3',
+        body: 'Child content body Level 3',
+        status: 'published',
+      });
+
+      const rootContentDeleted = await orchestrator.updateContent(rootContent.id, {
+        status: 'deleted',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: rootContent.id,
+        parent_id: null,
+        owner_id: firstUser.id,
+        slug: 'nao-disponivel',
+        title: '[Não disponível]',
+        body: '[Não disponível]',
+        status: 'deleted',
+        source_url: null,
+        published_at: rootContent.published_at.toISOString(),
+        created_at: rootContent.created_at.toISOString(),
+        updated_at: rootContentDeleted.updated_at.toISOString(),
+        deleted_at: rootContentDeleted.deleted_at.toISOString(),
+        owner_username: firstUser.username,
+        tabcoins: 1,
+        children_deep_count: 0,
+        parent_title: null,
+        parent_slug: null,
+        parent_username: null,
       });
     });
   });
