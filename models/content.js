@@ -98,9 +98,6 @@ async function findAll(values = {}, options = {}) {
         contents.published_at as published_at,
         contents.deleted_at as deleted_at,
         users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username,
         get_current_balance('content:tabcoin', contents.id) as tabcoins,
 
         -- Originally this query returned a list of contents to the server and
@@ -140,10 +137,6 @@ async function findAll(values = {}, options = {}) {
         contents
       INNER JOIN
         users ON contents.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON contents.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
     `;
   }
 
@@ -340,18 +333,11 @@ async function create(postedContent, options = {}) {
         inserted_content.updated_at as updated_at,
         inserted_content.published_at as published_at,
         inserted_content.deleted_at as deleted_at,
-        users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username
+        users.username as owner_username
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON inserted_content.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
       ;`,
       values: [
         content.parent_id,
@@ -504,9 +490,19 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   const contentDefaultEarnings = 1;
 
   // We should not credit or debit if the parent content is from the same user.
-  // TODO: in the future, we should check using ids instead of usernames.
-  if (newContent.owner_username === newContent.parent_username) {
-    return;
+  if (newContent.parent_id) {
+    const parentContent = await findOne(
+      {
+        where: {
+          id: newContent.parent_id,
+        },
+      },
+      options
+    );
+
+    if (parentContent.owner_id === newContent.owner_id) {
+      return;
+    }
   }
 
   // We should not credit or debit if the content has never been published before
@@ -683,18 +679,11 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.updated_at as updated_at,
         updated_content.published_at as published_at,
         updated_content.deleted_at as deleted_at,
-        users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username
+        users.username as owner_username
       FROM
         updated_content
       INNER JOIN
         users ON updated_content.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON updated_content.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
       ;`,
       values: [
         content.id,
@@ -826,18 +815,11 @@ async function findChildrenTree(options) {
         children.published_at as published_at,
         children.deleted_at as deleted_at,
         users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username,
         get_current_balance('content:tabcoin', children.id) as tabcoins
       FROM
         children
       INNER JOIN
         users ON children.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON children.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
       ORDER BY
         children.published_at ASC;
       ;`,

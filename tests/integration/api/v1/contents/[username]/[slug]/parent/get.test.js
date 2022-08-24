@@ -232,9 +232,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
     });
 
@@ -296,9 +293,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_slug: 'child-content-title-level-1',
-        parent_title: 'Child content title Level 1',
-        parent_username: childContentLevel1.owner_username,
       });
     });
 
@@ -365,9 +359,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_slug: 'child-content-title-level-1',
-        parent_title: 'Child content title Level 1',
-        parent_username: childContentLevel1.owner_username,
       });
     });
 
@@ -434,9 +425,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: childContentLevel2Deleted.deleted_at.toISOString(),
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_slug: 'child-content-title-level-1',
-        parent_title: 'Child content title Level 1',
-        parent_username: childContentLevel1.owner_username,
       });
     });
   });

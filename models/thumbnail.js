@@ -2,9 +2,15 @@ import { join, resolve } from 'path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renderAsync } from '@resvg/resvg-js';
 import removeMarkdown from 'models/remove-markdown';
+import content from 'models/content.js';
 
 async function asPng(contentObject) {
-  const parsedContent = parseContent(contentObject);
+  const parentContentObject = await content.findOne({
+    where: {
+      id: contentObject.parent_id,
+    },
+  });
+  const parsedContent = parseContent(contentObject, parentContentObject);
   const svg = renderToStaticMarkup(renderTemplate(parsedContent));
 
   const renderBuffer = await renderAsync(svg, {
@@ -26,7 +32,7 @@ async function asPng(contentObject) {
   return renderBuffer.asPng();
 }
 
-export function parseContent(content) {
+export function parseContent(content, parentContent) {
   let title = content.title;
 
   if (!title) {
@@ -42,10 +48,10 @@ export function parseContent(content) {
 
   title = title.length <= 3 ? title : [title[0], title[1], title[2] + '...'];
 
-  let parent_title = content.parent_title;
+  let parent_title = parentContent?.title;
 
-  if (content.parent_slug) {
-    parent_title = (parent_title ?? content.parent_username).substring(0, 60);
+  if (content.parent_id) {
+    parent_title = (parent_title ?? parentContent.owner_username).substring(0, 60);
   }
 
   parent_title = parent_title?.length > 50 ? parent_title.substring(0, 50) + '...' : parent_title;

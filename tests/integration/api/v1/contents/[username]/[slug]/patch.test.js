@@ -399,9 +399,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 1,
         owner_username: firstUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -455,9 +452,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -584,9 +578,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -677,9 +668,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -852,9 +840,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
@@ -1054,9 +1039,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1275,9 +1257,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: rootContent.title,
-        parent_slug: rootContent.slug,
-        parent_username: rootContent.owner_username,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1330,9 +1309,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1385,9 +1361,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1440,9 +1413,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1496,9 +1466,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 1,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1553,9 +1520,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 1,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1626,9 +1590,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 1,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(republishedResponseBody.id)).toEqual(4);
@@ -1686,9 +1647,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: responseBody.published_at,
         deleted_at: responseBody.deleted_at,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1916,9 +1874,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1971,9 +1926,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2026,9 +1978,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2081,9 +2030,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2331,9 +2277,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2387,9 +2330,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2479,9 +2419,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2539,9 +2476,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: rootContent.title,
-        parent_slug: rootContent.slug,
-        parent_username: rootContent.owner_username,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2600,9 +2534,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -2931,9 +2862,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: null,
         tabcoins: 1,
         owner_username: secondUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
