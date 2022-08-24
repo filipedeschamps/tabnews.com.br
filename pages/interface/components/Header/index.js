@@ -16,14 +16,14 @@ export default function HeaderComponent() {
   return (
     <Header>
       <Header.Item>
-        <Header.Link href="/" fontSize={2} sx={pathname === '/' && activeLinkStyle}>
+        <Header.Link href="/" fontSize={2} sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
           <CgTab size={32} />
           <Box sx={{ ml: 2 }}>Relevantes</Box>
         </Header.Link>
       </Header.Item>
 
       <Header.Item>
-        <Header.Link href="/recentes" fontSize={2} sx={pathname.includes('recentes') && activeLinkStyle}>
+        <Header.Link href="/recentes" fontSize={2} sx={pathname.startsWith('/recentes') && activeLinkStyle}>
           Recentes
         </Header.Link>
       </Header.Item>
@@ -32,7 +32,7 @@ export default function HeaderComponent() {
         <Header.Link
           href="/status"
           fontSize={2}
-          sx={{ display: ['none', 'block'], ...(pathname.includes('status') && activeLinkStyle) }}>
+          sx={{ display: ['none', 'block'], ...(pathname.startsWith('/status') && activeLinkStyle) }}>
           Status
         </Header.Link>
       </Header.Item>
