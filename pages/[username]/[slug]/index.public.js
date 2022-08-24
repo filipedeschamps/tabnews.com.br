@@ -8,15 +8,16 @@ import validator from 'models/validator.js';
 import authorization from 'models/authorization.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
-import { Box } from '@primer/react';
+import { Box, Tooltip } from '@primer/react';
 import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
 
 export default function Post({
   contentFound: contentFoundFallback,
   childrenFound: childrenFallback,
-  contentMetadata,
   rootContentFound,
+  parentContentFound,
+  contentMetadata,
 }) {
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
@@ -73,7 +74,7 @@ export default function Post({
         />
       )}
       <DefaultLayout metadata={contentMetadata}>
-        <InReplyToLinks rootContent={rootContentFound} content={contentFound} />
+        <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
 
         <Box
           sx={{
@@ -128,39 +129,73 @@ export default function Post({
   );
 }
 
-function InReplyToLinks({ rootContent, content }) {
+function InReplyToLinks({ content, parentContent, rootContent }) {
   return (
     <>
-      {content.parent_id && rootContent.id === content.parent_id && (
+      {/*          ↱ You are here
+        [root]->[child]->[child]
+      */}
+      {content.parent_id && parentContent.id === rootContent.id && (
         <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
           <Box sx={{ pl: '6px', pr: '14px' }}>
             <CommentIcon verticalAlign="middle" size="small" />
           </Box>
           <Box>
             Em resposta a{' '}
-            <Link href={`/${content.parent_username}/${content.parent_slug}`}>
-              <strong>
-                {content.parent_title ? content.parent_title : `/${content.parent_username}/${content.parent_slug}`}
-              </strong>
-            </Link>
+            {parentContent.status === 'published' && (
+              <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
+                <strong>{parentContent.title}</strong>
+              </Link>
+            )}
+            {parentContent.status !== 'published' && (
+              <Tooltip
+                aria-label={`Este conteúdo está atualmente com status "${parentContent.status}"`}
+                direction="s"
+                noDelay={true}>
+                <strong>{parentContent.title}</strong>
+              </Tooltip>
+            )}
           </Box>
         </Box>
       )}
 
-      {content.parent_id && rootContent.id !== content.parent_id && (
+      {/*                   ↱ You are here
+        [root]->[child]->[child]
+      */}
+      {content.parent_id && parentContent.id !== rootContent.id && (
         <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
           <Box sx={{ pl: '7px', pr: '13px' }}>
             <CommentDiscussionIcon verticalAlign="middle" size="small" />
           </Box>
           <Box>
             Respondendo a{' '}
-            <Link href={`/${content.parent_username}/${content.parent_slug}`}>
-              <strong>este comentário</strong>
-            </Link>{' '}
+            {parentContent.status === 'published' && (
+              <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
+                <strong>"{parentContent.body}..."</strong>{' '}
+              </Link>
+            )}
+            {parentContent.status !== 'published' && (
+              <Tooltip
+                aria-label={`Este conteúdo está atualmente com status "${parentContent.status}"`}
+                direction="s"
+                noDelay={true}>
+                <strong>{parentContent.body}</strong>{' '}
+              </Tooltip>
+            )}
             dentro da publicação{' '}
-            <Link href={`/${rootContent.owner_username}/${rootContent.slug}`}>
-              <strong>{rootContent.title}</strong>
-            </Link>
+            {rootContent.status === 'published' && (
+              <Link href={`/${rootContent.owner_username}/${rootContent.slug}`}>
+                <strong>{rootContent.title}</strong>
+              </Link>
+            )}
+            {rootContent.status !== 'published' && (
+              <Tooltip
+                aria-label={`Este conteúdo está atualmente com status "${rootContent.status}"`}
+                direction="s"
+                noDelay={true}>
+                <strong>{rootContent.body}</strong>{' '}
+              </Tooltip>
+            )}
           </Box>
         </Box>
       )}
@@ -293,6 +328,7 @@ export async function getStaticProps(context) {
   };
 
   let secureRootContentFound = null;
+  let secureParentContentFound = null;
 
   if (secureContentFound.parent_id) {
     const rootContentFound = await content.findRootContent({
@@ -301,9 +337,16 @@ export async function getStaticProps(context) {
       },
     });
 
-    if (rootContentFound) {
-      secureRootContentFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
-    }
+    secureRootContentFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
+
+    const parentContentFound = await content.findOne({
+      where: {
+        id: secureContentFound.parent_id,
+      },
+    });
+
+    parentContentFound.body = removeMarkdown(parentContentFound.body).replace(/\s+/g, ' ').substring(0, 50);
+    secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
   }
 
   return {
@@ -311,6 +354,7 @@ export async function getStaticProps(context) {
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
       childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
       rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
+      parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
     revalidate: 1,
