@@ -442,8 +442,7 @@ const schemas = {
     return Joi.object({
       strategy: Joi.string()
         .trim()
-        // TODO: remove 'best' strategy in the near future
-        .valid('new', 'old', 'best', 'relevant')
+        .valid('new', 'old', 'relevant')
         .default('relevant')
         .invalid(null)
         .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })

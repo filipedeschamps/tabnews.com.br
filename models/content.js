@@ -200,7 +200,6 @@ async function findWithStrategy(options = {}) {
   const strategies = {
     new: getNew,
     old: getOld,
-    best: getBest,
     relevant: getRelevant,
   };
 
@@ -221,18 +220,6 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at ASC';
     results.rows = await findAll(options);
-    results.pagination = await getPagination(options);
-
-    return results;
-  }
-
-  async function getBest(options = {}) {
-    const results = {};
-
-    options.order = 'published_at DESC';
-    const contentList = await findAll(options);
-    const rankedContentList = rankContentListByRelevance(contentList);
-    results.rows = rankedContentList;
     results.pagination = await getPagination(options);
 
     return results;
