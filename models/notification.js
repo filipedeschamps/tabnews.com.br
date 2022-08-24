@@ -1,32 +1,38 @@
 import user from 'models/user.js';
 import content from 'models/content.js';
+import authorization from 'models/authorization.js';
 import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
 
 async function sendReplyEmailToParentUser(createdContent) {
+  const anonymousUser = user.createAnonymous();
+  const secureCreatedContent = authorization.filterOutput(anonymousUser, 'read:content', createdContent);
+
   const parentContent = await content.findOne({
     where: {
-      id: createdContent.parent_id,
+      id: secureCreatedContent.parent_id,
     },
   });
 
-  if (parentContent.owner_id !== createdContent.owner_id) {
+  if (parentContent.owner_id !== secureCreatedContent.owner_id) {
     const parentContentUser = await user.findOneById(parentContent.owner_id);
-    const childContendUrl = getChildContendUrl(createdContent);
+    const childContendUrl = getChildContendUrl(secureCreatedContent);
     const rootContent = await content.findRootContent({
       where: {
-        id: createdContent.id,
+        id: secureCreatedContent.id,
       },
     });
 
+    const secureRootContent = authorization.filterOutput(anonymousUser, 'read:content', rootContent);
+
     const subject = getSubject({
-      createdContent,
-      rootContent,
+      createdContent: secureCreatedContent,
+      rootContent: secureRootContent,
     });
 
     const bodyReplyLine = getBodyReplyLine({
-      createdContent,
-      rootContent,
+      createdContent: secureCreatedContent,
+      rootContent: secureRootContent,
     });
 
     await email.send({

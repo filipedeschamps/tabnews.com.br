@@ -216,7 +216,15 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:content') {
-    filteredOutputValues = validator(output, {
+    const clonedOutput = { ...output };
+    if (output.status !== 'published' && user.id !== output.owner_id) {
+      clonedOutput.title = '[Não disponível]';
+      clonedOutput.body = '[Não disponível]';
+      clonedOutput.slug = 'nao-disponivel';
+      clonedOutput.source_url = null;
+    }
+
+    filteredOutputValues = validator(clonedOutput, {
       content: 'required',
     });
   }

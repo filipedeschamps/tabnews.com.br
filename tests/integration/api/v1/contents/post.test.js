@@ -2223,6 +2223,65 @@ describe('POST /api/v1/contents', () => {
         );
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
+
+      test('My "child" content replied by other user, but "root" with "deleted" status', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Testando resposta ao conteúdo child',
+          status: 'published',
+        });
+
+        const childContentFromSecondUser = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          body: 'Este conteúdo será respondido pelo "firstUser" no passo seguinte.',
+          status: 'published',
+        });
+
+        await orchestrator.updateContent(rootContent.id, {
+          status: 'deleted',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
+            parent_id: childContentFromSecondUser.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await response.json();
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
+
+        expect(response.status).toBe(201);
+        expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
+        expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
+        expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "[Não disponível]"`);
+        expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
+        expect(getLastEmail.text.includes(rootContent.title)).toBe(false);
+        expect(
+          getLastEmail.text.includes(
+            `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`
+          )
+        ).toBe(true);
+        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+      });
     });
 
     describe('TabCoins', () => {
