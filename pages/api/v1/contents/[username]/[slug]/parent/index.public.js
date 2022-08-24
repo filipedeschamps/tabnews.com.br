@@ -42,7 +42,7 @@ async function getHandler(request, response) {
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:ROOT:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:SLUG_NOT_FOUND',
       key: 'slug',
     });
   }
@@ -53,18 +53,18 @@ async function getHandler(request, response) {
       action:
         'Busque apenas por conteúdos com "parent_id", pois este conteúdo não possui níveis superiores na árvore de conteúdos.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:ROOT:GET_HANDLER:ALREADY_ROOT',
+      errorLocationCode: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:ALREADY_ROOT',
       key: 'parent_id',
     });
   }
 
-  const rootContentFound = await content.findRootContent({
+  const parentContentFound = await content.findOne({
     where: {
-      id: contentFound.id,
+      id: contentFound.parent_id,
     },
   });
 
-  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
+  const secureParentContent = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
 
-  return response.status(200).json(secureOutputValues);
+  return response.status(200).json(secureParentContent);
 }
