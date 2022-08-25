@@ -2,7 +2,15 @@ import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Toolti
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
-import Link from 'next/link';
+import NextLink from 'next/link';
+
+function ActionListNextLink({ children, href, ...rest }) {
+  return (
+    <NextLink href={href} passHref>
+      <a {...rest}>{children}</a>
+    </NextLink>
+  );
+}
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
@@ -10,37 +18,37 @@ export default function HeaderComponent() {
   return (
     <Header>
       <Header.Item>
-        <Link href="/" passHref>
+        <NextLink href="/" passHref>
           <Header.Link fontSize={2}>
             <CgTab size={32} />
             <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
           </Header.Link>
-        </Link>
+        </NextLink>
       </Header.Item>
 
       <Header.Item>
-        <Link href="/recentes" passHref>
+        <NextLink href="/recentes" passHref>
           <Header.Link fontSize={2}>Recentes</Header.Link>
-        </Link>
+        </NextLink>
       </Header.Item>
 
       <Header.Item full>
-        <Link href="/status" passHref>
+        <NextLink href="/status" passHref>
           <Header.Link fontSize={2}>Status</Header.Link>
-        </Link>
+        </NextLink>
       </Header.Item>
 
       {!isLoading && !user && (
         <>
           <Header.Item>
-            <Header.Link href="/login" fontSize={2}>
-              Login
-            </Header.Link>
+            <NextLink href="/login" passHref>
+              <Header.Link fontSize={2}>Login</Header.Link>
+            </NextLink>
           </Header.Item>
           <Header.Item>
-            <Header.Link href="/cadastro" fontSize={2}>
-              Cadastrar
-            </Header.Link>
+            <NextLink href="/cadastro" passHref>
+              <Header.Link fontSize={2}>Cadastrar</Header.Link>
+            </NextLink>
           </Header.Item>
         </>
       )}
@@ -89,15 +97,18 @@ export default function HeaderComponent() {
 
               <ActionMenu.Overlay>
                 <ActionList>
-                  <ActionList.LinkItem href={`/${user.username}`}>
+                  <ActionList.LinkItem as={ActionListNextLink} href={`/${user.username}`}>
                     <ActionList.LeadingVisual>
                       <HomeIcon size={16} />
                     </ActionList.LeadingVisual>
                     <Truncate>{user.username}</Truncate>
                   </ActionList.LinkItem>
                   <ActionList.Divider />
-                  <ActionList.LinkItem href="/publicar">Publicar novo conteúdo</ActionList.LinkItem>
+                  <ActionList.LinkItem as={ActionListNextLink} href="/publicar">
+                    Publicar novo conteúdo
+                  </ActionList.LinkItem>
                   <ActionList.LinkItem
+                    as={ActionListNextLink}
                     href="/perfil"
                     onClick={(event) => {
                       event.preventDefault();
