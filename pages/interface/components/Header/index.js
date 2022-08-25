@@ -14,7 +14,11 @@ export default function HeaderComponent() {
   };
 
   return (
-    <Header>
+    <Header
+      sx={{
+        pl: [2, null, null, 3],
+        pr: [2, null, null, 3],
+      }}>
       <Header.Item>
         <Header.Link href="/" fontSize={2} sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
           <CgTab size={32} />

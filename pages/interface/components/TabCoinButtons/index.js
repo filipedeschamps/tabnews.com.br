@@ -85,7 +85,7 @@ export default function TabCoinButtons({ content }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        mt: contentObject.title ? '8px' : '0px',
+        mt: contentObject.title ? '7px' : '0px',
       }}>
       <Box>
         <IconButton
@@ -93,7 +93,7 @@ export default function TabCoinButtons({ content }) {
           aria-label="Creditar TabCoin"
           icon={ChevronUpIcon}
           size="small"
-          sx={{ color: 'fg.subtle' }}
+          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
           onClick={() => {
             transactTabCoin('credit');
           }}
@@ -117,7 +117,7 @@ export default function TabCoinButtons({ content }) {
           aria-label="Debitar TabCoin"
           icon={ChevronDownIcon}
           size="small"
-          sx={{ color: 'fg.subtle' }}
+          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
           onClick={() => {
             transactTabCoin('debit');
           }}
