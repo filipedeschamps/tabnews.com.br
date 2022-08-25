@@ -83,7 +83,7 @@ export default function Post({
           }}>
           <Box
             sx={{
-              pr: 2,
+              pr: [0, null, null, 2],
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -101,8 +101,7 @@ export default function Post({
             />
           </Box>
 
-          {/* 36px is the size of the TabCoin column */}
-          <Box sx={{ width: 'calc(100% - 36px)' }}>
+          <Box sx={{ width: '100%', overflow: 'auto' }}>
             <Content content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -137,7 +136,12 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
       */}
       {content.parent_id && parentContent.id === rootContent.id && (
         <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
-          <Box sx={{ pl: '6px', pr: '14px' }}>
+          <Box
+            sx={{
+              textAlign: 'center',
+              pl: ['6px', null, null, '6px'],
+              pr: ['6px', null, null, '13px'],
+            }}>
             <CommentIcon verticalAlign="middle" size="small" />
           </Box>
           <Box>
@@ -164,7 +168,12 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
       */}
       {content.parent_id && parentContent.id !== rootContent.id && (
         <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
-          <Box sx={{ pl: '7px', pr: '13px' }}>
+          <Box
+            sx={{
+              textAlign: 'center',
+              pl: ['6px', null, null, '6px'],
+              pr: ['6px', null, null, '13px'],
+            }}>
             <CommentDiscussionIcon verticalAlign="middle" size="small" />
           </Box>
           <Box>
@@ -216,7 +225,7 @@ function RenderChildrenTree({ childrenList, level }) {
         key={child.id}>
         <Box
           sx={{
-            pr: 2,
+            pr: [0, null, null, 2],
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -234,8 +243,7 @@ function RenderChildrenTree({ childrenList, level }) {
           />
         </Box>
 
-        {/* 36px is the size of the TabCoin column */}
-        <Box sx={{ width: 'calc(100% - 36px)' }}>
+        <Box sx={{ width: '100%', overflow: 'auto' }}>
           <Content content={child} mode="view" />
 
           <Box sx={{ mt: 4 }}>
