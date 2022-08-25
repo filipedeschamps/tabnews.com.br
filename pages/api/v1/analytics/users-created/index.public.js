@@ -14,7 +14,7 @@ export default nextConnect({
 async function getHandler(request, response) {
   const results = await database.query(`
   WITH range_values AS (
-    SELECT date_trunc('day', min(created_at)) as minval,
+    SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
            date_trunc('day', max(created_at)) as maxval
     FROM users),
 
