@@ -201,9 +201,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: firstUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -333,9 +330,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -409,9 +403,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -679,9 +670,6 @@ describe('POST /api/v1/contents', () => {
         published_at: secondContentBody.published_at,
         deleted_at: null,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(Date.parse(secondContentBody.created_at)).not.toEqual(NaN);
@@ -784,9 +772,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -830,9 +815,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -877,9 +859,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -924,9 +903,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 1,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1102,9 +1078,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1149,9 +1122,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1196,9 +1166,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1243,9 +1210,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1450,9 +1414,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1497,9 +1458,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1574,9 +1532,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1622,9 +1577,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1668,9 +1620,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1777,9 +1726,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: rootContent.title,
-        parent_slug: rootContent.slug,
-        parent_username: rootContent.owner_username,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1832,9 +1778,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: rootContent.title,
-        parent_slug: rootContent.slug,
-        parent_username: rootContent.owner_username,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1888,9 +1831,6 @@ describe('POST /api/v1/contents', () => {
         deleted_at: null,
         tabcoins: 0,
         owner_username: defaultUser.username,
-        parent_title: rootContent.title,
-        parent_slug: rootContent.slug,
-        parent_username: rootContent.owner_username,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);

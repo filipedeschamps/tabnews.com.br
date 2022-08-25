@@ -232,9 +232,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
     });
 
@@ -296,9 +293,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
     });
 
@@ -365,9 +359,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
     });
 
@@ -435,9 +426,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_username: firstUser.username,
         tabcoins: 1,
         children_deep_count: 0,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
     });
 
@@ -505,9 +493,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_username: firstUser.username,
         tabcoins: 1,
         children_deep_count: 0,
-        parent_title: null,
-        parent_slug: null,
-        parent_username: null,
       });
     });
   });

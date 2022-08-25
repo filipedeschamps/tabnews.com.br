@@ -85,22 +85,19 @@ async function findAll(values = {}, options = {}) {
 
     return `
       SELECT
-        contents.id as id,
-        contents.owner_id as owner_id,
-        contents.parent_id as parent_id,
-        contents.slug as slug,
-        contents.title as title,
-        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body as body,' : ''}
-        contents.status as status,
-        contents.source_url as source_url,
-        contents.created_at as created_at,
-        contents.updated_at as updated_at,
-        contents.published_at as published_at,
-        contents.deleted_at as deleted_at,
+        contents.id,
+        contents.owner_id,
+        contents.parent_id,
+        contents.slug,
+        contents.title,
+        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
+        contents.status,
+        contents.source_url,
+        contents.created_at,
+        contents.updated_at,
+        contents.published_at,
+        contents.deleted_at,
         users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username,
         get_current_balance('content:tabcoin', contents.id) as tabcoins,
 
         -- Originally this query returned a list of contents to the server and
@@ -140,10 +137,6 @@ async function findAll(values = {}, options = {}) {
         contents
       INNER JOIN
         users ON contents.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON contents.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
     `;
   }
 
@@ -328,30 +321,23 @@ async function create(postedContent, options = {}) {
             RETURNING *
         )
       SELECT
-        inserted_content.id as id,
-        inserted_content.owner_id as owner_id,
-        inserted_content.parent_id as parent_id,
-        inserted_content.slug as slug,
-        inserted_content.title as title,
-        inserted_content.body as body,
-        inserted_content.status as status,
-        inserted_content.source_url as source_url,
-        inserted_content.created_at as created_at,
-        inserted_content.updated_at as updated_at,
-        inserted_content.published_at as published_at,
-        inserted_content.deleted_at as deleted_at,
-        users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username
+        inserted_content.id,
+        inserted_content.owner_id,
+        inserted_content.parent_id,
+        inserted_content.slug,
+        inserted_content.title,
+        inserted_content.body,
+        inserted_content.status,
+        inserted_content.source_url,
+        inserted_content.created_at,
+        inserted_content.updated_at,
+        inserted_content.published_at,
+        inserted_content.deleted_at,
+        users.username as owner_username
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON inserted_content.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
       ;`,
       values: [
         content.parent_id,
@@ -504,9 +490,19 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   const contentDefaultEarnings = 1;
 
   // We should not credit or debit if the parent content is from the same user.
-  // TODO: in the future, we should check using ids instead of usernames.
-  if (newContent.owner_username === newContent.parent_username) {
-    return;
+  if (newContent.parent_id) {
+    const parentContent = await findOne(
+      {
+        where: {
+          id: newContent.parent_id,
+        },
+      },
+      options
+    );
+
+    if (parentContent.owner_id === newContent.owner_id) {
+      return;
+    }
   }
 
   // We should not credit or debit if the content has never been published before
@@ -671,30 +667,23 @@ async function update(contentId, postedContent, options = {}) {
           RETURNING *
         )
       SELECT
-        updated_content.id as id,
-        updated_content.owner_id as owner_id,
-        updated_content.parent_id as parent_id,
-        updated_content.slug as slug,
-        updated_content.title as title,
-        updated_content.body as body,
-        updated_content.status as status,
-        updated_content.source_url as source_url,
-        updated_content.created_at as created_at,
-        updated_content.updated_at as updated_at,
-        updated_content.published_at as published_at,
-        updated_content.deleted_at as deleted_at,
-        users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username
+        updated_content.id,
+        updated_content.owner_id,
+        updated_content.parent_id,
+        updated_content.slug,
+        updated_content.title,
+        updated_content.body,
+        updated_content.status,
+        updated_content.source_url,
+        updated_content.created_at,
+        updated_content.updated_at,
+        updated_content.published_at,
+        updated_content.deleted_at,
+        users.username as owner_username
       FROM
         updated_content
       INNER JOIN
         users ON updated_content.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON updated_content.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
       ;`,
       values: [
         content.id,
@@ -813,31 +802,24 @@ async function findChildrenTree(options) {
 
       )
       SELECT
-        children.id as id,
-        children.owner_id as owner_id,
-        children.parent_id as parent_id,
-        children.slug as slug,
-        children.title as title,
-        children.body as body,
-        children.status as status,
-        children.source_url as source_url,
-        children.created_at as created_at,
-        children.updated_at as updated_at,
-        children.published_at as published_at,
-        children.deleted_at as deleted_at,
+        children.id,
+        children.owner_id,
+        children.parent_id,
+        children.slug,
+        children.title,
+        children.body,
+        children.status,
+        children.source_url,
+        children.created_at,
+        children.updated_at,
+        children.published_at,
+        children.deleted_at,
         users.username as owner_username,
-        parent_content.title as parent_title,
-        parent_content.slug as parent_slug,
-        parent_user.username as parent_username,
         get_current_balance('content:tabcoin', children.id) as tabcoins
       FROM
         children
       INNER JOIN
         users ON children.owner_id = users.id
-      LEFT JOIN
-        contents as parent_content ON children.parent_id = parent_content.id
-      LEFT JOIN
-        users as parent_user ON parent_content.owner_id = parent_user.id
       ORDER BY
         children.published_at ASC;
       ;`,
