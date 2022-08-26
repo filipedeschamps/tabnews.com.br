@@ -1,18 +1,18 @@
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { Header, Link as PrimerLink } from '@primer/react';
 
-export default function LinkComponent({ href, children, ...props }) {
+export function Link({ href, children, ...props }) {
   return (
-    <Link href={href} passHref>
+    <NextLink href={href} passHref>
       <PrimerLink {...props}>{children}</PrimerLink>
-    </Link>
+    </NextLink>
   );
 }
 
 export function HeaderLink({ href, children, ...props }) {
   return (
-    <Link href={href} passHref>
+    <NextLink href={href} passHref>
       <Header.Link {...props}>{children}</Header.Link>
-    </Link>
+    </NextLink>
   );
 }

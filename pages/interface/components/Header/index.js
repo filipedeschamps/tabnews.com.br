@@ -112,7 +112,6 @@ export default function HeaderComponent() {
                     Publicar novo conteúdo
                   </ActionList.LinkItem>
                   <ActionList.LinkItem
-                    as={Link}
                     href="/perfil"
                     onClick={(event) => {
                       event.preventDefault();
