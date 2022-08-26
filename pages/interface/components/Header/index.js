@@ -2,6 +2,7 @@ import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Toolti
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
+import { HeaderLink, Link } from 'pages/interface/components/Link';
 import { useRouter } from 'next/router';
 
 export default function HeaderComponent() {
@@ -20,38 +21,38 @@ export default function HeaderComponent() {
         pr: [2, null, null, 3],
       }}>
       <Header.Item>
-        <Header.Link href="/" fontSize={2} sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
+        <HeaderLink href="/" fontSize={2} sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
           <CgTab size={32} />
           <Box sx={{ ml: 2 }}>Relevantes</Box>
-        </Header.Link>
+        </HeaderLink>
       </Header.Item>
 
       <Header.Item>
-        <Header.Link href="/recentes" fontSize={2} sx={pathname.startsWith('/recentes') && activeLinkStyle}>
+        <HeaderLink href="/recentes" fontSize={2} sx={pathname.startsWith('/recentes') && activeLinkStyle}>
           Recentes
-        </Header.Link>
+        </HeaderLink>
       </Header.Item>
 
       <Header.Item full>
-        <Header.Link
+        <HeaderLink
           href="/status"
           fontSize={2}
           sx={{ display: ['none', 'block'], ...(pathname.startsWith('/status') && activeLinkStyle) }}>
           Status
-        </Header.Link>
+        </HeaderLink>
       </Header.Item>
 
       {!isLoading && !user && (
         <>
           <Header.Item>
-            <Header.Link href="/login" fontSize={2}>
+            <HeaderLink href="/login" fontSize={2}>
               Login
-            </Header.Link>
+            </HeaderLink>
           </Header.Item>
           <Header.Item>
-            <Header.Link href="/cadastro" fontSize={2}>
+            <HeaderLink href="/cadastro" fontSize={2}>
               Cadastrar
-            </Header.Link>
+            </HeaderLink>
           </Header.Item>
         </>
       )}
@@ -100,15 +101,18 @@ export default function HeaderComponent() {
 
               <ActionMenu.Overlay>
                 <ActionList>
-                  <ActionList.LinkItem href={`/${user.username}`}>
+                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
                     <ActionList.LeadingVisual>
                       <HomeIcon size={16} />
                     </ActionList.LeadingVisual>
                     <Truncate>{user.username}</Truncate>
                   </ActionList.LinkItem>
                   <ActionList.Divider />
-                  <ActionList.LinkItem href="/publicar">Publicar novo conteúdo</ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href="/publicar">
+                    Publicar novo conteúdo
+                  </ActionList.LinkItem>
                   <ActionList.LinkItem
+                    as={Link}
                     href="/perfil"
                     onClick={(event) => {
                       event.preventDefault();
