@@ -3,6 +3,7 @@ import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react
 import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 
 function ActionListNextLink({ children, href, ...rest }) {
   return (
@@ -14,27 +15,43 @@ function ActionListNextLink({ children, href, ...rest }) {
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
+  const { pathname } = useRouter();
+
+  const activeLinkStyle = {
+    textDecoration: 'underline',
+    textUnderlineOffset: 6,
+  };
 
   return (
-    <Header>
+    <Header
+      sx={{
+        pl: [2, null, null, 3],
+        pr: [2, null, null, 3],
+      }}>
       <Header.Item>
         <NextLink href="/" passHref>
-          <Header.Link fontSize={2}>
+          <Header.Link fontSize={2} sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
             <CgTab size={32} />
-            <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
+            <Box sx={{ ml: 2 }}>Relevantes</Box>
           </Header.Link>
         </NextLink>
       </Header.Item>
 
       <Header.Item>
         <NextLink href="/recentes" passHref>
-          <Header.Link fontSize={2}>Recentes</Header.Link>
+          <Header.Link fontSize={2} sx={pathname.startsWith('/recentes') && activeLinkStyle}>
+            Recentes
+          </Header.Link>
         </NextLink>
       </Header.Item>
 
       <Header.Item full>
         <NextLink href="/status" passHref>
-          <Header.Link fontSize={2}>Status</Header.Link>
+          <Header.Link
+            fontSize={2}
+            sx={{ display: ['none', 'block'], ...(pathname.startsWith('/status') && activeLinkStyle) }}>
+            Status
+          </Header.Link>
         </NextLink>
       </Header.Item>
 

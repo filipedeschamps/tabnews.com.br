@@ -194,7 +194,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
         )}
 
         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-          <Box sx={{ flex: 'auto' }}>
+          <Box sx={{ flex: 'auto', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
             <BranchName sx={{ mr: 2 }} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </BranchName>

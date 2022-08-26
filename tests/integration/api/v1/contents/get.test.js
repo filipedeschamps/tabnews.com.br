@@ -143,9 +143,6 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           tabcoins: 1,
           owner_username: defaultUser.username,
-          parent_title: null,
-          parent_slug: null,
-          parent_username: null,
           children_deep_count: 0,
         },
         {
@@ -162,9 +159,6 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           tabcoins: 1,
           owner_username: defaultUser.username,
-          parent_title: null,
-          parent_slug: null,
-          parent_username: null,
           children_deep_count: 1,
         },
       ]);
@@ -239,9 +233,6 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           tabcoins: 1,
           owner_username: defaultUser.username,
-          parent_title: null,
-          parent_slug: null,
-          parent_username: null,
           children_deep_count: 1,
         },
         {
@@ -258,9 +249,6 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           tabcoins: 1,
           owner_username: defaultUser.username,
-          parent_title: null,
-          parent_slug: null,
-          parent_username: null,
           children_deep_count: 0,
         },
       ]);
@@ -330,9 +318,6 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           tabcoins: 1,
           owner_username: defaultUser.username,
-          parent_title: null,
-          parent_slug: null,
-          parent_username: null,
           children_deep_count: 3,
         },
       ]);
