@@ -18,11 +18,11 @@ describe('GET /api/v1/sessions', () => {
       expect(response.status).toEqual(403);
       expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:session".');
+      expect(responseBody.message).toEqual('Você precisa estar logado para executar esta ação.');
+      expect(responseBody.action).toEqual('Faça o login no TabNews e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:AUTHENTICATION:INJECT_USER:NO_SESSION_ID_COOKIE');
     });
 
     test('Retrieving the endpoint with malformatted "session_id" (too short)', async () => {

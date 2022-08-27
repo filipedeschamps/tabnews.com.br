@@ -3,16 +3,15 @@ import controller from 'models/controller';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import thumbnail from 'models/thumbnail.js';
+import user from 'models/user.js';
+import authorization from 'models/authorization.js';
 import { NotFoundError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
-})
-  .use(controller.injectRequestMetadata)
-  .use(controller.logRequest)
-  .get(getValidationHandler, getHandler);
+}).get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -26,6 +25,8 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
+  const userTryingToGet = user.createAnonymous();
+
   const contentFound = await content.findOne({
     where: {
       owner_username: request.query.username,
@@ -44,9 +45,11 @@ async function getHandler(request, response) {
     });
   }
 
-  const thumbnailPng = await thumbnail.asPng(contentFound);
+  const secureContentFound = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+
+  const thumbnailPng = await thumbnail.asPng(secureContentFound);
 
   response.statusCode = 200;
-  response.setHeader('Content-Type', `image/png`);
+  response.setHeader('Content-Type', 'image/png');
   response.end(thumbnailPng);
 }

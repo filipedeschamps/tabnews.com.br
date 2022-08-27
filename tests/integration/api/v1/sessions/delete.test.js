@@ -21,12 +21,12 @@ describe('DELETE /api/v1/sessions', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
-        message: 'Usuário não pode executar esta operação.',
-        action: 'Verifique se este usuário possui a feature "read:session".',
+        message: 'Você precisa estar logado para executar esta ação.',
+        action: 'Faça o login no TabNews e tente novamente.',
         status_code: 403,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
+        error_location_code: 'MODEL:AUTHENTICATION:INJECT_USER:NO_SESSION_ID_COOKIE',
       });
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);

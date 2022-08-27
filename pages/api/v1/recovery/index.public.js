@@ -1,18 +1,15 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
-  .use(controller.logRequest)
   .post(postValidationHandler, postHandler)
   .patch(patchValidationHandler, patchHandler);
 
@@ -28,7 +25,7 @@ function postValidationHandler(request, response, next) {
 }
 
 async function postHandler(request, response) {
-  const userTryingToRecover = request.context.user;
+  const userTryingToRecover = user.createAnonymous();
   const validatedInputValues = request.body;
 
   const tokenObject = await recovery.createAndSendRecoveryEmail(validatedInputValues);
@@ -50,7 +47,7 @@ function patchValidationHandler(request, response, next) {
 }
 
 async function patchHandler(request, response) {
-  const userTryingToRecover = request.context.user;
+  const userTryingToRecover = user.createAnonymous();
   const validatedInputValues = request.body;
 
   const tokenObject = await recovery.resetUserPassword(validatedInputValues);

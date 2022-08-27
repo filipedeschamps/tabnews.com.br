@@ -14,15 +14,23 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
-  .use(controller.logRequest)
-  .get(authorization.canRequest('read:user:list'), getHandler)
+  // `POST` is an anonymous request but it's important to
+  // log it since this is a sensitive operation.
   .post(
+    controller.injectRequestMetadata,
+    controller.logRequest,
     postValidationHandler,
-    authorization.canRequest('create:user'),
     firewall.canRequest('create:user'),
     postHandler
+  )
+
+  // `GET` requests needs to be authenticated.
+  .get(
+    controller.injectRequestMetadata,
+    authentication.injectUser,
+    controller.logRequest,
+    authorization.canRequest('read:user:list'),
+    getHandler
   );
 
 async function getHandler(request, response) {
@@ -48,7 +56,7 @@ function postValidationHandler(request, response, next) {
 }
 
 async function postHandler(request, response) {
-  const userTryingToCreate = request.context.user;
+  const userTryingToCreate = user.createAnonymous();
   const insecureInputValues = request.body;
   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
 
@@ -56,7 +64,7 @@ async function postHandler(request, response) {
 
   await event.create({
     type: 'create:user',
-    originatorUserId: request.context.user.id || newUser.id,
+    originatorUserId: newUser.id,
     originatorIp: request.context.clientIp,
     metadata: {
       id: newUser.id,

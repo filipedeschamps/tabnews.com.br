@@ -10,10 +10,7 @@ export default nextConnect({
   attachParams: true,
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
-})
-  .use(controller.injectRequestMetadata)
-  .use(controller.logRequest)
-  .get(getValidationHandler, getHandler);
+}).get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {

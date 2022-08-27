@@ -13,12 +13,17 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
+  // `POST` is an anonymous request but it's important to
+  // log it since this is a sensitive operation.
+  .post(controller.injectRequestMetadata, controller.logRequest, postValidationHandler, postHandler)
+
+  // `GET` and `DELETE` requests needs to be authenticated
+  // and they share the same middlewares.
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
+  .use(authentication.injectUser)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), getHandler)
-  .delete(authorization.canRequest('read:session'), deleteHandler)
-  .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
+  .delete(authorization.canRequest('read:session'), deleteHandler);
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
@@ -53,7 +58,7 @@ function postValidationHandler(request, response, next) {
 }
 
 async function postHandler(request, response) {
-  const userTryingToCreateSession = request.context.user;
+  const userTryingToCreateSession = user.createAnonymous();
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);

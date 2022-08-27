@@ -1,19 +1,15 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
-})
-  .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
-  .use(controller.logRequest)
-  .get(getValidationHandler, getHandler);
+}).get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -29,7 +25,7 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const userTryingToGet = user.createAnonymous();
 
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,

@@ -9,10 +9,7 @@ export default nextConnect({
   attachParams: true,
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
-})
-  .use(controller.injectRequestMetadata)
-  .use(controller.logRequest)
-  .get(handleRequest);
+}).get(handleRequest);
 
 async function handleRequest(request, response) {
   const userTryingToList = user.createAnonymous();

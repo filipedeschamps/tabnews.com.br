@@ -15,7 +15,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
+  .use(authentication.injectUser)
   .use(controller.logRequest)
   .post(postValidationHandler, authorization.canRequest('update:content'), postHandler);
 

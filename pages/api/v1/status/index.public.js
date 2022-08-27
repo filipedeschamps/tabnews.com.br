@@ -7,10 +7,7 @@ export default nextConnect({
   attachParams: true,
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
-})
-  .use(controller.injectRequestMetadata)
-  .use(controller.logRequest)
-  .get(getHandler);
+}).get(getHandler);
 
 async function getHandler(request, response) {
   let statusCode = 200;

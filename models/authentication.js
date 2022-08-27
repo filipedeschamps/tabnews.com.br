@@ -22,7 +22,7 @@ async function comparePasswords(providedPassword, passwordHash) {
   }
 }
 
-async function injectAnonymousOrUser(request, response, next) {
+async function injectUser(request, response, next) {
   if (request.cookies?.session_id) {
     const cleanCookies = validator(request.cookies, {
       session_id: 'required',
@@ -32,8 +32,11 @@ async function injectAnonymousOrUser(request, response, next) {
     await injectAuthenticatedUser(request, response);
     return next();
   } else {
-    injectAnonymousUser(request);
-    return next();
+    throw new ForbiddenError({
+      message: `Você precisa estar logado para executar esta ação.`,
+      action: `Faça o login no TabNews e tente novamente.`,
+      errorLocationCode: 'MODEL:AUTHENTICATION:INJECT_USER:NO_SESSION_ID_COOKIE',
+    });
   }
 
   async function injectAuthenticatedUser(request, response) {
@@ -56,14 +59,6 @@ async function injectAnonymousOrUser(request, response, next) {
       session: sessionRenewed,
     };
   }
-
-  function injectAnonymousUser(request) {
-    const anonymousUser = user.createAnonymous();
-    request.context = {
-      ...request.context,
-      user: anonymousUser,
-    };
-  }
 }
 
 //TODO: this should be here or inside the session model?
@@ -82,7 +77,7 @@ async function createSessionAndSetCookies(userId, response) {
 export default Object.freeze({
   hashPassword,
   comparePasswords,
-  injectAnonymousOrUser,
+  injectUser,
   parseSetCookies,
   createSessionAndSetCookies,
 });

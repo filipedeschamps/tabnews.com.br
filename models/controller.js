@@ -56,26 +56,26 @@ function onErrorHandler(error, request, response) {
     error instanceof ForbiddenError ||
     error instanceof UnprocessableEntityError
   ) {
-    const errorObject = { ...error, requestId: request.context.requestId };
+    const errorObject = { ...error, requestId: request.context?.requestId || uuidV4() };
     logger.info(snakeize(errorObject));
     return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
   if (error instanceof UnauthorizedError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
+    const errorObject = { ...error, requestId: request.context?.requestId || uuidV4() };
     logger.info(snakeize(errorObject));
     session.clearSessionIdCookie(response);
     return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
   if (error instanceof TooManyRequestsError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
+    const errorObject = { ...error, requestId: request.context?.requestId || uuidV4() };
     logger.info(snakeize(errorObject));
     return response.status(error.statusCode).json(snakeize(errorObject));
   }
 
   const errorObject = new InternalServerError({
-    requestId: request.context.requestId,
+    requestId: request.context?.requestId || uuidV4(),
     errorId: error.errorId,
     stack: error.stack,
     statusCode: error.statusCode,

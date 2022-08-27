@@ -10,7 +10,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
+  .use(authentication.injectUser)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:migration'), getHandler)
   .post(authorization.canRequest('create:migration'), postHandler);

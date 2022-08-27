@@ -32,12 +32,12 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       expect(response.status).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:user".');
+      expect(responseBody.message).toEqual('Você precisa estar logado para executar esta ação.');
+      expect(responseBody.action).toEqual('Faça o login no TabNews e tente novamente.');
       expect(responseBody.status_code).toEqual(403);
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:AUTHENTICATION:INJECT_USER:NO_SESSION_ID_COOKIE');
     });
   });
 

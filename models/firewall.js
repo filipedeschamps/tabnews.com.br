@@ -53,7 +53,7 @@ async function createUserRuleSideEffect(context) {
 
   await event.create({
     type: 'firewall:block_users',
-    originatorUserId: context.user.id,
+    originatorUserId: undefined,
     originatorIp: context.clientIp,
     metadata: {
       from_rule: 'create:user',

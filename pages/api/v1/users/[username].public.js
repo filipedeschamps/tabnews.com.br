@@ -11,10 +11,10 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
-  .use(controller.logRequest)
   .get(getValidationHandler, getHandler)
+  .use(controller.injectRequestMetadata)
+  .use(authentication.injectUser)
+  .use(controller.logRequest)
   .patch(patchValidationHandler, authorization.canRequest('update:user'), patchHandler);
 
 function getValidationHandler(request, response, next) {
@@ -28,7 +28,7 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const userTryingToGet = user.createAnonymous();
   const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
