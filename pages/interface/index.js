@@ -1,5 +1,6 @@
 export { default as DefaultLayout } from './components/DefaultLayout/index.js';
 export { default as Header } from './components/Header/index.js';
+export { default as Footer } from './components/Footer/index.js';
 export { default as Content } from './components/Content/index.js';
 export { default as ContentList } from './components/ContentList/index.js';
 export { default as Head } from './components/Head/index.js';
