@@ -1,6 +1,5 @@
 import { Box } from '@primer/react';
-import { Head, Header } from 'pages/interface/index.js';
-import { Footer } from '../Footer';
+import { Footer, Head, Header } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (
@@ -19,11 +18,11 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
         {children}
       </Box>
       <Footer
-        containerWidth={containerWidth}
+        maxWidth={containerWidth}
         sx={{
           marginX: 'auto',
-          padding: [2, null, null, 4],
-          paddingTop: [3, null, null, 4],
+          paddingX: [2, null, null, 4],
+          paddingTop: 3,
         }}
       />
     </>

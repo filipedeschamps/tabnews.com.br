@@ -17,42 +17,34 @@ export default function HeaderComponent() {
   return (
     <Header
       sx={{
-        pl: [2, null, null, 3],
-        pr: [2, null, null, 3],
+        px: [2, null, null, 3],
       }}>
       <Header.Item>
-        <HeaderLink href="/" fontSize={2} sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
+        <HeaderLink href="/">
           <CgTab size={32} />
-          <Box sx={{ ml: 2 }}>Relevantes</Box>
+          <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
         </HeaderLink>
       </Header.Item>
 
       <Header.Item>
-        <HeaderLink href="/recentes" fontSize={2} sx={pathname.startsWith('/recentes') && activeLinkStyle}>
-          Recentes
+        <HeaderLink href="/" sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
+          Relevantes
         </HeaderLink>
       </Header.Item>
 
       <Header.Item full>
-        <HeaderLink
-          href="/status"
-          fontSize={2}
-          sx={{ display: ['none', 'block'], ...(pathname.startsWith('/status') && activeLinkStyle) }}>
-          Status
+        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') && activeLinkStyle}>
+          Recentes
         </HeaderLink>
       </Header.Item>
 
       {!isLoading && !user && (
         <>
           <Header.Item>
-            <HeaderLink href="/login" fontSize={2}>
-              Login
-            </HeaderLink>
+            <HeaderLink href="/login">Login</HeaderLink>
           </Header.Item>
           <Header.Item>
-            <HeaderLink href="/cadastro" fontSize={2}>
-              Cadastrar
-            </HeaderLink>
+            <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
           </Header.Item>
         </>
       )}
