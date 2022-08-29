@@ -21,7 +21,6 @@ function SignUpForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const passwordRef = useRef('');
-  const passwordConfirmRef = useRef('');
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,22 +46,6 @@ function SignUpForm() {
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
-    const passwordConfirm = passwordConfirmRef.current.value;
-
-    if (password !== passwordConfirm) {
-      setErrorObject({
-        key: 'password_confirm',
-        message: 'As senhas devem ser iguais.',
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (errorObject) {
-      setIsLoading(false);
-      setErrorObject(undefined);
-      return;
-    }
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -176,24 +159,6 @@ function SignUpForm() {
           )}
         </FormControl>
 
-        <FormControl id="passwordConfirm">
-          <FormControl.Label>Repita a senha</FormControl.Label>
-          <TextInput
-            ref={passwordConfirmRef}
-            onChange={clearErrors}
-            name="passwordConfirm"
-            type="password"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            size="large"
-            block={true}
-            aria-label="Repita a senha"
-          />
-          {errorObject?.key === 'password_confirm' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
           <Button
