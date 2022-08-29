@@ -35,6 +35,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             justifyContent: 'center',
             gap: 4,
             m: 4,
+            mb: 2,
           }}>
           {pagination.previousPage ? (
             <Link href={previousPageUrl}>
