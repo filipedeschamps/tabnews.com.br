@@ -617,10 +617,12 @@ async function update(contentId, postedContent, options = {}) {
 
   const updatedContent = await runUpdateQuery(newContent, options);
 
-  await creditOrDebitTabCoins(oldContent, updatedContent, {
-    eventId: options.eventId,
-    transaction: options.transaction,
-  });
+  if (!options.skipBalanceOperations) {
+    await creditOrDebitTabCoins(oldContent, updatedContent, {
+      eventId: options.eventId,
+      transaction: options.transaction,
+    });
+  }
 
   updatedContent.tabcoins = await balance.getTotal(
     {

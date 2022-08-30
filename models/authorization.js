@@ -8,6 +8,7 @@ const availableFeatures = new Set([
   'read:user:self',
   'read:user:list',
   'update:user',
+  'ban:user',
 
   // MIGRATION
   'read:migration',
@@ -91,6 +92,12 @@ function filterInput(user, feature, input) {
       username: input.username,
       email: input.email,
       password: input.password,
+    };
+  }
+
+  if (feature === 'ban:user' && can(user, feature)) {
+    filteredInputValues = {
+      ban_type: input.ban_type,
     };
   }
 

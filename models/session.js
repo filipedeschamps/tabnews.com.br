@@ -48,7 +48,7 @@ async function expireById(id) {
   return results.rows[0];
 }
 
-async function expireAllFromUserId(userId) {
+async function expireAllFromUserId(userId, options = {}) {
   const query = {
     text: `
       UPDATE
@@ -65,7 +65,7 @@ async function expireAllFromUserId(userId) {
     values: [userId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
   return results;
 }
 

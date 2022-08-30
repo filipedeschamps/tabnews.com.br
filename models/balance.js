@@ -1,6 +1,25 @@
 import database from 'infra/database.js';
 import { UnprocessableEntityError } from 'errors/index.js';
 
+async function findOne(operationId, options = {}) {
+  const query = {
+    text: `
+      SELECT
+        *
+      FROM
+        balance_operations
+      WHERE
+        id = $1
+      LIMIT
+        1
+    ;`,
+    values: [operationId],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows[0];
+}
+
 async function create({ balanceType, recipientId, amount, originatorType, originatorId }, options = {}) {
   const query = {
     text: `
@@ -96,8 +115,25 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   };
 }
 
+async function undo(operationId, options = {}) {
+  const balanceOperation = await findOne(operationId, options);
+
+  const invertedBalanceOperation = {
+    balanceType: balanceOperation.balance_type,
+    recipientId: balanceOperation.recipient_id,
+    amount: balanceOperation.amount * -1,
+    originatorType: 'event',
+    originatorId: options.event.id,
+  };
+
+  const newBalanceOperation = await create(invertedBalanceOperation, options);
+  return newBalanceOperation;
+}
+
 export default Object.freeze({
+  findOne,
   create,
   getTotal,
   rateContent,
+  undo,
 });

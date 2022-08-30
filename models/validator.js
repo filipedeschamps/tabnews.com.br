@@ -609,6 +609,7 @@ const schemas = {
       type: Joi.string()
         .valid(
           'create:user',
+          'ban:user',
           'create:content:text_root',
           'create:content:text_child',
           'update:content:text_root',
@@ -616,7 +617,8 @@ const schemas = {
           'update:content:tabcoins',
           'firewall:block_users',
           'firewall:block_contents:text_root',
-          'firewall:block_contents:text_child'
+          'firewall:block_contents:text_child',
+          'system:update:tabcoins'
         )
         .messages({
           'any.required': `"type" é um campo obrigatório.`,
@@ -746,6 +748,23 @@ const schemas = {
           'string.base': `"transaction_type" deve ser do tipo String.`,
           'any.invalid': `"transaction_type" possui o valor inválido "null".`,
           'any.only': `"transaction_type" deve possuir um dos seguintes valores: "credit" e "debit".`,
+        }),
+    });
+  },
+
+  ban_type: function () {
+    return Joi.object({
+      ban_type: Joi.string()
+        .trim()
+        .valid('nuke')
+        .invalid(null)
+        .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"ban_type" é um campo obrigatório.`,
+          'string.empty': `"ban_type" não pode estar em branco.`,
+          'string.base': `"ban_type" deve ser do tipo String.`,
+          'any.invalid': `"ban_type" possui o valor inválido "null".`,
+          'any.only': `"ban_type" deve possuir um dos seguintes valores: "nuke".`,
         }),
     });
   },
