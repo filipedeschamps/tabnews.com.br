@@ -456,19 +456,22 @@ const schemas = {
     });
   },
 
-  // TODO: refactor this in the future for
-  // an Array just like Sequelize.
   order: function () {
     return Joi.object({
-      order: Joi.string()
-        .trim()
-        .valid('created_at DESC', 'created_at ASC', 'published_at DESC', 'published_at ASC')
-        .when('$required.order', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+      order: Joi.array()
+        .items(
+          Joi.string()
+            .trim()
+            .valid('created_at DESC', 'created_at ASC', 'published_at DESC', 'published_at ASC', 'score DESC')
+            .messages({
+              'any.only': `"order" deve ser um Array possuindo pelo menos uma String com valores: "created_at DESC", "created_at ASC", "published_at DESC", "published_at ASC" e/ou "score DESC".`,
+            })
+            .when('$required.order', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        )
+        .min(1)
         .messages({
-          'any.required': `"order" é um campo obrigatório.`,
-          'string.empty': `"order" não pode estar em branco.`,
-          'string.base': `"order" deve ser do tipo String.`,
-          'any.only': `"order" deve possuir um dos seguintes valores: "created_at DESC", "created_at ASC", "published_at DESC" ou "published_at ASC".`,
+          'array.base': `"order" deve ser do tipo Array.`,
+          'array.min': `"order" deve possuir no mínimo um item do tipo String.`,
         }),
     });
   },

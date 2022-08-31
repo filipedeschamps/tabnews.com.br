@@ -5,6 +5,7 @@ beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
+  await orchestrator.createScoreTestFunctions();
 });
 
 describe('POST /api/v1/contents/tabcoins', () => {
