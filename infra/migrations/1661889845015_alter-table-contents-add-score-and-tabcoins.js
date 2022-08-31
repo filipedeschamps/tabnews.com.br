@@ -4,6 +4,10 @@ exports.up = async (pgm) => {
       type: 'decimal',
       notNull: false,
     },
+    tabcoins: {
+      type: 'integer',
+      notNull: false,
+    },
   });
 
   await pgm.createIndex('contents', ['score', 'created_at'], {

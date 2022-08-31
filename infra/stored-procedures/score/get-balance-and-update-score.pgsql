@@ -1,5 +1,6 @@
-CREATE OR REPLACE FUNCTION update_score(score_type_input text, recipient_id_input uuid) RETURNS decimal AS $$
+CREATE OR REPLACE FUNCTION get_balance_and_update_score(score_type_input text, recipient_id_input uuid) RETURNS integer AS $$
 DECLARE
+  total_balance integer;
   positive_balance integer;
   negative_balance integer;
   new_score decimal;
@@ -24,11 +25,14 @@ BEGIN
       AND recipient_id = recipient_id_input
       AND amount < 0
   );
-  new_score := COALESCE(trunc((positive_balance + 0.9208) / (positive_balance + negative_balance + 2.8416),4), 0.5);
+  new_score := COALESCE(trunc((positive_balance + 0.9208) / (positive_balance - negative_balance + 2.8416),3), 0.5);
+  total_balance := COALESCE(positive_balance + negative_balance, 0);
   UPDATE contents
-  SET score = new_score
+  SET
+    score = new_score,
+    tabcoins = total_balance
   WHERE
       id = recipient_id_input;
-  RETURN new_score;
+  RETURN total_balance;
 END;
 $$ LANGUAGE plpgsql;
