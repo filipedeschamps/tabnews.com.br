@@ -181,12 +181,17 @@ async function findAll(values = {}, options = {}) {
     }, '');
   }
 
-  function buildOrderByClause(orderBy) {
-    if (!orderBy) {
+  function buildOrderByClause(arrayOfOrderBy) {
+    if (!arrayOfOrderBy) {
       return '';
     }
 
-    return `ORDER BY contents.${orderBy}`;
+    return arrayOfOrderBy.reduce((accumulator, orderBy, index) => {
+      if (index === 0) {
+        return `ORDER BY contents.${orderBy}`;
+      }
+      return `${accumulator}, contents.${orderBy}`;
+    }, '');
   }
 }
 
@@ -208,7 +213,7 @@ async function findWithStrategy(options = {}) {
   async function getNew(options = {}) {
     const results = {};
 
-    options.order = 'published_at DESC';
+    options.order = ['published_at DESC'];
     results.rows = await findAll(options);
     results.pagination = await getPagination(options);
 
@@ -218,7 +223,7 @@ async function findWithStrategy(options = {}) {
   async function getOld(options = {}) {
     const results = {};
 
-    options.order = 'published_at ASC';
+    options.order = ['published_at ASC'];
     results.rows = await findAll(options);
     results.pagination = await getPagination(options);
 
@@ -228,7 +233,7 @@ async function findWithStrategy(options = {}) {
   async function getRelevant(options = {}) {
     const results = {};
 
-    options.order = 'published_at DESC';
+    options.order = ['published_at DESC'];
     const contentList = await findAll(options);
     const rankedContentList = rankContentListByRelevance(contentList);
     results.rows = rankedContentList;
@@ -303,8 +308,8 @@ async function create(postedContent, options = {}) {
       WITH
         inserted_content as (
           INSERT INTO
-            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at, score)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         )
       SELECT
@@ -320,6 +325,7 @@ async function create(postedContent, options = {}) {
         inserted_content.updated_at,
         inserted_content.published_at,
         inserted_content.deleted_at,
+        inserted_content.score,
         users.username as owner_username
       FROM
         inserted_content
@@ -335,6 +341,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
+        0.5,
       ],
     };
 
