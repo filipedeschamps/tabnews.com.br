@@ -17,6 +17,7 @@ async function seedDatabase() {
   await client.connect();
   await seedDevelopmentUsers();
   await createFirewallFunctions();
+  await createScoreFunctions();
   await client.end();
 
   console.log('\n> Database seeded!');
@@ -71,7 +72,7 @@ async function seedDevelopmentUsers() {
 
 async function createFirewallFunctions() {
   console.log('\n> Creating Firewall functions...');
-  const proceduresPath = join(resolve('.'), 'infra', 'stored-procedures');
+  const proceduresPath = join(resolve('.'), 'infra', 'stored-procedures', 'firewall');
   const procedures = fs.readdirSync(proceduresPath);
 
   for (const procedureFile of procedures) {
@@ -79,4 +80,16 @@ async function createFirewallFunctions() {
     await client.query(procedureQuery);
   }
   console.log('> Firewall functions created!');
+}
+
+async function createScoreFunctions() {
+  console.log('\n> Creating Score functions...');
+  const proceduresPath = join(resolve('.'), 'infra', 'stored-procedures', 'score');
+  const procedures = fs.readdirSync(proceduresPath);
+
+  for (const procedureFile of procedures) {
+    const procedureQuery = fs.readFileSync(`${proceduresPath}/${procedureFile}`, 'utf8');
+    await client.query(procedureQuery);
+  }
+  console.log('> Score functions created!');
 }

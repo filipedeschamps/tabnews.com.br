@@ -169,10 +169,19 @@ async function createRecoveryToken(userObject) {
 }
 
 async function createFirewallTestFunctions() {
-  const procedures = fs.readdirSync('infra/stored-procedures');
+  const procedures = fs.readdirSync('infra/stored-procedures/firewall');
 
   for (const procedureFile of procedures) {
-    const procedureQuery = fs.readFileSync(`infra/stored-procedures/${procedureFile}`, 'utf8');
+    const procedureQuery = fs.readFileSync(`infra/stored-procedures/firewall/${procedureFile}`, 'utf8');
+    await database.query(procedureQuery);
+  }
+}
+
+async function createScoreTestFunctions() {
+  const procedures = fs.readdirSync('infra/stored-procedures/score');
+
+  for (const procedureFile of procedures) {
+    const procedureQuery = fs.readFileSync(`infra/stored-procedures/score/${procedureFile}`, 'utf8');
     await database.query(procedureQuery);
   }
 }
@@ -193,5 +202,6 @@ export default {
   updateContent,
   createRecoveryToken,
   createFirewallTestFunctions,
+  createScoreTestFunctions,
   createBalance,
 };

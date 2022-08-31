@@ -76,7 +76,8 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
       )
       SELECT
         get_current_balance('user:tabcoin', $1) AS user_current_tabcoin_balance,
-        get_current_balance('content:tabcoin', $4) AS content_current_tabcoin_balance
+        get_current_balance('content:tabcoin', $4) AS content_current_tabcoin_balance,
+        update_score('content:tabcoin', $4) AS content_score
       FROM
         users_inserts,
         content_insert
