@@ -23,16 +23,18 @@ async function nuke(userId, options = {}) {
     );
 
     for (const userContent of userContents) {
-      await content.update(
-        userContent.id,
-        {
-          status: 'deleted',
-        },
-        {
-          skipBalanceOperations: true,
-          transaction: options.transaction,
-        }
-      );
+      if (userContent.status !== 'deleted') {
+        await content.update(
+          userContent.id,
+          {
+            status: 'deleted',
+          },
+          {
+            skipBalanceOperations: true,
+            transaction: options.transaction,
+          }
+        );
+      }
     }
   }
 

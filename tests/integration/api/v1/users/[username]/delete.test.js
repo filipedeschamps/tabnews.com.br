@@ -251,6 +251,48 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const secondUserChildContent2Body = await secondUserChildContent2.json();
 
+      await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${secondUserSession.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Draft Content',
+          body: 'Draft Content',
+          status: 'draft',
+        }),
+      });
+
+      const secondUserDeletedContentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${secondUserSession.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Deleted Content',
+          body: 'Deleted Content',
+          status: 'published',
+        }),
+      });
+
+      const secondUserDeletedContentResponseBody = await secondUserDeletedContentResponse.json();
+
+      await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserDeletedContentResponseBody.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
       // 4) MOVE TABCOINS FROM SECOND USER TO THE FIRST USER ROOT CONTENT (credit)
       await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserRootContentBody.slug}/tabcoins`,
