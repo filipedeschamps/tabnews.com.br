@@ -17,7 +17,7 @@ export default nextConnect({
 async function handleRequest(request, response) {
   const userTryingToList = user.createAnonymous();
 
-  const results = await await content.findWithStrategy({
+  const results = await content.findWithStrategy({
     strategy: 'new',
     where: {
       parent_id: null,
