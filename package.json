@@ -23,7 +23,7 @@
     "next": "12.2.5",
     "next-connect": "0.13.0",
     "node-pg-migrate": "6.2.2",
-    "nodemailer": "6.7.7",
+    "nodemailer": "6.7.8",
     "nprogress": "0.2.0",
     "parse-link-header": "2.0.0",
     "pg": "8.7.3",
