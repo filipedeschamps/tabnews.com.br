@@ -6,7 +6,7 @@
     "@bytemd/plugin-highlight-ssr": "1.17.2",
     "@bytemd/plugin-mermaid": "1.17.2",
     "@bytemd/react": "1.17.2",
-    "@primer/octicons-react": "17.4.0",
+    "@primer/octicons-react": "17.4.1",
     "@primer/react": "35.5.0",
     "@resvg/resvg-js": "2.1.0",
     "@upstash/ratelimit": "0.1.3",
