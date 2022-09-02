@@ -27,7 +27,7 @@
     "nprogress": "0.2.0",
     "parse-link-header": "2.0.0",
     "pg": "8.7.3",
-    "pino": "8.3.1",
+    "pino": "8.4.1",
     "react": "17.0.2",
     "react-confetti": "6.1.0",
     "react-dom": "17.0.2",
