@@ -31,6 +31,7 @@ async function seedDevelopmentUsers() {
     'create:content:text_child',
     'update:content',
     'update:user',
+    'ban:user',
     'read:migration',
     'create:migration',
     'update:content:others',

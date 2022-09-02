@@ -423,8 +423,14 @@ async function update(username, postedUserData) {
     const results = await database.query(query);
 
     const updatedUser = results.rows[0];
-    updatedUser.tabcoins = await balance.getTotal('user:tabcoin', updatedUser.id);
-    updatedUser.tabcash = await balance.getTotal('user:tabcash', updatedUser.id);
+    updatedUser.tabcoins = await balance.getTotal({
+      balanceType: 'user:tabcoin',
+      recipientId: updatedUser.id,
+    });
+    updatedUser.tabcash = await balance.getTotal({
+      balanceType: 'user:tabcash',
+      recipientId: updatedUser.id,
+    });
 
     return updatedUser;
   }
@@ -481,37 +487,68 @@ async function hashPasswordInObject(userObject) {
   return userObject;
 }
 
-async function removeFeatures(userId, features) {
+async function removeFeatures(userId, features, options = {}) {
   let lastUpdatedUser;
 
-  // TODO: Refactor this function to use a single query
-  for (const feature of features) {
+  if (features?.length > 0) {
+    for (const feature of features) {
+      const query = {
+        text: `
+          UPDATE
+            users
+          SET
+            features = array_remove(features, $1),
+            updated_at = (now() at time zone 'utc')
+          WHERE
+            id = $2
+          RETURNING
+            *
+        ;`,
+        values: [feature, userId],
+      };
+
+      const results = await database.query(query, options);
+      lastUpdatedUser = results.rows[0];
+    }
+  } else {
     const query = {
       text: `
         UPDATE
           users
         SET
-          features = array_remove(features, $1),
+          features = '{}',
           updated_at = (now() at time zone 'utc')
         WHERE
-          id = $2
+          id = $1
         RETURNING
           *
       ;`,
-      values: [feature, userId],
+      values: [userId],
     };
 
-    const results = await database.query(query);
+    const results = await database.query(query, options);
     lastUpdatedUser = results.rows[0];
   }
 
-  lastUpdatedUser.tabcoins = await balance.getTotal('user:tabcoin', lastUpdatedUser.id);
-  lastUpdatedUser.tabcash = await balance.getTotal('user:tabcash', lastUpdatedUser.id);
+  lastUpdatedUser.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'user:tabcoin',
+      recipientId: lastUpdatedUser.id,
+    },
+    options
+  );
+  lastUpdatedUser.tabcash = await balance.getTotal(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: lastUpdatedUser.id,
+    },
+    options
+  );
 
   return lastUpdatedUser;
 }
 
-async function addFeatures(userId, features) {
+async function addFeatures(userId, features, options) {
   const query = {
     text: `
       UPDATE
@@ -527,11 +564,23 @@ async function addFeatures(userId, features) {
     values: [features, userId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   const updatedUser = results.rows[0];
-  updatedUser.tabcoins = await balance.getTotal('user:tabcoin', updatedUser.id);
-  updatedUser.tabcash = await balance.getTotal('user:tabcash', updatedUser.id);
+  updatedUser.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'user:tabcoin',
+      recipientId: updatedUser.id,
+    },
+    options
+  );
+  updatedUser.tabcash = await balance.getTotal(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: updatedUser.id,
+    },
+    options
+  );
 
   return results.rows[0];
 }
