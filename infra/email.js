@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 import { ServiceError } from 'errors/index.js';
+import webserver from 'infra/webserver.js';
 import logger from './logger.js';
 
 const transporterConfiguration = {
@@ -12,7 +13,7 @@ const transporterConfiguration = {
   },
 };
 
-if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
+if (!webserver.isLambdaServer()) {
   transporterConfiguration.secure = false;
 }
 

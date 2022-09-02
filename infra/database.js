@@ -2,6 +2,7 @@ import { Pool, Client } from 'pg';
 import retry from 'async-retry';
 import { ServiceError } from 'errors/index.js';
 import logger from 'infra/logger.js';
+import webserver from 'infra/webserver.js';
 import snakeize from 'snakeize';
 
 const configurations = {
@@ -10,7 +11,7 @@ const configurations = {
   database: process.env.POSTGRES_DB,
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 1000,
   idleTimeoutMillis: 30000,
   max: 1,
   ssl: {
@@ -19,8 +20,10 @@ const configurations = {
   allowExitOnIdle: true,
 };
 
-// https://github.com/filipedeschamps/tabnews.com.br/issues/84
-if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
+if (!webserver.isLambdaServer()) {
+  configurations.max = 30;
+
+  // https://github.com/filipedeschamps/tabnews.com.br/issues/84
   delete configurations.ssl;
 }
 
@@ -44,12 +47,10 @@ async function query(query, options = {}) {
     if (client && !options.transaction) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
-      if (tooManyConnections) {
-        client.release();
+      client.release();
+      if (tooManyConnections && webserver.isLambdaServer()) {
         await cache.pool.end();
         cache.pool = null;
-      } else {
-        client.release();
       }
     }
   }
@@ -57,7 +58,7 @@ async function query(query, options = {}) {
 
 async function tryToGetNewClientFromPool() {
   const clientFromPool = await retry(newClientFromPool, {
-    retries: 50,
+    retries: 5,
     minTimeout: 1000,
     factor: 2,
   });
@@ -75,7 +76,7 @@ async function tryToGetNewClientFromPool() {
 
 async function checkForTooManyConnections(client) {
   const currentTime = new Date().getTime();
-  const openedConnectionsMaxAge = 10000;
+  const openedConnectionsMaxAge = 1000;
   const maxConnectionsTolerance = 0.7;
 
   if (cache.maxConnections === null || cache.reservedConnections === null) {
@@ -155,9 +156,10 @@ async function tryToGetNewClient() {
 function parseQueryErrorAndLog(error, query) {
   const expectedErrorsCode = [
     '23505', // unique constraint violation
+    '40001', // serialization_failure
   ];
 
-  if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
+  if (!webserver.isLambdaServer()) {
     expectedErrorsCode.push('42883'); // undefined_function
   }
 
