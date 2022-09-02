@@ -1,5 +1,6 @@
 import email from 'infra/email.js';
 import database from 'infra/database.js';
+import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
 import authorization from 'models/authorization.js';
 import { NotFoundError, ForbiddenError } from 'errors/index.js';
@@ -42,27 +43,13 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
   });
 }
 
-function getWebServerHost() {
-  let webserverHost = 'https://www.tabnews.com.br';
-
-  if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
-    webserverHost = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
-  }
-
-  if (['preview'].includes(process.env.VERCEL_ENV)) {
-    webserverHost = `https://${process.env.VERCEL_URL}`;
-  }
-
-  return webserverHost;
-}
-
 function getActivationApiEndpoint() {
-  const webserverHost = getWebServerHost();
+  const webserverHost = webserver.getHost();
   return `${webserverHost}/api/v1/activation`;
 }
 
 function getActivationPageEndpoint(tokenId) {
-  const webserverHost = getWebServerHost();
+  const webserverHost = webserver.getHost();
   return tokenId ? `${webserverHost}/cadastro/ativar/${tokenId}` : `${webserverHost}/cadastro/ativar`;
 }
 

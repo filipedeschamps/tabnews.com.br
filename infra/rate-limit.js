@@ -1,10 +1,11 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { ServiceError } from 'errors/index.js';
+import webserver from 'infra/webserver.js';
 
 async function check(request) {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI || process.env.GITHUB_ACTIONS) {
+    if (!webserver.isLambdaServer()) {
       return { success: true };
     }
 

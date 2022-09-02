@@ -1,4 +1,5 @@
 import bcryptjs from 'bcryptjs';
+import webserver from 'infra/webserver.js';
 
 async function hash(password) {
   return await bcryptjs.hash(password, getNumberOfSaltRounds());
@@ -11,7 +12,7 @@ async function compare(providedPassword, storedPassword) {
 function getNumberOfSaltRounds() {
   let saltRounds = 14;
 
-  if (['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI) {
+  if (!webserver.isLambdaServer()) {
     saltRounds = 1;
   }
 

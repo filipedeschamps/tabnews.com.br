@@ -379,5 +379,283 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponse2Body.tabcoins).toStrictEqual(0);
       expect(secondUserResponse2Body.tabcash).toStrictEqual(2);
     });
+
+    test('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
+      const timesToFetch = 20;
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      const postTabCoinsPromises = Array(timesToFetch)
+        .fill()
+        .map(() =>
+          fetch(
+            `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                cookie: `session_id=${secondUserSession.token}`,
+              },
+              body: JSON.stringify({
+                transaction_type: 'credit',
+              }),
+            }
+          )
+        );
+
+      const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
+
+      const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
+        postTabCoinsResponse.json()
+      );
+
+      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
+        (postTabCoinsResponse) => postTabCoinsResponse.status
+      );
+
+      const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
+
+      const successPostIndex1 = postTabCoinsResponsesStatus.indexOf(201);
+      const successPostIndex2 = postTabCoinsResponsesStatus.indexOf(201, successPostIndex1 + 1);
+
+      expect(successPostIndex1).not.toEqual(-1);
+      expect(successPostIndex2).toEqual(-1);
+      expect(postTabCoinsResponsesStatus[successPostIndex1]).toEqual(201);
+
+      expect(postTabCoinsResponsesBody[successPostIndex1]).toStrictEqual({
+        tabcoins: 2,
+      });
+
+      postTabCoinsResponsesStatus.splice(successPostIndex1, 1);
+      postTabCoinsResponsesBody.splice(successPostIndex1, 1);
+
+      postTabCoinsResponsesStatus.forEach((status) => expect(status).toEqual(422));
+
+      expect(postTabCoinsResponsesBody).toContainEqual({
+        name: 'UnprocessableEntityError',
+        message: 'Não foi possível adicionar TabCoins nesta publicação.',
+        action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
+        status_code: 422,
+        error_id: postTabCoinsResponsesBody[timesToFetch - 2].error_id,
+        request_id: postTabCoinsResponsesBody[timesToFetch - 2].request_id,
+        error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+      });
+
+      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const firstUserResponseBody = await firstUserResponse.json();
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const secondUserResponseBody = await secondUserResponse.json();
+
+      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+    });
+
+    test('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
+      const timesToFetch = 100;
+      const timesSuccessfully = 6;
+
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2 * timesSuccessfully,
+      });
+
+      const postTabCoinsPromises = Array(timesToFetch)
+        .fill()
+        .map(() =>
+          fetch(
+            `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                cookie: `session_id=${secondUserSession.token}`,
+              },
+              body: JSON.stringify({
+                transaction_type: 'credit',
+              }),
+            }
+          )
+        );
+
+      const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
+
+      const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
+        postTabCoinsResponse.json()
+      );
+
+      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
+        (postTabCoinsResponse) => postTabCoinsResponse.status
+      );
+
+      const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
+
+      let successPostIndexes = [postTabCoinsResponsesStatus.indexOf(201)];
+
+      for (let i = 0; i < timesSuccessfully; i++) {
+        successPostIndexes.push(postTabCoinsResponsesStatus.indexOf(201, successPostIndexes[i] + 1));
+        expect(successPostIndexes[i]).not.toEqual(-1);
+        expect(postTabCoinsResponsesStatus[successPostIndexes[i]]).toEqual(201);
+        expect(postTabCoinsResponsesBody).toContainEqual({
+          tabcoins: 2 + i,
+        });
+      }
+
+      expect(successPostIndexes[timesSuccessfully]).toEqual(-1);
+
+      successPostIndexes.splice(-1, 1);
+      successPostIndexes.reverse();
+
+      successPostIndexes.forEach((idx) => {
+        postTabCoinsResponsesStatus.splice(idx, 1);
+        postTabCoinsResponsesBody.splice(idx, 1);
+      });
+
+      postTabCoinsResponsesStatus.forEach((status) => expect(status).toEqual(422));
+
+      postTabCoinsResponsesBody.forEach((responseBody) =>
+        expect(responseBody).toStrictEqual({
+          name: 'UnprocessableEntityError',
+          message: 'Não foi possível adicionar TabCoins nesta publicação.',
+          action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
+          status_code: 422,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+        })
+      );
+
+      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const firstUserResponseBody = await firstUserResponse.json();
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(2 + timesSuccessfully);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const secondUserResponseBody = await secondUserResponse.json();
+
+      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(timesSuccessfully);
+    });
+
+    test('With 100 simultaneous posts, enough TabCoins for 90, no db resources, but only responses 201 or 422', async () => {
+      const timesToFetch = 100;
+      const timesSuccessfully = 90;
+
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2 * timesSuccessfully,
+      });
+
+      const postTabCoinsPromises = Array(timesToFetch)
+        .fill()
+        .map(() =>
+          fetch(
+            `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                cookie: `session_id=${secondUserSession.token}`,
+              },
+              body: JSON.stringify({
+                transaction_type: 'credit',
+              }),
+            }
+          )
+        );
+
+      const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
+
+      const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
+        postTabCoinsResponse.json()
+      );
+
+      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
+        (postTabCoinsResponse) => postTabCoinsResponse.status
+      );
+
+      const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
+
+      expect([201, 422]).toEqual(expect.arrayContaining(postTabCoinsResponsesStatus));
+
+      expect(postTabCoinsResponsesBody).toContainEqual(
+        expect.objectContaining({
+          name: 'UnprocessableEntityError',
+          message: 'Muitos votos ao mesmo tempo.',
+          action: 'Tente realizar esta operação mais tarde.',
+          status_code: 422,
+          error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
+        })
+      );
+    });
   });
 });
