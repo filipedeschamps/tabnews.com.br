@@ -10,8 +10,8 @@ exports.up = async (pgm) => {
     },
   });
 
-  await pgm.createIndex('contents', ['score', 'created_at'], {
-    name: 'contents_score_created_at_index',
+  await pgm.createIndex('contents', ['score', 'published_at'], {
+    name: 'contents_score_published_at_index',
   });
 };
 

@@ -5,6 +5,7 @@ import validator from 'models/validator.js';
 import user from 'models/user.js';
 import balance from 'models/balance.js';
 import { ValidationError } from 'errors/index.js';
+import { queryRankedContent } from 'models/queries';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -18,6 +19,15 @@ async function findAll(values = {}, options = {}) {
   if (!values.count) {
     query.values = [values.limit || values.per_page, offset];
   }
+
+  if (options.strategy === 'relevant') {
+    query.text = queryRankedContent;
+
+    const relevantResults = await database.query(query, { transaction: options.transaction });
+
+    return relevantResults.rows;
+  }
+
   const selectClause = buildSelectClause(values);
   const whereClause = buildWhereClause(values?.where);
   const orderByClause = buildOrderByClause(values?.order);
@@ -233,10 +243,8 @@ async function findWithStrategy(options = {}) {
   async function getRelevant(options = {}) {
     const results = {};
 
-    options.order = ['published_at DESC'];
-    const contentList = await findAll(options);
-    const rankedContentList = rankContentListByRelevance(contentList);
-    results.rows = rankedContentList;
+    const contentList = await findAll(options, options);
+    results.rows = contentList;
     results.pagination = await getPagination(options);
 
     return results;

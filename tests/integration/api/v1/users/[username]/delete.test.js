@@ -8,6 +8,7 @@ beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
+  await orchestrator.createScoreTestFunctions();
 });
 
 describe('DELETE /api/v1/users/[username]', () => {
