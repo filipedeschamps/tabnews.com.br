@@ -497,7 +497,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "body" containing more than 20.000 characters', async () => {
+    // TODO: Skip this test until Next.js fixes this:
+    // https://github.com/vercel/next.js/issues/39262
+    // Side-note: this works in Preview and Production environments.
+    test.skip('Content with "body" containing more than 20.000 characters', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);

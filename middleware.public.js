@@ -2,11 +2,16 @@ import { NextResponse } from 'next/server';
 import rateLimit from 'infra/rate-limit.js';
 import snakeize from 'snakeize';
 
-// TODO: Add `/api/v1/contents` when Next.js fix this:
+// TODO: Next.js still didn't fix this bug:
 // https://github.com/vercel/next.js/issues/39262
-// Actually, configure matcher to `/api/:path*` after they fix this bug.
+// But this bug doesn't affect Preview and Production environments.
+// So it's time enable the middleware on all routes, but then
+// we need to skip these two tests for now as a collateral effect:
+// https://github.com/filipedeschamps/tabnews.com.br/blob/35bd984db122f30ae3ed7a3b5d7baf830669a345/tests/integration/api/v1/contents/post.test.js#L268
+// https://github.com/filipedeschamps/tabnews.com.br/blob/35bd984db122f30ae3ed7a3b5d7baf830669a345/tests/integration/api/v1/contents/%5Busername%5D/%5Bslug%5D/patch.test.js#L500
+
 export const config = {
-  matcher: ['/api/v1/activation', '/api/v1/recovery', '/api/v1/sessions', '/api/v1/users', '/api/v1/user'],
+  matcher: ['/api/:path*'],
 };
 
 export async function middleware(request) {
