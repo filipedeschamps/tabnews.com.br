@@ -74,9 +74,8 @@ async function patchHandler(request, response) {
   }
 
   // TEMPORARY BEHAVIOR
-  // TODO: only let user update "email" and "password"
+  // TODO: only let user update "password"
   // once we have double confirmation.
-  delete secureInputValues.email;
   delete secureInputValues.password;
 
   const updatedUser = await user.update(targetUsername, secureInputValues);

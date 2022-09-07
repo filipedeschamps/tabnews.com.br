@@ -3,6 +3,7 @@ import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
 import user from 'models/user.js';
 import password from 'models/password.js';
+import emailConfirmation from 'models/email-confirmation.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -393,7 +394,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.key).toEqual('username');
     });
 
-    test('With "username" in blocked list', async () => {
+    test('Patching itself with "username" in blocked list', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -502,32 +503,50 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.key).toEqual('object');
     });
 
-    describe('TEMPORARY BEHAVIOR', () => {
-      test('Patching itself with another "email"', async () => {
-        let defaultUser = await orchestrator.createUser({
-          email: 'this.email.will.not@change.com',
-        });
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+    test('Patching itself with another "email"', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'original@email.com',
+      });
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'patch',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${defaultUserSession.token}`,
-          },
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
 
-          body: JSON.stringify({
-            email: 'CHANGE.MY@EMAIL.com',
-          }),
-        });
-
-        expect(response.status).toEqual(400);
-
-        const userInDatabase = await user.findOneById(defaultUser.id);
-        expect(userInDatabase.email).toEqual('this.email.will.not@change.com');
+        body: JSON.stringify({
+          email: 'different@email.com',
+        }),
       });
 
+      expect(response.status).toEqual(200);
+
+      // Attention: it should not update the email in the database
+      // before the user clicks on the confirmation link sent to the new email.
+      // See `/tests/integration/email-confirmation` for more details.
+      const userInDatabase = await user.findOneById(defaultUser.id);
+      expect(userInDatabase.email).toEqual('original@email.com');
+
+      // RECEIVING CONFIRMATION EMAIL
+      const confirmationEmail = await orchestrator.getLastEmail();
+
+      const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
+      const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
+        tokenObjectInDatabase.id
+      );
+
+      expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toEqual(['<different@email.com>']);
+      expect(confirmationEmail.subject).toEqual('Confirme seu novo email');
+      expect(confirmationEmail.text.includes(defaultUser.username)).toBe(true);
+      expect(confirmationEmail.text.includes('uma alteração de email foi solicitada')).toBe(true);
+      expect(confirmationEmail.text.includes(emailConfirmationPageEndpoint)).toBe(true);
+    });
+
+    describe('TEMPORARY BEHAVIOR', () => {
       test('Patching itself with another "password"', async () => {
         let defaultUser = await orchestrator.createUser({
           password: 'thisPasswordWillNotChange',

@@ -103,12 +103,7 @@ export default function HeaderComponent() {
                   <ActionList.LinkItem as={Link} href="/publicar">
                     Publicar novo conteúdo
                   </ActionList.LinkItem>
-                  <ActionList.LinkItem
-                    href="/perfil"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      alert('Recurso ainda não implementado.');
-                    }}>
+                  <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Divider />
