@@ -16,15 +16,18 @@ export function UserProvider({ children }) {
       const responseBody = await response.json();
 
       if (response.status !== 401 && response.status !== 403) {
-        const fetchedUser = {
+        const fetchedUser = responseBody;
+
+        const cachedUserProperties = {
           id: responseBody.id,
           username: responseBody.username,
           features: responseBody.features,
           tabcoins: responseBody.tabcoins,
           tabcash: responseBody.tabcash,
         };
+
         setUser(fetchedUser);
-        localStorage.setItem('user', JSON.stringify(fetchedUser));
+        localStorage.setItem('user', JSON.stringify(cachedUserProperties));
       } else {
         setUser(null);
         localStorage.removeItem('user');

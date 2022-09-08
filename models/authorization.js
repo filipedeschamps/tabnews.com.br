@@ -20,6 +20,9 @@ const availableFeatures = new Set([
   // RECOVERY_TOKEN
   'read:recovery_token',
 
+  // EMAIL_CONFIRMATION_TOKEN
+  'read:email_confirmation_token',
+
   // SESSION
   'create:session',
   'read:session',
@@ -251,6 +254,16 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:recovery_token') {
+    filteredOutputValues = validator(output, {
+      id: 'required',
+      used: 'required',
+      expires_at: 'required',
+      created_at: 'required',
+      updated_at: 'required',
+    });
+  }
+
+  if (feature === 'read:email_confirmation_token') {
     filteredOutputValues = validator(output, {
       id: 'required',
       used: 'required',

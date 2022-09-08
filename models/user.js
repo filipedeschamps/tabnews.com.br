@@ -2,6 +2,7 @@ import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import validator from 'models/validator.js';
 import balance from 'models/balance.js';
+import emailConfirmation from 'models/email-confirmation.js';
 import { ValidationError, NotFoundError } from 'errors/index.js';
 
 async function findAll() {
@@ -375,7 +376,7 @@ function checkBlockedUsernames(username) {
 // TODO: Refactor the interface of this function
 // and the code inside to make it more future proof
 // and to accept update using "userId".
-async function update(username, postedUserData) {
+async function update(username, postedUserData, options = {}) {
   const validPostedUserData = await validatePatchSchema(postedUserData);
   const currentUser = await findOneByUsername(username);
 
@@ -386,6 +387,11 @@ async function update(username, postedUserData) {
 
   if ('email' in validPostedUserData) {
     await validateUniqueEmail(validPostedUserData.email);
+
+    if (!options.skipEmailConfirmation) {
+      await emailConfirmation.createAndSendEmail(currentUser.id, validPostedUserData.email);
+      delete validPostedUserData.email;
+    }
   }
 
   if ('password' in validPostedUserData) {

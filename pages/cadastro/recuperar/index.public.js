@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { DefaultLayout, useUser } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
 
 export default function RecoverPassword() {
@@ -17,8 +17,15 @@ export default function RecoverPassword() {
 
 function RecoverPasswordForm() {
   const router = useRouter();
+  const { user, isLoading: userIsLoading } = useUser();
 
   const userInputRef = useRef('');
+
+  useEffect(() => {
+    if (user && !userIsLoading) {
+      userInputRef.current.value = user.username;
+    }
+  }, [user, userIsLoading]);
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
