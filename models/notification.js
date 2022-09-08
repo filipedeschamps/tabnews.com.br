@@ -16,6 +16,11 @@ async function sendReplyEmailToParentUser(createdContent) {
 
   if (parentContent.owner_id !== secureCreatedContent.owner_id) {
     const parentContentUser = await user.findOneById(parentContent.owner_id);
+
+    if (parentContentUser.notifications === false) {
+      return;
+    }
+
     const childContendUrl = getChildContendUrl(secureCreatedContent);
     const rootContent = await content.findRootContent({
       where: {

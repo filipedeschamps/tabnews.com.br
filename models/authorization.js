@@ -95,6 +95,7 @@ function filterInput(user, feature, input) {
       username: input.username,
       email: input.email,
       password: input.password,
+      notifications: input.notifications,
     };
   }
 
@@ -194,6 +195,7 @@ function filterOutput(user, feature, output) {
         id: output.id,
         username: output.username,
         email: output.email,
+        notifications: output.notifications,
         features: output.features,
         tabcoins: output.tabcoins,
         tabcash: output.tabcash,

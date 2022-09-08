@@ -2225,6 +2225,126 @@ describe('POST /api/v1/contents', () => {
         ).toBe(true);
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
+
+      test('My "root" content replied by other user (with "notifications" disabled)', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+
+        // 1) CHECK IF BY DEFAULT FIRST USER HAS `notifications` ENABLED
+        const userGetResponseCheck1 = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+        });
+
+        const userGetResponseCheck1Body = await userGetResponseCheck1.json();
+        expect(userGetResponseCheck1Body.notifications).toBe(true);
+
+        // 2) DISABLE NOTIFICATIONS FOR FIRST USER
+        const userPatchResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            notifications: false,
+          }),
+        });
+
+        expect(userPatchResponse1.status).toBe(200);
+
+        const userGetResponseCheck2 = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+        });
+
+        const userGetResponseCheck2Body = await userGetResponseCheck2.json();
+        expect(userGetResponseCheck2Body.notifications).toBe(false);
+
+        // 3) CREATE A CONTENT WITH FIRST USER
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Testando sistema de notificação',
+          status: 'published',
+        });
+
+        // 4) REPLY TO CONTENT WITH SECOND USER
+        const contentResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Autor do `parent_id` NÃO deve receber notificação avisando que eu respondi o conteúdo dele.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        expect(contentResponse1.status).toBe(201);
+
+        // 5) CHECK IF FIRST USER RECEIVED ANY EMAIL
+        const getLastEmail1 = await orchestrator.getLastEmail();
+        expect(getLastEmail1).toBe(null);
+
+        // 6) ENABLE NOTIFICATIONS FOR FIRST USER
+        const userPatchResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firstUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            notifications: true,
+          }),
+        });
+
+        expect(userPatchResponse1.status).toBe(200);
+
+        // 7) REPLY AGAIN TO CONTENT WITH SECOND USER
+        const contentResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Agora sim autor do `parent_id` deveria receber notificação.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const contentResponse2Body = await contentResponse2.json();
+
+        expect(contentResponse2.status).toBe(201);
+
+        // 8) CHECK IF FIRST USER RECEIVED ANY EMAIL
+        const getLastEmail2 = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${contentResponse2Body.slug}`;
+
+        expect(getLastEmail2.recipients[0].includes(firstUser.email)).toBe(true);
+        expect(getLastEmail2.subject).toBe(`"${secondUser.username}" comentou em "Testando sistema de notificação"`);
+        expect(getLastEmail2.text.includes(firstUser.username)).toBe(true);
+        expect(getLastEmail2.text.includes(secondUser.username)).toBe(true);
+        expect(getLastEmail2.text.includes(rootContent.title)).toBe(true);
+        expect(getLastEmail2.text.includes('respondeu à sua publicação')).toBe(true);
+        expect(getLastEmail2.text.includes(childContentUrl)).toBe(true);
+      });
     });
 
     describe('TabCoins', () => {

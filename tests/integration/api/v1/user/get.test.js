@@ -46,6 +46,7 @@ describe('GET /api/v1/user', () => {
         id: defaultUser.id,
         username: defaultUser.username,
         email: defaultUser.email,
+        notifications: defaultUser.notifications,
         features: defaultUser.features,
         tabcoins: defaultUser.tabcoins,
         tabcash: defaultUser.tabcash,

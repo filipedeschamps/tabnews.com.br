@@ -148,6 +148,20 @@ const schemas = {
     });
   },
 
+  notifications: function () {
+    return Joi.object({
+      notifications: Joi.boolean()
+        .invalid(null)
+        .when('$required.notifications', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"notifications" é um campo obrigatório.`,
+          'string.empty': `"notifications" não pode estar em branco.`,
+          'boolean.base': `"notifications" deve ser do tipo Boolean.`,
+          'any.invalid': `"notifications" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
   token_id: function () {
     return Joi.object({
       token_id: Joi.string()

@@ -409,26 +409,28 @@ async function update(username, postedUserData, options = {}) {
         UPDATE
           users
         SET
-          username = $1,
-          email = $2,
-          password = $3,
+          username = $2,
+          email = $3,
+          password = $4,
+          notifications = $5,
           updated_at = (now() at time zone 'utc')
         WHERE
-          id = $4
+          id = $1
         RETURNING
           *
       ;`,
       values: [
+        currentUser.id,
         userWithUpdatedValues.username,
         userWithUpdatedValues.email,
         userWithUpdatedValues.password,
-        currentUser.id,
+        userWithUpdatedValues.notifications,
       ],
     };
 
     const results = await database.query(query);
-
     const updatedUser = results.rows[0];
+
     updatedUser.tabcoins = await balance.getTotal({
       balanceType: 'user:tabcoin',
       recipientId: updatedUser.id,
@@ -447,6 +449,7 @@ async function validatePatchSchema(postedUserData) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    notifications: 'optional',
   });
 
   return cleanValues;
