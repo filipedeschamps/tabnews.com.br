@@ -15,7 +15,7 @@
     "bcryptjs": "2.4.3",
     "cookie": "0.5.0",
     "cross-fetch": "3.1.5",
-    "date-fns": "2.29.1",
+    "date-fns": "2.29.2",
     "feed": "4.2.2",
     "github-markdown-css": "5.1.0",
     "highlight.js": "11.6.0",
