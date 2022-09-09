@@ -51,6 +51,7 @@ function patchValidationHandler(request, response, next) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    notifications: 'optional',
   });
 
   request.body = cleanBodyValues;

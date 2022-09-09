@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser, Link } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, useConfirm } from '@primer/react';
+import { FormControl, Box, Heading, Button, TextInput, Checkbox, Flash, useConfirm } from '@primer/react';
 
 export default function EditProfile() {
   return (
@@ -23,6 +23,7 @@ function EditProfileForm() {
 
   const usernameRef = useRef('');
   const emailRef = useRef('');
+  const notificationsRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -32,6 +33,7 @@ function EditProfileForm() {
     if (user && !userIsLoading) {
       usernameRef.current.value = user.username;
       emailRef.current.value = user.email;
+      notificationsRef.current.checked = user.notifications;
     }
   }, [user, router, userIsLoading]);
 
@@ -53,6 +55,7 @@ function EditProfileForm() {
 
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
+    const notifications = notificationsRef.current.checked;
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -88,6 +91,10 @@ function EditProfileForm() {
 
     if (user.email !== email) {
       payload.email = email;
+    }
+
+    if (user.notifications !== notifications) {
+      payload.notifications = notifications;
     }
 
     if (Object.keys(payload).length === 0) {
@@ -168,6 +175,7 @@ function EditProfileForm() {
             <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
           )}
         </FormControl>
+
         <FormControl id="email" disabled={emailDisabled}>
           <FormControl.Label>Email</FormControl.Label>
           <TextInput
@@ -208,6 +216,21 @@ function EditProfileForm() {
 
           {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
             <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
+          )}
+        </FormControl>
+
+        <FormControl id="notifications">
+          <FormControl.Label>Receber notificações por email</FormControl.Label>
+
+          <Checkbox
+            ref={notificationsRef}
+            onChange={clearErrors}
+            name="notifications"
+            aria-label="Você deseja receber notificações?"
+          />
+
+          {errorObject?.key === 'notifications' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 
