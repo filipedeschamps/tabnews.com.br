@@ -1,109 +1,178 @@
 # tabnews.com.br
-<details>
-<summary><h2>Documentação API </h2> (clique para ler a documentação)</summary>
 
-### Introdução
-A API do TabNews é uma API que retorna diversas informações em relação aos conteúdos criados lá, além de ser possível logar, cadastrar e criar conteúdos.
+<details><summary><h2>Documentação da API</h2></summary>
 
-A comunicação é feita através de HTTPS usando GET ou POST. Tanto a solicitação quanto a resposta são formatadas como JSON e o tipo de conteúdo de ambas é application/json.
-<br>
+
+### Visão Geral:
+- [Change log](#changelog)
+- [Introdução](#introducao)
+- [Base URL](#baseurl)
+- [Obter conteúdos](#a)
+    - [Lista de conteúdos da página inicial](#b)
+    - [Lista de conteúdos de um determinado usuário](#c)
+    - [Obter conteúdo e dados de uma publicação](#d)
+    - [Obter dados de uma publicação](#e)
+    - [Obter thumbnail de uma publicação](#f)
+- [Status](#g)
+- [Autenticação](#h)
+    - [Criar usuário](#i)
+    - [Logar usuário](#j)
+    - [Recuperar senha](#k)
+- [Editar perfil](#l)
+- [Publicar conteúdos](#m)
+
+<br id="changelog">
 
 ### Change log
--
+- (10/09/2022) - Formatação alterada e atualizadas as funções da API.
+<br>
+<br id="introducao">
+
+### Introdução
+Todo TabNews foi construído através de **APIs públicas** e você pode consumir elas da forma que desejar (respeitando as políticas de uso).
+
+A comunicação é feita através de HTTPS usando GET ou POST. Tanto a solicitação quanto a resposta são formatadas como JSON e o tipo de conteúdo de ambas é application/json.
+
+⚠ Para requisições do tipo POST, parâmetros não inclusos na **URL devem ser inseridos como um Content-Type de `application/json`.**
+<br id="baseurl">
+
+### Base URL
+Todas as URLs incluídas nessa documentação exigem a `baseUrl`:
+
+```
+https://www.tabnews.com.br/api/v1
+```
+<br>
+<br id="a">
+
+### Obter conteúdos
+#### Lista de conteúdos da página inicial
+<div id="b"></div>
+
+```
+GET {{BaseUrl}}/contents?page={pagina}&per_page={porPagina}&strategy={estrategia}
+```
+
+| Parâmetro | Descrição |
+| --- | --- |
+| {pagina} | O número da página que você deseja acessar. |
+| {porPagina} | O número de conteúdos que devem ser retornados por página. |
+| {estrategia} | Ordem de classificação dos conteúdos, pode ser definida em **new**, **old** e **relevant**. |
 <br>
 
-### Exemplos
-Os exemplos a seguir mostram casos de usos comuns.
+#### Lista de conteúdos de um determinado usuário
+<div id="c"></div>
+
+```
+GET {{BaseUrl}}/{user}?page={pagina}&per_page={porPagina}&strategy={estrategia}
+```
+
+| Parâmetro | Descrição |
+| --- | --- |
+| {username} | O username do usuário que você quer acessar os conteúdos. |
+| {pagina} | O número da página que você deseja acessar. |
+| {porPagina} | O número de conteúdos que devem ser retornados por página. |
+| {estrategia} | Ordem de classificação dos conteúdos, pode ser definida em **new**, **old** e **relevant**. |
 <br>
 
-### Obter lista de posts da página inicial
+#### Obter conteúdo e dados de uma publicação
+<div id="d"></div>
+
 ```
-https://www.tabnews.com.br/api/v1/contents?page={pagina}&per_page={porPagina}&strategy={estrategia} 
+GET {{BaseUrl}}/contents/{user}/{slug}
 ```
 
-| Parâmetros: |  |
-|--------------|----------------------------|
-| {pagina}    | Página que você deseja acessar|
-| {porPagina} | Quantos conteúdos devem ser retornados por página|
-| {estrategia} | Classificação dos conteúdos (new, old ou best)|
+| Parâmetro | Descrição |
+| --- | --- |
+| {user} | Usuário que você deseja obter o post. |
+| {slug} | Slug do post que você deseja obter. |
 <br>
 
-### Obter lista de posts de um determinado usuário
+#### Obter comentários de uma publicação
+<div id="e"></div>
+
 ```
-https://www.tabnews.com.br/api/v1/contents/{user}?page={pagina}&per_page={porPagina}&strategy={estrategia} 
+GET {{BaseUrl}}/contents/{user}/{slug}/children
 ```
 
-| Parâmetros: |  |
-|--------------|----------------------------|
-| {user} | Nome do usuário que você quer obter os conteúdos | 
-| {pagina}    | Página que você deseja acessar|
-| {porPagina} | Quantos conteúdos devem ser retornados por página|
-| {estrategia} | Classificação dos conteúdos (new, old ou best)|
+| Parâmetros |     |
+| --- | --- |
+| {user} | Usuário dono do postque você deseja obter os comentários. |
+| {slug} | Slug do post que você deseja obter os comentários. |
 <br>
 
-### Obter conteúdo de uma publicação
+#### Obter thumbnail de uma publicação
+<div id="f"></div>
+
 ```
-https://www.tabnews.com.br/api/v1/contents/{user}/{slug}
+GET {{BaseUrl}}/contents/{user}/{slug}/thumbnail
 ```
 
-| Parâmetros: |  |
-|--------------|----------------------------|
-| {user} | Usuário que você deseja obter o post |
-| {slug} | Slug do post que você deseja obter |
+| Parâmetros |     |
+| --- | --- |
+| {user} | Usuário dono do post que você deseja obter a thumbnail. |
+| {slug} | Slug do post que você deseja obter a thumbnail. |
 <br>
+<br id="g">
 
-### Obter comentários de uma publicação
-```
-https://www.tabnews.com.br/api/v1/contents/{user}/{slug}/children
-```
-| Parâmetros: |  |
-|--------------|----------------------------|
-| {user} | Usuário que você deseja obter os comentários do post |
-| {slug} | Slug do post que você deseja obter os comentários |
-<br>
-
-### Obter lista com informações de quantos usuários, posts e/ou comentários foram criados em determinado dia (status)
-
+### Status
 Para obter quantos usuários foram criados (por dia):
+
 ```
-https://www.tabnews.com.br/api/v1/analytics/users-created
+GET {{BaseUrl}}/analytics/users-created
 ```
 
 Para obter quantas publicações foram feitas (por dia):
+
 ```
-https://www.tabnews.com.br/api/v1/analytics/root-content-published
+GET {{BaseUrl}}/analytics/root-content-published
 ```
 
 Para obter quantos usuários foram criados (por dia):
+
 ```
-https://www.tabnews.com.br/api/v1/analytics/child-content-published
+GET {{BaseUrl}}/analytics/child-content-published
 ```
 <br>
+<br id="h">
 
-### Logar usuário
-```javascript
-const data = {email: "{insira o email aqui}", password: "{insira a senha aqui}"}
+### Autenticação
+<div id="i"></div>
 
-fetch('https://www.tabnews.com.br/api/v1/sessions', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      .then((response) => response.json())
-      .then((data) => {
-         console.log("Data: ", data)
-  })
-      .catch((error) => {
-         console.log("Error: ", error)
-  });
+#### Criar usuário
+
+```
+POST {{BaseUrl}}/users
 ```
 
-Caso ocorra tudo certo ele deve retornar algo parecido com:
+**Corpo da requisição:**
+
+| Parâmetro | Tipo | Descrição |
+| --- | --- | --- |
+| username | string | O username do usuário que você quer criar. |
+| email | string | Um email válido que será usado para o login e outras opções. |
+| password | string | A senha do usuário que você quer criar. |
+
+⚠ Para confirmar a conta, o usuário deve acessar o link de verificação que foi enviado para o email. ⚠
+<br id="j">
+
+#### Logar usuário
+Depois que o email for verificado, a requisição deve ser feita para este endpoint:
+
+```
+POST {{BaseUrl}}/sessions
+```
+
+**Corpo da requisição:**
+
+| Parâmetro | Tipo | Descrição |
+| --- | --- | --- |
+| email | string | O email no qual o usuário foi criado. |
+| password | string | A senha que foi definida na criação do usuário. |
+
+<details><summary>Exemplo de resposta</summary>
+    
 ```json
-Data:
 {
   "id": "6fbeca8f-13f1-43e3-b3**-************",
   "token": "e5fba39f8c4ec21cfd50d94ec8f659ed3258e301afe51240786d9ecddc8d35aeecae391ffe73e38d8c**************",
@@ -112,12 +181,11 @@ Data:
   "updated_at": "yyyy-mm-ddT14:34:08.664Z"
 }
 ```
+</details>
 
-Caso ocorra algum erro ele deve retornar algo como:
+<details><summary>Exemplo de resposta com erro</summary>
+    
 ```json
-Error:
-{}
-Data:
 {
   "name": "UnauthorizedError",
   "message": "Dados não conferem.",
@@ -128,36 +196,73 @@ Data:
   "error_location_code": "CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH"
 }
 ```
-<br>
+</details>
+<br id="k">
 
-### Criar usuário
+#### Recuperar senha
 
-```javascript
-const data = {username: "{insira o username aqui}", email: "{insira o email aqui}", password: "{insira a senha aqui}"}
+```
+POST {{BaseUrl}}/recovery
+```
 
-fetch('https://www.tabnews.com.br/api/v1/users', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      .then((response) => response.json())
-      .then((data) => {
-         console.log("Data: ", data)
-  })
-      .catch((error) => {
-         console.log("Error: ", error)
-  });
-  ```
-⚠O usuário terá que confirmar o email para acessar a conta⚠
+**Corpo da requisição:**
+
+| Parâmetro | Tipo | Descrição |
+| --- | --- | --- |
+| username | string | O username do usuário que você deseja recuperar a senha. |
+| email | string | O email do usuário que você deseja recuperar a senha. |
+
+⚠ Apenas 1 dos valores devem ser passados na requisição. O usuário receberá uma link no email para a recuperação da senha.
 <br>
+<br id="l">
+
+### Editar perfil
+
+Para alteração de qualquer informação, a requisição deve ser feita para o seguinte endpoint, onde `{username}` é o username atual do usuário que você deseja alterar as informações:
+
+```
+POST {{BaseUrl}}/users/{username}
+```
+
+**Corpo da requisição:**
+
+Todos os parâmetros são opcionais, ou seja, você só precisa enviar o parâmetro da informação que você deseja mudar.
+
+| Parâmetros | Tipo | Descrição |
+| --- | --- | --- |
+| username | string | Para alterar o nome de usuário. |
+| email | string | Para alterar o email do usuário (ele precisará ser verifificar da mesma forma que foi verificado na criação do usuário). |
+| password | string | Para alterar a senha do usuário. |
+| notifications | boolean | Para alterar se o usuário deseja receber notificações via email, ou não. |
 <br>
+<br id="m">
+
+### Publicar conteúdos
+
+```
+{{BaseUrl}}/contents
+```
+
+**Cabeçalho da requisição:**
+
+| Parâmetro | Valor | Descrição |
+| --- | --- | --- |
+| Set-Cookie | session_id={seuSessionID} | {seuSessionID} é o session_id que foi obtido na resposta ao fazer login. |
+
+**Corpo da requisição:**
+
+| Parâmetro | Tipo | Descrição |
+| --- | --- | --- |
+| title | string | O título da publicação. *Obrigatório |
+| body | string | O corpo da sua publicação, com formatação em Markdown ou HTML. *Obrigatório |
+| status | string | Para o conteúdo realmente ser publicado, o valor deve ser `published`. *Obrigatório |
+| source_url | string | O link que vai ficar como fonte de seu post, no formato `https://example.com`. Caso não seja definido, a fonte ficará em branco. |
+| slug | string | O slug do seu post. Caso não seja definido, o slug será gerado automaticamente com base no título da publicação. |
 
 </details>
 
-<details><summary><h2>Instalar e rodar o projeto</h2> (clique para ler tudo)</summary>
+
+## Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
 
@@ -165,10 +270,10 @@ Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
 
 Você precisa ter duas principais dependências instaladas:
 
-- Node.js v16 LTS (ou qualquer versão superior)
+- Node.js LTS v16 (ou qualquer versão superior)
 - Docker Engine v17.12.0 com Docker Compose v1.24.1 (ou qualquer versão superior)
 
-Utiliza nvm? Então pode executar `nvm install` na pasta do projeto para instalar e utilizar a versão mais apropriada do Node.js.
+Utiliza `nvm`? Então pode executar `nvm install` na pasta do projeto para instalar e utilizar a versão mais apropriada do Node.js.
 
 ### Dependências locais
 
@@ -287,8 +392,6 @@ Para ser auxiliado no padrão de commit que utilizamos, rode o comando abaixo e 
 ```bash
 npm run commit
 ```
-
-</details>
 
 ## Diário de Desenvolvimento
 
