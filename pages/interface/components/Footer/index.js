@@ -49,6 +49,7 @@ export default function Footer(props) {
             Sobre
           </Link>
           <Link href="/status">Status</Link>
+          <Link href="/termos-de-uso">Termos de Uso</Link>
         </Box>
       </Box>
     </Box>
