@@ -9,7 +9,6 @@ import {
   Flash,
   Heading,
   Text,
-  Link,
   BranchName,
   ActionMenu,
   ActionList,
@@ -19,8 +18,7 @@ import {
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import PublishedSince from 'pages/interface/components/PublishedSince';
-
-import { useUser } from 'pages/interface/index.js';
+import { Link, useUser } from 'pages/interface';
 
 // Markdown Editor dependencies:
 import { Editor, Viewer } from '@bytemd/react';
@@ -193,28 +191,28 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
           </Flash>
         )}
 
-        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-          <Box sx={{ flex: 'auto', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            <BranchName sx={{ mr: 2 }} href={`/${contentObject.owner_username}`}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box
+            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 1, mt: '2px' }}>
+            <BranchName as={Link} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </BranchName>
-
-            <Tooltip
-              aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
-                dateStyle: 'full',
-                timeStyle: 'short',
-              })}>
-              <Link
-                href={`/${contentObject.owner_username}/${contentObject.slug}`}
-                sx={{ fontSize: 0, color: 'fg.muted' }}>
+            <Link
+              href={`/${contentObject.owner_username}/${contentObject.slug}`}
+              prefetch={false}
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', height: '22px' }}>
+              <Tooltip
+                sx={{ position: 'absolute', ml: 1, mt: '1px' }}
+                aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
+                  dateStyle: 'full',
+                  timeStyle: 'short',
+                })}>
                 <PublishedSince date={contentObject.published_at} />
-              </Link>
-            </Tooltip>
+              </Tooltip>
+            </Link>
           </Box>
-          <Box>
-            {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
-              ViewModeOptionsMenu()}
-          </Box>
+          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
+            ViewModeOptionsMenu()}
         </Box>
 
         {!contentObject?.parent_id && contentObject?.title && (
@@ -505,12 +503,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             {contentObject && (
-              <Link
-                sx={{ marginRight: 3, fontSize: 1, cursor: 'pointer', color: 'fg.muted' }}
+              <Button
+                variant="invisible"
+                type="button"
+                disabled={isPosting}
+                sx={{ marginRight: 3, fontSize: 1, fontWeight: 'normal', cursor: 'pointer', color: 'fg.muted' }}
                 aria-label="Cancelar alteração"
                 onClick={handleCancel}>
                 Cancelar
-              </Link>
+              </Button>
             )}
             <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
