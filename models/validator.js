@@ -498,6 +498,7 @@ const schemas = {
     for (const key of [
       'id',
       'parent_id',
+      '$not_null',
       'slug',
       'title',
       'body',
@@ -782,6 +783,38 @@ const schemas = {
           'string.base': `"ban_type" deve ser do tipo String.`,
           'any.invalid': `"ban_type" possui o valor inválido "null".`,
           'any.only': `"ban_type" deve possuir um dos seguintes valores: "nuke".`,
+        }),
+    });
+  },
+
+  content_type: function () {
+    return Joi.object({
+      content_type: Joi.string()
+        .trim()
+        .valid('children', 'root')
+        .default('root')
+        .invalid(null)
+        .when('$required.content_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"content_type" é um campo obrigatório.`,
+          'strimg.empty': `"content_type" não pode estar em branco.`,
+          'string.base': `"content_type" deve ser do tipo String.`,
+          'any.invalid': `"content_type" possui o valor inválido "null".`,
+          'any.only': `"content_type" deve possuir um dos seguintes valores: "root" ou "children".`,
+        }),
+    });
+  },
+
+  $not_null: function () {
+    return Joi.object({
+      $not_null: Joi.string()
+        .allow(null)
+        .trim()
+        .when('$required.$not_null', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"$not_null" é um campo obrigatório.`,
+          'string.empty': `"$not_null" não pode estar em branco.`,
+          'string.base': `"$not_null" deve ser do tipo String.`,
         }),
     });
   },
