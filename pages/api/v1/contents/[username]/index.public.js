@@ -4,7 +4,6 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
-import { validate as validateuuid } from 'uuid';
 
 export default nextConnect({
   attachParams: true,
