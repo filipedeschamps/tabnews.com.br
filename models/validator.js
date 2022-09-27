@@ -787,24 +787,6 @@ const schemas = {
     });
   },
 
-  content_type: function () {
-    return Joi.object({
-      content_type: Joi.string()
-        .trim()
-        .valid('children', 'root')
-        .default('root')
-        .invalid(null)
-        .when('$required.content_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `"content_type" é um campo obrigatório.`,
-          'strimg.empty': `"content_type" não pode estar em branco.`,
-          'string.base': `"content_type" deve ser do tipo String.`,
-          'any.invalid': `"content_type" possui o valor inválido "null".`,
-          'any.only': `"content_type" deve possuir um dos seguintes valores: "root" ou "children".`,
-        }),
-    });
-  },
-
   $not_null: function () {
     return Joi.object({
       $not_null: Joi.string()

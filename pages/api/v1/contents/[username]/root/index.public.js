@@ -35,6 +35,7 @@ async function getHandler(request, response) {
     strategy: request.query.strategy,
     where: {
       owner_username: request.query.username,
+      parent_id: null,
       status: 'published',
     },
     page: request.query.page,
@@ -44,6 +45,6 @@ async function getHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
-  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
+  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}/root`, response);
   return response.status(200).json(secureOutputValues);
 }

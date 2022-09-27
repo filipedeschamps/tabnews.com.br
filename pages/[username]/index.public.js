@@ -124,7 +124,7 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${userFound.username}/pagina`}
-          revalidatePath={`/api/v1/contents/${userFound.username}?strategy=new`}
+          revalidatePath={`/api/v1/contents/${userFound.username}/root?strategy=new`}
           emptyStateProps={{
             isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',
