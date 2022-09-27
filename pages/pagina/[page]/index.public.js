@@ -21,7 +21,7 @@ export default function Home({ contentListFound, pagination }) {
 
 export async function getStaticPaths() {
   return {
-    paths: [],
+    paths: [{ params: { page: '2' } }, { params: { page: '3' } }],
     fallback: 'blocking',
   };
 }
