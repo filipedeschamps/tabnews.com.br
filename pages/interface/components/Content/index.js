@@ -38,10 +38,11 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     setComponentMode(mode);
-  }, [mode]);
+  }, [mode, router.asPath]);
 
   useEffect(() => {
     setContentObject((contentObject) => {
@@ -71,7 +72,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   if (componentMode === 'view') {
     return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
   } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} />;
+    return <CompactMode resetContentObject={() => setContentObject(content)} setComponentMode={setComponentMode} />;
   } else if (componentMode === 'edit') {
     return (
       <EditMode
@@ -570,17 +571,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CompactMode({ setComponentMode }) {
+function CompactMode({ setComponentMode, resetContentObject }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
 
   const handleClick = useCallback(() => {
+    if (resetContentObject) resetContentObject();
     if (user && !isLoading) {
       setComponentMode('edit');
     } else if (router) {
       router.push(`/login?redirect=${router.asPath}`);
     }
-  }, [isLoading, router, setComponentMode, user]);
+  }, [isLoading, router, setComponentMode, user, resetContentObject]);
 
   return (
     <Button
