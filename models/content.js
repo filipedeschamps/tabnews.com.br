@@ -5,6 +5,7 @@ import validator from 'models/validator.js';
 import user from 'models/user.js';
 import balance from 'models/balance.js';
 import { ValidationError } from 'errors/index.js';
+import { queryRankedContent } from 'models/queries';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -18,6 +19,18 @@ async function findAll(values = {}, options = {}) {
   if (!values.count) {
     query.values = [values.limit || values.per_page, offset];
   }
+
+  if (options.strategy === 'relevant') {
+    query.text = queryRankedContent;
+    if (values.count) {
+      query.values = [1, 0];
+    }
+
+    const relevantResults = await database.query(query, { transaction: options.transaction });
+
+    return relevantResults.rows;
+  }
+
   const selectClause = buildSelectClause(values);
   const whereClause = buildWhereClause(values?.where);
   const orderByClause = buildOrderByClause(values?.order);
@@ -43,10 +56,6 @@ async function findAll(values = {}, options = {}) {
   }
 
   const results = await database.query(query, { transaction: options.transaction });
-
-  if (values.count) {
-    return results.rows.length > 0 ? results.rows[0].total_rows : 0;
-  }
 
   return results.rows;
 
@@ -98,6 +107,7 @@ async function findAll(values = {}, options = {}) {
         contents.published_at,
         contents.deleted_at,
         users.username as owner_username,
+        COUNT(*) OVER()::INTEGER as total_rows,
         get_current_balance('content:tabcoin', contents.id) as tabcoins,
 
         -- Originally this query returned a list of contents to the server and
@@ -210,6 +220,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at DESC';
     results.rows = await findAll(options);
+    options.totalRows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -220,37 +231,38 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at ASC';
     results.rows = await findAll(options);
+    options.totalRows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
   }
 
-  async function getRelevant(options = {}) {
+  async function getRelevant(values = {}) {
     const results = {};
+    const options = { strategy: 'relevant' };
 
-    options.order = 'published_at DESC';
-    const contentList = await findAll(options);
-    const rankedContentList = rankContentListByRelevance(contentList);
-    results.rows = rankedContentList;
-    results.pagination = await getPagination(options);
+    values.order = 'published_at DESC';
+    results.rows = await findAll(values, options);
+    values.totalRows = results.rows[0]?.total_rows;
+    results.pagination = await getPagination(values, options);
 
     return results;
   }
 }
 
-async function getPagination(options) {
-  options.count = true;
+async function getPagination(values, options = {}) {
+  values.count = true;
 
-  const totalRows = await findAll(options);
-  const perPage = options.per_page;
+  const totalRows = values.totalRows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
+  const perPage = values.per_page;
   const firstPage = 1;
-  const lastPage = Math.ceil(totalRows / options.per_page);
-  const nextPage = options.page >= lastPage ? null : options.page + 1;
-  const previousPage = options.page <= 1 ? null : options.page - 1;
-  const strategy = options.strategy;
+  const lastPage = Math.ceil(totalRows / values.per_page);
+  const nextPage = values.page >= lastPage ? null : values.page + 1;
+  const previousPage = values.page <= 1 ? null : values.page > lastPage ? lastPage : values.page - 1;
+  const strategy = values.strategy;
 
   return {
-    currentPage: options.page,
+    currentPage: values.page,
     totalRows: totalRows,
     perPage: perPage,
     firstPage: firstPage,

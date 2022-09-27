@@ -426,7 +426,7 @@ describe('GET /api/v1/contents', () => {
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
       expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('60');
+      expect(responseTotalRowsHeader).toEqual('57');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -454,9 +454,48 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody.length).toEqual(30);
       expect(responseBody[0].title).toEqual('Conteúdo #31');
       expect(responseBody[1].title).toEqual('Conteúdo #32');
-      expect(responseBody[27].title).toEqual('Conteúdo #60');
-      expect(responseBody[28].title).toEqual('Conteúdo #50');
-      expect(responseBody[29].title).toEqual('Conteúdo #51');
+      expect(responseBody[27].title).toEqual('Conteúdo #30');
+      expect(responseBody[28].title).toEqual('Conteúdo #29');
+      expect(responseBody[29].title).toEqual('Conteúdo #28');
+
+      const page2Response = await fetch(responseLinkHeader.next.url);
+      const page2ResponseBody = await page2Response.json();
+
+      const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
+      const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
+
+      expect(page2Response.status).toEqual(200);
+      expect(page2ResponseTotalRowsHeader).toEqual('57');
+      expect(page2ResponseLinkHeader).toStrictEqual({
+        first: {
+          page: '1',
+          per_page: '30',
+          rel: 'first',
+          strategy: 'relevant',
+          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30',
+        },
+        prev: {
+          page: '1',
+          per_page: '30',
+          rel: 'prev',
+          strategy: 'relevant',
+          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30',
+        },
+        last: {
+          page: '2',
+          per_page: '30',
+          rel: 'last',
+          strategy: 'relevant',
+          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=2&per_page=30',
+        },
+      });
+
+      expect(page2ResponseBody.length).toEqual(27);
+      expect(page2ResponseBody[0].title).toEqual('Conteúdo #27');
+      expect(page2ResponseBody[1].title).toEqual('Conteúdo #26');
+      expect(page2ResponseBody[24].title).toEqual('Conteúdo #3');
+      expect(page2ResponseBody[25].title).toEqual('Conteúdo #2');
+      expect(page2ResponseBody[26].title).toEqual('Conteúdo #1');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {

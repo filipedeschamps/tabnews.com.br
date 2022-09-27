@@ -22,6 +22,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             gridTemplateColumns: 'auto 1fr',
           }}>
           <RenderItems />
+          <EndOfRelevant />
         </Box>
       ) : (
         <RenderEmptyMessage {...emptyStateProps} />
@@ -121,6 +122,44 @@ export default function ContentList({ contentList, pagination, paginationBasePat
         </Box>,
       ];
     });
+  }
+
+  function EndOfRelevant() {
+    if (paginationBasePath == '/pagina' && !pagination.nextPage)
+      return [
+        <Box key={0} sx={{ textAlign: 'right' }}>
+          <Text
+            sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right', visibility: 'hidden' }}>
+            0.
+          </Text>
+        </Box>,
+        <Box key={-1}>
+          <Box
+            sx={{
+              overflow: 'auto',
+              fontWeight: 'semibold',
+              fontSize: 2,
+              '> a': {
+                ':link': {
+                  color: 'fg.default',
+                },
+                ':visited': {
+                  color: 'fg.subtle',
+                },
+              },
+            }}>
+            <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+              Fim dos conteúdos relevantes mais atuais.
+            </Link>
+          </Box>
+          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+            <Link sx={{ color: 'neutral.emphasis' }} href={'/recentes'}>
+              Veja mais conteúdos na seção Recentes.
+            </Link>
+          </Box>
+        </Box>,
+      ];
+    return null;
   }
 
   function RenderEmptyMessage(props) {
