@@ -38,14 +38,13 @@ export const queryRankedContent = `
         WHERE
             tabcoins > 12
         ORDER BY
-            rank_group DESC,
             tabcoins DESC,
             published_at DESC
         LIMIT 1
     ),
     top_three AS (
         SELECT * FROM top_one
-        UNION
+        UNION ALL
         SELECT
             *,
             1 as rank_group
@@ -55,14 +54,14 @@ export const queryRankedContent = `
             AND tabcoins > 6
             AND id NOT IN (SELECT id FROM top_one)
         ORDER BY
-            rank_group DESC,
+            rank_group,
             tabcoins DESC,
             published_at DESC
         LIMIT 3
     ),
     top_1_hour AS (
         SELECT * FROM top_three
-        UNION
+        UNION ALL
         SELECT 
             *,
             2 as rank_group
@@ -78,7 +77,7 @@ export const queryRankedContent = `
     ),
     top_6_hours AS (
         SELECT * FROM top_1_hour
-        UNION
+        UNION ALL
         SELECT 
             *,
             3 as rank_group
@@ -95,7 +94,7 @@ export const queryRankedContent = `
     ),
     top_1_day AS (
         SELECT * FROM top_6_hours
-        UNION
+        UNION ALL
         SELECT
             *,
             4 as rank_group
@@ -111,7 +110,7 @@ export const queryRankedContent = `
     ),
     top_3_days AS (
         SELECT * FROM top_1_day
-        UNION
+        UNION ALL
         SELECT
             *,
             5 as rank_group
@@ -127,7 +126,7 @@ export const queryRankedContent = `
     ),
     ranked AS (
         SELECT * FROM top_3_days
-        UNION
+        UNION ALL
         SELECT
             *,
             6 as rank_group
