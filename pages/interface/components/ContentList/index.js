@@ -134,29 +134,17 @@ export default function ContentList({ contentList, pagination, paginationBasePat
           </Text>
         </Box>,
         <Box key={-1}>
-          <Box
-            sx={{
-              overflow: 'auto',
-              fontWeight: 'semibold',
-              fontSize: 2,
-              '> a': {
-                ':link': {
-                  color: 'fg.default',
-                },
-                ':visited': {
-                  color: 'fg.subtle',
-                },
-              },
-            }}>
-            <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
-              Fim dos conteúdos relevantes mais atuais.
-            </Link>
-          </Box>
-          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
-            <Link sx={{ color: 'neutral.emphasis' }} href={'/recentes'}>
-              Veja mais conteúdos na seção Recentes.
-            </Link>
-          </Box>
+          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+              }}>
+              Fim dos conteúdos relevantes mais atuais
+            </Box>
+            <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
+          </Link>
         </Box>,
       ];
     return null;
