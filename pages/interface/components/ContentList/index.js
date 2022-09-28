@@ -22,6 +22,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             gridTemplateColumns: 'auto 1fr',
           }}>
           <RenderItems />
+          <EndOfRelevant />
         </Box>
       ) : (
         <RenderEmptyMessage {...emptyStateProps} />
@@ -121,6 +122,32 @@ export default function ContentList({ contentList, pagination, paginationBasePat
         </Box>,
       ];
     });
+  }
+
+  function EndOfRelevant() {
+    if (paginationBasePath == '/pagina' && !pagination.nextPage)
+      return [
+        <Box key={0} sx={{ textAlign: 'right' }}>
+          <Text
+            sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right', visibility: 'hidden' }}>
+            0.
+          </Text>
+        </Box>,
+        <Box key={-1}>
+          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+              }}>
+              Fim dos conteúdos relevantes mais atuais
+            </Box>
+            <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
+          </Link>
+        </Box>,
+      ];
+    return null;
   }
 
   function RenderEmptyMessage(props) {

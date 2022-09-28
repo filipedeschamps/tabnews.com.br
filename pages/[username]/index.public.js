@@ -142,8 +142,29 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
 }
 
 export async function getStaticPaths() {
+  const relevantResults = await content.findWithStrategy({
+    strategy: 'relevant',
+    where: {
+      parent_id: null,
+      status: 'published',
+    },
+    attributes: {
+      exclude: ['body'],
+    },
+    page: 1,
+    per_page: 100,
+  });
+
+  const paths = relevantResults.rows.map((content) => {
+    return {
+      params: {
+        username: content.owner_username,
+      },
+    };
+  });
+
   return {
-    paths: [],
+    paths,
     fallback: 'blocking',
   };
 }
