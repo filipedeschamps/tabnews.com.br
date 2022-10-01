@@ -43,6 +43,10 @@ async function getHandler(request, response) {
   });
   const contentListFound = results.rows;
 
+  for (const content of contentListFound) {
+    content.body = shortifyText(content.body);
+  }
+
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
   controller.injectPaginationHeaders(
@@ -51,4 +55,9 @@ async function getHandler(request, response) {
     response
   );
   return response.status(200).json(secureOutputValues);
+}
+
+function shortifyText(text) {
+  const substring = text.substring(0, 35).trim();
+  return text.length < 35 ? substring : substring + '...';
 }
