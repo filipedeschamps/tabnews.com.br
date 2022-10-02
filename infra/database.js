@@ -78,7 +78,7 @@ async function tryToGetNewClientFromPool() {
 async function checkForTooManyConnections(client) {
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 5000;
-  const maxConnectionsTolerance = 0.7;
+  const maxConnectionsTolerance = 0.2;
 
   if (cache.maxConnections === null || cache.reservedConnections === null) {
     const [maxConnections, reservedConnections] = await getConnectionLimits();
