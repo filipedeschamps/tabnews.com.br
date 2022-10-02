@@ -4,6 +4,7 @@ import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import { FaTree } from 'react-icons/fa';
+import queryRankedContent_beta from 'models/queries_beta';
 
 export default function Home({ contentListFound, pagination, beta }) {
   return (
@@ -12,8 +13,8 @@ export default function Home({ contentListFound, pagination, beta }) {
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
-          paginationBasePath="/relevantes_beta/1/pagina"
-          revalidatePath={`/relevantes_beta/${beta}/pagina`}
+          paginationBasePath={`/relevantes_beta/${beta}/pagina`}
+          revalidatePath="/api/v1/contents?strategy=relevant"
           emptyStateProps={{
             title: 'Nenhum conteúdo encontrado',
             description: 'Quando eu cheguei era tudo mato...',
@@ -26,8 +27,18 @@ export default function Home({ contentListFound, pagination, beta }) {
 }
 
 export async function getStaticPaths() {
+  const paths = [];
+
+  Object.keys(queryRankedContent_beta).forEach((beta) => {
+    paths.push({
+      params: {
+        beta: beta,
+      },
+    });
+  });
+
   return {
-    paths: [{ params: { beta: '1' } }, { params: { beta: '2' } }],
+    paths,
     fallback: 'blocking',
   };
 }
@@ -35,6 +46,13 @@ export async function getStaticPaths() {
 export async function getStaticProps(context) {
   const userTryingToGet = user.createAnonymous();
   const beta = context.params.beta;
+
+  if (!queryRankedContent_beta[beta]) {
+    return {
+      notFound: true,
+      revalidate: 1,
+    };
+  }
 
   context.params = context.params ? context.params : {};
 

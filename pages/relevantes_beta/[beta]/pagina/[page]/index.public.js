@@ -3,6 +3,7 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
+import queryRankedContent_beta from 'models/queries_beta';
 
 export default function Home({ contentListFound, pagination, beta }) {
   return (
@@ -20,13 +21,24 @@ export default function Home({ contentListFound, pagination, beta }) {
 }
 
 export async function getStaticPaths() {
+  const paths = [];
+
+  Object.keys(queryRankedContent_beta).forEach((beta) => {
+    paths.push({
+      params: {
+        beta: beta,
+        page: '2',
+      },
+    });
+    paths.push({
+      params: {
+        beta: beta,
+        page: '3',
+      },
+    });
+  });
   return {
-    paths: [
-      { params: { beta: '1', page: '2' } },
-      { params: { beta: '1', page: '3' } },
-      { params: { beta: '2', page: '2' } },
-      { params: { beta: '2', page: '3' } },
-    ],
+    paths,
     fallback: 'blocking',
   };
 }
@@ -34,6 +46,13 @@ export async function getStaticPaths() {
 export async function getStaticProps(context) {
   const userTryingToGet = user.createAnonymous();
   const beta = context.params.beta;
+
+  if (!queryRankedContent_beta[beta]) {
+    return {
+      notFound: true,
+      revalidate: 1,
+    };
+  }
 
   context.params = context.params ? context.params : {};
 

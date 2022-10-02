@@ -1,4 +1,4 @@
-export const beta1 = `
+const Beta1 = `
     WITH
     latest_published_root_contents AS (
         SELECT
@@ -183,7 +183,7 @@ export const beta1 = `
             published_at DESC;
 `;
 
-export const beta2 = `
+const Beta2 = `
     WITH
     latest_published_root_contents AS (
         SELECT
@@ -320,6 +320,6 @@ export const beta2 = `
 `;
 
 export default Object.freeze({
-  beta1,
-  beta2,
+  Beta1,
+  Beta2,
 });
