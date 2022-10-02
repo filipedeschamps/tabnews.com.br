@@ -6,6 +6,7 @@ import user from 'models/user.js';
 import balance from 'models/balance.js';
 import { ValidationError } from 'errors/index.js';
 import { queryRankedContent } from 'models/queries';
+import queryRankedContent_beta from 'models/queries_beta';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -21,7 +22,11 @@ async function findAll(values = {}, options = {}) {
   }
 
   if (options.strategy === 'relevant') {
-    query.text = queryRankedContent;
+    if (values.beta) {
+      query.text = queryRankedContent_beta['beta' + values.beta];
+    } else {
+      query.text = queryRankedContent;
+    }
     if (values.count) {
       query.values = [1, 0];
     }
@@ -239,7 +244,7 @@ async function findWithStrategy(options = {}) {
 
   async function getRelevant(values = {}) {
     const results = {};
-    const options = { strategy: 'relevant' };
+    const options = { strategy: 'relevant', beta: values.beta };
 
     values.order = 'published_at DESC';
     results.rows = await findAll(values, options);

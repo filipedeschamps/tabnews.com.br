@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
-  const { pathname } = useRouter();
+  const { pathname, query } = useRouter();
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -29,6 +29,18 @@ export default function HeaderComponent() {
       <Header.Item>
         <HeaderLink href="/" sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
           Relevantes
+        </HeaderLink>
+      </Header.Item>
+
+      <Header.Item>
+        <HeaderLink href="/relevantes_beta/1" sx={query.beta === '1' && activeLinkStyle}>
+          Beta1
+        </HeaderLink>
+      </Header.Item>
+
+      <Header.Item>
+        <HeaderLink href="/relevantes_beta/2" sx={query.beta === '2' && activeLinkStyle}>
+          Beta2
         </HeaderLink>
       </Header.Item>
 
