@@ -4,6 +4,7 @@ import { CgTab } from 'react-icons/cg';
 import { useUser } from 'pages/interface/index.js';
 import { HeaderLink, Link } from 'pages/interface/components/Link';
 import { useRouter } from 'next/router';
+import queryRankedContent_beta from 'models/queries_beta';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
@@ -33,21 +34,24 @@ export default function HeaderComponent() {
       </Header.Item>
 
       <Header.Item>
-        <HeaderLink href="/relevantes_beta/1" sx={query.beta === '1' && activeLinkStyle}>
-          Beta1
-        </HeaderLink>
-      </Header.Item>
-
-      <Header.Item>
-        <HeaderLink href="/relevantes_beta/2" sx={query.beta === '2' && activeLinkStyle}>
-          Beta2
+        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') && activeLinkStyle}>
+          Recentes
         </HeaderLink>
       </Header.Item>
 
       <Header.Item full>
-        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') && activeLinkStyle}>
-          Recentes
-        </HeaderLink>
+        <ActionMenu>
+          <ActionMenu.Button>{query.beta || 'Beta'}</ActionMenu.Button>
+          <ActionMenu.Overlay>
+            <ActionList>
+              {Object.keys(queryRankedContent_beta).map((beta) => (
+                <ActionList.LinkItem as={Link} key={beta} href={`/relevantes_beta/${beta}`}>
+                  {beta}
+                </ActionList.LinkItem>
+              ))}
+            </ActionList>
+          </ActionMenu.Overlay>
+        </ActionMenu>
       </Header.Item>
 
       {!isLoading && !user && (

@@ -22,8 +22,8 @@ async function findAll(values = {}, options = {}) {
   }
 
   if (options.strategy === 'relevant') {
-    if (values.beta) {
-      query.text = queryRankedContent_beta['beta' + values.beta];
+    if (options.beta) {
+      query.text = queryRankedContent_beta[options.beta];
     } else {
       query.text = queryRankedContent;
     }
