@@ -1,5 +1,5 @@
 function isLambdaServer() {
-  return !(['test', 'development'].includes(process.env.NODE_ENV) || process.env.CI || process.env.GITHUB_ACTIONS);
+  return !!process.env.VERCEL_ENV;
 }
 
 function getHost() {
