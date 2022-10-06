@@ -118,7 +118,7 @@ export default function Post({
               p: 4,
               wordWrap: 'break-word',
             }}>
-            <Content content={{ parent_id: contentFound.id }} mode="compact" />
+            <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
           </Box>
 
           <RenderChildrenTree childrenList={children} level={0} />
