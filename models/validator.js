@@ -248,6 +248,7 @@ const schemas = {
   title: function () {
     return Joi.object({
       title: Joi.string()
+        .replace(/^\u200e|\u200e$|^\u200f|\u200f$|\u0000/g, '')
         .allow(null)
         .min(1)
         .max(256)
@@ -266,6 +267,7 @@ const schemas = {
   body: function () {
     return Joi.object({
       body: Joi.string()
+        .replace(/^\u200e|\u200e$|^\u200f|\u200f$|\u0000/g, '')
         .min(1)
         .max(20000)
         .trim()
@@ -305,6 +307,7 @@ const schemas = {
     return Joi.object({
       source_url: Joi.string()
         .allow(null)
+        .replace(/\u0000/g, '')
         .trim()
         .max(2000)
         .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([\/?#]\S*)?$/u)

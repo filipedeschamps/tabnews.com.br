@@ -497,6 +497,112 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "title", "body" and "source_url" containing \\u0000 null characters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Contendo caractere \u0000 proibido no Postgres',
+        body: '\u0000Começando com caractere proibido no Postgres',
+        source_url: 'https://\u0000teste-caractere.invalido/',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: '\u0000Começando com caractere proibido no Postgres',
+            body: 'Terminando com caractere proibido no Postgres\u0000',
+            source_url: 'https://teste-caractere.invalido/\u0000',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'contendo-caractere-proibido-no-postgres',
+        title: 'Começando com caractere proibido no Postgres',
+        body: 'Terminando com caractere proibido no Postgres',
+        status: 'draft',
+        source_url: 'https://teste-caractere.invalido/',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "title" and "body" containing invalid characters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: '\u200eTítulo começando com caracteres inválidos.',
+        body: '\u200fTexto começando com caracteres inválidos.',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Título terminando com caracteres inválidos.\u200f',
+            body: 'Texto terminando com caracteres inválidos.\u200e',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo-comecando-com-caracteres-invalidos',
+        title: 'Título terminando com caracteres inválidos.',
+        body: 'Texto terminando com caracteres inválidos.',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
     // TODO: Skip this test until Next.js fixes this:
     // https://github.com/vercel/next.js/issues/39262
     // Side-note: this works in Preview and Production environments.
