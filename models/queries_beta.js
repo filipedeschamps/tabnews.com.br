@@ -400,6 +400,7 @@ const Beta3 = `
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '3 days'
+            AND tabcoins > 11
             AND id NOT IN (SELECT id FROM group_3)
         ORDER BY
             published_at DESC
