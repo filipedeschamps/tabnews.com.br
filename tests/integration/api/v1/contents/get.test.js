@@ -392,13 +392,13 @@ describe('GET /api/v1/contents', () => {
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[30].id, // Conteúdo #31
-        amount: 2,
+        amount: 12,
       });
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
-        recipientId: contentList[31].id, // Conteúdo #32
-        amount: 1,
+        recipientId: contentList[35].id, // Conteúdo #36
+        amount: 7,
       });
 
       await orchestrator.createBalance({
@@ -426,7 +426,7 @@ describe('GET /api/v1/contents', () => {
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
       expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('57');
+      expect(responseTotalRowsHeader).toEqual('58');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -453,10 +453,13 @@ describe('GET /api/v1/contents', () => {
 
       expect(responseBody.length).toEqual(30);
       expect(responseBody[0].title).toEqual('Conteúdo #31');
-      expect(responseBody[1].title).toEqual('Conteúdo #32');
-      expect(responseBody[27].title).toEqual('Conteúdo #30');
-      expect(responseBody[28].title).toEqual('Conteúdo #29');
-      expect(responseBody[29].title).toEqual('Conteúdo #28');
+      expect(responseBody[1].title).toEqual('Conteúdo #36');
+      expect(responseBody[2].title).toEqual('Conteúdo #59');
+      expect(responseBody[3].title).toEqual('Conteúdo #58');
+      expect(responseBody[6].title).toEqual('Conteúdo #60');
+      expect(responseBody[27].title).toEqual('Conteúdo #32');
+      expect(responseBody[28].title).toEqual('Conteúdo #30');
+      expect(responseBody[29].title).toEqual('Conteúdo #29');
 
       const page2Response = await fetch(responseLinkHeader.next.url);
       const page2ResponseBody = await page2Response.json();
@@ -465,7 +468,7 @@ describe('GET /api/v1/contents', () => {
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
       expect(page2Response.status).toEqual(200);
-      expect(page2ResponseTotalRowsHeader).toEqual('57');
+      expect(page2ResponseTotalRowsHeader).toEqual('58');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -490,12 +493,12 @@ describe('GET /api/v1/contents', () => {
         },
       });
 
-      expect(page2ResponseBody.length).toEqual(27);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #27');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #26');
-      expect(page2ResponseBody[24].title).toEqual('Conteúdo #3');
-      expect(page2ResponseBody[25].title).toEqual('Conteúdo #2');
-      expect(page2ResponseBody[26].title).toEqual('Conteúdo #1');
+      expect(page2ResponseBody.length).toEqual(28);
+      expect(page2ResponseBody[0].title).toEqual('Conteúdo #28');
+      expect(page2ResponseBody[1].title).toEqual('Conteúdo #27');
+      expect(page2ResponseBody[25].title).toEqual('Conteúdo #3');
+      expect(page2ResponseBody[26].title).toEqual('Conteúdo #2');
+      expect(page2ResponseBody[27].title).toEqual('Conteúdo #1');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
