@@ -1,4 +1,4 @@
-export const queryRankedContent = `
+const rankedContent = `
     WITH
     latest_published_root_contents AS (
         SELECT
@@ -25,113 +25,90 @@ export const queryRankedContent = `
             *,
             COUNT(*) OVER()::INTEGER as total_rows
         FROM latest_published_root_contents
-        WHERE tabcoins > 0
+        WHERE tabcoins >= 0
         ORDER BY
             tabcoins DESC,
             published_at DESC
     ),
-    top_one AS (
-        SELECT
-            *,
-            0 as rank_group
-        FROM ranked_published_root_contents
-        WHERE
-            tabcoins > 12
-        ORDER BY
-            tabcoins DESC,
-            published_at DESC
-        LIMIT 1
-    ),
-    top_three AS (
-        SELECT * FROM top_one
-        UNION ALL
+    group_1 AS (
         SELECT
             *,
             1 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '2 days'
-            AND tabcoins > 6
-            AND id NOT IN (SELECT id FROM top_one)
+            published_at > NOW() - INTERVAL '36 hours'
+            AND tabcoins > 11
         ORDER BY
-            rank_group,
-            tabcoins DESC,
             published_at DESC
-        LIMIT 3
+        LIMIT 10
     ),
-    top_1_hour AS (
-        SELECT * FROM top_three
+    group_2 AS (
+        SELECT * FROM group_1
         UNION ALL
-        SELECT 
+        SELECT
             *,
             2 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '1 hour'
-            AND id NOT IN (SELECT id FROM top_three)
+            published_at > NOW() - INTERVAL '24 hours'
+            AND tabcoins > 6
+            AND id NOT IN (SELECT id FROM group_1)
         ORDER BY
             rank_group,
-            tabcoins DESC,
             published_at DESC
-        LIMIT 6
+        LIMIT 20
     ),
-    top_6_hours AS (
-        SELECT * FROM top_1_hour
-        UNION ALL
-        SELECT 
+    group_3 AS (
+        (SELECT 
             *,
             3 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '6 hours'
-            AND tabcoins > 1
-            AND id NOT IN (SELECT id FROM top_1_hour)
+            published_at > NOW() - INTERVAL '12 hours'
+            AND id NOT IN (SELECT id FROM group_2)
         ORDER BY
-            rank_group,
-            tabcoins DESC,
             published_at DESC
-        LIMIT 15
-    ),
-    top_1_day AS (
-        SELECT * FROM top_6_hours
+        LIMIT 5)
         UNION ALL
-        SELECT
+        SELECT * FROM group_2
+    ),
+    group_4 AS (
+        (SELECT 
             *,
             4 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '1 day'
-            AND id NOT IN (SELECT id FROM top_6_hours)
+            published_at > NOW() - INTERVAL '3 days'
+            AND tabcoins > 11
+            AND id NOT IN (SELECT id FROM group_3)
         ORDER BY
-            rank_group,
-            tabcoins DESC,
             published_at DESC
-        LIMIT 30
-    ),
-    top_3_days AS (
-        SELECT * FROM top_1_day
+        LIMIT 10)
         UNION ALL
-        SELECT
+        SELECT * FROM group_3
+    ),
+    group_5 AS (
+        (SELECT 
             *,
             5 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '3 days'
-            AND id NOT IN (SELECT id FROM top_1_day)
+            published_at > NOW() - INTERVAL '12 hours'
+            AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
-            rank_group,
-            tabcoins DESC,
             published_at DESC
-        LIMIT 60
+        LIMIT 10)      
+        UNION ALL
+        SELECT * FROM group_4
     ),
     ranked AS (
-        SELECT * FROM top_3_days
+        SELECT * FROM group_5
         UNION ALL
         SELECT
             *,
             6 as rank_group
         FROM ranked_published_root_contents
-        WHERE id NOT IN (SELECT id FROM top_3_days)
+        WHERE id NOT IN (SELECT id FROM group_5)
         ORDER BY
             rank_group,
             tabcoins DESC,
@@ -183,5 +160,5 @@ export const queryRankedContent = `
 `;
 
 export default Object.freeze({
-  queryRankedContent,
+  rankedContent,
 });

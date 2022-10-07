@@ -5,7 +5,7 @@ import validator from 'models/validator.js';
 import user from 'models/user.js';
 import balance from 'models/balance.js';
 import { ValidationError } from 'errors/index.js';
-import { queryRankedContent } from 'models/queries';
+import queries from 'models/queries';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -21,7 +21,7 @@ async function findAll(values = {}, options = {}) {
   }
 
   if (options.strategy === 'relevant') {
-    query.text = queryRankedContent;
+    query.text = queries.rankedContent;
     if (values.count) {
       query.values = [1, 0];
     }
