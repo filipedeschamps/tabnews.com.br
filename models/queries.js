@@ -93,7 +93,8 @@ const rankedContent = `
             5 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '12 hours'
+            published_at > NOW() - INTERVAL '72 hours'
+            AND tabcoins > 1
             AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
             published_at DESC
