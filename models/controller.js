@@ -23,7 +23,7 @@ async function injectRequestMetadata(request, response, next) {
   };
 
   function extractAnonymousIpFromRequest(request) {
-    let ip = request.headers['x-real-ip'] || request.connection.remoteAddress;
+    let ip = request.headers['x-real-ip'] || request.socket.remoteAddress;
 
     if (ip === '::1') {
       ip = '127.0.0.1';
