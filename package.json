@@ -7,7 +7,7 @@
     "@bytemd/plugin-mermaid": "1.17.2",
     "@bytemd/react": "1.17.2",
     "@primer/octicons-react": "17.7.0",
-    "@primer/react": "35.5.0",
+    "@primer/react": "35.9.0",
     "@resvg/resvg-js": "2.1.0",
     "@upstash/ratelimit": "0.1.5",
     "@upstash/redis": "1.14.0",
