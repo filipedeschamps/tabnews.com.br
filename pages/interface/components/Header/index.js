@@ -51,38 +51,32 @@ export default function HeaderComponent() {
 
       {user && (
         <>
-          <Header.Item sx={{ mr: 2 }}>
-            <Box
-              sx={{
-                fontSize: 0,
-                alignItems: 'center',
-                display: 'inline-flex',
-                fontWeight: 'bold',
-              }}>
-              <Box sx={{ color: 'accent.emphasis', display: 'inline-flex' }}>
+          <Header.Item
+            sx={{
+              mr: 2,
+              fontSize: 0,
+              fontWeight: 'bold',
+            }}>
+            <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'accent.emphasis' }}>
                 <SquareFillIcon size={16} />
-              </Box>
-              <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
                 <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins?.toLocaleString('pt-BR')}</Text>
-              </Tooltip>
-            </Box>
+              </Box>
+            </Tooltip>
           </Header.Item>
 
-          <Header.Item>
-            <Box
-              sx={{
-                fontSize: 0,
-                alignItems: 'center',
-                display: 'inline-flex',
-                fontWeight: 'bold',
-              }}>
-              <Box sx={{ color: 'success.emphasis', display: 'inline-flex' }}>
+          <Header.Item
+            sx={{
+              mr: 2,
+              fontSize: 0,
+              fontWeight: 'bold',
+            }}>
+            <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'success.emphasis' }}>
                 <SquareFillIcon size={16} />
-              </Box>
-              <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
                 <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash?.toLocaleString('pt-BR')}</Text>
-              </Tooltip>
-            </Box>
+              </Box>
+            </Tooltip>
           </Header.Item>
 
           <Header.Item sx={{ mr: 0 }}>
