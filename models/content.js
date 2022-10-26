@@ -20,7 +20,7 @@ async function findAll(values = {}, options = {}) {
     query.values = [values.limit || values.per_page, offset];
   }
 
-  if (options.strategy === 'relevant_groups') {
+  if (options.strategy === 'relevant_global') {
     query.text = queries.rankedContent;
     if (values.count) {
       query.values = [1, 0];
@@ -242,13 +242,13 @@ async function findWithStrategy(options = {}) {
     const options = {};
 
     if (!values?.where?.owner_username) {
-      options.strategy = 'relevant_groups';
+      options.strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';
 
     const contentList = await findAll(values, options);
 
-    if (options.strategy === 'relevant_groups') {
+    if (options.strategy === 'relevant_global') {
       results.rows = contentList;
     } else {
       results.rows = rankContentListByRelevance(contentList);
