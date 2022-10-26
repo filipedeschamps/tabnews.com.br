@@ -20,7 +20,7 @@ async function findAll(values = {}, options = {}) {
     query.values = [values.limit || values.per_page, offset];
   }
 
-  if (options.strategy === 'relevant') {
+  if (options.strategy === 'relevant_global') {
     query.text = queries.rankedContent;
     if (values.count) {
       query.values = [1, 0];
@@ -239,10 +239,21 @@ async function findWithStrategy(options = {}) {
 
   async function getRelevant(values = {}) {
     const results = {};
-    const options = { strategy: 'relevant' };
+    const options = {};
 
+    if (!values?.where?.owner_username) {
+      options.strategy = 'relevant_global';
+    }
     values.order = 'published_at DESC';
-    results.rows = await findAll(values, options);
+
+    const contentList = await findAll(values, options);
+
+    if (options.strategy === 'relevant_global') {
+      results.rows = contentList;
+    } else {
+      results.rows = rankContentListByRelevance(contentList);
+    }
+
     values.totalRows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(values, options);
 
