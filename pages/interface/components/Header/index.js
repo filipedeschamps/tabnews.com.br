@@ -1,8 +1,7 @@
 import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
-import { useUser } from 'pages/interface/index.js';
-import { HeaderLink, Link } from 'pages/interface/components/Link';
+import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
 
 export default function HeaderComponent() {
@@ -27,13 +26,13 @@ export default function HeaderComponent() {
       </Header.Item>
 
       <Header.Item>
-        <HeaderLink href="/" sx={(pathname === '/' || pathname.startsWith('/pagina')) && activeLinkStyle}>
+        <HeaderLink href="/" sx={pathname === '/' || pathname.startsWith('/pagina') ? activeLinkStyle : undefined}>
           Relevantes
         </HeaderLink>
       </Header.Item>
 
       <Header.Item full>
-        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') && activeLinkStyle}>
+        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
       </Header.Item>
