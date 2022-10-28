@@ -1,4 +1,5 @@
 import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
+import { Analytics } from '@vercel/analytics/react';
 import { SWRConfig } from 'swr';
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 import NextNProgress from 'pages/interface/components/Progressbar/index.js';
@@ -13,22 +14,25 @@ async function SWRFetcher(resource, init) {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <UserProvider>
-      <DefaultHead />
-      <SWRConfig
-        value={{
-          fetcher: SWRFetcher,
-        }}>
-        <SSRProvider>
-          <ThemeProvider preventSSRMismatch colorMode="day">
-            <BaseStyles>
-              <NextNProgress options={{ showSpinner: false }} />
-              <Component {...pageProps} />
-            </BaseStyles>
-          </ThemeProvider>
-        </SSRProvider>
-      </SWRConfig>
-    </UserProvider>
+    <>
+      <UserProvider>
+        <DefaultHead />
+        <SWRConfig
+          value={{
+            fetcher: SWRFetcher,
+          }}>
+          <SSRProvider>
+            <ThemeProvider preventSSRMismatch colorMode="day">
+              <BaseStyles>
+                <NextNProgress options={{ showSpinner: false }} />
+                <Component {...pageProps} />
+              </BaseStyles>
+            </ThemeProvider>
+          </SSRProvider>
+        </SWRConfig>
+      </UserProvider>
+      <Analytics />
+    </>
   );
 }
 

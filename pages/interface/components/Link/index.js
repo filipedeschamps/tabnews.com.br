@@ -3,16 +3,18 @@ import { Header, Link as PrimerLink } from '@primer/react';
 
 export function Link({ href, children, ...props }) {
   return (
-    <NextLink href={href} passHref {...props}>
-      <PrimerLink {...props}>{children}</PrimerLink>
-    </NextLink>
+    <PrimerLink as={NextLink} href={href} {...props}>
+      {children}
+    </PrimerLink>
   );
 }
 
 export function HeaderLink({ href, children, ...props }) {
   return (
-    <NextLink href={href} passHref {...props}>
-      <Header.Link {...props}>{children}</Header.Link>
-    </NextLink>
+    <Header.Link as={NextLink} href={href} {...props}>
+      {children}
+    </Header.Link>
   );
 }
+
+export default NextLink;
