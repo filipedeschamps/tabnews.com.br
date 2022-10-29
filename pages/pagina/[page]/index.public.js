@@ -13,6 +13,7 @@ export default function Home({ contentListFound, pagination }) {
           pagination={pagination}
           paginationBasePath="/pagina"
           revalidatePath={`/api/v1/contents?strategy=relevant&page=${pagination.currentPage}`}
+          nextPagePrefetchPath={`/api/v1/contents?strategy=relevant&page=${pagination.currentPage + 1}`}
         />
       </DefaultLayout>
     </>

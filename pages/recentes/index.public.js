@@ -17,6 +17,7 @@ export default function Home({ contentListFound, pagination }) {
           pagination={pagination}
           paginationBasePath="/recentes/pagina"
           revalidatePath="/api/v1/contents?strategy=new"
+          nextPagePrefetchPath="/api/v1/contents?strategy=new&page=2"
         />
       </DefaultLayout>
     </>

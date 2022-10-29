@@ -1,13 +1,49 @@
 import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
-
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
+import { useEffect, useState } from 'react';
 
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
+export default function ContentList({
+  contentList,
+  pagination,
+  paginationBasePath,
+  revalidatePath,
+  nextPagePrefetchPath,
+  emptyStateProps,
+}) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
-  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
+  const [nextLinkIsVisible, setNextLinkVisible] = useState(false);
+
+  const { mutate } = useSWR(
+    () => {
+      if (nextLinkIsVisible) {
+        return nextPagePrefetchPath;
+      }
+      return null;
+    },
+    { fallbackData: [], revalidateIfStale: false, revalidateOnFocus: false }
+  );
+  const { data: list } = useSWR(revalidatePath, {
+    fallbackData: contentList,
+    revalidateOnMount: true,
+    onSuccess: () => mutate(),
+  });
+
+  useEffect(() => {
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting) {
+        setNextLinkVisible(true);
+        mutate();
+      } else {
+        setNextLinkVisible(false);
+      }
+    });
+    if (document.querySelector('.nextPage')) intersectionObserver?.observe(document.querySelector('.nextPage'));
+    return () => intersectionObserver.disconnect();
+  }, [mutate]);
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
@@ -51,7 +87,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
           )}
 
           {pagination.nextPage ? (
-            <Link href={nextPageUrl}>
+            <Link href={nextPageUrl} className="nextPage">
               Próximo
               <ChevronRightIcon size={16} />
             </Link>

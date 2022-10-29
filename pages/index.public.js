@@ -14,6 +14,7 @@ export default function Home({ contentListFound, pagination }) {
           pagination={pagination}
           paginationBasePath="/pagina"
           revalidatePath="/api/v1/contents?strategy=relevant"
+          nextPagePrefetchPath="/api/v1/contents?strategy=relevant&page=2"
           emptyStateProps={{
             title: 'Nenhum conteúdo encontrado',
             description: 'Quando eu cheguei era tudo mato...',
