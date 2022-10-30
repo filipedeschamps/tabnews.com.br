@@ -23,6 +23,7 @@
     "joi": "17.6.3",
     "next": "13.0.0",
     "next-connect": "0.13.0",
+    "next-sitemap": "^3.1.29",
     "node-pg-migrate": "6.2.2",
     "nodemailer": "6.8.0",
     "nprogress": "0.2.0",
