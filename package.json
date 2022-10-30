@@ -85,7 +85,8 @@
     "migration:dry-run": "node-pg-migrate up --dry-run --envPath ./.env -m infra/migrations",
     "migration:seed": "node infra/scripts/seed-database.js",
     "prepare": "husky install",
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged",
+    "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,scss,md}": [
