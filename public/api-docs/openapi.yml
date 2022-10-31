@@ -1,0 +1,731 @@
+openapi: 3.0.3
+info: 
+  title: API - TabNews
+  description: |
+    Todo TabNews foi construído através de APIs **públicas** e você pode consumir elas da forma que desejar (respeitando as políticas de uso).
+
+    A comunicação é feita através de HTTPS usando GET ou POST. Tanto a solicitação quanto a resposta são formatadas como JSON e o tipo de conteúdo de ambas é application/json.
+    
+    ⚠ Para requisições do tipo POST, parâmetros não inclusos na URL devem ser inseridos como um `Content-Type: application/json`.
+  license:
+    name: GPL 3.0
+    url: https://github.com/filipedeschamps/tabnews.com.br/blob/main/LICENSE
+  version: v1
+servers:
+  - url: https://www.tabnews.com.br/api/v1
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: session_id
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        notifications:
+          type: boolean
+          example: true
+        features:
+          type: array
+          example:
+            - "create:session"
+            - "read:session"
+            - "create:content"
+            - "create:content:text_root"
+            - "create:content:text_children"
+            - "update:content"
+            - "update:user"
+          items:
+            type: string
+        tabcoins:
+          type: integer
+          minimum: 0
+        tabcash:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Session:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: uuid
+        token:
+          type: string
+          example: 638404c1368d3fa772bff6c57535d5725efbc9d0e0cbece602e9703ac3b015712f89147dce1e0e0bc623ae3c9786754532
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Content:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        parent_id:
+          description: Se esse conteúdo for um comentário, o id do conteúdo pai vai estar aqui.
+          nullable: true
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+          nullable: true
+          description: Titulo do post, pode ser `null` caso seja um comentário.
+        status:
+          type: string
+          enum:
+            - published
+            - draft
+            - deleted
+        source_url:
+          type: string
+          format: url
+          nullable: true
+        created_at:
+          type: string
+          format: date_time
+        updated_at:
+          type: string
+          format: date_time
+        published_at:
+          type: string
+          format: date_time
+        deleted_at:
+          type: string
+          format: date_time
+        tabcoins:
+          type: integer
+        owner_username:
+          type: string
+        children_deep_count:
+          description: O numero de comentários nesse post, incluindo as respostas
+          type: integer
+          minimum: 0
+        children:
+          description: Os comentários/respostas a esse post, a API vai retornar essa propriedade apenas na rota `/contents/{user}/{slug}/children`
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Content"
+        body:
+          description: O corpo do conteudo, isso não será retornado nas listagens.
+          type: string
+          nullable: true
+    Error:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+            - ValidationError
+            - NotFoundError
+            - ForbiddenError
+            - UnauthorizedError
+        message:
+          type: string
+        action:
+          type: string
+        status_code:
+          type: integer
+          example: 400
+        error_id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        error_location_code:
+          type: string
+          example: "MODEL:VALIDATOR:FINAL_SCHEMA"
+        key:
+          type: integer
+          example: page
+        type:
+          type: integer
+          example: "number.min"
+tags:
+  - name: contents
+    description: "Consumir e publicar conteúdos"
+  - name: auth
+    description: "Cadastro, Login, logout e recuperação de senha"
+  - name: status
+    description: "Estatisticas de usuários, publicações e comentários criados"
+  - name: profile
+    description: "Editar perfil"
+paths:
+  /analytics/child-content-published:
+    get:
+      tags: [status]
+      summary: Obter quantos comentários foram criados por dia
+      description: Retorna quantos comentários foram criados nos ultimos dias
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      example: "31/09"
+                    respostas:
+                      type: integer
+                      example: 12
+
+  /analytics/root-content-published:
+    get:
+      tags: [status]
+      summary: Obter quantos conteúdos foram criados por dia
+      description: Retorna quantos conteúdos foram criados nos ultimos dias
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      example: "31/09"
+                    conteudos:
+                      type: integer
+                      example: 12
+ 
+  /analytics/users-created:
+    get:
+      tags: [status]
+      summary: Obter quantos usuarios foram criados por dia
+      description: Retorna quantos usuarios foram cadastrados nos ultimos dias
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date:
+                      type: string
+                      example: "31/09"
+                    cadastros:
+                      type: integer
+                      example: 12
+  /users/{username}:
+    post:
+      security:
+        - session: []
+      tags: [profile]
+      summary: Editar perfil
+      parameters: 
+        - name: username
+          in: path
+          description: Nome do usuario que deseja editar
+          required: true
+          schema:
+            type: string
+      responses:
+        "403":
+          description: "Você não tem permissão para alterar o usuario"
+          content:
+            application/json:
+              example:
+                name: ForbiddenError
+                message: Usuário não pode executar esta operação.
+                action: Verifique se este usuário possui a feature "read:session".
+                status_code: 403
+                error_id: 5327fa52-f1ae-4ce6-a264-9175d514c7ad
+                request_id: 9d83a256-f38b-4d64-8809-fff5055ab9a1
+                error_location_code: MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "O perfil foi editado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      requestBody:
+        description: |
+          As novas informações. Todos os parâmetros são opcionais, ou seja, você só precisa enviar o parâmetro da informação que você deseja mudar.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                notifications:
+                  type: boolean
+  /recovery:
+    post:
+      security:
+        - session: []
+      tags: [auth]
+      summary: Recuperar senha
+      requestBody:
+        description: |
+          Email ou Username da sua conta.
+          O corpo do request só pode mandar ou o `username` ou o `email`, não pode ser os dois.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                - type: object
+                  properties:
+                    username:
+                      type: string
+      responses:
+        "400":
+          description: O username/email é invalido
+          content:
+            application/json:
+              example: 
+                name: ValidationError
+                message: Objeto enviado deve ter no mínimo uma chave.
+                action: Ajuste os dados enviados e tente novamente.
+                status_code: 400
+                error_id: b137066b-5f81-4a04-a061-409d0da5e36b
+                request_id: fac322a3-6416-4568-bc06-fedcc13f78b0
+                error_location_code: MODEL:VALIDATOR:FINAL_SCHEMA
+                key: object
+                type: object.min
+              schema:
+                $ref: "#/components/schemas/Error"
+        "201":
+          description: "O username/email é valido e um email foi enviado para o dono da conta"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  used:
+                    type: boolean
+                    example: false
+                  expires_at:
+                    type: string
+                    format: date-time
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+  /sessions:
+    post:
+      tags: [auth]
+      summary: Logar usuario
+      description: |
+        Cria uma nova sessão com o email e senha especificados.
+        Esse endpoint deve ser chamado depois que o email for verificado.
+      requestBody:
+        required: true
+        description: Credenciais da conta do usuário
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "400":
+          description: Dados estão faltando / JSON malformado
+          content:
+            application/json:
+              example: 
+                name: ValidationError
+                message: '"password" é um campo obrigatório.'
+                action: Ajuste os dados enviados e tente novamente.
+                status_code: 400
+                error_id: 8679dedd-9a47-4d05-9453-af905fd7de22
+                request_id: 7c8b4e73-0efc-40c8-99bf-d39a09d0e5b7
+                error_location_code: MODEL:VALIDATOR:FINAL_SCHEMA
+                key: password
+                type: any.required
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Os dados não conferem.
+          content:
+            application/json:
+              example: 
+                name: UnauthorizedError
+                message: Dados não conferem.
+                action: Verifique se os dados enviados estão corretos.
+                status_code: 401
+                error_id: e7ec5b79-523c-48e2-80ed-762d51426eb8
+                request_id: 64f8c0e6-7468-44ba-8962-00fd59ea92d4
+                error_location_code: CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH
+              schema:
+                $ref: "#/components/schemas/Error"
+        "201":
+          description: "Os dados estão corretos e uma nova sessão foi criada."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /contents/{user}/{slug}/thumbnail:
+    get:
+      tags: [contents]
+      summary: Obter thumbnail
+      description: Obter thumbnail de um conteúdo (PNG)
+      responses:
+        "404":
+          description: O usuário/conteúdo não existem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "Os post foram listados com sucesso"
+          content:
+            image/png: {}
+      parameters: 
+        - name: user
+          required: true
+          in: path
+          description: O username que escreveu o post
+          schema:
+            type: string
+        - name: slug
+          required: true
+          in: path
+          description: O slug do post, normalmente é o titulo sem caracters especiais em `kebab-case`
+          schema:
+            type: string
+  /contents/{user}/{slug}/children:
+    get:
+      tags: [contents]
+      summary: Obter comentários
+      description: Obter comentarios de um contéudo ou comentário, a propriedade `children` é retornada em todos os conteúdos dessa rota
+      responses:
+        "404":
+          description: O usuário/conteúdo não existem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "Os comentários foram listados com sucesso"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Content"
+      parameters: 
+        - name: user
+          required: true
+          in: path
+          description: O username que escreveu o post
+          schema:
+            type: string
+        - name: slug
+          required: true
+          in: path
+          description: O slug do conteúdo, normalmente é o titulo sem caracters especiais em `kebab-case`
+          schema:
+            type: string
+  /contents/{user}/{slug}:
+    patch:
+      tags: [contents]
+      summary: Editar/Deletar conteúdo
+      description: |
+        Edita um conteúdo. É possivel alterar o corpo, o título, e deletar o post setando o status para `deleted`.
+      responses:
+        "404":
+          description: O usuário/conteúdo não existem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+            description: Usuário não tem sessão ativa.
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+        "200":
+          description: "O conteúdo foi editado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Content"
+      parameters: 
+        - name: user
+          required: true
+          in: path
+          description: O username que escreveu o conteúdo
+          schema:
+            type: string
+        - name: slug
+          required: true
+          in: path
+          description: O slug do conteúdo, normalmente é o titulo sem caracters especiais em `kebab-case`
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                body:
+                  type: string
+                  description: "O corpo da publicação. Markdown e HTML são suportados."
+                status:
+                  type: string
+                  description: "Para o conteúdo ser publicado, o valor deve ser `published`. Se for setado para `deleted`, o post será deletado."
+                  example: published
+                source_url:
+                  type: string
+                  description: "O link que vai ficar como fonte de seu post, no formato `https://example.com. Caso não seja definido, a fonte ficará em branco.`"
+    get:
+      tags: [contents]
+      summary: Obter conteudo
+      description: Obter conteúdo e dados de uma publicação, essa rota retorna o `body` do conteúdo
+      responses:
+        "404":
+          description: O usuário/conteúdo não existem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "O conteúdo foi retornado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Content"
+      parameters: 
+        - name: user
+          required: true
+          in: path
+          description: O username que escreveu o conteúdo
+          schema:
+            type: string
+        - name: slug
+          required: true
+          in: path
+          description: O slug do conteúdo, normalmente é o titulo sem caracters especiais em `kebab-case`
+          schema:
+            type: string
+  /contents/{user}:
+    get:
+      tags: [contents]
+      summary: Listar conteudos de um usuário
+      description: Lista de conteúdos de um usuário
+      responses:
+        "404":
+          description: O usuário não existe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "Os conteúdos foram listados com sucesso"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Content"
+      parameters: 
+        - name: user
+          in: path
+          description: O username do usuário que você quer acessar os conteúdos.
+          schema:
+            type: string
+          required: true
+        - name: page
+          in: query
+          description: O número da página que você deseja acessar.
+          schema:
+            minimum: 1
+            type: integer
+        - name: per_page
+          in: query
+          description: O número de conteúdos que devem ser retornados por página.
+          schema:
+            minimum: 1
+            type: integer
+        - name: strategy
+          in: query
+          schema: 
+            type: string
+            enum:
+              - new
+              - old
+              - relevant
+  /contents:
+    post:
+      tags: [contents]
+      summary: Publicar conteúdo
+      description: Publica um conteúdo
+      security:
+        - session: []
+      responses:
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+            description: Usuário não tem sessão ativa.
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+        "201":
+          description: "O conteúdo foi publicado com sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Content"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - body
+                - status
+              properties:
+                title:
+                  type: string
+                body:
+                  type: string
+                  description: "O corpo da publicação. Markdown e HTML são suportados."
+                status:
+                  type: string
+                  description: "Para o conteúdo ser publicado, o valor deve ser `published`"
+                  example: published
+                source_url:
+                  type: string
+                  description: "O link que vai ficar como fonte de seu post, no formato `https://example.com. Caso não seja definido, a fonte ficará em branco.`"
+                slug:
+                  type: string
+                  description: "O slug do seu post. Caso não seja definido, o slig será gerado automaticamente com base no título da publicação."
+    get:
+      tags: [contents]
+      summary: Listar conteúdos
+      description: Lista de conteúdos da página inicial
+      responses:
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "Os conteúdos foram listados com sucesso"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Content"
+      parameters: 
+        - name: page
+          in: query
+          description: O número da página que você deseja acessar.
+          schema:
+            minimum: 1
+            type: integer
+        - name: per_page
+          in: query
+          description: O número de conteúdos que devem ser retornados por página.
+          schema:
+            minimum: 1
+            type: integer
+        - name: strategy
+          in: query
+          schema: 
+            type: string
+            enum:
+              - new
+              - old
+              - relevant
