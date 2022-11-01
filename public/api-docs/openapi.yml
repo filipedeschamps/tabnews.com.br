@@ -176,8 +176,30 @@ tags:
   - name: status
     description: "Estatisticas de usuários, publicações e comentários criados"
   - name: profile
-    description: "Editar perfil"
+    description: "Criar e editar perfil"
+  - name: user
+    description: Obter usuário
 paths:
+  /user:
+    get:
+      tags: [user]
+      summary: Obter usuário
+      description: Retorna o usuário associado a sessão.
+      security:
+        - session: []
+      responses:
+        "403":
+          description: Não está logado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
   /analytics/child-content-published:
     get:
       tags: [status]
