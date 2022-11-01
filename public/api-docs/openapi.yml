@@ -1,11 +1,11 @@
 openapi: 3.0.3
-info: 
+info:
   title: API - TabNews
   description: |
     Todo TabNews foi construído através de APIs **públicas** e você pode consumir elas da forma que desejar (respeitando as políticas de uso).
 
     A comunicação é feita através de HTTPS usando GET ou POST. Tanto a solicitação quanto a resposta são formatadas como JSON e o tipo de conteúdo de ambas é application/json.
-    
+
     ⚠ Para requisições do tipo POST, parâmetros não inclusos na URL devem ser inseridos como um `Content-Type: application/json`.
   license:
     name: GPL 3.0
@@ -61,7 +61,7 @@ components:
     Session:
       type: object
       properties:
-        id: 
+        id:
           type: string
           format: uuid
         token:
@@ -178,11 +178,68 @@ tags:
   - name: profile
     description: "Obter/Editar perfil e cadastrar usuários"
 paths:
+  /contents/{author}/{slug}/tabcoins:
+    post:
+      summary: Dar Upvote/Downvote em um conteúdo
+      description: Aumenta ou diminui os tabcoins de um conteúdo, isso custa tabcoins da sua conta.
+      tags: [contents]
+      parameters:
+        - name: author
+          in: path
+          schema:
+            type: string
+          description: "Autor do conteúdo"
+        - name: slug
+          in: path
+          schema:
+            type: string
+          description: "Slug do conteúdo"
+      security:
+        - session: []
+      responses:
+        "404":
+          description: O usuário/conteúdo não existem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Os parametros são inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "201":
+          description: "Ok"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tabcoins:
+                    type: integer
+              example:
+                tabcoins: 17
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_type:
+                  description: "`credit` aumenta 1 tabcoin e `debit` tira 1 tabcoin."
+                  type: string
+                  enum:
+                    - credit
+                    - debit
+            example:
+              transaction_type: credit
   /users:
     post:
       tags: [profile]
       summary: Cadastrar usuário
-      description: Cadastra um novo usuário. Para confirmar a conta, o usuário deve acessar o link de verificação que foi enviado para o email. 
+      description: Cadastra um novo usuário. Para confirmar a conta, o usuário deve acessar o link de verificação que foi enviado para o email.
       responses:
         "201":
           description: "Ok"
@@ -253,7 +310,7 @@ paths:
                     conteudos:
                       type: integer
                       example: 12
- 
+
   /analytics/users-created:
     get:
       tags: [status]
@@ -281,7 +338,7 @@ paths:
         - session: []
       tags: [profile]
       summary: Editar perfil
-      parameters: 
+      parameters:
         - name: username
           in: path
           description: Nome do usuario que deseja editar
@@ -354,7 +411,7 @@ paths:
           description: O username/email é invalido
           content:
             application/json:
-              example: 
+              example:
                 name: ValidationError
                 message: Objeto enviado deve ter no mínimo uma chave.
                 action: Ajuste os dados enviados e tente novamente.
@@ -413,7 +470,7 @@ paths:
           description: Dados estão faltando / JSON malformado
           content:
             application/json:
-              example: 
+              example:
                 name: ValidationError
                 message: '"password" é um campo obrigatório.'
                 action: Ajuste os dados enviados e tente novamente.
@@ -429,7 +486,7 @@ paths:
           description: Os dados não conferem.
           content:
             application/json:
-              example: 
+              example:
                 name: UnauthorizedError
                 message: Dados não conferem.
                 action: Verifique se os dados enviados estão corretos.
@@ -467,7 +524,7 @@ paths:
           description: "Os post foram listados com sucesso"
           content:
             image/png: {}
-      parameters: 
+      parameters:
         - name: user
           required: true
           in: path
@@ -506,7 +563,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Content"
-      parameters: 
+      parameters:
         - name: user
           required: true
           in: path
@@ -550,7 +607,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Content"
-      parameters: 
+      parameters:
         - name: user
           required: true
           in: path
@@ -604,7 +661,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Content"
-      parameters: 
+      parameters:
         - name: user
           required: true
           in: path
@@ -643,7 +700,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Content"
-      parameters: 
+      parameters:
         - name: user
           in: path
           description: O username do usuário que você quer acessar os conteúdos.
@@ -664,7 +721,7 @@ paths:
             type: integer
         - name: strategy
           in: query
-          schema: 
+          schema:
             type: string
             enum:
               - new
@@ -740,7 +797,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Content"
-      parameters: 
+      parameters:
         - name: page
           in: query
           description: O número da página que você deseja acessar.
@@ -755,7 +812,7 @@ paths:
             type: integer
         - name: strategy
           in: query
-          schema: 
+          schema:
             type: string
             enum:
               - new
