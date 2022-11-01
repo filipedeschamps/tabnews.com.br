@@ -176,13 +176,23 @@ tags:
   - name: status
     description: "Estatisticas de usuários, publicações e comentários criados"
   - name: profile
-    description: "Criar e editar perfil"
-  - name: user
-    description: Obter usuário
+    description: "Obter/Editar perfil e cadastrar usuários"
 paths:
+  /users:
+    post:
+      tags: [profile]
+      summary: Cadastrar usuário
+      description: Cadastra um novo usuário. Para confirmar a conta, o usuário deve acessar o link de verificação que foi enviado para o email. 
+      responses:
+        "201":
+          description: "Ok"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
   /user:
     get:
-      tags: [user]
+      tags: [profile]
       summary: Obter usuário
       description: Retorna o usuário associado a sessão.
       security:
