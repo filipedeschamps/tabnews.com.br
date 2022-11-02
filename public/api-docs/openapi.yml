@@ -379,8 +379,6 @@ paths:
                 email:
                   type: string
                   format: email
-                password:
-                  type: string
                 notifications:
                   type: boolean
   /recovery:
