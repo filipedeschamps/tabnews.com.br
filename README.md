@@ -40,6 +40,9 @@ Observações:
 
 - Para derrubar todos os serviços, basta utilizar as teclas `CTRL+C`, que é o padrão dos terminais para matar processos.
 - Você pode conferir o endereço dos outros serviços dentro do arquivo `.env` encontrado na raiz do projeto, como por exemplo o endereço e credenciais do Banco de Dados local ou o Frontend do Serviço de Email.
+- Para os usuários `Windows` ao executarem o comando `npm run dev` pode acontecer um erro na execução, como uma primeira solução recomendo instalar o [Docker Desktop](https://www.docker.com/products/docker-desktop/), caso após a instalação do Docker Desktop o problema persistir verificar qual é o erro.
+
+- [Erro ao executar o dokcer sem o Docker Desktop](https://gist.github.com/felipsbreno/1992dce135ef761210b41a5acd15593e)
 
 ### Cadastro e Login de usuários
 
