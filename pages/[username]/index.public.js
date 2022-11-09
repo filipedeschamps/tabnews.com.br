@@ -212,18 +212,18 @@ export async function getStaticProps(context) {
 
   const contentListFound = results.rows;
 
-  for (const content of contentListFound) {
+  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+
+  const userFound = await user.findOneByUsername(context.params.username);
+  const secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
+
+  for (const content of secureContentListFound) {
     if (content.parent_id) {
       content.body = shortenAndCleanBody(content.body);
     } else {
       delete content.body;
     }
   }
-
-  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
-  const userFound = await user.findOneByUsername(context.params.username);
-  const secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
 
   return {
     props: {

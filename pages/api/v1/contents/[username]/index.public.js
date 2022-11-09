@@ -43,15 +43,15 @@ async function getHandler(request, response) {
   });
   const contentListFound = results.rows;
 
-  for (const content of contentListFound) {
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+
+  for (const content of secureOutputValues) {
     if (content.parent_id) {
       content.body = shortenAndCleanBody(content.body);
     } else {
       delete content.body;
     }
   }
-
-  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
   controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
   return response.status(200).json(secureOutputValues);

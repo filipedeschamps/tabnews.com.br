@@ -70,7 +70,9 @@ export async function getStaticProps(context) {
 
   const contentListFound = results.rows;
 
-  for (const content of contentListFound) {
+  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+
+  for (const content of secureContentListFound) {
     if (content.parent_id) {
       content.body = shortenAndCleanBody(content.body);
     } else {
@@ -78,11 +80,9 @@ export async function getStaticProps(context) {
     }
   }
 
-  const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
       pagination: results.pagination,
       username: context.params.username,
     },
