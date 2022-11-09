@@ -35,6 +35,7 @@ async function getHandler(request, response) {
     strategy: request.query.strategy,
     where: {
       owner_username: request.query.username,
+      $not_null: 'parent_id',
       status: 'published',
     },
     page: request.query.page,
@@ -43,16 +44,16 @@ async function getHandler(request, response) {
   const contentListFound = results.rows;
 
   for (const content of contentListFound) {
-    if (content.parent_id) {
-      content.body = shortifyText(content.body);
-    } else {
-      delete content.body;
-    }
+    content.body = shortifyText(content.body);
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
-  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
+  controller.injectPaginationHeaders(
+    results.pagination,
+    `/api/v1/contents/${request.query.username}/children`,
+    response
+  );
   return response.status(200).json(secureOutputValues);
 }
 

@@ -35,28 +35,19 @@ async function getHandler(request, response) {
     strategy: request.query.strategy,
     where: {
       owner_username: request.query.username,
+      parent_id: null,
       status: 'published',
+    },
+    attributes: {
+      exclude: ['body'],
     },
     page: request.query.page,
     per_page: request.query.per_page,
   });
   const contentListFound = results.rows;
 
-  for (const content of contentListFound) {
-    if (content.parent_id) {
-      content.body = shortifyText(content.body);
-    } else {
-      delete content.body;
-    }
-  }
-
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
-  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
+  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}/root`, response);
   return response.status(200).json(secureOutputValues);
-}
-
-function shortifyText(text) {
-  const substring = text.substring(0, 35).trim();
-  return text.length < 35 ? substring : substring + '...';
 }

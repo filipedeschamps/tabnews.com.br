@@ -498,6 +498,7 @@ const schemas = {
     for (const key of [
       'id',
       'parent_id',
+      '$not_null',
       'slug',
       'title',
       'body',
@@ -782,6 +783,20 @@ const schemas = {
           'string.base': `"ban_type" deve ser do tipo String.`,
           'any.invalid': `"ban_type" possui o valor inválido "null".`,
           'any.only': `"ban_type" deve possuir um dos seguintes valores: "nuke".`,
+        }),
+    });
+  },
+
+  $not_null: function () {
+    return Joi.object({
+      $not_null: Joi.string()
+        .allow(null)
+        .trim()
+        .when('$required.$not_null', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"$not_null" é um campo obrigatório.`,
+          'string.empty': `"$not_null" não pode estar em branco.`,
+          'string.base': `"$not_null" deve ser do tipo String.`,
         }),
     });
   },
