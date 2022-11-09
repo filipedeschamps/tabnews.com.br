@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 const userEndpoint = '/api/v1/user';
 const sessionEndpoint = '/api/v1/sessions';
+const refreshInterval = 600000; // 10 minutes
 
 const UserContext = createContext();
 
@@ -24,6 +25,7 @@ export function UserProvider({ children }) {
           features: responseBody.features,
           tabcoins: responseBody.tabcoins,
           tabcash: responseBody.tabcash,
+          cacheTime: Date.now(),
         };
 
         setUser(fetchedUser);
@@ -50,6 +52,19 @@ export function UserProvider({ children }) {
       setIsLoading(false);
     })();
   }, [fetchUser]);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    function onFocus() {
+      const cachedUser = JSON.parse(localStorage.getItem('user'));
+      setUser(cachedUser);
+      if (refreshInterval < Date.now() - cachedUser?.cacheTime) fetchUser();
+    }
+    addEventListener('focus', onFocus);
+
+    return () => removeEventListener('focus', onFocus);
+  }, [fetchUser, isLoading]);
 
   const logout = useCallback(async () => {
     try {
