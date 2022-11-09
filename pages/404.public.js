@@ -20,8 +20,8 @@ export default function Custom404() {
           <Box sx={{ display: 'flex', alignItems: 'center', alignContent: 'center' }}>
             <Image
               src={botSleepyFaceDarkTransparent.src}
-              height={'100px'}
-              width={'100px'}
+              height={100}
+              width={100}
               sx={{ opacity: '0.7' }}
               alt="Ícone do Bot triste"
             />

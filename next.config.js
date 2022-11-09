@@ -6,10 +6,7 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
-  i18n: {
-    locales: ['pt-br'],
-    defaultLocale: 'pt-br',
-  },
+  swcMinify: false,
   async redirects() {
     return [
       {
