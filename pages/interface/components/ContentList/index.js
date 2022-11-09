@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
+import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
 
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
@@ -98,9 +98,17 @@ export default function ContentList({ contentList, pagination, paginationBasePat
                 },
               },
             }}>
-            <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-              {contentObject.title}
-            </Link>
+            {contentObject.parent_id ? (
+              <Link
+                sx={{ wordWrap: 'break-word', fontStyle: 'italic' }}
+                href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
+              </Link>
+            ) : (
+              <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                {contentObject.title}
+              </Link>
+            )}
           </Box>
           <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
             <Text>
