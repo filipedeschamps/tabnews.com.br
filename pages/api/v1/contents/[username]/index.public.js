@@ -4,6 +4,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
 
 export default nextConnect({
   attachParams: true,
@@ -35,16 +36,32 @@ async function getHandler(request, response) {
     strategy: request.query.strategy,
     where: {
       owner_username: request.query.username,
-      parent_id: null,
       status: 'published',
     },
     page: request.query.page,
     per_page: request.query.per_page,
   });
-
   const contentListFound = results.rows;
+
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+
+  for (const content of secureOutputValues) {
+    if (content.parent_id) {
+      content.body = shortenAndCleanBody(content.body);
+    } else {
+      delete content.body;
+    }
+  }
 
   controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
   return response.status(200).json(secureOutputValues);
+}
+
+function shortenAndCleanBody(body) {
+  const titleLength = 256;
+  const bodyLength = titleLength - '...'.length;
+  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
+
+  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
+  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
 }

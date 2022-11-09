@@ -66,8 +66,8 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(responseBody).toEqual([]);
     });
 
-    test('"username" existent and only with "published" "child" content', async () => {
-      const defaultUser = await orchestrator.createUser();
+    test('"username" existent and only with "published" "child" content (short body)', async () => {
+      const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
       const secondUserRootContent = await orchestrator.createContent({
@@ -77,7 +77,7 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Root content',
         body: 'Root content',
         status: 'draft',
@@ -85,37 +85,117 @@ describe('GET /api/v1/contents/[username]', () => {
 
       const childContent = await orchestrator.createContent({
         parent_id: rootContent.id,
-        owner_id: defaultUser.id,
-        title: 'Child content',
+        owner_id: firstUser.id,
         body: 'Child content',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
+      const childContentDraft = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: firstUser.id,
+        body: 'Child content with draft status',
+        status: 'draft',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toEqual([
+        {
+          id: childContent.id,
+          owner_id: firstUser.id,
+          parent_id: rootContent.id,
+          slug: childContent.slug,
+          title: null,
+          body: 'Child content',
+          status: 'published',
+          source_url: null,
+          created_at: childContent.created_at.toISOString(),
+          updated_at: childContent.updated_at.toISOString(),
+          published_at: childContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 0,
+          children_deep_count: 0,
+        },
+      ]);
     });
 
-    test('"username" existent with 4 contents, but only 2 "root" "published" and strategy "new"', async () => {
-      const defaultUser = await orchestrator.createUser();
+    test('"username" existent and only with "published" "child" content (long body)', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+
+      const secondUserRootContent = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        title: 'Conteúdo de outro usuário',
+        status: 'published',
+      });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root content',
+        body: 'Root content',
+        status: 'draft',
+      });
+
+      const childContent = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: firstUser.id,
+        body: `Diferente do teste **anterior**, o corpo dessa publicação é grande,
+        com quebras de linha, \`Markdown\` e ultrapassa o limite de caracteres que
+        iremos devolver pelo response.
+
+        ## Motivo
+
+        Hoje estamos usando o mesmo número de caracteres de um \`title\` para que
+        o frontend possa lidar com o mesmo tamanho de texto em ambos os casos.`,
+        status: 'published',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+      expect(responseBody).toEqual([
+        {
+          id: childContent.id,
+          owner_id: firstUser.id,
+          parent_id: rootContent.id,
+          slug: childContent.slug,
+          title: null,
+          body: 'Diferente do teste anterior, o corpo dessa publicação é grande, com quebras de linha, Markdown e ultrapassa o limite de caracteres que iremos devolver pelo response. Motivo Hoje estamos usando o mesmo número de caracteres de um title para que o frontend...',
+          status: 'published',
+          source_url: null,
+          created_at: childContent.created_at.toISOString(),
+          updated_at: childContent.updated_at.toISOString(),
+          published_at: childContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 0,
+          children_deep_count: 0,
+        },
+      ]);
+    });
+
+    test('"username" existent with 4 contents, with 2 "root" "published", 1 "child" "published", and strategy "new"', async () => {
+      const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
       const firstRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Primeiro conteúdo criado',
         status: 'published',
       });
 
       const secondRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Segundo conteúdo criado',
         status: 'published',
       });
 
       const thirdRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents/[username],
                porque quando um conteúdo possui o "status" como "draft", ele não
@@ -123,13 +203,10 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'draft',
       });
 
-      const NotRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const childContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
         parent_id: firstRootContent.id,
-        title: 'Quarto conteúdo criado',
-        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents[username],
-               porque quando um conteúdo possui um "parent_id",
-               significa que ele é uma resposta a um outro conteúdo.`,
+        body: `Este conteúdo agora deverá aparecer na lista retornada pelo /contents/[username]`,
         status: 'published',
       });
 
@@ -139,19 +216,35 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual([
         {
+          id: childContent.id,
+          owner_id: firstUser.id,
+          parent_id: firstRootContent.id,
+          slug: childContent.slug,
+          title: null,
+          body: 'Este conteúdo agora deverá aparecer na lista retornada pelo /contents/[username]',
+          status: 'published',
+          source_url: null,
+          created_at: childContent.created_at.toISOString(),
+          updated_at: childContent.updated_at.toISOString(),
+          published_at: childContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 0,
+          children_deep_count: 0,
+        },
+        {
           id: secondRootContent.id,
-          owner_id: defaultUser.id,
+          owner_id: firstUser.id,
           parent_id: null,
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
-          body: secondRootContent.body,
           status: 'published',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
@@ -159,16 +252,15 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
-          owner_username: defaultUser.username,
+          owner_username: firstUser.username,
           children_deep_count: 0,
         },
         {
           id: firstRootContent.id,
-          owner_id: defaultUser.id,
+          owner_id: firstUser.id,
           parent_id: null,
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
-          body: firstRootContent.body,
           status: 'published',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
@@ -176,7 +268,7 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
-          owner_username: defaultUser.username,
+          owner_username: firstUser.username,
           children_deep_count: 1,
         },
       ]);
@@ -189,23 +281,23 @@ describe('GET /api/v1/contents/[username]', () => {
     });
 
     test('"username" existent with 4 contents, but only 2 "root" "published"', async () => {
-      const defaultUser = await orchestrator.createUser();
+      const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
       const firstRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Primeiro conteúdo criado',
         status: 'published',
       });
 
       const secondRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Segundo conteúdo criado',
         status: 'published',
       });
 
       const thirdRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: firstUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents/[username],
                porque quando um conteúdo possui o "status" como "draft", ele não
@@ -213,13 +305,11 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'draft',
       });
 
-      const NotRootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const childContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
-        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents[username],
-               porque quando um conteúdo possui um "parent_id",
-               significa que ele é uma resposta a um outro conteúdo.`,
+        body: `Este conteúdo que agora deverá aparecer na lista retornada pelo /contents/[username]`,
         status: 'published',
       });
 
@@ -229,19 +319,35 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual([
         {
+          id: childContent.id,
+          owner_id: firstUser.id,
+          parent_id: firstRootContent.id,
+          slug: 'quarto-conteudo-criado',
+          title: 'Quarto conteúdo criado',
+          body: 'Este conteúdo que agora deverá aparecer na lista retornada pelo /contents/[username]',
+          status: 'published',
+          source_url: null,
+          created_at: childContent.created_at.toISOString(),
+          updated_at: childContent.updated_at.toISOString(),
+          published_at: childContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 0,
+          children_deep_count: 0,
+        },
+        {
           id: secondRootContent.id,
-          owner_id: defaultUser.id,
+          owner_id: firstUser.id,
           parent_id: null,
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
-          body: secondRootContent.body,
           status: 'published',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
@@ -249,16 +355,15 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
-          owner_username: defaultUser.username,
+          owner_username: firstUser.username,
           children_deep_count: 0,
         },
         {
           id: firstRootContent.id,
-          owner_id: defaultUser.id,
+          owner_id: firstUser.id,
           parent_id: null,
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
-          body: firstRootContent.body,
           status: 'published',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
@@ -266,7 +371,7 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
-          owner_username: defaultUser.username,
+          owner_username: firstUser.username,
           children_deep_count: 1,
         },
       ]);

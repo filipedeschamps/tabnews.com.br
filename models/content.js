@@ -54,7 +54,6 @@ async function findAll(values = {}, options = {}) {
       }
     });
   }
-
   const results = await database.query(query, { transaction: options.transaction });
 
   return results.rows;
@@ -156,7 +155,6 @@ async function findAll(values = {}, options = {}) {
     }
 
     let globalIndex = query.values.length;
-
     return Object.entries(columns).reduce((accumulator, column, index) => {
       if (index === 0) {
         return `WHERE ${getColumnDeclaration(column)}`;

@@ -3,6 +3,7 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
+import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 
 export default function Home({ contentListFound, pagination, username }) {
@@ -51,7 +52,6 @@ export async function getStaticProps(context) {
       strategy: 'new',
       where: {
         owner_username: context.params.username,
-        parent_id: null,
         status: 'published',
       },
       page: context.params.page,
@@ -70,15 +70,32 @@ export async function getStaticProps(context) {
 
   const contentListFound = results.rows;
 
-  const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+
+  for (const content of secureContentListFound) {
+    if (content.parent_id) {
+      content.body = shortenAndCleanBody(content.body);
+    } else {
+      delete content.body;
+    }
+  }
 
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
       pagination: results.pagination,
       username: context.params.username,
     },
 
     revalidate: 1,
   };
+}
+
+function shortenAndCleanBody(body) {
+  const titleLength = 256;
+  const bodyLength = titleLength - '...'.length;
+  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
+
+  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
+  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
 }
