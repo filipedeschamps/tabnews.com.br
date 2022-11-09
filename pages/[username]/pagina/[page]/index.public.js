@@ -13,7 +13,7 @@ export default function Home({ contentListFound, pagination, username }) {
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${username}/pagina`}
-          revalidatePath={`/api/v1/contents/${username}/root?strategy=new&page=${pagination.currentPage}`}
+          revalidatePath={`/api/v1/contents/${username}?strategy=new&page=${pagination.currentPage}`}
         />
       </DefaultLayout>
     </>

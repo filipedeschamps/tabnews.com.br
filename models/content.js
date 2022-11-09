@@ -50,7 +50,6 @@ async function findAll(values = {}, options = {}) {
           query.values.push(Object.values($orObject)[0]);
         });
       } else {
-        if (key == '$not_null') return;
         query.values.push(values.where[key]);
       }
     });
@@ -170,10 +169,6 @@ async function findAll(values = {}, options = {}) {
         if (columnValue === null) {
           globalIndex += 1;
           return `contents.${columnName} IS NOT DISTINCT FROM $${globalIndex}`;
-        }
-
-        if (columnName === '$not_null') {
-          return `contents.${columnValue} IS NOT NULL`;
         }
 
         if (columnName === '$or') {
