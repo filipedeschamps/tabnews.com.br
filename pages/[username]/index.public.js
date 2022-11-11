@@ -5,6 +5,7 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
+import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/router';
@@ -192,11 +193,7 @@ export async function getStaticProps(context) {
       strategy: 'new',
       where: {
         owner_username: context.params.username,
-        parent_id: null,
         status: 'published',
-      },
-      attributes: {
-        exclude: ['body'],
       },
       page: context.params.page,
       per_page: context.params.per_page,
@@ -220,6 +217,14 @@ export async function getStaticProps(context) {
   const userFound = await user.findOneByUsername(context.params.username);
   const secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
 
+  for (const content of secureContentListFound) {
+    if (content.parent_id) {
+      content.body = shortenAndCleanBody(content.body);
+    } else {
+      delete content.body;
+    }
+  }
+
   return {
     props: {
       contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
@@ -229,4 +234,13 @@ export async function getStaticProps(context) {
 
     revalidate: 1,
   };
+}
+
+function shortenAndCleanBody(body) {
+  const titleLength = 256;
+  const bodyLength = titleLength - '...'.length;
+  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
+
+  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
+  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
 }
