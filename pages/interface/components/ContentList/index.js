@@ -1,8 +1,7 @@
 import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@primer/octicons-react';
-
-import { Link, PublishedSince, EmptyState } from 'pages/interface';
+import { Link, PublishedSince, EmptyState, ShareTextInTwitter } from 'pages/interface';
 
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
@@ -110,6 +109,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             <Text>
               <ChildrenDeepCountText count={contentObject.children_deep_count} />
             </Text>
+
             {' · '}
             <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
@@ -117,6 +117,9 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             {' · '}
             <Text>
               <PublishedSince date={contentObject.published_at} />
+            </Text>
+            <Text>
+              <ShareTextInTwitter objectContent={contentObject} />
             </Text>
           </Box>
         </Box>,
