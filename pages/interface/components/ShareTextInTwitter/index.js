@@ -5,11 +5,8 @@ const styleWindow = 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=6
 
 export default function ShareTextInTwitter({ objectContent }) {
   function textShare() {
-    return window.open(
-      `https://twitter.com/intent/tweet?text=${objectContent.title}.%20Essa%20not%C3%ADcia%20saiu%20no%20TabNews%20(e%20voc%C3%AA%20ganha%20TabCoins%20comentando%20l%C3%A1):%20https%3A%2F%2Fwww.tabnews.com.br%2F${objectContent.owner_username}%2F${objectContent.slug}`,
-      '',
-      styleWindow
-    );
+    let urlShare = `https://twitter.com/intent/tweet?text=${objectContent.title}. Essa notícia saiu no TabNews (e você ganha TabCoins comentando lá): https://www.tabnews.com.br/${objectContent.owner_username}/${objectContent.slug}`;
+    return window.open(encodeURI(urlShare), '', styleWindow);
   }
 
   return (
