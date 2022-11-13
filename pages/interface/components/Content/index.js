@@ -17,7 +17,7 @@ import {
   useConfirm,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import { Link, useUser, ShareTextInTwitter, PublishedSince } from 'pages/interface';
+import { Link, useUser, SharePost, PublishedSince } from 'pages/interface';
 
 // Markdown Editor dependencies:
 import { Editor, Viewer } from '@bytemd/react';
@@ -209,7 +209,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
                 <PublishedSince date={contentObject.published_at} />
               </Tooltip>
             </Link>
-            <ShareTextInTwitter objectContent={contentObject} />
+            <SharePost objectContent={contentObject} />
           </Box>
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
             ViewModeOptionsMenu()}
