@@ -36,11 +36,17 @@ async function findAll(values = {}, options = {}) {
   const orderByClause = buildOrderByClause(values?.order);
 
   query.text = `
-      ${selectClause}
+      WITH content_window AS (
+      SELECT
+        COUNT(*) OVER()::INTEGER as total_rows,
+        id
+      FROM contents
       ${whereClause}
       ${orderByClause}
 
       ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
+      )
+      ${selectClause}
       ;`;
 
   if (values.where) {
@@ -85,9 +91,9 @@ async function findAll(values = {}, options = {}) {
     if (values.count) {
       return `
         SELECT
-          COUNT(*) OVER()::INTEGER as total_rows
+          total_rows
         FROM
-          contents
+          content_window
         `;
     }
 
@@ -106,7 +112,7 @@ async function findAll(values = {}, options = {}) {
         contents.published_at,
         contents.deleted_at,
         users.username as owner_username,
-        COUNT(*) OVER()::INTEGER as total_rows,
+        content_window.total_rows,
         get_current_balance('content:tabcoin', contents.id) as tabcoins,
 
         -- Originally this query returned a list of contents to the server and
@@ -144,6 +150,8 @@ async function findAll(values = {}, options = {}) {
         ) as children_deep_count
       FROM
         contents
+      INNER JOIN
+        content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
     `;
