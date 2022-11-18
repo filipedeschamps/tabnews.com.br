@@ -13,6 +13,7 @@ export default function Home({ contentListFound, pagination }) {
           description: 'Publicações no TabNews ordenadas pelas mais recentes.',
         }}>
         <ContentList
+          key="contents?strategy=new"
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/recentes/pagina"

@@ -9,6 +9,7 @@ export default function Home({ contentListFound, pagination }) {
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Melhores` }}>
         <ContentList
+          key={`contents?strategy=relevant&page=${pagination.currentPage}`}
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"

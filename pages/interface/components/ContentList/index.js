@@ -13,37 +13,41 @@ export default function ContentList({
   emptyStateProps,
 }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
-
+  const [isStaleData, setIsStaleData] = useState(true);
+  const [nextPageIsStale, setNextPageIsStale] = useState(false);
   const [nextLinkIsVisible, setNextLinkVisible] = useState(false);
 
-  const { mutate } = useSWR(
-    () => {
-      if (nextLinkIsVisible) {
-        return nextPagePrefetchPath;
-      }
-      return null;
-    },
-    { fallbackData: [], revalidateIfStale: false, revalidateOnFocus: false }
-  );
+  const { mutate: prefetchNextPageContent } = useSWR(nextPagePrefetchPath, {
+    fallbackData: [],
+    revalidateIfStale: false,
+    revalidateOnMount: false,
+    revalidateOnFocus: false,
+  });
+
   const { data: list } = useSWR(revalidatePath, {
     fallbackData: contentList,
     revalidateOnMount: true,
-    onSuccess: () => mutate(),
+    onSuccess: (newList) => {
+      setNextPageIsStale((isStaleData && newList[29]?.id != contentList[29]?.id) || newList[29]?.id != list[29]?.id);
+      setIsStaleData(false);
+    },
   });
 
   useEffect(() => {
-    const intersectionObserver = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry.isIntersecting) {
-        setNextLinkVisible(true);
-        mutate();
-      } else {
-        setNextLinkVisible(false);
-      }
-    });
-    if (document.querySelector('.nextPage')) intersectionObserver?.observe(document.querySelector('.nextPage'));
+    const nextPageLink = document.querySelector('.nextPage');
+    if (!nextPageLink) return;
+
+    const intersectionObserver = new IntersectionObserver((entries) => setNextLinkVisible(entries[0].isIntersecting));
+    intersectionObserver.observe(nextPageLink);
+
     return () => intersectionObserver.disconnect();
-  }, [mutate]);
+  }, []);
+
+  useEffect(() => {
+    if (!nextPageIsStale || !nextLinkIsVisible) return;
+    prefetchNextPageContent();
+    setNextPageIsStale(false);
+  }, [prefetchNextPageContent, nextLinkIsVisible, nextPageIsStale]);
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;

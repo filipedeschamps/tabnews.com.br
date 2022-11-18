@@ -122,10 +122,12 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
         </Box>
 
         <ContentList
+          key={`contents/${userFound.username}?strategy=new`}
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${userFound.username}/pagina`}
           revalidatePath={`/api/v1/contents/${userFound.username}?strategy=new`}
+          nextPagePrefetchPath={`/api/v1/contents/${userFound.username}?strategy=new&page=2`}
           emptyStateProps={{
             isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',

@@ -10,6 +10,7 @@ export default function Home({ contentListFound, pagination }) {
     <>
       <DefaultLayout>
         <ContentList
+          key="contents?strategy=relevant"
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"

@@ -9,6 +9,7 @@ export default function Home({ contentListFound, pagination }) {
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Recentes` }}>
         <ContentList
+          key={`contents?strategy=new&page=${pagination.currentPage}`}
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/recentes/pagina"

@@ -11,10 +11,12 @@ export default function Home({ contentListFound, pagination, username }) {
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · ${username}` }}>
         <ContentList
+          key={`contents/${username}?strategy=new&page=${pagination.currentPage}`}
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${username}/pagina`}
           revalidatePath={`/api/v1/contents/${username}?strategy=new&page=${pagination.currentPage}`}
+          nextPagePrefetchPath={`/api/v1/contents/${username}?strategy=new&page=${pagination.currentPage + 1}`}
         />
       </DefaultLayout>
     </>
