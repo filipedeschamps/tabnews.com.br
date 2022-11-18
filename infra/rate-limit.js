@@ -25,6 +25,7 @@ async function check(request) {
   const method = request.method;
   const path = request.nextUrl.pathname;
   const limit = getLimit(method, path, ip);
+  let timeout;
 
   try {
     const generalRateLimit = new Ratelimit({
@@ -32,7 +33,13 @@ async function check(request) {
       limiter: Ratelimit.slidingWindow(limit.requests, limit.window),
     });
 
-    return await generalRateLimit.limit(limit.identifier);
+    const timeoutPromise = new Promise((_, reject) => {
+      timeout = setTimeout(() => {
+        reject({ message: 'Upstash não respondeu dentro de 4s.' });
+      }, 4000);
+    });
+
+    return await Promise.race([generalRateLimit.limit(limit.identifier), timeoutPromise]);
   } catch (error) {
     throw new ServiceError({
       message: error.message,
@@ -45,6 +52,8 @@ async function check(request) {
       },
       errorLocationCode: 'MIDDLEWARE:RATE_LIMIT:CHECK',
     });
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
