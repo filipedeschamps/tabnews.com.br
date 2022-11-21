@@ -165,6 +165,20 @@ export default function Page() {
             </Box>
           )}
         </Box>
+
+        <Box>
+          <h2>Contribuidores</h2>
+
+          <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
+            <picture>
+              <img
+                src="https://contributors-img.web.app/image?repo=filipedeschamps/tabnews.com.br&max=500"
+                alt="Lista de contribuidores"
+                width="100%"
+              />
+            </picture>
+          </a>
+        </Box>
       </Box>
     </DefaultLayout>
   );
