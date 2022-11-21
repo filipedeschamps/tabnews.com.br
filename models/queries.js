@@ -15,13 +15,13 @@ const rankedContent = `
             contents.deleted_at,
             get_current_balance('content:tabcoin', contents.id) as tabcoins
         FROM contents
-        WHERE 
+        WHERE
             parent_id IS NULL
             AND status = 'published'
             AND published_at > NOW() - INTERVAL '1 week'
     ),
     ranked_published_root_contents AS (
-        SELECT 
+        SELECT
             *,
             COUNT(*) OVER()::INTEGER as total_rows
         FROM latest_published_root_contents
@@ -59,7 +59,7 @@ const rankedContent = `
         LIMIT 20
     ),
     group_3 AS (
-        (SELECT 
+        (SELECT
             *,
             3 as rank_group
         FROM ranked_published_root_contents
@@ -73,7 +73,7 @@ const rankedContent = `
         SELECT * FROM group_2
     ),
     group_4 AS (
-        (SELECT 
+        (SELECT
             *,
             4 as rank_group
         FROM ranked_published_root_contents
@@ -88,7 +88,7 @@ const rankedContent = `
         SELECT * FROM group_3
     ),
     group_5 AS (
-        (SELECT 
+        (SELECT
             *,
             5 as rank_group
         FROM ranked_published_root_contents
@@ -98,7 +98,7 @@ const rankedContent = `
             AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
             published_at DESC
-        LIMIT 10)      
+        LIMIT 10)
         UNION ALL
         SELECT * FROM group_4
     ),
@@ -133,25 +133,26 @@ const rankedContent = `
         ranked.rank_group,
         ranked.total_rows,
         users.username as owner_username,
-        (WITH RECURSIVE children AS
-            (SELECT id,
-                 parent_id
-            FROM contents as all_contents
-            WHERE
-                all_contents.id = ranked.id
-                AND all_contents.status = 'published'
-            UNION ALL
-            SELECT
-                all_contents.id,
-                all_contents.parent_id
-            FROM contents as all_contents
-            INNER JOIN children ON all_contents.parent_id = children.id
-            WHERE all_contents.status = 'published'
-            )
-            SELECT count(children.id)::integer
-            FROM children
-            WHERE children.id NOT IN (ranked.id)
-            ) as children_deep_count
+        --        (WITH RECURSIVE children AS
+        --            (SELECT id,
+        --                 parent_id
+        --            FROM contents as all_contents
+        --            WHERE
+        --                all_contents.id = ranked.id
+        --                AND all_contents.status = 'published'
+        --            UNION ALL
+        --            SELECT
+        --                all_contents.id,
+        --                all_contents.parent_id
+        --            FROM contents as all_contents
+        --            INNER JOIN children ON all_contents.parent_id = children.id
+        --            WHERE all_contents.status = 'published'
+        --            )
+        --            SELECT count(children.id)::integer
+        --            FROM children
+        --            WHERE children.id NOT IN (ranked.id)
+        --            ) as children_deep_count
+            0 as children_deep_count
         FROM ranked
         INNER JOIN users ON ranked.owner_id = users.id
         ORDER BY
