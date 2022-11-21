@@ -5,11 +5,15 @@ import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
 import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function Page() {
-  const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', { refreshInterval: 1000 });
-  const { data: usersCreated } = useSWR('/api/v1/analytics/users-created', { refreshInterval: 30000 });
-  const { data: rootContentPublished } = useSWR('/api/v1/analytics/root-content-published', { refreshInterval: 30000 });
+  const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
+    refreshInterval: 1000 * 10,
+  });
+  const { data: usersCreated } = useSWR('/api/v1/analytics/users-created', { refreshInterval: 1000 * 60 * 5 });
+  const { data: rootContentPublished } = useSWR('/api/v1/analytics/root-content-published', {
+    refreshInterval: 1000 * 60 * 5,
+  });
   const { data: childContentPublished } = useSWR('/api/v1/analytics/child-content-published', {
-    refreshInterval: 30000,
+    refreshInterval: 1000 * 60 * 5,
   });
 
   return (
