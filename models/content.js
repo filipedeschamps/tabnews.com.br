@@ -8,6 +8,8 @@ import { ValidationError } from 'errors/index.js';
 import queries from 'models/queries';
 
 async function findAll(values = {}, options = {}) {
+  return [];
+
   values = validateValues(values);
   await replaceOwnerUsernameWithOwnerId(values);
   const offset = (values.page - 1) * values.per_page;
