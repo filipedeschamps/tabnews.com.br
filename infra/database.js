@@ -58,7 +58,7 @@ async function query(query, options = {}) {
 
 async function tryToGetNewClientFromPool() {
   const clientFromPool = await retry(newClientFromPool, {
-    retries: 12,
+    retries: 1,
     minTimeout: 150,
     maxTimeout: 5000,
     factor: 2,
