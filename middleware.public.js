@@ -8,8 +8,6 @@ export const config = {
 
 export async function middleware(request) {
   const url = request.nextUrl;
-  url.pathname = '/api/v1/_responses/rate-limit-reached';
-  return NextResponse.rewrite(url);
 
   try {
     const rateLimitResult = await rateLimit.check(request);
