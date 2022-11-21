@@ -64,6 +64,6 @@ export async function getStaticProps(context) {
       contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
       pagination: results.pagination,
     },
-    revalidate: 1,
+    revalidate: 10,
   };
 }

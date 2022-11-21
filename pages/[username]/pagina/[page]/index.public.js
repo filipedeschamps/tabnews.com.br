@@ -87,7 +87,7 @@ export async function getStaticProps(context) {
       username: context.params.username,
     },
 
-    revalidate: 1,
+    revalidate: 10,
   };
 }
 
