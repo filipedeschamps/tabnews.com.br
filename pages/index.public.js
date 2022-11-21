@@ -18,6 +18,7 @@ export default function HomeOffline() {
       </p>
 
       <p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="Requests" src="https://i.imgur.com/pbtnUyr.png" style={{ maxWidth: '800px' }} />
       </p>
 
