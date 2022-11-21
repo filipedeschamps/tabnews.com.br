@@ -1,4 +1,4 @@
-import { Box } from '@primer/react';
+import { Box, Flash } from '@primer/react';
 import { Footer, Head, Header } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
@@ -15,6 +15,14 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           padding: [2, null, null, 4],
           paddingTop: [3, null, null, 4],
         }}>
+        <Box sx={{ mb: 4 }}>
+          <Flash variant="warning">
+            Turma, dado ao alto volume de acessos precisamos temporariamente desativar a nossa API, mas estamos
+            trabalhando para voltar o mais rápido possível :) então por enquanto o TabNews está somente no modo leitura,
+            combinado? 🤝
+          </Flash>
+        </Box>
+
         {children}
       </Box>
       <Footer
