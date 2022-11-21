@@ -37,8 +37,8 @@ module "database" {
   vpc_cidr_block = module.vpc.vpc_cidr_block
   route_table_id = module.vpc.route_table_id
 
-  engine_version           = "14.1"
-  instance_class           = "db.t4g.micro"
+  engine_version           = "14.3"
+  instance_class           = "db.t4g.medium"
   allocated_storage        = 20
   max_allocated_storage    = 100
   backup_retention_period  = 7
