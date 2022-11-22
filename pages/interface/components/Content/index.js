@@ -18,7 +18,7 @@ import {
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import PublishedSince from 'pages/interface/components/PublishedSince';
-import { Link, useUser } from 'pages/interface';
+import { Link, useUser, CopyPost } from 'pages/interface';
 
 // Markdown Editor dependencies:
 import { Editor, Viewer } from '@bytemd/react';
@@ -210,6 +210,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
                 <PublishedSince date={contentObject.published_at} />
               </Tooltip>
             </Link>
+            <CopyPost objectContent={contentObject} />
           </Box>
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
             ViewModeOptionsMenu()}

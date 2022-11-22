@@ -7,6 +7,7 @@ export { default as Head } from './components/Head/index.js';
 export { default as TabCoinButtons } from './components/TabCoinButtons/index.js';
 export { default as PublishedSince } from './components/PublishedSince/index.js';
 export { default as EmptyState } from './components/EmptyState/index.js';
+export { default as CopyPost } from './components/CopyPost/index.js';
 export { default as NextLink, HeaderLink, Link } from './components/Link/index.js';
 
 export { default as useUser } from './hooks/useUser/index.js';
