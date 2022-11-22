@@ -74,7 +74,13 @@ export default function Page() {
               </Box>
               <Box>
                 Conexões abertas:{' '}
-                <Label variant={statusObject?.dependencies.database.opened_connections < 40 ? 'success' : 'danger'}>
+                <Label
+                  variant={
+                    statusObject?.dependencies.database.opened_connections <
+                    statusObject?.dependencies.database.max_connections * 0.7
+                      ? 'success'
+                      : 'danger'
+                  }>
                   {statusObject?.dependencies.database.opened_connections}
                 </Label>
               </Box>
