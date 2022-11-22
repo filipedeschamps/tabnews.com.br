@@ -58,7 +58,7 @@ async function query(query, options = {}) {
 
 async function tryToGetNewClientFromPool() {
   const clientFromPool = await retry(newClientFromPool, {
-    retries: 1,
+    retries: webserver.isBuildTime ? 12 : 1,
     minTimeout: 150,
     maxTimeout: 5000,
     factor: 2,
@@ -76,6 +76,8 @@ async function tryToGetNewClientFromPool() {
 }
 
 async function checkForTooManyConnections(client) {
+  if (webserver.isBuildTime) return false;
+
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 5000;
   const maxConnectionsTolerance = 0.7;
