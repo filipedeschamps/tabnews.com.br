@@ -1,12 +1,13 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip, useTheme } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
 
-export default function HeaderComponent() {
+export default function HeaderComponent(props) {
   const { user, isLoading, logout } = useUser();
   const { pathname } = useRouter();
+  const { colorMode, setColorMode } = useTheme();
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -16,6 +17,7 @@ export default function HeaderComponent() {
   return (
     <Header
       sx={{
+        ...props.sx,
         px: [2, null, null, 3],
       }}>
       <Header.Item>
@@ -99,6 +101,9 @@ export default function HeaderComponent() {
                   <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
                   </ActionList.LinkItem>
+                  <ActionList.Item onClick={() => setColorMode(colorMode === 'day' ? 'night' : 'day')}>
+                    Alterar tema ({colorMode === 'day' ? 'Dark' : 'Light'})
+                  </ActionList.Item>
                   <ActionList.Divider />
                   <ActionList.Item variant="danger" onSelect={logout}>
                     Deslogar
