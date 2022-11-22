@@ -48,7 +48,7 @@ export default function Post({
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
-  const shareText = `Olha%20este%20conteudo%20massa%20no%20tabnews!%20`;
+  const shareText = encodeURI(`Olha este conteudo massa no tabnews! `);
 
   useEffect(() => {
     function handleResize() {
