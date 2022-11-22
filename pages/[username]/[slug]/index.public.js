@@ -48,7 +48,7 @@ export default function Post({
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
-  const shareText = encodeURI(`Olha este conteudo massa no tabnews! `);
+  const shareText = encodeURI(`Olha este conteúdo massa no TabNews! `);
 
   useEffect(() => {
     function handleResize() {
@@ -130,7 +130,7 @@ export default function Post({
               size="small"
               sx={{ color: 'fg.subtle', lineHeight: '18px' }}
               onClick={() => {
-                window.open('https://wa.me?text=' + shareText + window.location.href);
+                window.open(`https://wa.me?text=${shareText}${window.location.href}`);
               }}
             />
             <IconButton
@@ -140,7 +140,7 @@ export default function Post({
               size="small"
               sx={{ color: 'fg.subtle', lineHeight: '18px' }}
               onClick={() => {
-                window.open('https://twitter.com/intent/tweet?text=' + shareText + window.location.href);
+                window.open(`https://twitter.com/intent/tweet?text=${shareText}${window.location.href}`);
               }}
             />
             <IconButton
