@@ -98,6 +98,7 @@ function SignUpForm() {
         setIsLoading(false);
         return;
       }
+      console.log(response);
     } catch (error) {
       setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
       setIsLoading(false);
