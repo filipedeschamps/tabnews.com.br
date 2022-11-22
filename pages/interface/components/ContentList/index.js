@@ -35,6 +35,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             display: 'flex',
             width: '100%',
             justifyContent: 'center',
+            alignItems: 'flex-end',
             gap: 4,
             m: 4,
             mb: 2,

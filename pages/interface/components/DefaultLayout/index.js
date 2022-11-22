@@ -5,7 +5,11 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
   return (
     <>
       {metadata && <Head metadata={metadata} />}
-      <Header />
+      <Header
+        sx={{
+          height: '64px',
+        }}
+      />
       <Box
         maxWidth={containerWidth}
         sx={{
@@ -14,6 +18,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           flexWrap: 'wrap',
           padding: [2, null, null, 4],
           paddingTop: [3, null, null, 4],
+          minHeight: 'calc(100vh - 64px - 113px)',
         }}>
         {children}
       </Box>
@@ -23,6 +28,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           marginX: 'auto',
           paddingX: [2, null, null, 4],
           paddingTop: 3,
+          height: '113px',
         }}
       />
     </>

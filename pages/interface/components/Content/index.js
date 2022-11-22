@@ -15,10 +15,12 @@ import {
   IconButton,
   Tooltip,
   useConfirm,
+  useTheme,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import PublishedSince from 'pages/interface/components/PublishedSince';
 import { Link, useUser } from 'pages/interface';
+import { themeGet } from '@primer/react';
 
 // Markdown Editor dependencies:
 import { Editor, Viewer } from '@bytemd/react';
@@ -38,6 +40,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
+  const { theme } = useTheme();
 
   useEffect(() => {
     setComponentMode(mode);
@@ -68,23 +71,37 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     }
   }, [localStorageKey, user, contentObject]);
 
-  if (componentMode === 'view') {
-    return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
-  } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} />;
-  } else if (componentMode === 'edit') {
-    return (
-      <EditMode
-        contentObject={contentObject}
-        setComponentMode={setComponentMode}
-        setContentObject={setContentObject}
-        localStorageKey={localStorageKey}
-        mode={mode}
-      />
-    );
-  } else if (componentMode === 'deleted') {
-    return <DeletedMode viewFrame={viewFrame} />;
-  }
+  const renderComponent = () => {
+    if (componentMode === 'view') {
+      return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
+    } else if (componentMode === 'compact') {
+      return <CompactMode setComponentMode={setComponentMode} />;
+    } else if (componentMode === 'edit') {
+      return (
+        <EditMode
+          contentObject={contentObject}
+          setComponentMode={setComponentMode}
+          setContentObject={setContentObject}
+          localStorageKey={localStorageKey}
+          mode={mode}
+        />
+      );
+    } else if (componentMode === 'deleted') {
+      return <DeletedMode viewFrame={viewFrame} />;
+    }
+  };
+
+  return (
+    <>
+      <style jsx global>{`
+        .markdown-body {
+          background-color: ${theme.colors.canvas.inset};
+          color: ${theme.colors.fg.default};
+        }
+      `}</style>
+      {renderComponent()}
+    </>
+  );
 }
 
 function ViewMode({ setComponentMode, contentObject, viewFrame }) {
@@ -246,6 +263,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
   });
+  const { theme } = useTheme();
 
   const editorRef = useRef();
 
@@ -526,7 +544,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           min-height: 200px;
           border-radius: 6px;
           padding: 1px;
-          border: 1px solid #d0d7de;
+          border: 1px solid ${theme.colors.border.default};
+          background-color: ${theme.colors.canvas.overlay};
         }
 
         .bytemd:focus-within {
@@ -546,11 +565,34 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         .bytemd .bytemd-toolbar {
           border-top-left-radius: 6px;
           border-top-right-radius: 6px;
+          background-color: ${theme.colors.canvas.subtle};
+          border-color: ${theme.colors.border.default};
+        }
+
+        .bytemd .bytemd-toolbar .bytemd-toolbar-tab {
+          color: ${theme.colors.fg.muted};
+        }
+        .bytemd .bytemd-toolbar .bytemd-toolbar-tab-active {
+          color: ${theme.colors.accent.fg};
         }
 
         .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(1),
         .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(4) {
           display: none;
+        }
+
+        .markdown-body {
+          background-color: ${theme.colors.canvas.overlay};
+          color: ${theme.colors.fg.default};
+        }
+
+        .bytemd .CodeMirror {
+          background: ${theme.colors.canvas.overlay};
+          color: ${theme.colors.fg.default};
+        }
+
+        .bytemd .CodeMirror .CodeMirror-cursor {
+          border-left: 1px solid ${theme.colors.fg.muted};
         }
 
         .bytemd .bytemd-status {
