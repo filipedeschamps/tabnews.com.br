@@ -25,7 +25,7 @@ const rankedContent = `
             *,
             COUNT(*) OVER()::INTEGER as total_rows
         FROM latest_published_root_contents
-        WHERE tabcoins >= 0
+        WHERE tabcoins > 0
         ORDER BY
             tabcoins DESC,
             published_at DESC
@@ -94,7 +94,7 @@ const rankedContent = `
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '72 hours'
-            AND tabcoins > 1
+            AND tabcoins > 2
             AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
             published_at DESC
