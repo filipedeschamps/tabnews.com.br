@@ -120,35 +120,34 @@ async function findAll(values = {}, options = {}) {
         -- the findChildrenCount() method to get the children count. Now we perform a
         -- subquery that is not performant but everything is embedded in one travel.
         -- https://github.com/filipedeschamps/tabnews.com.br/blob/de65be914f0fd7b5eed8905718e4ab286b10557e/models/content.js#L51
-        --        (
-        --          WITH RECURSIVE children AS (
-        --            SELECT
-        --                id,
-        --                parent_id
-        --            FROM
-        --              contents as all_contents
-        --            WHERE
-        --              all_contents.id = contents.id AND
-        --              all_contents.status = 'published'
-        --            UNION ALL
-        --              SELECT
-        --                all_contents.id,
-        --                all_contents.parent_id
-        --              FROM
-        --                contents as all_contents
-        --              INNER JOIN
-        --                children ON all_contents.parent_id = children.id
-        --              WHERE
-        --                all_contents.status = 'published'
-        --          )
-        --          SELECT
-        --            count(children.id)::integer
-        --          FROM
-        --            children
-        --          WHERE
-        --            children.id NOT IN (contents.id)
-        --        ) as children_deep_count
-        0 as children_deep_count
+        (
+          WITH RECURSIVE children AS (
+            SELECT
+                id,
+                parent_id
+            FROM
+              contents as all_contents
+            WHERE
+              all_contents.id = contents.id AND
+              all_contents.status = 'published'
+            UNION ALL
+              SELECT
+                all_contents.id,
+                all_contents.parent_id
+              FROM
+                contents as all_contents
+              INNER JOIN
+                children ON all_contents.parent_id = children.id
+              WHERE
+                all_contents.status = 'published'
+          )
+          SELECT
+            count(children.id)::integer
+          FROM
+            children
+          WHERE
+            children.id NOT IN (contents.id)
+        ) as children_deep_count
       FROM
         contents
       INNER JOIN

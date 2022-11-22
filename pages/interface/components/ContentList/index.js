@@ -1,13 +1,10 @@
 import useSWR from 'swr';
-import { useRouter } from 'next/router';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
 
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
-  const { pathname } = useRouter();
-
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
   // const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
@@ -104,7 +101,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             }}>
             {contentObject.parent_id ? (
               <Link
-                sx={{ wordWrap: 'break-word', fontStyle: 'italic' }}
+                sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
                 href={`/${contentObject.owner_username}/${contentObject.slug}`}>
                 <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
               </Link>
@@ -119,16 +116,10 @@ export default function ContentList({ contentList, pagination, paginationBasePat
               <TabCoinsText count={contentObject.tabcoins} />
             </Text>
             {' · '}
-
-            {pathname === '/' || pathname.startsWith('/pagina') ? (
-              <>
-                <Text>
-                  <ChildrenDeepCountText count={contentObject.children_deep_count} />
-                </Text>
-                {' · '}
-              </>
-            ) : undefined}
-
+            <Text>
+              <ChildrenDeepCountText count={contentObject.children_deep_count} />
+            </Text>
+            {' · '}
             <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </Link>
