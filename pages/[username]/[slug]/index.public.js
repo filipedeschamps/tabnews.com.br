@@ -8,9 +8,12 @@ import validator from 'models/validator.js';
 import authorization from 'models/authorization.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
-import { Box, Tooltip } from '@primer/react';
+import { Box, IconButton, Tooltip } from '@primer/react';
 import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
+import WhatsappIcon from '../../interface/components/Icons/WhatsappIcon';
+import TwitterIcon from '../../interface/components/Icons/TwitterIcon';
+import LinkedinIcon from '../../interface/components/Icons/LinkedinIcon';
 
 export default function Post({
   contentFound: contentFoundFallback,
@@ -45,6 +48,7 @@ export default function Post({
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const shareText = `Olha%20este%20conteudo%20massa%20no%20tabnews!%20`;
 
   useEffect(() => {
     function handleResize() {
@@ -107,6 +111,50 @@ export default function Post({
 
           <Box sx={{ width: '100%', overflow: 'auto' }}>
             <Content content={contentFound} mode="view" />
+            <Box
+              sx={{
+                borderWidth: 0,
+                marginTop: 4,
+                marginBottom: 2,
+                borderTopWidth: 1,
+                borderColor: 'border.muted',
+                borderStyle: 'dotted',
+                width: '100%',
+                height: '0%',
+              }}
+            />
+            <IconButton
+              variant="invisible"
+              aria-label="Partilhar no whatsapp"
+              icon={WhatsappIcon}
+              size="small"
+              sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+              onClick={() => {
+                window.open('https://wa.me?text=' + shareText + window.location.href);
+              }}
+            />
+            <IconButton
+              variant="invisible"
+              aria-label="Partilhar no twitter"
+              icon={TwitterIcon}
+              size="small"
+              sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+              onClick={() => {
+                window.open('https://twitter.com/intent/tweet?text=' + shareText + window.location.href);
+              }}
+            />
+            <IconButton
+              variant="invisible"
+              aria-label="Partilhar no linkedin"
+              icon={LinkedinIcon}
+              size="small"
+              sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+              onClick={() => {
+                window.open(
+                  `https://www.linkedin.com/shareArticle?mini=true&summary=${shareText}${window.location.href}`
+                );
+              }}
+            />
           </Box>
         </Box>
 
