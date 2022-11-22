@@ -2,6 +2,10 @@ function isLambdaServer() {
   return !!process.env.VERCEL_ENV;
 }
 
+function isBuildTime() {
+  return !!process.env.BUILD_TIME;
+}
+
 function getHost() {
   let webserverHost = 'https://www.tabnews.com.br';
 
@@ -18,5 +22,6 @@ function getHost() {
 
 export default Object.freeze({
   getHost,
+  isBuildTime,
   isLambdaServer,
 });
