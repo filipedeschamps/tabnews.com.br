@@ -14,6 +14,11 @@ export default function HeaderComponent(props) {
     textUnderlineOffset: 6,
   };
 
+  const handlerColorMode = () => {
+    setColorMode(colorMode === 'light' ? 'dark' : 'light');
+    localStorage.setItem('dark', colorMode === 'light' ? 'true' : 'false');
+  };
+
   return (
     <Header
       sx={{
@@ -101,8 +106,8 @@ export default function HeaderComponent(props) {
                   <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
                   </ActionList.LinkItem>
-                  <ActionList.Item onClick={() => setColorMode(colorMode === 'day' ? 'night' : 'day')}>
-                    Alterar tema ({colorMode === 'day' ? 'Dark' : 'Light'})
+                  <ActionList.Item onClick={handlerColorMode}>
+                    Alterar tema ({colorMode === 'dark' ? 'Dark' : 'Light'})
                   </ActionList.Item>
                   <ActionList.Divider />
                   <ActionList.Item variant="danger" onSelect={logout}>
