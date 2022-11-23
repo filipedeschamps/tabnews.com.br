@@ -6,7 +6,7 @@ import password from 'models/password.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import speakeasy from "speakeasy";
+import speakeasy from 'speakeasy';
 
 async function hashPassword(unhashedPassword) {
   return await password.hash(unhashedPassword);
@@ -84,5 +84,5 @@ export default Object.freeze({
   comparePasswords,
   injectAnonymousOrUser,
   parseSetCookies,
-  createSessionAndSetCookies
+  createSessionAndSetCookies,
 });

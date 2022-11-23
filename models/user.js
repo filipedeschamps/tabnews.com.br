@@ -405,18 +405,15 @@ async function set_2fa_secret(user, secret) {
       RETURNING
         *
     ;`,
-    values: [
-      user.id,
-      secret
-    ],
+    values: [user.id, secret],
   };
 
   await database.query(query);
 }
-import * as qrcode from "qrcode";
+import * as qrcode from 'qrcode';
 async function enable_2fa(user) {
-  if (!authorization.can(user, "auth:2fa:confirm")) {
-    addFeatures(user.id, ["auth:2fa:confirm"])
+  if (!authorization.can(user, 'auth:2fa:confirm')) {
+    addFeatures(user.id, ['auth:2fa:confirm']);
   }
   let secret = speakeasy.generateSecret({
     name: `TabNews (${user.email})`,
@@ -426,40 +423,42 @@ async function enable_2fa(user) {
   return secret;
 }
 async function confirm_2fa(user, code) {
-  if (!speakeasy.totp.verify({
-    secret: user.secret_2fa,
-    token: code,
-    encoding: "base32"
-  })) {
+  if (
+    !speakeasy.totp.verify({
+      secret: user.secret_2fa,
+      token: code,
+      encoding: 'base32',
+    })
+  ) {
     throw new ValidationError({
       message: `Não foi possivel confirmar a ativação do 2º fator de autenticação porque o código recebido é diferente do esperado.`,
       action: `Verifique a hora do dispositivo, o código copiado para o aplicativo de 2FA e o numero enviado`,
       stack: new Error({}).stack,
-      errorLocationCode: "MODEL:USER:CONFIRM_2FA:CODE_MISMATCH",
-    })
+      errorLocationCode: 'MODEL:USER:CONFIRM_2FA:CODE_MISMATCH',
+    });
   }
-  if (!authorization.can(user, "auth:2fa:confirm")) {
+  if (!authorization.can(user, 'auth:2fa:confirm')) {
     throw new ValidationError({
       message: `O 2º fator de autenticação já está ativado.`,
       action: `Tente desativar e voltar a ativar o 2FA de novo.`,
       stack: new Error({}).stack,
-      errorLocationCode: "MODEL:USER:CONFIRM_2FA:ALREADY_ACTIVATED",
-    })
+      errorLocationCode: 'MODEL:USER:CONFIRM_2FA:ALREADY_ACTIVATED',
+    });
   }
-  await addFeatures(user.id, ["auth:2fa"]);
-  await removeFeatures(user.id, ["auth:2fa:confirm"]);
+  await addFeatures(user.id, ['auth:2fa']);
+  await removeFeatures(user.id, ['auth:2fa:confirm']);
 }
 async function disable_2fa(user) {
-  if (authorization.can(user, "auth:2fa")) {
-    removeFeatures(user.id, ["auth:2fa"]);
+  if (authorization.can(user, 'auth:2fa')) {
+    removeFeatures(user.id, ['auth:2fa']);
     set_2fa_secret(user.id, null);
   } else {
     throw new ValidationError({
       message: `O 2FA já está desligado.`,
       action: `Seria melhor ligá-lo antes, não é?`,
       stack: new Error().stack,
-      errorLocationCode: "MODEL:USER:DISABLE_2FA:ALREADY_DISABLED"
-    })
+      errorLocationCode: 'MODEL:USER:DISABLE_2FA:ALREADY_DISABLED',
+    });
   }
 }
 // TODO: Refactor the interface of this function
@@ -699,5 +698,5 @@ export default Object.freeze({
   updateRewardedAt,
   enable_2fa,
   confirm_2fa,
-  disable_2fa
+  disable_2fa,
 });

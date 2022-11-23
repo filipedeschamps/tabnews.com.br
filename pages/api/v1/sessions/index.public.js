@@ -39,7 +39,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
-    code_2fa: "optional"
+    code_2fa: 'optional',
   });
 
   request.body = cleanValues;
@@ -58,7 +58,6 @@ async function postHandler(request, response) {
   try {
     storedUser = await user.findOneByEmail(secureInputValues.email);
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
-
   } catch (error) {
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
@@ -66,16 +65,19 @@ async function postHandler(request, response) {
       errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
   }
-  if (authorization.can(storedUser, "auth:2fa") && !speakeasy.totp.verify({
-    secret: storedUser.secret_2fa,
-    token: secureInputValues.code_2fa,
-    encoding: "base32"
-  })) {
-    throw new UnauthorizedError({
-      message: "O código 2FA não confere.",
-      action: `Verifique o código e tente novamente.`,
-      errorLocationCode: 'MODEL:AUTHENTICATION:VERIFY_2FA:CODE_MISMATCH'
+  if (
+    authorization.can(storedUser, 'auth:2fa') &&
+    !speakeasy.totp.verify({
+      secret: storedUser.secret_2fa,
+      token: secureInputValues.code_2fa,
+      encoding: 'base32',
     })
+  ) {
+    throw new UnauthorizedError({
+      message: 'O código 2FA não confere.',
+      action: `Verifique o código e tente novamente.`,
+      errorLocationCode: 'MODEL:AUTHENTICATION:VERIFY_2FA:CODE_MISMATCH',
+    });
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {

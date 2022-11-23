@@ -2,13 +2,13 @@
 
 exports.shorthands = undefined;
 
-exports.up = pgm => {
+exports.up = (pgm) => {
   pgm.addColumns('users', {
-    "secret_2fa": {
-      type: "text",
-      notNull: false
-    }
-  })
+    secret_2fa: {
+      type: 'text',
+      notNull: false,
+    },
+  });
 };
 
 exports.down = false;

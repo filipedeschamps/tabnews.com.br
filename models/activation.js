@@ -119,7 +119,7 @@ async function activateUserByUserId(userId, options = {}) {
     'update:content',
     'update:user',
     'auth:2fa:enable',
-    'auth:2fa:disable'
+    'auth:2fa:disable',
   ]);
 }
 

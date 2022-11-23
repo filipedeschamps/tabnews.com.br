@@ -13,18 +13,16 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .post(authorization.canRequest("auth:2fa:enable"), postHandler)
-  .delete(authorization.canRequest("auth:2fa:disable"), deleteHandler)
+  .post(authorization.canRequest('auth:2fa:enable'), postHandler)
+  .delete(authorization.canRequest('auth:2fa:disable'), deleteHandler);
 
 async function postHandler(req, res) {
   const authenticatedUser = req.context.user;
-  res.setHeader("Content-Type", "text/html");
-  return res.status(200).send(renderToStaticMarkup(
-    <img src={(await user.enable_2fa(authenticatedUser)).qrcode}/>
-  ));
+  res.setHeader('Content-Type', 'text/html');
+  return res.status(200).send(renderToStaticMarkup(<img src={(await user.enable_2fa(authenticatedUser)).qrcode} />));
 }
 async function deleteHandler(req, res) {
   const authenticatedUser = req.context.user;
   await user.disable_2fa(authenticatedUser);
-  return res.status(200).json({message: `2FA desativado com sucesso!`});
+  return res.status(200).json({ message: `2FA desativado com sucesso!` });
 }

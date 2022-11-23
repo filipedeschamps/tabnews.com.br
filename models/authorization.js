@@ -3,10 +3,10 @@ import validator from 'models/validator.js';
 
 const availableFeatures = new Set([
   // 2FA
-  "auth:2fa",
-  "auth:2fa:confirm",
-  "auth:2fa:enable",
-  "auth:2fa:disable",
+  'auth:2fa',
+  'auth:2fa:confirm',
+  'auth:2fa:enable',
+  'auth:2fa:disable',
   // USER
   'create:user',
   'read:user',
@@ -78,7 +78,7 @@ function filterInput(user, feature, input) {
     filteredInputValues = {
       email: input.email,
       password: input.password,
-      code_2fa: input.code_2fa
+      code_2fa: input.code_2fa,
     };
   }
 
