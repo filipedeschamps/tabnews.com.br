@@ -135,7 +135,15 @@ async function removeFeaturesFromUser(userObject, features) {
 async function activateUser(userObject) {
   return await activation.activateUserByUserId(userObject.id);
 }
-
+import speakeasy from 'speakeasy';
+async function enable2FA(userObj) {
+  addFeaturesToUser(userObj, ['auth:2fa']);
+  let secret = speakeasy.generateSecret({
+    name: `TabNews (${userObj.email})`,
+  });
+  await user.set_2fa_secret(userObj, secret.base32);
+  return secret;
+}
 async function createSession(userObject) {
   return await session.create(userObject.id);
 }
@@ -366,6 +374,7 @@ const orchestrator = {
   createPrestige,
   createRate,
   updateRewardedAt,
+  enable2FA,
 };
 
 export default orchestrator;

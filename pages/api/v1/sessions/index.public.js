@@ -65,6 +65,13 @@ async function postHandler(request, response) {
       errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
   }
+  if (authorization.can(storedUser, 'auth:2fa') && !secureInputValues.code_2fa) {
+    throw new UnauthorizedError({
+      message: '2FA está ativado, mas nenhum código foi enviado',
+      action: `Envie um código de 2FA.`,
+      errorLocationCode: 'MODEL:AUTHENTICATION:VERIFY_2FA:CODE_NOT_PRESENT',
+    });
+  }
   if (
     authorization.can(storedUser, 'auth:2fa') &&
     !speakeasy.totp.verify({

@@ -418,7 +418,6 @@ async function enable_2fa(user) {
   let secret = speakeasy.generateSecret({
     name: `TabNews (${user.email})`,
   });
-  secret.qrcode = await qrcode.toDataURL(secret.otpauth_url);
   await set_2fa_secret(user, secret.base32);
   return secret;
 }
@@ -699,4 +698,5 @@ export default Object.freeze({
   enable_2fa,
   confirm_2fa,
   disable_2fa,
+  set_2fa_secret,
 });
