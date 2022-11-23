@@ -1,0 +1,51 @@
+:root {
+  --color-fg: #24292f;
+  --color-fg-muted: #57606a;
+  --color-fg-subtle: #6e7781;
+  --color-fg-on-emphasis: #ffffff;
+
+  --color-canvas: #d0d7de;
+  --color-canvas-overlay: #ffffff;
+  --color-canvas-inset: #f6f8fa;
+  --color-canvas-subtle: #f6f8fa;
+
+  --color-border: #d0d7de;
+  --color-border-muted: hsla(210, 18%, 87%, 1);
+  --color-border-subtle: rgba(27, 31, 36, 0.15);
+
+  --color-success-fg: #1a7f37;
+  --color-success-emphasis: #2da44e;
+  --color-success-muted: rgba(74, 194, 107, 0.4);
+  --color-success-subtle: #dafbe1;
+
+  --color-accent-fg: #0969da;
+  --color-accent-emphasis: #0969da;
+  --color-accent-muted: rgba(84, 174, 255, 0.4);
+  --color-accent-subtle: #ddf4ff;
+
+  --color-header-text: rgba(255, 255, 255, 0.7);
+  --color-header-bg: #24292f;
+  --color-header-divide: #57606a;
+  --color-header-logo: #ffffff;
+
+  --color-primary: #fff;
+  --color-secondary: #fff;
+
+  --color-text: #24292f;
+  --color-text-light: rgba(255, 255, 255, 0.7);
+
+  --color-muted: #6e7781;
+  --color-link: #0969da;
+
+  --color-danger: #cf222e;
+  --color-danger-background: rgba(207, 34, 46, 0.1);
+
+  --color-button-text: #fff;
+  --color-button-background: #1b1f2426;
+  --color-button-border: rgba(27, 31, 36, 0.15);
+
+  --color-button-hover-background: #f3f4f6;
+  --color-button-hover-border: rgba(27, 31, 36, 0.15);
+
+  --shadow-overlay: 0 1px 3px rgba(27, 31, 36, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
+}

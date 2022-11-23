@@ -3,6 +3,7 @@ import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react
 import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
+import React from 'react';
 
 export default function HeaderComponent(props) {
   const { user, isLoading, logout } = useUser();
@@ -15,9 +16,18 @@ export default function HeaderComponent(props) {
   };
 
   const handlerColorMode = () => {
-    setColorMode(colorMode === 'light' ? 'dark' : 'light');
-    localStorage.setItem('dark', colorMode === 'light' ? 'true' : 'false');
+    let newTheme = colorMode === 'light' ? 'dark' : 'light';
+    localStorage.setItem('themeStore', newTheme);
+    document.getElementsByTagName('html')[0].setAttribute('theme', newTheme);
+    setColorMode(newTheme);
   };
+
+  React.useEffect(() => {
+    const theme = localStorage.getItem('themeStore');
+    if (theme) {
+      setColorMode(theme);
+    }
+  }, []);
 
   return (
     <Header
@@ -107,7 +117,7 @@ export default function HeaderComponent(props) {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Item onClick={handlerColorMode}>
-                    Alterar tema ({colorMode === 'dark' ? 'Dark' : 'Light'})
+                    Alterar tema ({colorMode === 'light' ? 'Dark' : 'Light'})
                   </ActionList.Item>
                   <ActionList.Divider />
                   <ActionList.Item variant="danger" onSelect={logout}>

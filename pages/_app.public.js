@@ -5,6 +5,8 @@ import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 import NextNProgress from 'pages/interface/components/Progressbar/index.js';
 import { DefaultHead } from 'pages/interface/components/Head/index.js';
 import { customTheme } from 'theme';
+import '../theme/colors/default.css';
+import '../theme/colors/dark.css';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -14,7 +16,6 @@ async function SWRFetcher(resource, init) {
 }
 
 function MyApp({ Component, pageProps }) {
-  const colorMode = typeof window !== 'undefined' && localStorage.getItem('dark') ? 'dark' : 'light';
   return (
     <>
       <UserProvider>
@@ -24,7 +25,7 @@ function MyApp({ Component, pageProps }) {
             fetcher: SWRFetcher,
           }}>
           <SSRProvider>
-            <ThemeProvider preventSSRMismatch colorMode={colorMode} theme={customTheme}>
+            <ThemeProvider preventSSRMismatch theme={customTheme}>
               <BaseStyles backgroundColor={'canvas.inset'}>
                 <NextNProgress options={{ showSpinner: false }} />
                 <Component {...pageProps} />

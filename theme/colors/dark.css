@@ -1,0 +1,50 @@
+html[theme='dark']:root {
+  --color-fg: #c9d1d9;
+  --color-fg-muted: #8b949e;
+  --color-fg-subtle: #0d1117;
+  --color-fg-on-emphasis: #ffffff;
+
+  --color-canvas: #0d1117;
+  --color-canvas-overlay: #161b22;
+  --color-canvas-inset: #010409;
+  --color-canvas-subtle: #161b22;
+
+  --color-border: #30363d;
+  --color-border-muted: #21262d;
+  --color-border-subtle: rgba(240, 246, 252, 0.1);
+
+  --color-success-fg: #3fb950;
+  --color-success-emphasis: #238636;
+  --color-success-muted: rgba(46, 160, 67, 0.4);
+  --color-success-subtle: rgba(46, 160, 67, 0.15);
+
+  --color-accent-fg: #58a6ff;
+  --color-accent-emphasis: #1f6feb;
+  --color-accent-muted: rgba(56, 139, 253, 0.4);
+  --color-accent-subtle: rgba(56, 139, 253, 0.15);
+
+  --color-header-text: rgba(255, 255, 255, 0.7);
+  --color-header-bg: #161b22;
+  --color-header-divide: #8b949e;
+  --color-header-logo: #f0f6fc;
+
+  --color-primary: #24292f;
+  --color-secondary: #24292f;
+
+  --color-text: #c9d1d9;
+  --color-text-light: rgba(255, 255, 255, 0.7);
+  --color-muted: #6e7781;
+  --color-link: #0969da;
+
+  --color-danger: #cf222e;
+  --color-danger-background: rgba(207, 34, 46, 0.1);
+
+  --color-button-text: #c9d1d9;
+  --color-button-background: #21262d;
+  --color-button-border: rgba(240, 246, 252, 0.1);
+
+  --color-button-hover-background: #30363d;
+  --color-button-hover-border: #8b949e;
+
+  --shadow-overlay: 0 0 0 1px #30363d, 0 16px 32px rgba(1, 4, 9, 0.85);
+}
