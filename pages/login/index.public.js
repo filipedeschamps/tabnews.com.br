@@ -21,7 +21,7 @@ function LoginForm() {
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [passwordIsVisible, setPasswordIsVisible] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
@@ -49,7 +49,7 @@ function LoginForm() {
   }
 
   function handleChangePasswordVisibility() {
-    setPasswordIsVisible((prevState) => !prevState);
+    setIsPasswordVisible((prevState) => !prevState);
   }
 
   async function handleSubmit(event) {
@@ -134,7 +134,7 @@ function LoginForm() {
               onKeyDown={detectCapsLock}
               onKeyUp={detectCapsLock}
               name="password"
-              type={passwordIsVisible ? 'text' : 'password'}
+              type={isPasswordVisible ? 'text' : 'password'}
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck={false}
@@ -144,8 +144,8 @@ function LoginForm() {
               trailingAction={
                 <TextInput.Action
                   onClick={handleChangePasswordVisibility}
-                  icon={passwordIsVisible ? EyeIcon : EyeClosedIcon}
-                  aria-label={passwordIsVisible ? 'Ocultar senha' : 'Mostrar senha'}
+                  icon={isPasswordVisible ? EyeIcon : EyeClosedIcon}
+                  aria-label={isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha'}
                 />
               }
             />
