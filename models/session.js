@@ -115,14 +115,7 @@ async function findOneValidFromRequest(request) {
     session_id: 'required',
   });
 
-  const sessionToken = request.cookies?.session_id;
-
-  if (!sessionToken) {
-    throw new UnauthorizedError({
-      message: `Usuário não possui sessão ativa.`,
-      action: `Verifique se este usuário está logado.`,
-    });
-  }
+  const sessionToken = verifySessionToken(request);
 
   const sessionObject = await findOneValidByToken(sessionToken);
 
@@ -134,6 +127,18 @@ async function findOneValidFromRequest(request) {
   }
 
   return sessionObject;
+}
+
+function verifySessionToken(request) {
+  const sessionToken = request.cookies?.session_id;
+
+  if (!sessionToken) {
+    throw new UnauthorizedError({
+      message: `Usuário não possui sessão ativa.`,
+      action: `Verifique se este usuário está logado.`,
+    });
+  }
+  return sessionToken;
 }
 
 async function renew(sessionId, response) {
