@@ -30,7 +30,7 @@
     "parse-link-header": "2.0.0",
     "pg": "8.10.0",
     "pino": "8.11.0",
-    "qrcode": "^1.5.1",
+    "qrcode": "1.5.1",
     "react": "18.2.0",
     "react-confetti": "6.1.0",
     "react-dom": "18.2.0",
@@ -43,7 +43,7 @@
     "snakeize": "0.1.0",
     "styled-components": "5.3.10",
     "swr": "2.1.4",
-    "speakeasy": "^2.0.0",
+    "speakeasy": "2.0.0",
     "uuid": "9.0.0"
   },
   "devDependencies": {
