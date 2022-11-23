@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, IconButton } from '@primer/react';
+import { Box, Text, IconButton, Dialog, Button } from '@primer/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
 import { useRouter } from 'next/router';
@@ -12,6 +12,12 @@ export default function TabCoinButtons({ content }) {
 
   const [contentObject, setContentObject] = useState(content);
   const [isPosting, setIsPosting] = useState(false);
+
+  const [dialogProps, setDialogProps] = useState({
+    title: 'Tente novamente mais tarde',
+    description: 'Não foi possível realizar essa operação.',
+    isOpen: false,
+  });
 
   useEffect(() => {
     setContentObject(content);
@@ -71,8 +77,11 @@ export default function TabCoinButtons({ content }) {
         }
         return;
       }
-
-      alert(`${responseBody.message} ${responseBody.action}`);
+      setDialogProps({
+        isOpen: true,
+        title: responseBody.message,
+        description: responseBody.action,
+      });
       setIsPosting(false);
     } catch (error) {
       setIsPosting(false);
@@ -87,6 +96,18 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
+      <Dialog
+        isOpen={dialogProps.isOpen}
+        onDismiss={() => setDialogProps({ isOpen: false })}
+        aria-labelledby="header-id">
+        <Dialog.Header id="header-id">{dialogProps.title}</Dialog.Header>
+        <Box p={3}>
+          <Text fontFamily="sans-serif">{dialogProps.description}</Text>
+          <Box display="flex" mt={3} justifyContent="flex-end">
+            <Button sx={{ mr: 1 }} onClick={() => setDialogProps({ isOpen: false })} children="Fechar" />
+          </Box>
+        </Box>
+      </Dialog>
       <Box>
         <IconButton
           variant="invisible"
