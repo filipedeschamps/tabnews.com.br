@@ -8,7 +8,7 @@ import React from 'react';
 export default function HeaderComponent(props) {
   const { user, isLoading, logout } = useUser();
   const { pathname } = useRouter();
-  const { colorMode, setColorMode } = useTheme();
+  const [colorMode, setColorMode] = React.useState('light');
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -16,7 +16,7 @@ export default function HeaderComponent(props) {
   };
 
   const handlerColorMode = () => {
-    let newTheme = colorMode === 'light' ? 'dark' : 'light';
+    const newTheme = colorMode === 'light' ? 'dark' : 'light';
     localStorage.setItem('themeStore', newTheme);
     document.getElementsByTagName('html')[0].setAttribute('theme', newTheme);
     setColorMode(newTheme);

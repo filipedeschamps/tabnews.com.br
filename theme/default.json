@@ -273,16 +273,16 @@
           "border": "var(--color-button-border)",
           "hoverBg": "var(--color-button-hover-background)",
           "hoverBorder": "var(--color-button-hover-border)",
-          "activeBg": "hsla(220,14%,93%,1)",
-          "activeBorder": "var(--color-button-border)",
-          "selectedBg": "hsla(220,14%,94%,1)",
-          "focusBg": "#f6f8fa",
-          "focusBorder": "var(--color-button-border)",
-          "counterBg": "rgba(27,31,36,0.08)",
+          "activeBg": "var(--color-button-active-background)",
+          "activeBorder": "var(--color-button-active-border)",
+          "selectedBg": "var(--color-button-selected-background)",
+          "focusBg": "var(--color-button-focus-background)",
+          "focusBorder": "var(--color-button-focus-border)",
+          "counterBg": "var(--color-button-counter-background)",
           "primary": {
-            "text": "#ffffff",
-            "bg": "var(--color-success)",
-            "border": "var(--color-button-background)",
+            "text": "var(--color-button-primary-text)",
+            "bg": "var(--color-button-primary-background)",
+            "border": "var(--color-button-primary-border)",
             "hoverBg": "#2c974b",
             "hoverBorder": "var(--color-button-border)",
             "selectedBg": "hsla(137,55%,36%,1)",
@@ -332,18 +332,18 @@
           "borderHover": "rgba(175,184,193,0.2)"
         },
         "actionListItem": {
-          "inlineDivider": "rgba(208,215,222,0.48)",
+          "inlineDivider": "var(--color-button-action-list-item-divider)",
           "default": {
-            "hoverBg": "rgba(208,215,222,0.32)",
-            "hoverBorder": "rgba(0,0,0,0)",
-            "activeBg": "rgba(208,215,222,0.48)",
-            "activeBorder": "rgba(0,0,0,0)",
-            "selectedBg": "rgba(208,215,222,0.24)"
+            "hoverBg": "var(--color-button-action-list-item-default-hover-background)",
+            "hoverBorder": "var(--color-button-action-list-item-default-hover-border)",
+            "activeBg": "var(--color-button-action-list-item-default-active-background)",
+            "activeBorder": "var(--color-button-action-list-item-default-active-border)",
+            "selectedBg": "var(--color-button-action-list-item-default-selected-background)"
           },
           "danger": {
-            "hoverBg": "rgba(255,235,233,0.64)",
-            "activeBg": "#ffebe9",
-            "hoverText": "var(--color-danger)"
+            "hoverBg": "var(--color-button-action-list-item-danger-hover-background)",
+            "activeBg": "var(--color-button-action-list-item-danger-active-background)",
+            "hoverText": "var(--color-button-action-list-item-danger-hover-text)"
           }
         },
         "switchTrack": {
@@ -402,10 +402,10 @@
           "subtle": "var(--color-border-subtle)"
         },
         "neutral": {
-          "emphasisPlus": "var(--color-text)",
-          "emphasis": "var(--color-muted)",
-          "muted": "rgba(175,184,193,0.2)",
-          "subtle": "rgba(234,238,242,0.5)"
+          "emphasisPlus": "var(--color-neutral-emphasis-plus)",
+          "emphasis": "var(--color-neutral-emphasis)",
+          "muted": "var(--color-neutral-muted)",
+          "subtle": "var(--color-neutral-subtle)"
         },
         "accent": {
           "fg": "var(--color-accent-fg)",
@@ -432,10 +432,10 @@
           "subtle": "#fff1e5"
         },
         "danger": {
-          "fg": "var(--color-danger)",
-          "emphasis": "var(--color-danger)",
-          "muted": "rgba(255,129,130,0.4)",
-          "subtle": "#ffebe9"
+          "fg": "var(--color-danger-fg)",
+          "emphasis": "var(--color-danger-emphasis)",
+          "muted": "var(--color-danger-muted)",
+          "subtle": "var(--color-danger-subtle)"
         },
         "open": {
           "fg": "#1a7f37",
@@ -493,11 +493,11 @@
           "shadow": "var(--shadow-overlay)"
         },
         "btn": {
-          "shadow": "0 1px 0 rgba(27,31,36,0.04)",
-          "insetShadow": "inset 0 1px 0 rgba(255,255,255,0.25)",
-          "focusShadow": "0 0 0 3px rgba(9,105,218,0.3)",
-          "shadowActive": "inset 0 0.15em 0.3em rgba(27,31,36,0.15)",
-          "shadowInputFocus": "0 0 0 0.2em rgba(9,105,218,0.3)",
+          "shadow": "var(--shadow-btn-shadow)",
+          "insetShadow": "var(--shadow-btn-inset-shadow)",
+          "focusShadow": "var(--shadow-btn-focus-shadow)",
+          "shadowActive": "var(--shadow-btn-shadow-active)",
+          "shadowInputFocus": "var(--shadow-btn-shadow-input-focus)",
           "primary": {
             "shadow": "0 1px 0 rgba(27,31,36,0.1)",
             "insetShadow": "inset 0 1px 0 rgba(255,255,255,0.03)",

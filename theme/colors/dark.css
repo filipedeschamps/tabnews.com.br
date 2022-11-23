@@ -1,7 +1,7 @@
 html[theme='dark']:root {
   --color-fg: #c9d1d9;
   --color-fg-muted: #8b949e;
-  --color-fg-subtle: #0d1117;
+  --color-fg-subtle: #6e7681;
   --color-fg-on-emphasis: #ffffff;
 
   --color-canvas: #0d1117;
@@ -17,6 +17,11 @@ html[theme='dark']:root {
   --color-success-emphasis: #238636;
   --color-success-muted: rgba(46, 160, 67, 0.4);
   --color-success-subtle: rgba(46, 160, 67, 0.15);
+
+  --color-neutral-emphasis-plus: #6e7681;
+  --color-neutral-emphasis: #6e7681;
+  --color-neutral-muted: rgba(110, 118, 129, 0.4);
+  --color-neutral-subtle: rgba(110, 118, 129, 0.1);
 
   --color-accent-fg: #58a6ff;
   --color-accent-emphasis: #1f6feb;
@@ -36,15 +41,43 @@ html[theme='dark']:root {
   --color-muted: #6e7781;
   --color-link: #0969da;
 
-  --color-danger: #cf222e;
-  --color-danger-background: rgba(207, 34, 46, 0.1);
+  --color-danger-fg: #f85149;
+  --color-danger-emphasis: #da3633;
+  --color-danger-muted: rgba(248, 81, 73, 0.4);
+  --color-danger-subtle: rgba(248, 81, 73, 0.15);
 
+  /* COLOR OF BUTTON */
   --color-button-text: #c9d1d9;
   --color-button-background: #21262d;
   --color-button-border: rgba(240, 246, 252, 0.1);
-
   --color-button-hover-background: #30363d;
   --color-button-hover-border: #8b949e;
+  --color-button-active-background: hsla(212, 12%, 18%, 1);
+  --color-button-active-border: #6e7681;
+  --color-button-selected-background: #161b22;
+  --color-button-focus-background: #21262d;
+  --color-button-focus-border: #8b949e;
+  --color-button-counter-background: #30363d;
 
+  --color-button-primary-text: #ffffff;
+  --color-button-primary-background: #238636;
+  --color-button-primary-border: rgba(240, 246, 252, 0.1);
+
+  --color-button-action-list-item-divide: rgba(48, 54, 61, 0.48);
+  --color-button-action-list-item-default-hover-background: rgba(177, 186, 196, 0.12);
+  --color-button-action-list-item-default-hover-border: rgba(0, 0, 0, 0);
+  --color-button-action-list-item-default-active-background: rgba(177, 186, 196, 0.2);
+  --color-button-action-list-item-default-active-border: rgba(0, 0, 0, 0);
+  --color-button-action-list-item-default-selected-background: rgba(177, 186, 196, 0.08);
+  --color-button-action-list-item-danger-hover-background: rgba(248, 81, 73, 0.12);
+  --color-button-action-list-item-danger-active-background: rgba(248, 81, 73, 0.24);
+  --color-button-action-list-item-danger-hover-text: #ff7b72;
+
+  /* COLOR OF SHADOW */
   --shadow-overlay: 0 0 0 1px #30363d, 0 16px 32px rgba(1, 4, 9, 0.85);
+  --shadow-btn-shadow: 0 0 transparent;
+  --shadow-btn-inset-shadow: 0 0 transparent;
+  --shadow-btn-focus-shadow: 0 0 0 3px rgba(139, 148, 158, 0.3);
+  --shadow-btn-shadow-active: inset 0 0.15em 0.3em rgba(1, 4, 9, 0.15);
+  --shadow-btn-shadow-input-focus: 0 0 0 0.2em rgba(31, 111, 235, 0.3);
 }

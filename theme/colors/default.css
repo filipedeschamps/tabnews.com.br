@@ -4,7 +4,7 @@
   --color-fg-subtle: #6e7781;
   --color-fg-on-emphasis: #ffffff;
 
-  --color-canvas: #d0d7de;
+  --color-canvas: #ffffff;
   --color-canvas-overlay: #ffffff;
   --color-canvas-inset: #f6f8fa;
   --color-canvas-subtle: #f6f8fa;
@@ -18,10 +18,20 @@
   --color-success-muted: rgba(74, 194, 107, 0.4);
   --color-success-subtle: #dafbe1;
 
+  --color-neutral-emphasis-plus: #24292f;
+  --color-neutral-emphasis: #6e7781;
+  --color-neutral-muted: rgba(175, 184, 193, 0.2);
+  --color-neutral-subtle: rgba(234, 238, 242, 0.5);
+
   --color-accent-fg: #0969da;
   --color-accent-emphasis: #0969da;
   --color-accent-muted: rgba(84, 174, 255, 0.4);
   --color-accent-subtle: #ddf4ff;
+
+  --color-danger-fg: #cf222e;
+  --color-danger-emphasis: #cf222e;
+  --color-danger-muted: rgba(255, 129, 130, 0.4);
+  --color-danger-subtle: #ffebe9;
 
   --color-header-text: rgba(255, 255, 255, 0.7);
   --color-header-bg: #24292f;
@@ -37,15 +47,38 @@
   --color-muted: #6e7781;
   --color-link: #0969da;
 
-  --color-danger: #cf222e;
-  --color-danger-background: rgba(207, 34, 46, 0.1);
-
-  --color-button-text: #fff;
-  --color-button-background: #1b1f2426;
+  /* COLOR OF BUTTON */
+  --color-button-text: #24292f;
+  --color-button-background: #f6f8fa;
   --color-button-border: rgba(27, 31, 36, 0.15);
-
   --color-button-hover-background: #f3f4f6;
   --color-button-hover-border: rgba(27, 31, 36, 0.15);
+  --color-button-active-background: hsla(220, 14%, 93%, 1);
+  --color-button-active-border: rgba(27, 31, 36, 0.15);
+  --color-button-selected-background: hsla(220, 14%, 94%, 1);
+  --color-button-focus-background: #f6f8fa;
+  --color-button-focus-border: rgba(27, 31, 36, 0.15);
+  --color-button-counter-background: rgba(27, 31, 36, 0.08);
 
+  --color-button-primary-text: #fff;
+  --color-button-primary-background: #2da44e;
+  --color-button-primary-border: rgba(240, 246, 252, 0.1);
+
+  --color-button-action-list-item-divide: rgba(208, 215, 222, 0.48);
+  --color-button-action-list-item-default-hover-background: rgba(208, 215, 222, 0.32);
+  --color-button-action-list-item-default-hover-border: rgba(0, 0, 0, 0);
+  --color-button-action-list-item-default-active-background: rgba(208, 215, 222, 0.48);
+  --color-button-action-list-item-default-active-border: rgba(0, 0, 0, 0);
+  --color-button-action-list-item-default-selected-background: rgba(208, 215, 222, 0.24);
+  --color-button-action-list-item-danger-hover-background: rgba(255, 235, 233, 0.64);
+  --color-button-action-list-item-danger-active-background: #ffebe9;
+  --color-button-action-list-item-danger-hover-text: #cf222e;
+
+  /* COLOR OF SHADOW */
   --shadow-overlay: 0 1px 3px rgba(27, 31, 36, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
+  --shadow-btn-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+  --shadow-btn-inset-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --shadow-btn-focus-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+  --shadow-btn-shadow-active: inset 0 0.15em 0.3em rgba(27, 31, 36, 0.15);
+  --shadow-btn-shadow-input-focus: 0 0 0 0.2em rgba(9, 105, 218, 0.3);
 }

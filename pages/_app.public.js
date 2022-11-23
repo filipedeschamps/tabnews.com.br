@@ -26,7 +26,7 @@ function MyApp({ Component, pageProps }) {
           }}>
           <SSRProvider>
             <ThemeProvider preventSSRMismatch theme={customTheme}>
-              <BaseStyles backgroundColor={'canvas.inset'}>
+              <BaseStyles backgroundColor={'canvas.default'}>
                 <NextNProgress options={{ showSpinner: false }} />
                 <Component {...pageProps} />
               </BaseStyles>

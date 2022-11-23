@@ -95,7 +95,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     <>
       <style jsx global>{`
         .markdown-body {
-          background-color: ${theme.colors.canvas.inset};
+          background-color: ${theme.colors.canvas.default};
           color: ${theme.colors.fg.default};
         }
       `}</style>
