@@ -101,7 +101,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             }}>
             {contentObject.parent_id ? (
               <Link
-                sx={{ wordWrap: 'break-word', fontStyle: 'italic' }}
+                sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
                 href={`/${contentObject.owner_username}/${contentObject.slug}`}>
                 <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
               </Link>
@@ -116,10 +116,10 @@ export default function ContentList({ contentList, pagination, paginationBasePat
               <TabCoinsText count={contentObject.tabcoins} />
             </Text>
             {' · '}
-            {/* <Text>
+            <Text>
               <ChildrenDeepCountText count={contentObject.children_deep_count} />
             </Text>
-            {' · '} */}
+            {' · '}
             <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </Link>

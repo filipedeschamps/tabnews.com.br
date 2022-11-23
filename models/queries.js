@@ -25,7 +25,7 @@ const rankedContent = `
             *,
             COUNT(*) OVER()::INTEGER as total_rows
         FROM latest_published_root_contents
-        WHERE tabcoins >= 0
+        WHERE tabcoins > 0
         ORDER BY
             tabcoins DESC,
             published_at DESC
@@ -94,7 +94,7 @@ const rankedContent = `
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '72 hours'
-            AND tabcoins > 1
+            AND tabcoins > 2
             AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
             published_at DESC
@@ -133,26 +133,25 @@ const rankedContent = `
         ranked.rank_group,
         ranked.total_rows,
         users.username as owner_username,
-        --        (WITH RECURSIVE children AS
-        --            (SELECT id,
-        --                 parent_id
-        --            FROM contents as all_contents
-        --            WHERE
-        --                all_contents.id = ranked.id
-        --                AND all_contents.status = 'published'
-        --            UNION ALL
-        --            SELECT
-        --                all_contents.id,
-        --                all_contents.parent_id
-        --            FROM contents as all_contents
-        --            INNER JOIN children ON all_contents.parent_id = children.id
-        --            WHERE all_contents.status = 'published'
-        --            )
-        --            SELECT count(children.id)::integer
-        --            FROM children
-        --            WHERE children.id NOT IN (ranked.id)
-        --            ) as children_deep_count
-            0 as children_deep_count
+        (WITH RECURSIVE children AS
+            (SELECT id,
+                 parent_id
+            FROM contents as all_contents
+            WHERE
+                all_contents.id = ranked.id
+                AND all_contents.status = 'published'
+            UNION ALL
+            SELECT
+                all_contents.id,
+                all_contents.parent_id
+            FROM contents as all_contents
+            INNER JOIN children ON all_contents.parent_id = children.id
+            WHERE all_contents.status = 'published'
+            )
+            SELECT count(children.id)::integer
+            FROM children
+            WHERE children.id NOT IN (ranked.id)
+        ) as children_deep_count
         FROM ranked
         INNER JOIN users ON ranked.owner_id = users.id
         ORDER BY
