@@ -18,8 +18,7 @@ export default nextConnect({
 
 async function postHandler(req, res) {
   const authenticatedUser = req.context.user;
-  res.setHeader('Content-Type', 'text/html');
-  return res.status(200).send(renderToStaticMarkup(<img src={(await user.enable_2fa(authenticatedUser)).qrcode} />));
+  return res.status(200).json(await user.enable_2fa(authenticatedUser));
 }
 async function deleteHandler(req, res) {
   const authenticatedUser = req.context.user;
