@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { EyeIcon, EyeClosedIcon } from '@primer/octicons-react';
 
 export default function Login() {
   return (
@@ -20,6 +21,7 @@ function LoginForm() {
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordIsVisible, setPasswordIsVisible] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
@@ -44,6 +46,10 @@ function LoginForm() {
 
   function clearErrors() {
     setErrorObject(undefined);
+  }
+
+  function handleChangePasswordVisibility() {
+    setPasswordIsVisible((prevState) => !prevState);
   }
 
   async function handleSubmit(event) {
@@ -128,13 +134,20 @@ function LoginForm() {
               onKeyDown={detectCapsLock}
               onKeyUp={detectCapsLock}
               name="password"
-              type="password"
+              type={passwordIsVisible ? 'text' : 'password'}
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck={false}
               size="large"
               block={true}
               aria-label="Sua senha"
+              trailingAction={
+                <TextInput.Action
+                  onClick={handleChangePasswordVisibility}
+                  icon={passwordIsVisible ? EyeIcon : EyeClosedIcon}
+                  aria-label={passwordIsVisible ? 'Ocultar senha' : 'Mostrar senha'}
+                />
+              }
             />
             {capsLockWarningMessage && (
               <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
