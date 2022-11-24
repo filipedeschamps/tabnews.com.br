@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { DefaultLayout, PasswordInput } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
-import { EyeIcon, EyeClosedIcon } from '@primer/octicons-react';
 
 export default function Register() {
   return (
@@ -10,7 +9,6 @@ export default function Register() {
       <Heading as="h1" sx={{ mb: 3 }}>
         Cadastro
       </Heading>
-
       <SignUpForm />
     </DefaultLayout>
   );
@@ -25,7 +23,6 @@ function SignUpForm() {
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
@@ -40,10 +37,6 @@ function SignUpForm() {
 
   function clearErrors() {
     setErrorObject(undefined);
-  }
-
-  function handleChangePasswordVisibility() {
-    setIsPasswordVisible((prevState) => !prevState);
   }
 
   async function handleSubmit(event) {
@@ -136,6 +129,7 @@ function SignUpForm() {
             <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
           )}
         </FormControl>
+
         <FormControl id="email">
           <FormControl.Label>Email</FormControl.Label>
           <TextInput
@@ -177,26 +171,18 @@ function SignUpForm() {
 
         <FormControl id="password">
           <FormControl.Label>Senha</FormControl.Label>
-          <TextInput
+          <PasswordInput
             ref={passwordRef}
             onChange={clearErrors}
             onKeyDown={detectCapsLock}
             onKeyUp={detectCapsLock}
             name="password"
-            type={isPasswordVisible ? 'text' : 'password'}
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            size="large"
+            size="small"
             block={true}
             aria-label="Sua senha"
-            trailingAction={
-              <TextInput.Action
-                onClick={handleChangePasswordVisibility}
-                icon={isPasswordVisible ? EyeIcon : EyeClosedIcon}
-                aria-label={isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha'}
-              />
-            }
           />
           {capsLockWarningMessage && (
             <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
