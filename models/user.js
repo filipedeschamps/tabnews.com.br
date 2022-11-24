@@ -448,9 +448,9 @@ async function confirm_2fa(user, code) {
   await removeFeatures(user.id, ['auth:2fa:confirm']);
 }
 async function disable_2fa(user) {
-  if (authorization.can(user, 'auth:2fa')) {
-    removeFeatures(user.id, ['auth:2fa']);
-    set_2fa_secret(user.id, null);
+  if (authorization.can(user, 'auth:2fa') || authorization.can(user, 'auth:2fa:confirm')) {
+    await removeFeatures(user.id, ['auth:2fa', 'auth:2fa:confirm']);
+    await set_2fa_secret(user, null);
   } else {
     throw new ValidationError({
       message: `O 2FA já está desligado.`,

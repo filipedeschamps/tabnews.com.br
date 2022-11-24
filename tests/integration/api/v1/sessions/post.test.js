@@ -13,103 +13,103 @@ beforeAll(async () => {
 });
 
 describe('POST /api/v1/sessions', () => {
-  describe('Anonymous User', () => {
-    describe('2FA', () => {
-      it('fails if 2FA is enabled but no code is provided', async () => {
-        const defaultUser = await orchestrator.createUser({
+  describe('2FA', () => {
+    it('fails if 2FA is enabled but no code is provided', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'qwertyuiop@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await orchestrator.enable2FA(defaultUser);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: 'qwertyuiop@gmail.com',
           password: 'ValidPassword',
-        });
-
-        await orchestrator.activateUser(defaultUser);
-        await orchestrator.enable2FA(defaultUser);
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: 'qwertyuiop@gmail.com',
-            password: 'ValidPassword',
-          }),
-        });
-
-        const responseBody = await response.json();
-        expect(response.status).toBe(401);
-        expect(responseBody.message).toBe('2FA está ativado, mas nenhum código foi enviado');
-        expect(responseBody.action).toBe(`Envie um código de 2FA.`);
-        expect(responseBody.error_location_code).toBe('MODEL:AUTHENTICATION:VERIFY_2FA:CODE_NOT_PRESENT');
+        }),
       });
-      it('fails if 2FA is enabled but the code is incorrect', async () => {
-        const defaultUser = await orchestrator.createUser({
+
+      const responseBody = await response.json();
+      expect(response.status).toBe(401);
+      expect(responseBody.message).toBe('2FA está ativado, mas nenhum código foi enviado');
+      expect(responseBody.action).toBe(`Envie um código de 2FA.`);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHENTICATION:VERIFY_2FA:CODE_NOT_PRESENT');
+    });
+    it('fails if 2FA is enabled but the code is incorrect', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'qwertyuiopa@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await orchestrator.enable2FA(defaultUser);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: 'qwertyuiopa@gmail.com',
           password: 'ValidPassword',
-        });
-
-        await orchestrator.activateUser(defaultUser);
-        await orchestrator.enable2FA(defaultUser);
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: 'qwertyuiopa@gmail.com',
-            password: 'ValidPassword',
-            code_2fa: '000000',
-          }),
-        });
-
-        const responseBody = await response.json();
-        expect(response.status).toBe(401);
-        expect(responseBody.message).toBe('O código 2FA não confere.');
-        expect(responseBody.action).toBe(`Verifique o código e tente novamente.`);
-        expect(responseBody.error_location_code).toBe('MODEL:AUTHENTICATION:VERIFY_2FA:CODE_MISMATCH');
+          code_2fa: '000000',
+        }),
       });
-      it('succeeds when the code is correct', async () => {
-        const defaultUser = await orchestrator.createUser({
+
+      const responseBody = await response.json();
+      expect(response.status).toBe(401);
+      expect(responseBody.message).toBe('O código 2FA não confere.');
+      expect(responseBody.action).toBe(`Verifique o código e tente novamente.`);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHENTICATION:VERIFY_2FA:CODE_MISMATCH');
+    });
+    it('succeeds when the code is correct', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailToBeFoundAndAccepted2FA@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      let secret = await orchestrator.enable2FA(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: 'emailToBeFoundAndAccepted2FA@gmail.com',
           password: 'ValidPassword',
-        });
-
-        await orchestrator.activateUser(defaultUser);
-        let secret = await orchestrator.enable2FA(defaultUser);
-
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: 'emailToBeFoundAndAccepted2FA@gmail.com',
-            password: 'ValidPassword',
-            code_2fa: speakeasy.totp({
-              secret: secret.base32,
-              encoding: 'base32',
-            }),
+          code_2fa: speakeasy.totp({
+            secret: secret.base32,
+            encoding: 'base32',
           }),
-        });
-
-        const responseBody = await response.json();
-
-        expect(response.status).toBe(201);
-        expect(responseBody.token.length).toEqual(96);
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-
-        const sessionObjectInDatabase = await session.findOneById(responseBody.id);
-        expect(sessionObjectInDatabase.user_id).toEqual(defaultUser.id);
-
-        const parsedCookiesFromResponse = authentication.parseSetCookies(response);
-        expect(parsedCookiesFromResponse.session_id.name).toEqual('session_id');
-        expect(parsedCookiesFromResponse.session_id.value).toEqual(responseBody.token);
-        expect(parsedCookiesFromResponse.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-        expect(parsedCookiesFromResponse.session_id.path).toEqual('/');
-        expect(parsedCookiesFromResponse.session_id.httpOnly).toEqual(true);
+        }),
       });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(responseBody.token.length).toEqual(96);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+      const sessionObjectInDatabase = await session.findOneById(responseBody.id);
+      expect(sessionObjectInDatabase.user_id).toEqual(defaultUser.id);
+
+      const parsedCookiesFromResponse = authentication.parseSetCookies(response);
+      expect(parsedCookiesFromResponse.session_id.name).toEqual('session_id');
+      expect(parsedCookiesFromResponse.session_id.value).toEqual(responseBody.token);
+      expect(parsedCookiesFromResponse.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
+      expect(parsedCookiesFromResponse.session_id.path).toEqual('/');
+      expect(parsedCookiesFromResponse.session_id.httpOnly).toEqual(true);
     });
+  });
+  describe('Anonymous User', () => {
     test('Using a valid email and password', async () => {
       const defaultUser = await orchestrator.createUser({
         email: 'emailToBeFoundAndAccepted@gmail.com',
