@@ -4,11 +4,12 @@ import { useRouter } from 'next/router';
 import { DefaultLayout, useUser } from 'pages/interface';
 import { useEffect, useRef, useState } from 'react';
 import qrcode from 'qrcode';
+import Image from 'next/image';
 export default function Enable2FAPage() {
   const { user, fetchUser, isLoading: userIsLoading } = useUser();
   const router = useRouter();
   let [secret, setSecret] = useState();
-  let [qrcode_img, setQrCode] = useState();
+  let qrcode_canvas_ref = useRef();
   let [isLoading, setIsLoading] = useState(false);
   let codeRef = useRef('');
   let [invalidCode, setInvalidCode] = useState(false);
@@ -18,10 +19,12 @@ export default function Enable2FAPage() {
       .then((secret) => {
         setSecret(secret);
         return secret;
-      })
-      .then((secret) => qrcode.toDataURL(secret.otpauth_url))
-      .then((qrcode) => setQrCode(qrcode));
+      });
   }, []);
+  useEffect(() => {
+    if (!qrcode_canvas_ref.current) return;
+    qrcode.toCanvas(qrcode_canvas_ref.current, secret.otpauth_url);
+  }, [qrcode_canvas_ref, secret]);
   async function onSubmit(e) {
     e.preventDefault();
     let code = codeRef.current.value;
@@ -62,7 +65,7 @@ export default function Enable2FAPage() {
         <form onSubmit={onSubmit}>
           <FormControl id="qrcode">
             <p>Scaneie este código QR utilizando um aplicativo de 2FA (e.g. Authy):</p>
-            {qrcode_img ? <img src={qrcode_img} /> : null}
+            <canvas ref={qrcode_canvas_ref} width="500" height="500" />
           </FormControl>
           <FormControl id="2fa-secret">
             <p>
