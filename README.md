@@ -1,6 +1,10 @@
-# tabnews.com.br
+<img src="https://github.com/mavinsi/tabnews.com.br/blob/main/public/first-banner.png?raw=true">
 
-## Instalar e rodar o projeto
+
+<img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"> <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white"> <img src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white"> <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white"> <img src="https://img.shields.io/badge/Amazon_AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white">
+
+
+## 🚀 Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
 
@@ -60,7 +64,7 @@ Por padrão, ao rodar o comando `npm run dev` será injetado dois usuários ativ
 - **Usuário Admin**: `"admin@admin.com"` + `"password"`
 - **Usuário padrão**: `"user@user.com"` + `"password"`
 
-## Rodar os testes
+## 👨‍💻 Rodar os testes
 
 Há várias formas de rodar os testes dependendo do que você deseja fazer, mas o primeiro passo antes de fazer qualquer alteração no projeto é rodar os testes de forma geral para se certificar que tudo está passando como esperado. O comando abaixo irá rodar todos os serviços necessários, rodar os testes e em seguida derrubar todos os serviços.
 
@@ -105,7 +109,7 @@ Observações:
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
 - A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá usar `regex` para evitar usar esses caracteres, como por exemplo utilizar o `.` que representa o `match` com qualquer caractere. Isto foi utilizado nos exemplos acima para evitar os caracteres `[` e `]` dos arquivos.
 
-## Criar novas Migrations
+## ↔️ Criar novas Migrations
 
 Você pode utilizar o script `migration:create`, por exemplo:
 
@@ -121,7 +125,7 @@ Created migration -- ./infra/migrations/1655399502254_alter-table-users-add-tabc
 
 Caso esta nova migração esteja válida, ela será automaticamente executada na próxima vez que você rodar o comando `npm run dev`. Caso contrário, o serviço não irá subir e os logs de erro estarão registrados no arquivo `migrations.log` encontrado na raiz do projeto.
 
-## Commit das alterações
+## 📚 Commit das alterações
 
 Após finalizar suas alterações e se certificar que todos os testes estão passando com o comando geral `npm test`, chegou a hora de fazer o commit das suas alterações.
 
@@ -131,11 +135,11 @@ Para ser auxiliado no padrão de commit que utilizamos, rode o comando abaixo e 
 npm run commit
 ```
 
-## Diário de Desenvolvimento
+## 📒 Diário de Desenvolvimento
 
 - [Acessar o diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)
 
-## Contribuidores
+## ⛑️ Contribuidores
 
 <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=filipedeschamps/tabnews.com.br&max=500" alt="Lista de contribuidores" width="100%"/>
