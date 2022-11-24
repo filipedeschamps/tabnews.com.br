@@ -89,6 +89,14 @@ export default function Page() {
             <PrimerLink href="https://github.com/pscruzzz">Pedro Cruz</PrimerLink>
           </li>
         </ul>
+
+        <Text as="p">Abaixo temos um artigo que fala as principais mudanças do TabNews desde o início do projeto.</Text>
+        <ul>
+          <li>
+            <Link href="/museu/evolution-of-tabnews.html">A Evolução do TabNews</Link> feito por{' '}
+            <Link href="https://github.com/gabrielsozinho">Gabriel Sozinho</Link>
+          </li>
+        </ul>
       </Box>
 
       <style jsx>{`

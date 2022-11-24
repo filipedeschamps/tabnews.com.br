@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Evolução do TabNews</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet"> 
+    <style>
+        html{
+            background-color: #f5f5f5;
+            max-width: 100vw;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 1rem;
+        }
+
+        main{
+            margin: 0 auto;
+            width: 80vw;
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+
+        img{
+            max-width: 100%;
+        }
+
+        .title{
+            text-align: center;
+        }
+
+        .green{
+            color: green;
+        }
+
+        a{
+            color: rgb(0, 85, 255);
+        }
+
+        a:hover{
+            color: rgba(0, 85, 255, 0.639);
+            transition: 0.3s;
+        }
+
+        .footer-text{
+            color: rgba(0, 0, 0, 0.815);
+            text-align: end;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1 class="title">A Evolução do TabNews</h1>
+        <p>Algumas (ou muitas) pessoas estão chegando depois do vídeo de lançamento do TabNews no Youtube. Além disso, muitas pessoas chegaram já com essa interface atual, então eu resolvi criar uma &quot;timeline&quot; com as principais mudanças desde o início, não só do site, mas das idéias.</p>
+        <div align="center">
+
+        <p class="green">Um post longo, mas muito interessante de se ler.</p>
+
+        </div>
+
+        <h2 id="1-antes-de-17-10-2020">1. Antes de 17/10/2020</h2>
+        <p>Aqui é onde tudo começa, a origem do projeto. Vou deixar o texto que o próprio Filipe Deschamps fez sobre essa época:</p>
+        <blockquote>
+        <p>&quot;Tenho uma Newsletter gratuita que faço com meu irmão Gustavo Deschamps, onde apesar de ter uma aceitação muito acima do que a gente esperava, ao mesmo tempo é um material que dá muito trabalho para ser produzido e ficamos extremamente frustrados quando, por exemplo, um mesmo provedor de email decide entregar esse material para alguns usuários, mas não para outros, e sem padrão algum. E por conta disso, decidimos criar o TabNews para resolver esse problema, mas spoiler alert, não resolve, continue lendo para entender.&quot;</p>
+        </blockquote>
+        <h2 id="2-17-10-2020">2. 17/10/2020</h2>
+        <p>A compra do domínio tabnews.com.br</p>
+        <blockquote>
+        <p>"Como todo bom nerd, sem nem mesmo a ideia ter sido completamente formada, a gente foi lá e comprou o domínio tabnews.com.br. Numa breve conversa, chegamos numa ideia de um site que fique atualizado e trazendo notícias (news) em tempo-real para que a pessoa deixe ele aberto numa aba (tab) no navegador, e com isso o Gustavo sugeriu o nome TabNews. O engraçado é que toda hora a gente tentava fugir desse nome, mas a gente não conseguia, é muito simples de entender, decorar e escrever."</p>
+        </blockquote>
+        <h2 id="3-25-12-2020">3. 25/12/2020</h2>
+        <p>Estamos exatamente na data de criação do repositório, e agora você sabe que o repositório do TabNews foi criado no natal. 🎅🏻</p>
+        <h2 id="4-30-12-2020">4. 30/12/2020</h2>
+        <p>A primeira <abbr title="O Issue é uma ferramenta interessante do GitHub para deixar um feedback ou auxiliar na construção de algum projeto desenvolvido por outras pessoas. Trata-se da ideia de deixar comentários em projetos.">issue</abbr> foi criada no repositório. Foi uma issue de inception, fala sobre o porquê o projeto foi criado, de onde o nome veio e outras coisas. Se quiser, você pode ler ela <a href="https://github.com/filipedeschamps/tabnews.com.br/wiki/004.-Primeira-issue-e-a-descoberta-de-algo-importante">clicando aqui.</a></p>
+        <h2 id="5-07-05-2021">5. 07/05/2021</h2>
+        <p>A primeira idéia de layout</p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/117865517-e6891680-b24a-11eb-8ba8-fddd4f3f26de.png"></div>
+
+        <h2 id="6-11-05-2021">6. 11/05/2021</h2>
+        <p>O primeiro <abbr title="PR são as iniciais de Pull Request. Geralmente em projetos onde não temos permissão para alterar a branch principal (geralmente a master), ainda assim podemos criar alguma modificação local e participar do seu desenvolvimento.">PR</abbr> no repositório. </p>
+        <p>Foi um PR com o seguinte título: <code>layout: trying a more &quot;Twitter&quot; style</code></p>
+        <div align="center"><img src="https://i.imgur.com/dXACkkr.png"></div>
+
+        <h2 id="7-entre-11-05-e-13-05-2021">7. Entre 11/05 e 18/05/2021</h2>
+        <p>Idéia de layout número 4, desenvolvido pelo Filipe:</p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/118160451-2c70e680-b3d3-11eb-9f6e-96cd1b579811.png"></div>
+
+        <p>Até que no dia 13, o <a href="https://github.com/filipedeschamps/tabnews.com.br/wiki/014.-Guga-e-Renata-tiveram-excelentes-ideias">Guga e a Renata tiveram excelentes idéias</a>. (se não quiser acessar o link, vou tentar resumir aqui em baixo):
+        O Filipe estava desenvolvendo esse design, só que o Guga e ele acharam que tinha muita informação, ficou muito confuso. Depois, ao mostrar o HackerNews pra Renata, ela disse que o legal era ler as notícias de forma <strong>linear</strong>, que não havia quebra de linha e isso facilitava o scan.</p>
+        <h3 id="13-05-a-18-05-2021">13/05 a 18/05/2021</h3>
+        <p>Todas as (eu acho, se não pelo menos as principais) idéias de layout do Filipe. E realmente, a última é até que bastante parecida com a atual. </p>
+        <div align="center">
+            <img src="https://user-images.githubusercontent.com/4248081/118731117-8ca9c300-b7ed-11eb-8724-dbe921e1c877.png">
+            <img src="https://user-images.githubusercontent.com/4248081/118731136-96332b00-b7ed-11eb-8b94-4835b294b108.png">
+            <img src="https://user-images.githubusercontent.com/4248081/118731162-a3e8b080-b7ed-11eb-83ba-dcf7229d0ffc.png">
+            <img src="https://user-images.githubusercontent.com/4248081/118731182-b1059f80-b7ed-11eb-9cc0-46559ddf9871.png">
+
+        </div>
+
+        <h2 id="8-20-05-2021">8. 20/05/2021</h2>
+        <p>O primeiro design de dentro da notícia.</p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/120021790-61b73000-bfa0-11eb-9fc1-8af0cfafed31.png"></div>
+
+        <p>A partir daqui, nas palavras do Filipe, o próximo passo é começar a programar pra valer.</p>
+        <h2 id="9-28-05-2021">9. 28/05/2021</h2>
+        <p>Convite feito para os membros da turma. Nesse dia, o Filipe postou um vídeo para os membros da turma e até o dia 04/06 <strong>101</strong> pessoas já haviam pedido o acesso, sendo que delas, 82 já haviam aceitado. Além disso, várias contribuições tinham sido feitas.</p>
+        <h3 id="id-ia-sugest-o-de-logo-e-home">Idéia/sugestão de logo e home</h3>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/123183286-1d576c80-d446-11eb-9fea-363d5b5825e3.png"></div>
+
+        <h3 id="dark-mode-pro-site">Dark mode pro site</h3>
+        <p>Até o dark mode do site já havia sido criado, e você pode acessar até hoje a página pra testar:
+        <a href="https://tabnews-ollr15yoh-filipedeschamps.vercel.app/home-09">https://tabnews-ollr15yoh-filipedeschamps.vercel.app/home-09</a></p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/123183178-d6697700-d445-11eb-9f3f-c6cccb3b842a.png"></div>
+
+        <h3 id="id-ia-de-extens-o-do-tabnews-pra-navegadores">Idéia de extensão do TabNews pra navegadores</h3>
+        <p>Curiosidade: depois ela realmente foi criada!</p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/123183464-71fae780-d446-11eb-90cf-20592dad1212.png"></div>
+
+        <h3 id="outra-id-ia-de-design-da-home">Outra idéia de design da home</h3>
+        <p>Essa eu gostei muito, mas foge um pouco do propósito do TabNews</p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/123183605-b7b7b000-d446-11eb-9393-01dd85748d00.png"></div>
+
+
+        <h2 id="10-11-06-2021">10. 11/06/2021</h2>
+        <p>Muitas outras contribuições.</p>
+        <details><summary>Se quiser ver, clique aqui para expandir</summary>
+            <div align="center">
+                <img src="https://user-images.githubusercontent.com/4248081/123184246-25181080-d448-11eb-8d88-3aceb040b3c1.png">
+                <img src="https://user-images.githubusercontent.com/4248081/123184265-2fd2a580-d448-11eb-8b0e-aede0a727538.png">
+                <img src="https://user-images.githubusercontent.com/4248081/123184461-96f05a00-d448-11eb-916d-ab931f35c5de.png">
+                <img src="https://user-images.githubusercontent.com/4248081/123184502-ad96b100-d448-11eb-8d2d-7b2827058c6c.png">
+                <img src="https://user-images.githubusercontent.com/4248081/123184988-c81d5a00-d449-11eb-8b6e-34767a93a514.png">
+                <img src="https://user-images.githubusercontent.com/4248081/123185024-dbc8c080-d449-11eb-9ae6-803a00bb8332.png">
+                <img src="https://user-images.githubusercontent.com/4248081/123185059-edaa6380-d449-11eb-9a5a-5569bbb62c0e.png">
+            </div>
+
+        </details>
+
+        <h2 id="11-24-06-2021">11. 24/06/2021</h2>
+        <p>Aqui eu vou deixar o próprio Filipe falar.</p>
+        <blockquote>
+        <p>Hoje já estamos com 224 pessoas dentro do repositório e muitas contribuições aconteceram nesse meio tempo. Depois da Live de inauguração da Milestone 0, a turma atacou as issues, como por exemplo essa em que bolamos várias idéias para a página &quot;Em Construção&quot;, e idéias extras sobre fakenews, internacionalização e acessibilidade. Só que algo especial aconteceu nesse Pull Request onde implemento uma sugestão para a página de &quot;Em construção&quot;, olha que interessante: eu fiz uma implementação, o Membro @rhandrade encontrou e isolou um bug, e outro Membro @rodrigoKulb implementou um fix... e foi tudo muito rápido. E eu pessoalmente achei especial porque se eu tivesse sozinho nesse repositório, nada disso teria acontecido. Eu sinceramente espero que esse repositório do TabNews abra mais oportunidades assim para trabalharmos juntos, cada um conseguindo observar e participar em algum ponto do serviço. Se conseguirmos manter essas coisas acontecendo, no longo prazo iremos construir algo realmente especial. Bom, a Live de encerramento e comemoração da Milestone 0 supostamente irá acontecer amanhã, vamos ver como vai ser... eu to empolgado e queria que fosse hoje já!!!</p>
+        </blockquote>
+        <h2 id="25-06-2021-">25/06/2021 🎉</h2>
+        <p>O encerramento da milestone 0 e <strong>a primeira página oficial do TabNews.</strong> Uma página simples, mas com o avatar de todos que estavam acompanhando o projeto desde aquela época.</p>
+        <div align="center"><img src="https://user-images.githubusercontent.com/4248081/123689581-38402d00-d808-11eb-8def-71601dacc6b7.png"></div>
+
+        <h2 id="12-30-07-2021">12. 30/07/2021</h2>
+        <p>O encerramento da milestone 1. Foram definidas algumas coisas que foram resumidas <a href="https://github.com/filipedeschamps/tabnews.com.br/wiki/023.-Milestone-1-(ENCERRAMENTO">aqui</a>)</p>
+        <h2 id="13-15-12-2021">13. 15/12/2021</h2>
+        <p>Aqui, nada melhor do que o Filipe explicar o que tava acontecendo.</p>
+        <blockquote>
+        <p>Os últimos meses foram os mais diferentes da minha vida, tanto pelo fato de estar criando um Bebê, quanto por reorganizar todo o trabalho com o canal no YouTube para que a publicação de vídeos seja feita de uma forma mais consistente.</p>
+        <p>Para isso, no início de Outubro eu postei um vídeo anunciando que estava procurando uma pessoa para editar os vídeos do canal, algo que eu pensei que nunca iria terceirizar, ou que pelo menos isso era algo que estava muito distante de acontecer. E no meio do caminho, outra pessoa apareceu para ajudar na parte de roteiros, o que foi outra novidade. E trabalhar com essas duas pessoas está sendo uma ótima experiência, principalmente para profissionalizar a produção de conteúdo no canal, que basicamente estava sendo feita só por mim e de uma forma muito pessoal e pouco escalável, vamos colocar assim.</p>
+        <p>Então sem a ajuda dessas pessoas, tocar 3 projetos (Bebê, Canal e TabNews) se tornou inviável, principalmente tocar de uma forma saudável. Então a batalha agora é retomar o YouTube com força total, e ainda fazer sobrar espaço e tempo de qualidade para o TabNews, que é um projeto que cada dia que passa se torna mais necessário existir.</p>
+        <p>E nesse momento estou no Brasil, em Blumenau especificamente, para que a família e amigos conheçam o Oliver, então está uma bagunça conseguir organizar tudo para que todo mundo consiga ver ele de uma forma segura. E por mais legal que esteja aqui, preciso ser sincero: não vejo a hora de voltar para casa, ter de volta a minha rotina e conseguir aumentar a minha produtividade num geral. Mas por enquanto, qualquer brecha de concentração que eu conseguir, vou avançar com o TabNews. Vamo que vamo!</p>
+        </blockquote>
+        <p>Durante esse tempo, foram feitas algumas contribuições:</p>
+        <ul>
+        <li>Padronização inicial dos Controllers</li>
+        <li>Script para Migration</li>
+        <li>Adiciona migration de &quot;uuid-ossp&quot; e &quot;user&quot;</li>
+        <li>Padronização dos Erros</li>
+        <li>Cria endpoint /status</li>
+        <li>Refatora os Github Actions para aproveitar cache</li>
+        </ul>
+        <h2 id="14-18-03-2022">14. 18/03/2022</h2>
+        <p>Quando as primeiras contas foram criadas. Isso não significa que existia uma página pra cadastro, elas foram feitas interagindo com a API em REST.</p>
+        <h2 id="15-05-04-2022">15. 05/04/2022</h2>
+        <p>Agora sim, a página de cadastro foi criada</p>
+        <h2 id="16-06-04-2022">16. 06/04/2022</h2>
+        <p>Sistema de recuperação de conta/ativação</p>
+        <h2 id="17-07-04-2022">17. 07/04/2022</h2>
+        <p>O que é uma página de cadastro se não se pode logar? Agora a página de login também foi adicionada</p>
+        <h2 id="18-20-04-a-27-04-2022">18. 20/04 a 27/04/2022</h2>
+        <p>Durante esse tempo muitas coisas aconteceram. Aqui uma lista delas:</p>
+        <ul>
+        <li>20/04: CRUD de content - Primeira versão do GET.</li>
+        <li>21/04: implementa primeira versão do POST.</li>
+        <li>22/04: content: implementa primeira versão do PATCH, (foi meu aniversário também 😃).</li>
+        <li>23/04: content: Implementa quase todos os endpoints GET.</li>
+        <li>25/04: content: método e endpoint para listar conteúdos filho.</li>
+        <li>26/04: Implementa Design System do Github (Primer).</li>
+        <li>27/04: Normaliza todos os layouts e adiciona endpoint /user.</li>
+        </ul>
+        <h2 id="19-02-05-2022">19. 02/05/2022</h2>
+        <p>Aqui foi um dos pontos mais importantes do TabNews, onde a primeira interface foi implementada. Outras coisas também foram feitas.</p>
+        <details><summary>Clique aqui para expandir</summary>
+        <h3 dir="auto">Remoção do <code >tailwindcss</code></h3>
+        <p dir="auto">Ele foi completamente substituído pelo <a href="https://primer.style/react/" rel="nofollow" data-turbo-frame="">@primer/react</a>. Isso significa que a nossa atual Home vai ficar meio mal formatada, porque eu mantive ela e a nova Home está em <code >/beta</code>. Assim que finalizar toda migração de dados e features (tem um item sobre isso mais abaixo), eu faço a substituição.</p>
+        <h3 dir="auto">Padronização das páginas com o Primer</h3>
+        <p dir="auto">Todas as páginas estão usando ele, vejam nos próximos tópicos as principais.</p>
+        <h3 dir="auto"><code >/cadastro</code></h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166298154-392d8f5f-14d7-4d4e-8e29-9316bb700ec2.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166298154-392d8f5f-14d7-4d4e-8e29-9316bb700ec2.png" style="max-width: 100%;" width="894"></a></p>
+        <h3 dir="auto"><code >/cadastro</code> com erro</h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166298265-e97f6382-f658-42d8-b371-b22372a300fd.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166298265-e97f6382-f658-42d8-b371-b22372a300fd.png" style="max-width: 100%;" width="894"></a></p>
+        <h3 dir="auto"><code >/publicar</code> com conteúdo preenchido</h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166298807-c60117f7-4c89-4f8c-8afb-cc7ac681d3a1.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166298807-c60117f7-4c89-4f8c-8afb-cc7ac681d3a1.png" style="max-width: 100%;" width="894"></a></p>
+        <h3 dir="auto"><code >/[username]/[slug]</code></h3>
+        <p dir="auto">Como estou logado, eu consigo ver os <code >[...]</code> para editar meu conteúdo.</p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166298960-16eba776-5367-455c-81c6-e7977f95ec29.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166298960-16eba776-5367-455c-81c6-e7977f95ec29.png" style="max-width: 100%;" width="894"></a></p>
+            <h3>Escrevendo uma resposta</h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166299317-6b6525a6-c11b-4a6e-bdb5-785e8f2da928.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166299317-6b6525a6-c11b-4a6e-bdb5-785e8f2da928.png" style="max-width: 100%;" width="894"></a></p>
+        <h3>Depois de publicar a resposta</h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166299393-70f6d962-8854-4440-b576-e6ece0fc26e5.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166299393-70f6d962-8854-4440-b576-e6ece0fc26e5.png" style="max-width: 100%;" width="894"></a></p>
+            <h3>Página exclusiva da resposta</h3>
+        <p dir="auto">Nota na imagem de cima (Depois de publicar a resposta) que cada comentário tem uma hora que foi publicada. Isso é interessante porque ele mostra a quanto tempo foi postado, mas se eu <strong>passar o mouse em cima</strong> mostra o horário sem formatação de distância de tempo:</p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166299676-ffacbbd6-6276-44e2-8b28-a141d47122ac.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166299676-ffacbbd6-6276-44e2-8b28-a141d47122ac.png" style="max-width: 100%;" width="306"></a></p>
+        <p dir="auto">Mas mais importante que isso, é que se você clicar nessa data, você vai acessar a página exclusiva dessa resposta (e que aponta para o conteúdo pai que está acima dela):</p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166299828-f05226aa-4b21-4020-bf06-fa42971e1904.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166299828-f05226aa-4b21-4020-bf06-fa42971e1904.png" style="max-width: 100%;" width="894"></a></p>
+        <h3 dir="auto">Respondendo a resposta de uma resposta</h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166300415-1074823f-8405-454d-8bf9-2b700a743586.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166300415-1074823f-8405-454d-8bf9-2b700a743586.png" style="max-width: 100%;" width="788"></a></p>
+        <h3 dir="auto">Integração com Mermaid</h3>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166302793-3df93094-cb94-4fce-8599-435027828fd2.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166302793-3df93094-cb94-4fce-8599-435027828fd2.png" style="max-width: 100%;" width="894"></a></p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166302860-8ac165e5-7755-417e-a6cf-7860b722a65d.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166302860-8ac165e5-7755-417e-a6cf-7860b722a65d.png" style="max-width: 100%;" width="894"></a></p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166302939-612a8f84-7f02-4157-aea5-53a8f0076a5c.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166302939-612a8f84-7f02-4157-aea5-53a8f0076a5c.png" style="max-width: 100%;" width="894"></a></p>
+        <p dir="auto"><strong>Atenção:</strong> tem algum bug que eu não consegui identificar que impede ver o mermaid no modo <code >Preview</code>... só dá para ver depois que publica. Mas vou investigar (ou não, se trocarmos de editor).</p>
+        <h3 dir="auto"><code >/[username]</code></h3>
+        <p dir="auto">Cada usuário vai ter um endereço na raiz do site:</p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166300942-bd9e726b-db5a-4c6a-ad15-bc0f6fb39ff4.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166300942-bd9e726b-db5a-4c6a-ad15-bc0f6fb39ff4.png" style="max-width: 100%;" width="894"></a></p>
+        <h3 dir="auto">Tudo cessível pela API por padrão: <code >/api/v1/contents/</code></h3>
+        <p dir="auto">Então por exemplo a URL daquele primeiro conteúdo que foi criado era:</p>
+        <div class="snippet-clipboard-content notranslate position-relative overflow-auto"><pre ><code>/filipedeschamps/isso-daqui-e-o-titulo-de-um-novo-conteudo-raiz
+        </code></pre><div class="zeroclipboard-container position-absolute right-0 top-0">
+            <clipboard-copy aria-label="Copy" class="ClipboardButton btn js-clipboard-copy m-2 p-0 tooltipped-no-delay" data-copy-feedback="Copied!" data-tooltip-direction="w" value="/filipedeschamps/isso-daqui-e-o-titulo-de-um-novo-conteudo-raiz" tabindex="0" role="button">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-copy js-clipboard-copy-icon m-2">
+            <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+        </svg>
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check js-clipboard-check-icon color-fg-success d-none m-2">
+            <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
+        </svg>
+            </clipboard-copy>
+        </div></div>
+        <p dir="auto">Essa é a versão da <strong>Página Web</strong>, correto? Então se na frente desse endereço eu digitar <code >/api/v1/contents/</code> resultando em:</p>
+        <div class="snippet-clipboard-content notranslate position-relative overflow-auto"><pre ><code>/api/v1/contents/filipedeschamps/isso-daqui-e-o-titulo-de-um-novo-conteudo-raiz
+        </code></pre><div class="zeroclipboard-container position-absolute right-0 top-0">
+            <clipboard-copy aria-label="Copy" class="ClipboardButton btn js-clipboard-copy m-2 p-0 tooltipped-no-delay" data-copy-feedback="Copied!" data-tooltip-direction="w" value="/api/v1/contents/filipedeschamps/isso-daqui-e-o-titulo-de-um-novo-conteudo-raiz" tabindex="0" role="button">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-copy js-clipboard-copy-icon m-2">
+            <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+        </svg>
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check js-clipboard-check-icon color-fg-success d-none m-2">
+            <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
+        </svg>
+            </clipboard-copy>
+        </div></div>
+        <p dir="auto">A API retorna o exato mesmo conteúdo e isso possibilita a integração e criação de <strong>qualquer client, script ou automação</strong> que as pessoas queiram criar:</p>
+        <p dir="auto"><a target="_blank" rel="noopener noreferrer" href="https://user-images.githubusercontent.com/4248081/166302106-23060107-d543-436c-a60b-0797a24c4d0d.png" data-turbo-frame=""><img alt="image" src="https://user-images.githubusercontent.com/4248081/166302106-23060107-d543-436c-a60b-0797a24c4d0d.png" style="max-width: 100%;" width="1064"></a></p>
+        <h3><code >checkBlockedUsernames()</code></h3>
+        <p>Ao criar uma conta, o model <code>user</code> verifica se o nome de usuário está contido numa lista de palavras bloqueadas. Isso serve tanto para reduzir tentativas de phishing, como por exemplo criar um usuário chamado <code>admin</code> como reservar caminhos na raiz do site, como <code>/contato</code>. Como todos os usuários vão ter uma URL na raiz do site, o username pode conflitar com alguma página que a gente queira criar no futuro.</p>
+        <h3 dir="auto">Refatoração das mensagens de erro</h3>
+        <p dir="auto">Isso não foi feito, mas é importante: todas as mensagens de erro na propriedade <code >message</code> precisam serem refatoradas considerando o usuário que está vendo a interface web, e não a API.</p>
+        <h3 dir="auto">Editor Markdown</h3>
+        <p dir="auto">&quot;Optei por usar o <a href="https://bytemd.js.org/" rel="nofollow" data-turbo-frame="">https://bytemd.js.org/</a> e em questão de <code >DX</code> ele é fantástico, porém o editor é muito lento. Na verdade, só fica lento depois da thread possuir múltiplas respostas, então pode ter sido algo que eu fiz errado ao montar a interface. De qualquer forma, eu reaproveitaria o componente de <code >&lt;View&gt;</code> dele que é ótimo, e só colocaria no lugar um editor mais leve e que suporte algumas facilidades relacionadas a Markdown que dá pra encontrar aqui no Github como automaticamente criar o próximo item de uma lista ao apertar o Enter.&quot;</p>
+        <h3 dir="auto">Conteúdos filho mostram dados do conteúdo pai</h3>
+        <p dir="auto">Agora  na API todo conteúdo filho conta com:</p>
+        <ul dir="auto">
+        <li><code >parent_title</code></li>
+        <li><code >parent_slug</code></li>
+        <li><code >parent_username</code></li>
+        </ul>
+        <p dir="auto">E com isso, quando você está na página única de um conteúdo filho, é possível navegar para o conteúdo pai dele, como mostrado nas imagens anteriores.</p>
+        <h3 dir="auto">Migração das features</h3>
+        <p dir="auto">&quot;Depois do merge desse PR, vou migrar as features antigas para as novas relacionadas a criação de conteúdo.&quot;</p>
+
+        </details>
+
+        <h2 id="20-depois-do-dia-04-05-2022">20. Depois do dia 04/05/2022</h2>
+        <p>Dia 04/05 foi o dia do primeiro post em produção. Hoje não é mais possível acessar ele, pois foi excluído, mas antes disso eu salvei ele no Wayback Machine 🥰.</p>
+        <div align="center"><img src="https://i.imgur.com/kQVpMyj.png"></div>
+        Esse foi o real primeiro post.
+
+        Além disso, eu salvei a home também, ela era bem diferente. Vejam a primeira versão dela:
+        <div align="center"><img src="https://i.imgur.com/zoa4rvl.png"></div>
+
+
+        <p><sub>Uma curiosidade inútil e uma observação interessante: atualmente meu primeiro post é a publicação de número 10 (dos mais antigos para os mais recentes), já que a contagem começa do 0 e os posts de teste foram apagados porque o TabNews ia aparecer no canal do Filipe Deschamps.</sub></p>
+        <h2 id="21-16-05-2022">21. 16/05/2022</h2>
+        <p>A primaira listagem de conteúdos não possuia paginação, ou seja, se fosse atualmente, a home mostraria todos os posts do TabNews (com certeza a página iria demorar bem mais pra carregar). Além disso, ela tinha alguns bugs. </p>
+        <div align="center"><img src="https://i.imgur.com/4Tk2dWN.png"></div>
+
+        <p>Nesse dia também foi usada a famosa tag <code>Pitch</code> pela primeira vez:</p>
+        <div align="center"><img src="https://i.imgur.com/8nY6gtn.png"></div>
+
+        <h2 id="22-28-05-2022">22. 28/05/2022</h2>
+        <p>Foi adicionada a paginação no site, ou seja, cada página só mostra até no máximo 30 conteúdos.</p>
+        <h2 id="23-03-06-2022">23. 03/06/2022</h2>
+        <p>As amadas TabCoins e os queridos TabCashs foram adicionados.</p>
+        <h2 id="24-de-l-pra-c-">24. De lá pra cá...</h2>
+        <p>De lá pra cá muitas mudanças foram feitas, das mais simples (como o ajuste na fonte do toolip de tela cheia do editor) até as mais complexas (como as TabCoins). 
+        Muitas eu não botei aqui, talvez porque tenham passado despercebidas, talvez porque eu esqueci ou talvez porque eu achei que ficaria muito mais longo se eu botasse elas.</p>
+        <h2 id="25-21-11-2022">25. 21/11/2022</h2>
+        <p><strong>O Lançamento Oficial</strong>
+        Depois de 6 meses em Beta, o tão esperado lançamento foi feito! </p>
+        <p>Acho que boa parte deve ter acessado o site nesse dia, também eu acho que foi o primeiro dia que o TabNews ficou com instabiliades. 
+        <img src="https://user-images.githubusercontent.com/4248081/203150458-b4ea9d2a-880f-4552-a437-4b5c689febcd.png" alt="Screenshot da página inicial do TabNews no dia 21/11/2022"></p>
+        <p>E mesmo com todas as instabilidades, API ter ficado fora do ar e o vídeo ter ficado como não listado durante um tempo, no primeiro dia foram feitos impressionantes 1884 cadastros, mais de 130 publicações e 506 comentários. No dia seguinte os números foram ainda maiores, você pode ver na página de <a href="https://www.tabnews.com.br/status">Status</a>.</p>
+        <h2 id="todas-as-melhorias">Todas as melhorias</h2>
+        <p>Se eu botasse tudo o que realmente foi feito desde o início o post ficaria mais longo do que já está e mesmo assim eu acho que não conseguiria colocar tudo. Então aqui está uma lista com o link de todos os Change Logs que o filipedeschamps publicou:</p>
+        <ul>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-recuperacao-de-senha">Nova melhoria: Recuperação de Senha 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-refatoracao-e-novos-comportamentos-no-editor-de-markdown">Nova melhoria: Refatoração e novos comportamentos no Editor de Markdown 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-melhorias-de-tags-para-seo-e-redes-sociais-e-largura-das-colunas">Nova melhoria: Melhorias de tags para SEO e redes sociais (e largura das colunas) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-paginacao-na-api-e-no-site">Nova melhoria: Paginação na API e no Site 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-remocao-do-flicker-na-data-posicao-dos-numeros-node-js-16-lts-sourceurl-e-nova-paginacao">Novas melhorias: Remoção do &quot;flicker&quot; na data, posição dos números, Node.js 16 LTS, source_url, ícone Dark Mode e Nova Paginação 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-habilidade-de-apagar-suas-publicacoes-e-edicao-pela-moderacao">Novas melhorias: habilidade de apagar suas publicações (e edição pela moderação) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-numero-de-comentarios-nas-publicacoes">Novas melhorias: número de comentários nas publicações (+SEO) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-husky-sistema-de-eventos-firewall-e-melhorias-no-seo">Novas melhorias: Husky, Sistema de Eventos, Firewall e Melhorias no SEO 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-aumento-de-performance-para-usuarios-logados-ultima-tarefa-antes-das-tabcoins">Nova melhoria: aumento de performance para usuários logados (última tarefa antes das TabCoins) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/nova-melhoria-tabcoins-tabcash-e-melhorias-no-layout">Nova melhoria: TabCoins, TabCash e Melhorias no Layout 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-enviar-publicacoes-com-ctrl-enter-e-outras-6-melhorias">Novas melhorias: Enviar publicações com &quot;CTRL + Enter&quot; e outras 6 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-thumbnail-customizada-icones-do-bot-do-tabnews-e-outras-5-melhorias">Novas melhorias: Thumbnail dinâmica, Ícones do Bot do TabNews e outras 5 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-feature-de-deslogar-implementada-e-mais-6-melhorias">Novas melhorias: feature de Deslogar implementada e mais 6 melhorias! 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-abertura-instananea-de-paginas-e-mais-7-melhorias">Novas melhorias: Abertura instanânea de páginas e mais 7 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-rss-e-mais-7-melhorias">Novas melhorias: RSS e mais 7 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-mais-performance-e-outras-6-melhorias">Novas melhorias: Mais Performance e outras 6 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-mais-contexto-nas-notifacoes-por-email-e-outras-8-melhorias">Novas melhorias: Mais contexto nas notificações por Email e outras 8 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-tabcoins-mais-consistentes-e-outras-4-melhorias">Novas melhorias: TabCoins mais consistentes e outras 4 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-editar-perfil-e-outras-4-melhorias">Novas melhorias: Editar Perfil e outras 4 melhorias 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-nao-de-codigo-mas-teve-sobre-o-video-de-lancamento-do-tabnews">Novas melhorias: Não de código, mas teve sobre o Vídeo de Lançamento do TabNews 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-testando-novo-algoritmo-de-ranking-3-versoes-disponiveis">Novas melhorias: testando novo algoritmo de ranking (3 versões disponíveis) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-novo-algoritmo-de-ranqueamento-e-mais-3-melhorias-1-breaking-change">Novas melhorias: Novo Algoritmo de Ranqueamento e mais 3 melhorias (+1 Breaking Change) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-3-ajustes-commit-no-core-do-next-js-e-peguei-covid">Novas melhorias: 3 ajustes + Commit no Core do Next.js 🎉 (e peguei COVID)</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/novas-melhorias-3-ajustes-incluindo-novo-analytics">Novas melhorias: 3 ajustes (incluindo novo Analytics) 🎉</a></li>
+        <li><a href="https://www.tabnews.com.br/filipedeschamps/repositorio-do-tabnews-no-github-disponibilizado-de-forma-publica">Repositório do TabNews no GitHub disponibilizado de forma Pública 🎉</a></li>
+        </ul>
+        <h2 id="daqui-pra-frente-">Daqui pra frente...</h2>
+        <p>Daqui pra frente, na minha visão de &quot;TabLover&quot; (alguns falaram TabNewers, TabUsers e outras coisas, precisamos decidir como nos chamaremos urgentemente! 😅), o TabNews ainda vai evoluir muito.
+        Muitas mudanças passaram despercebidas. O TabNews mantém a sua essência que é ser simples, mas com a preocupação em ajustar <strong>os mínimos detalhes.</strong></p>
+        <p>Muitas novidades ainda virão, tenho certeza de que diversas sugestões de features (como pesquisa, favoritar conteúdo, upload de imagens) vão ser implementadas aqui.</p>
+        <h2 id="conclus-o">Conclusão</h2>
+        <p>Eu praticamente já deixei uma conclusão bem ali, mas agora que queria agradecer a todos que leram até aqui, porque eu passei <strong>mais de 10 horas</strong> coletando e escrevendo as informações e é <strong>muito gratificante saber que pelo menos uma pessoa leu até aqui</strong>. Então qualquer feedback de como melhorar, não só esse post, mas todos os meus e de outros usuários do TabNews são muito bem-vindos.</p>
+        <p>Quero agradecer também ao Filipe Deschamps por ter tido essa idéia incrível, levado ela pra frente e realmente ter se envolvido com as pessoas que de alguma forma contribuíram com o projeto. Aqui fica uma sugestão de vídeo pro canal do YouTube: Fazer um vídeo com toda a evolução (talvez no aniversário 1 ano de TabNews Beta, ou 1 ano de lançamento oficial, não sei), lá com certeza vão ter coisas que aqui não tem. E o melhor, com o jeito único de vídeo do canal, seria um material &quot;delicinha&quot;!</p>
+        <h2 id="fontes">Fontes</h2>
+        <ul>
+        <li><a href="https://github.com/filipedeschamps/tabnews.com.br">Repositório do TabNews</a></li>
+        <li><a href="https://github.com/filipedeschamps/tabnews.com.br/wiki">Diário de desenvolvimento</a></li>
+        <li><a href="https://www.tabnews.com.br/museu">Museu</a></li>
+        <li><a href="http://web.archive.org/web/20220000000000*/tabnews.com.br">WayBack Machine</a></li>
+        </ul>
+    </main>
+
+    <footer>
+        <p class="footer-text">Artigo escrito por <a href="https://tabnews.com.br/GabrielSozinho">Gabriel Sozinho</a></p>
+    </footer>
+</body>
+</html>
