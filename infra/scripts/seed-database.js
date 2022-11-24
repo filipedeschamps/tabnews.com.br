@@ -36,6 +36,8 @@ async function seedDevelopmentUsers() {
     'create:migration',
     'update:content:others',
     'create:recovery_token:username',
+    'auth:2fa:enable',
+    'auth:2fa:disable',
   ]);
   await insertUser('user', 'user@user.com', '$2a$04$v0hvAu/y6pJ17LzeCfcKG.rDStO9x5ficm2HTLZIfeDBG8oR/uQXi', [
     'create:session',
@@ -45,6 +47,8 @@ async function seedDevelopmentUsers() {
     'create:content:text_child',
     'update:content',
     'update:user',
+    'auth:2fa:enable',
+    'auth:2fa:disable',
   ]);
 
   console.log('------------------------------');

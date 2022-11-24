@@ -35,7 +35,7 @@ describe('POST /api/v1/sessions', () => {
 
       const responseBody = await response.json();
       expect(response.status).toBe(401);
-      expect(responseBody.message).toBe('2FA está ativado, mas nenhum código foi enviado');
+      expect(responseBody.message).toBe('2FA está ativado, mas nenhum código foi enviado.');
       expect(responseBody.action).toBe(`Envie um código de 2FA.`);
       expect(responseBody.error_location_code).toBe('MODEL:AUTHENTICATION:VERIFY_2FA:CODE_NOT_PRESENT');
     });

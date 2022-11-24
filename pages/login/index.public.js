@@ -27,10 +27,31 @@ function LoginForm() {
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
+  const ref2fa = useRef('');
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
+  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
+  const [requires_2fa, setRequires2fa] = useState(false);
+  useEffect(() => {
+    if (user && router) {
+      if (router.query?.redirect) {
+        router.push(router.query.redirect);
+      } else {
+        router.push('/publicar');
+      }
+    }
+  }, [user, router]);
+
+  function detectCapsLock(event) {
+    if (event.getModifierState('CapsLock')) {
+      setCapsLockWarningMessage('Atenção: Caps Lock está ativado.');
+      return;
+    }
+
+    setCapsLockWarningMessage(false);
+  }
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -41,6 +62,7 @@ function LoginForm() {
 
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
+    const code_2fa = ref2fa.current.value;
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -53,8 +75,9 @@ function LoginForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email,
-          password: password,
+          email,
+          password,
+          code_2fa,
         }),
       });
 
@@ -66,13 +89,19 @@ function LoginForm() {
         fetchUser();
         return;
       }
+      if (responseBody.error_location_code === 'MODEL:AUTHENTICATION:VERIFY_2FA:CODE_NOT_PRESENT') {
+        setRequires2fa(true);
+        setIsLoading(false);
+      }
 
       if (response.status === 400) {
+        if (responseBody.key === 'code_2fa') {
+          setGlobalErrorMessage('Digite um código 2FA válido!');
+        }
         setErrorObject(responseBody);
         setIsLoading(false);
         return;
       }
-
       if (response.status >= 401) {
         setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
         setIsLoading(false);
@@ -120,6 +149,26 @@ function LoginForm() {
             errorObject={errorObject}
             setErrorObject={setErrorObject}
           />
+
+          {requires_2fa ? (
+            <FormControl id="2fa">
+              <FormControl.Label>Codigo 2FA (6 digitos)</FormControl.Label>
+              <TextInput
+                ref={ref2fa}
+                onChange={clearErrors}
+                onKeyDown={detectCapsLock}
+                onKeyUp={detectCapsLock}
+                name="2fa"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                size="large"
+                block={true}
+                aria-label="Codigo 2FA"
+              />
+            </FormControl>
+          ) : null}
+
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
             <Button

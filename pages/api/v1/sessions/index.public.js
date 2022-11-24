@@ -67,7 +67,7 @@ async function postHandler(request, response) {
   }
   if (authorization.can(storedUser, 'auth:2fa') && !secureInputValues.code_2fa) {
     throw new UnauthorizedError({
-      message: '2FA está ativado, mas nenhum código foi enviado',
+      message: '2FA está ativado, mas nenhum código foi enviado.',
       action: `Envie um código de 2FA.`,
       errorLocationCode: 'MODEL:AUTHENTICATION:VERIFY_2FA:CODE_NOT_PRESENT',
     });

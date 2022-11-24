@@ -58,6 +58,11 @@ const schemas = {
       code_2fa: Joi.string()
         .when({ is: '$required.code_2fa', then: Joi.required(), otherwise: Joi.optional() })
         .length(6)
+        .messages({
+          'string.length': '`code_2fa` precisa de ter 6 digitos de tamanho.',
+          'string.empty': '`code_2fa` não pode estar em branco.',
+          'string.base': '`code_2fa` precisa ser do tipo String.',
+        })
         .trim(),
     });
   },
