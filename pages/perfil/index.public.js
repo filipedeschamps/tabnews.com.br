@@ -36,7 +36,30 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
-
+  async function disable2FA(e) {
+    if (
+      await confirm({
+        title: 'Desativar 2FA?',
+        content: <p>Ao desativar o 2FA, a sua conta pode se tornar vulneravel. Tem certeza que quer continuar?</p>,
+        confirmButtonContent: 'Ok',
+        cancelButtonContent: 'Quero estar seguro!',
+        confirmButtonType: 'danger',
+      })
+    ) {
+      setIsLoading(true);
+      let res = await fetch('/api/v1/user/2fa', {
+        method: 'delete',
+      });
+      if (res.status != 200) {
+        let responseBody = await res.json();
+        setGlobalErrorMessage(`Não foi possivel desativar o 2FA: ${responseBody.message} ${responseBody.action}`);
+        setIsLoading(false);
+      } else {
+        fetchUser();
+        setIsLoading(false);
+      }
+    }
+  }
   useEffect(() => {
     if (router && !user && !userIsLoading) {
       router.push(`/login?redirect=${router.asPath}`);
@@ -281,7 +304,18 @@ function EditProfileForm() {
             Utilize o fluxo de recuperação de senha →
           </Link>
         </FormControl>
-
+        <FormControl id="2fa">
+          <FormControl.Label>2FA</FormControl.Label>
+          {userIsLoading || !user ? null : user.features.includes('auth:2fa') ? (
+            <Button disabled={isLoading} onClick={disable2FA}>
+              Desativar 2FA
+            </Button>
+          ) : (
+            <Link href="/perfil/2fa/enable" sx={{ fontSize: 0 }}>
+              Ative a autenticação de 2 fatores →
+            </Link>
+          )}
+        </FormControl>
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
           <Button
