@@ -1049,8 +1049,7 @@ async function findRootContent(values, options = {}) {
             children
           WHERE
             children.id NOT IN (child_to_root_tree.id)
-      ) as children_deep_count
-
+        ) as children_deep_count
       FROM
         child_to_root_tree
       INNER JOIN

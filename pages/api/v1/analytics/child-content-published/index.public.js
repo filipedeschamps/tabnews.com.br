@@ -43,6 +43,6 @@ async function getHandler(request, response) {
     };
   });
 
-  response.setHeader('Cache-Control', 'public, s-maxage=1, stale-while-revalidate');
+  response.setHeader('Cache-Control', 'public, 300, stale-while-revalidate');
   return response.status(200).json(contentsPublished);
 }

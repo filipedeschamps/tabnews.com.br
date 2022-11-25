@@ -232,7 +232,7 @@ export async function getStaticProps(context) {
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
     },
 
-    revalidate: 1,
+    revalidate: 10,
   };
 }
 

@@ -65,6 +65,6 @@ export async function getStaticProps(context) {
 
     // TODO: instead of `revalidate`, understand how to use this:
     // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
-    revalidate: 1,
+    revalidate: 10,
   };
 }

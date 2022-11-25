@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 export default function Post() {
   const router = useRouter();
   const { user, isLoading } = useUser();
-  const { data: contents } = useSWR(user ? `/api/v1/contents/${user.username}?strategy=new` : null, {
+  const { data: contents } = useSWR(user ? `/api/v1/contents/${user.username}?strategy=new&per_page=1` : null, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
