@@ -15,7 +15,7 @@ export default function ConfirmSignup() {
     <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirme seu email' }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
         <Heading as="h1">Confira seu e-mail: {email}</Heading>
-        <Text>Você receberá um link para confirmar seu cadastro e ativar a sua conta.</Text>
+        <Text>Você receberá um link para confirmar seu cadastro e ativar a sua conta em até 48 horas.</Text>
       </Box>
     </DefaultLayout>
   );
