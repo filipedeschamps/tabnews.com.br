@@ -176,12 +176,6 @@ function SignUpForm() {
             onChange={clearErrors}
             onKeyDown={detectCapsLock}
             onKeyUp={detectCapsLock}
-            name="password"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            size="small"
-            block={true}
             aria-label="Sua senha"
           />
           {capsLockWarningMessage && (

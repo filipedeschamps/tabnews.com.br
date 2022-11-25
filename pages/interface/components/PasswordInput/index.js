@@ -13,6 +13,12 @@ export default function PasswordInput(props) {
     <TextInput
       {...props}
       type={isPasswordVisible ? 'text' : 'password'}
+      name="password"
+      autoCorrect="off"
+      autoCapitalize="off"
+      spellCheck={false}
+      size="small"
+      block={true}
       trailingAction={
         <TextInput.Action
           onClick={handleChangePasswordVisibility}
