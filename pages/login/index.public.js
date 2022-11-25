@@ -28,7 +28,7 @@ function LoginForm() {
       if (router.query?.redirect) {
         router.push(router.query.redirect);
       } else {
-        router.push('/publicar');
+        router.push('/');
       }
     }
   }, [user, router]);
