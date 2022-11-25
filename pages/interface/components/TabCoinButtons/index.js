@@ -4,8 +4,7 @@ import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
 import { useRouter } from 'next/router';
 
-import { useUser } from 'pages/interface/index.js';
-import Modal from '../Modal';
+import { useUser, Modal } from 'pages/interface/index.js';
 
 export default function TabCoinButtons({ content }) {
   const router = useRouter();
