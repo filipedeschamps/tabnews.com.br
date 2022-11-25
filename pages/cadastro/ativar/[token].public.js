@@ -18,8 +18,8 @@ export default function ActiveUser() {
 
   useEffect(() => {
     function handleResize() {
-      setConfettiWidth(window.screen.width);
-      setConfettiHeight(window.screen.height);
+      setConfettiWidth(window.innerWidth);
+      setConfettiHeight(window.innerHeight);
     }
 
     window.addEventListener('resize', handleResize);
