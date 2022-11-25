@@ -46,10 +46,6 @@ function LoginForm() {
     setErrorObject(undefined);
   }
 
-  function handleChangePasswordVisibility() {
-    setIsPasswordVisible((prevState) => !prevState);
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
