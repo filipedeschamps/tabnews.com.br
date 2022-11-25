@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, IconButton, Dialog, Button } from '@primer/react';
+import { Box, Text, IconButton } from '@primer/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
 import { useRouter } from 'next/router';
 
 import { useUser } from 'pages/interface/index.js';
+import Modal from '../Modal';
 
 export default function TabCoinButtons({ content }) {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function TabCoinButtons({ content }) {
   const [contentObject, setContentObject] = useState(content);
   const [isPosting, setIsPosting] = useState(false);
 
-  const [dialogProps, setDialogProps] = useState({
+  const [modalProps, setModalProps] = useState({
     title: 'Tente novamente mais tarde',
     description: 'Não foi possível realizar essa operação.',
     isOpen: false,
@@ -77,7 +78,7 @@ export default function TabCoinButtons({ content }) {
         }
         return;
       }
-      setDialogProps({
+      setModalProps({
         isOpen: true,
         title: responseBody.message,
         description: responseBody.action,
@@ -96,18 +97,14 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
-      <Dialog
-        isOpen={dialogProps.isOpen}
-        onDismiss={() => setDialogProps({ isOpen: false })}
-        aria-labelledby="header-id">
-        <Dialog.Header id="header-id">{dialogProps.title}</Dialog.Header>
-        <Box p={3}>
-          <Text fontFamily="sans-serif">{dialogProps.description}</Text>
-          <Box display="flex" mt={3} justifyContent="flex-end">
-            <Button sx={{ mr: 1 }} onClick={() => setDialogProps({ isOpen: false })} children="Fechar" />
-          </Box>
-        </Box>
-      </Dialog>
+      <Modal
+        onClose={() => {
+          setModalProps({
+            isOpen: false,
+          });
+        }}
+        {...modalProps}
+      />
       <Box>
         <IconButton
           variant="invisible"
