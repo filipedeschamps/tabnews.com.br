@@ -37,9 +37,9 @@ async function getHandler(request, response) {
     where: {
       parent_id: null,
       status: 'published',
-    },
-    like: {
-      title: request.query.query,
+      like: {
+        title: '%' + request.query.query + '%',
+      },
     },
     attributes: {
       exclude: ['body'],
