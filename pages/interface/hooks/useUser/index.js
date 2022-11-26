@@ -21,6 +21,7 @@ export function UserProvider({ children }) {
         const cachedUserProperties = {
           id: responseBody.id,
           username: responseBody.username,
+          avatar_url: responseBody.avatar_url,
           features: responseBody.features,
           tabcoins: responseBody.tabcoins,
           tabcash: responseBody.tabcash,

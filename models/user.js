@@ -1,3 +1,4 @@
+import md5 from 'md5';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import validator from 'models/validator.js';
@@ -60,7 +61,7 @@ async function findOneByUsername(username) {
     });
   }
 
-  return results.rows[0];
+  return attachUserProperties(results.rows[0]);
 }
 
 async function findOneByEmail(email) {
@@ -98,7 +99,7 @@ async function findOneByEmail(email) {
     });
   }
 
-  return results.rows[0];
+  return attachUserProperties(results.rows[0]);
 }
 
 // TODO: validate userId
@@ -137,7 +138,7 @@ async function findOneById(userId) {
     });
   }
 
-  return results.rows[0];
+  return attachUserProperties(results.rows[0]);
 }
 
 async function create(postedUserData) {
@@ -594,6 +595,13 @@ async function addFeatures(userId, features, options) {
   return results.rows[0];
 }
 
+function attachUserProperties(user) {
+  const gravatarUrl = process.env.GRAVATAR_URL;
+  user.avatar_url = gravatarUrl ? `${gravatarUrl}${md5(user.email)}` : null;
+
+  return user;
+}
+
 export default Object.freeze({
   create,
   findAll,
@@ -604,4 +612,5 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
+  attachUserProperties,
 });

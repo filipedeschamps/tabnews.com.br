@@ -1,3 +1,4 @@
+import md5 from 'md5';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
@@ -40,6 +41,7 @@ describe('GET /api/v1/user', () => {
       });
 
       const responseBody = await response.json();
+      const avatarUrl = `${process.env.GRAVATAR_URL}${md5(defaultUser.email)}`;
 
       expect(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
@@ -52,6 +54,7 @@ describe('GET /api/v1/user', () => {
         tabcash: defaultUser.tabcash,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
+        avatar_url: process.env.GRAVATAR_URL ? avatarUrl : null,
       });
     });
 

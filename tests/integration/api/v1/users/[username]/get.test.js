@@ -1,3 +1,4 @@
+import md5 from 'md5';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
@@ -84,6 +85,8 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
+      const avatarUrl = `${process.env.GRAVATAR_URL}${md5(userCreated.email)}`;
+
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
@@ -94,6 +97,7 @@ describe('GET /api/v1/users/[username]', () => {
         tabcash: userCreated.tabcash,
         created_at: userCreated.created_at.toISOString(),
         updated_at: userCreated.updated_at.toISOString(),
+        avatar_url: process.env.GRAVATAR_URL ? avatarUrl : null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -112,6 +116,8 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
+      const avatarUrl = `${process.env.GRAVATAR_URL}${md5(userCreated.email)}`;
+
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
@@ -122,6 +128,7 @@ describe('GET /api/v1/users/[username]', () => {
         tabcash: userCreated.tabcash,
         created_at: userCreated.created_at.toISOString(),
         updated_at: userCreated.updated_at.toISOString(),
+        avatar_url: process.env.GRAVATAR_URL ? avatarUrl : null,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);

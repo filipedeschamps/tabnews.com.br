@@ -1,4 +1,4 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList, Avatar, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
@@ -81,7 +81,17 @@ export default function HeaderComponent() {
           <Header.Item sx={{ mr: 0 }}>
             <ActionMenu>
               <ActionMenu.Anchor>
-                <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
+                {user.avatar_url ? (
+                  <Avatar
+                    square
+                    size={32}
+                    src={`${user.avatar_url}?s=32&d=retro`}
+                    sx={{ cursor: 'pointer' }}
+                    aria-label="Abrir opções do Perfil"
+                  />
+                ) : (
+                  <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
+                )}
               </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>

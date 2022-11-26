@@ -9,8 +9,19 @@ import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/router';
-import { Box, Pagehead, ActionMenu, ActionList, Flash, IconButton, useConfirm, LabelGroup, Label } from '@primer/react';
-import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
+import {
+  Box,
+  Pagehead,
+  ActionMenu,
+  ActionList,
+  Flash,
+  IconButton,
+  useConfirm,
+  LabelGroup,
+  Label,
+  Avatar,
+} from '@primer/react';
+import { KebabHorizontalIcon, TrashIcon, PersonIcon } from '@primer/octicons-react';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
@@ -116,6 +127,9 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
 
         <Box sx={{ width: '100%', display: 'flex', alignItems: 'flex-start' }}>
           <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, display: 'flex', alignItems: 'center' }}>
+            {userFound.avatar_url && (
+              <Avatar square size={48} src={`${userFound.avatar_url}?s=48&d=retro`} sx={{ marginRight: '8px' }} />
+            )}
             {userFound.username} <UserFeatures />
           </Pagehead>
           {user?.features?.includes('ban:user') && OptionsMenu()}

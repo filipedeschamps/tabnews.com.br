@@ -7,6 +7,9 @@ module.exports = {
     styledComponents: true,
   },
   swcMinify: false,
+  images: {
+    domains: ['www.gravatar.com'],
+  },
   async redirects() {
     return [
       {

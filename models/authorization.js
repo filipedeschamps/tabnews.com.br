@@ -181,6 +181,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
+      avatar_url: output.avatar_url,
       features: output.features,
       tabcoins: output.tabcoins,
       tabcash: output.tabcash,
@@ -195,6 +196,7 @@ function filterOutput(user, feature, output) {
         id: output.id,
         username: output.username,
         email: output.email,
+        avatar_url: output.avatar_url,
         notifications: output.notifications,
         features: output.features,
         tabcoins: output.tabcoins,
