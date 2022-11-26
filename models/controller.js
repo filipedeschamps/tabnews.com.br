@@ -1,7 +1,6 @@
 import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
 import ipAnonymize from 'ip-anonymize';
-import requestIp from 'request-ip';
 
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
@@ -25,33 +24,21 @@ async function injectRequestMetadata(request, response, next) {
   };
 
   function extractAnonymousIpFromRequest(request) {
-    let ip = request.headers['x-real-ip'] || request.socket.remoteAddress;
+    let realIp = request.headers['cf-connecting-ip'] || request.headers['x-real-ip'] || request.socket.remoteAddress;
+
+    // Localhost loopback in IPv6
+    if (realIp === '::1') {
+      realIp = '127.0.0.1';
+    }
+
+    // IPv4-mapped IPv6 addresses
+    if (realIp.substr(0, 7) == '::ffff:') {
+      realIp = realIp.substr(7);
+    }
 
     const v4MaskLength = 24;
     const v6MaskLength = 96;
-    logger.info({
-      name: 'IP_DEBUG',
-      'x-client-ip': request.headers['x-client-ip'],
-      'cf-connecting-ip': request.headers['cf-connecting-ip'],
-      'x-real-ip': request.headers['x-real-ip'],
-      'x-forwarded-for': request.headers['x-forwarded-for'],
-      remoteAddress: request.socket.remoteAddress,
-      ipWithIpAnonymizeIP: ipAnonymize(ip, v4MaskLength, v6MaskLength),
-      ipWithIpAnonymizeCF: ipAnonymize(request.headers['cf-connecting-ip'], v4MaskLength, v6MaskLength),
-      ipWithRequestIp: requestIp.getClientIp(request),
-    });
-
-    if (ip === '::1') {
-      ip = '127.0.0.1';
-    }
-
-    if (ip.substr(0, 7) == '::ffff:') {
-      ip = ip.substr(7);
-    }
-
-    const ipParts = ip.split('.');
-    ipParts[3] = '0';
-    const anonymizedIp = ipParts.join('.');
+    const anonymizedIp = ipAnonymize(realIp, v4MaskLength, v6MaskLength);
 
     return anonymizedIp;
   }
