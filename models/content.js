@@ -43,7 +43,9 @@ async function findAll(values = {}, options = {}) {
       const keys = Object.keys(like);
 
       keys.forEach((key, index) => {
-        likeClause += `ranked.${key} ILIKE '%${like[key]}%'`;
+        likeClause += `ranked.${key} ILIKE $${query.values.length + 1}`;
+
+        query.values.push(like[key]);
 
         if (index < keys.length - 1) {
           likeClause += ' AND ';
