@@ -612,5 +612,4 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
-  attachUserProperties,
 });
