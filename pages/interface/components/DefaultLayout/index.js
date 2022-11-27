@@ -6,17 +6,19 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
     <>
       {metadata && <Head metadata={metadata} />}
       <Header />
-      <Box
-        maxWidth={containerWidth}
-        sx={{
-          marginX: 'auto',
-          display: 'flex',
-          flexWrap: 'wrap',
-          padding: [2, null, null, 4],
-          paddingTop: [3, null, null, 4],
-        }}>
-        {children}
-      </Box>
+      <main>
+        <Box
+          maxWidth={containerWidth}
+          sx={{
+            marginX: 'auto',
+            display: 'flex',
+            flexWrap: 'wrap',
+            padding: [2, null, null, 4],
+            paddingTop: [3, null, null, 4],
+          }}>
+          {children}
+        </Box>
+      </main>
       <Footer
         maxWidth={containerWidth}
         sx={{

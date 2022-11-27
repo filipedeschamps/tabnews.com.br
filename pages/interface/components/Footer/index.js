@@ -18,7 +18,8 @@ export default function Footer(props) {
           justifyContent: 'center',
           flexWrap: 'wrap-reverse',
           gap: 3,
-        }}>
+        }}
+        role={'navigation'}>
         <Box
           sx={{
             display: 'flex',
