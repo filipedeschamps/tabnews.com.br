@@ -1,8 +1,10 @@
 import useSWR from 'swr';
 import { Box, Heading, Label, LabelGroup, Truncate } from '@primer/react';
-import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
+import { Card, BarChart } from '@tremor/react'; // BarChart
 
 import { DefaultLayout } from 'pages/interface/index.js';
+
+import '@tremor/react/dist/esm/tremor.css';
 
 export default function Page() {
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
@@ -16,43 +18,83 @@ export default function Page() {
     refreshInterval: 1000 * 60 * 5,
   });
 
+  const valueFormatter = (number) => `${number.toString()}`;
+
   return (
     <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site' }}>
       <Box sx={{ display: 'grid', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
-        <Box>
-          <h2>Novos cadastros</h2>
-
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={usersCreated}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="cadastros" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <h2>Novos cadastros</h2>
+        <Card marginTop="mt-4">
+          <BarChart
+            howAnimation={true}
+            layout="horizontal"
+            showYAxis={false}
+            showGridLines={false}
+            showTooltip={true}
+            showLegend={false}
+            startEndOnly={false}
+            yAxisWidth="w-16"
+            showXAxis={true}
+            data={usersCreated}
+            dataKey="date"
+            categories={['cadastros']}
+            colors={['lime', 'lime']}
+            stack={false}
+            valueFormatter={valueFormatter}
+            height="h-60"
+          />
+        </Card>
 
         <Box>
           <h2>Novas publicações</h2>
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={rootContentPublished}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="conteudos" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
+
+          <Card>
+            <BarChart
+              howAnimation={true}
+              layout="horizontal"
+              showYAxis={false}
+              showGridLines={false}
+              showTooltip={true}
+              showLegend={false}
+              startEndOnly={false}
+              yAxisWidth="w-16"
+              showXAxis={true}
+              data={rootContentPublished}
+              dataKey="date"
+              categories={['conteudos']}
+              colors={['lime', 'lime']}
+              stack={false}
+              valueFormatter={valueFormatter}
+              height="h-60"
+            />
+          </Card>
         </Box>
 
         <Box>
           <h2>Novas respostas</h2>
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={childContentPublished}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="respostas" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
+
+          <Card>
+            <BarChart
+              howAnimation={true}
+              layout="horizontal"
+              showYAxis={false}
+              showGridLines={false}
+              showTooltip={true}
+              showLegend={false}
+              startEndOnly={false}
+              yAxisWidth="w-16"
+              showXAxis={true}
+              data={childContentPublished}
+              dataKey="date"
+              categories={['respostas']}
+              colors={['lime', 'lime']}
+              stack={false}
+              valueFormatter={valueFormatter}
+              height="h-60"
+            />
+          </Card>
         </Box>
 
         <Box>
