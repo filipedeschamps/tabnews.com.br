@@ -2,6 +2,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { ServiceError } from 'errors/index.js';
 import webserver from 'infra/webserver.js';
+import ip from 'models/ip.js';
 
 async function check(request) {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -21,10 +22,10 @@ async function check(request) {
     });
   }
 
-  const ip = getIP(request);
+  const realIp = ip.extractFromRequest(request);
   const method = request.method;
   const path = request.nextUrl.pathname;
-  const limit = getLimit(method, path, ip);
+  const limit = getLimit(method, path, realIp);
   let timeout;
 
   try {
@@ -55,12 +56,6 @@ async function check(request) {
   } finally {
     clearTimeout(timeout);
   }
-}
-
-function getIP(request) {
-  const xff = request instanceof Request ? request.headers.get('x-forwarded-for') : request.headers['x-forwarded-for'];
-
-  return xff ? (Array.isArray(xff) ? xff[0] : xff.split(',')[0]) : '127.0.0.1';
 }
 
 function getLimit(method, path, ip) {

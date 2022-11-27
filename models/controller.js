@@ -2,6 +2,7 @@ import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
 import ipAnonymize from 'ip-anonymize';
 
+import ip from 'models/ip.js';
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
@@ -24,17 +25,7 @@ async function injectRequestMetadata(request, response, next) {
   };
 
   function extractAnonymousIpFromRequest(request) {
-    let realIp = request.headers['cf-connecting-ip'] || request.headers['x-real-ip'] || request.socket.remoteAddress;
-
-    // Localhost loopback in IPv6
-    if (realIp === '::1') {
-      realIp = '127.0.0.1';
-    }
-
-    // IPv4-mapped IPv6 addresses
-    if (realIp.substr(0, 7) == '::ffff:') {
-      realIp = realIp.substr(7);
-    }
+    const realIp = ip.extractFromRequest(request);
 
     const v4MaskLength = 24;
     const v6MaskLength = 96;
