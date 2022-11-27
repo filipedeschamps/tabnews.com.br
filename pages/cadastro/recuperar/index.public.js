@@ -101,7 +101,7 @@ function RecoverPasswordForm() {
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
         <FormControl id="username">
-          <FormControl.Label>Digite seu usuário ou e-mail</FormControl.Label>
+          <FormControl.Label id="label-user">Digite seu usuário ou e-mail</FormControl.Label>
           <TextInput
             ref={userInputRef}
             onChange={clearErrors}
@@ -112,6 +112,7 @@ function RecoverPasswordForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu usuário ou e-mail"
+            aria-describedby="label-user"
           />
           {['userInput', 'email', 'username'].includes(errorObject?.key) && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -128,7 +129,7 @@ function RecoverPasswordForm() {
             size="large"
             type="submit"
             disabled={isLoading}
-            sx={{ width: '100%' }}
+            sx={{ width: '100%', background: '#237B3C' }}
             aria-label="Recuperar">
             Recuperar
           </Button>

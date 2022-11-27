@@ -104,7 +104,7 @@ function LoginForm() {
             Login
           </Heading>
           <FormControl id="email">
-            <FormControl.Label>Email</FormControl.Label>
+            <FormControl.Label id="label-email">Email</FormControl.Label>
             <TextInput
               ref={emailRef}
               onChange={clearErrors}
@@ -115,13 +115,14 @@ function LoginForm() {
               spellCheck={false}
               block={true}
               aria-label="Seu email"
+              aria-describedby="label-email"
             />
             {errorObject?.key === 'email' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
           </FormControl>
           <FormControl id="password">
-            <FormControl.Label>Senha</FormControl.Label>
+            <FormControl.Label id="label-password">Senha</FormControl.Label>
             <TextInput
               ref={passwordRef}
               onChange={clearErrors}
@@ -135,6 +136,7 @@ function LoginForm() {
               size="large"
               block={true}
               aria-label="Sua senha"
+              aria-describedby="label-password"
             />
             {capsLockWarningMessage && (
               <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
@@ -150,7 +152,7 @@ function LoginForm() {
               size="large"
               type="submit"
               disabled={isLoading}
-              sx={{ width: '100%' }}
+              sx={{ width: '100%', background: '#237B3C' }}
               aria-label="Login">
               Login
             </Button>
