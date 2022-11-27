@@ -250,7 +250,7 @@ function EditProfileForm() {
             size="large"
             type="submit"
             disabled={isLoading}
-            sx={{ width: '100%', background: '#237B3C' }}
+            sx={{ width: '100%' }}
             aria-label="Salvar">
             Salvar
           </Button>

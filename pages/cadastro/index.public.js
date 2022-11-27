@@ -203,7 +203,7 @@ function SignUpForm() {
             size="large"
             type="submit"
             disabled={isLoading}
-            sx={{ width: '100%', background: '#237B3C' }}
+            sx={{ width: '100%' }}
             aria-label="Criar cadastro">
             Criar cadastro
           </Button>

@@ -21,7 +21,8 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             display: 'grid',
             gap: '0.5rem',
             gridTemplateColumns: 'auto 1fr',
-          }}>
+          }}
+          role={'list'}>
           <RenderItems />
           <EndOfRelevant />
         </Box>
@@ -84,7 +85,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             {itemCount}.
           </Text>
         </Box>,
-        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
+        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }} role={'listitem'}>
           <Box
             sx={{
               overflow: 'auto',

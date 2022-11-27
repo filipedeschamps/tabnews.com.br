@@ -152,7 +152,7 @@ function LoginForm() {
               size="large"
               type="submit"
               disabled={isLoading}
-              sx={{ width: '100%', background: '#237B3C' }}
+              sx={{ width: '100%' }}
               aria-label="Login">
               Login
             </Button>
