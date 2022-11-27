@@ -155,7 +155,7 @@ function EditProfileForm() {
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
         <FormControl id="username">
-          <FormControl.Label>Nome de usuário</FormControl.Label>
+          <FormControl.Label id="label-user">Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
             onChange={clearErrors}
@@ -166,6 +166,7 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
+            aria-describedby="label-user"
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -177,7 +178,7 @@ function EditProfileForm() {
         </FormControl>
 
         <FormControl id="email" disabled={emailDisabled}>
-          <FormControl.Label>Email</FormControl.Label>
+          <FormControl.Label id="label-email">Email</FormControl.Label>
           <TextInput
             ref={emailRef}
             onChange={clearErrors}
@@ -188,6 +189,7 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
+            aria-describedby="label-email"
           />
           {errorObject?.key === 'email' && !errorObject?.type && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -248,7 +250,7 @@ function EditProfileForm() {
             size="large"
             type="submit"
             disabled={isLoading}
-            sx={{ width: '100%' }}
+            sx={{ width: '100%', background: '#237B3C' }}
             aria-label="Salvar">
             Salvar
           </Button>

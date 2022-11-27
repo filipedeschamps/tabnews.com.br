@@ -437,7 +437,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="title">
-              <FormControl.Label visuallyHidden>Título</FormControl.Label>
+              <FormControl.Label visuallyHidden id="label-title">
+                Título
+              </FormControl.Label>
               <TextInput
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
@@ -448,6 +450,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 spellCheck={false}
                 placeholder="Título"
                 aria-label="Título"
+                aria-describedby="label-title"
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
@@ -480,7 +483,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
+              <FormControl.Label visuallyHidden id="label-source">
+                Fonte (opcional)
+              </FormControl.Label>
               <TextInput
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
@@ -491,6 +496,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 spellCheck={false}
                 placeholder="Fonte (opcional)"
                 aria-label="Fonte (opcional)"
+                aria-describedby="label-source"
                 block={true}
                 value={newData.source_url}
               />
@@ -513,7 +519,12 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={isPosting}
+              aria-label="Publicar"
+              sx={{ background: '#237B3C' }}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
             </Button>
           </Box>
