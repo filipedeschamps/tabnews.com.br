@@ -20,6 +20,14 @@ async function findAll(values = {}, options = {}) {
     query.values = [values.limit || values.per_page, offset];
   }
 
+  if (values.where?.like) {
+    for (const i of Object.keys(values.where?.like)) {
+      const value = `%${values.where?.like[i]}%`;
+
+      values.where.like[i] = value;
+    }
+  }
+
   if (options.strategy === 'relevant_global') {
     const likeClause = buildRelevantLikeClause(values?.where?.like);
 
