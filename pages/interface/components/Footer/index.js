@@ -29,7 +29,7 @@ export default function Footer(props) {
             color: 'fg.subtle',
           }}>
           <Link href="/" sx={{ color: 'fg.subtle' }}>
-            <CgTab size={26} />
+            <CgTab size={26} title="Acessar a página inicial" />
           </Link>
           © {new Date().getFullYear()} TabNews
         </Box>
