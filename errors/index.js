@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 
 class BaseError extends Error {
   constructor({
