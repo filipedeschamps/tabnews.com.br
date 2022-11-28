@@ -37,14 +37,12 @@ describe('PATCH /api/v1/recovery', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
-        id: updatedTokenInDatabase.id,
         used: true,
         expires_at: updatedTokenInDatabase.expires_at.toISOString(),
         created_at: updatedTokenInDatabase.created_at.toISOString(),
         updated_at: updatedTokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);

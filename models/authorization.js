@@ -257,7 +257,6 @@ function filterOutput(user, feature, output) {
 
   if (feature === 'read:recovery_token') {
     filteredOutputValues = validator(output, {
-      id: 'required',
       used: 'required',
       expires_at: 'required',
       created_at: 'required',
