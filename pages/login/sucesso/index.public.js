@@ -1,5 +1,5 @@
 import { Box, Heading, Text } from '@primer/react';
-import { ConfettiScreen, DefaultLayout, useResize } from 'pages/interface/index.js';
+import { ConfettiScreen, DefaultLayout } from 'pages/interface/index.js';
 
 export default function ConfirmSignup() {
   return (
