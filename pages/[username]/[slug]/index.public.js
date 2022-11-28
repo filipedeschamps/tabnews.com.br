@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, DefaultLayout, Content, TabCoinButtons, ConfettiScreen } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
@@ -18,6 +18,7 @@ export default function Post({
   parentContentFound,
   contentMetadata,
 }) {
+  const [showConfetti, setShowConfetti] = useState(false);
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -40,6 +41,7 @@ export default function Post({
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
+      setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }
   }, []);
@@ -47,7 +49,7 @@ export default function Post({
   return (
     <>
       <DefaultLayout metadata={contentMetadata}>
-        <ConfettiScreen showConfetti={isSuccess}>
+        <ConfettiScreen showConfetti={showConfetti}>
           <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
           <Box
             sx={{
