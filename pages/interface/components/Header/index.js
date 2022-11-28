@@ -50,6 +50,9 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <Header.Item>
+            <HeaderLink href="/publicar">Publicar novo conteúdo</HeaderLink>
+          </Header.Item>
           <Header.Item
             sx={{
               mr: 2,
@@ -93,9 +96,6 @@ export default function HeaderComponent() {
                     <Truncate>{user.username}</Truncate>
                   </ActionList.LinkItem>
                   <ActionList.Divider />
-                  <ActionList.LinkItem as={Link} href="/publicar">
-                    Publicar novo conteúdo
-                  </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
                   </ActionList.LinkItem>
