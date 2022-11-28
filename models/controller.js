@@ -21,18 +21,8 @@ async function injectRequestMetadata(request, response, next) {
   request.context = {
     ...request.context,
     requestId: uuidV4(),
-    clientIp: extractAnonymousIpFromRequest(request),
+    clientIp: ip.extractFromRequest(request),
   };
-
-  function extractAnonymousIpFromRequest(request) {
-    const realIp = ip.extractFromRequest(request);
-
-    const v4MaskLength = 24;
-    const v6MaskLength = 96;
-    const anonymizedIp = ipAnonymize(realIp, v4MaskLength, v6MaskLength);
-
-    return anonymizedIp;
-  }
 
   next();
 }
