@@ -11,7 +11,7 @@ export function Link({ href, children, ...props }) {
 
 export function HeaderLink({ href, children, ...props }) {
   return (
-    <Header.Link as={NextLink} href={href} {...props} prefetch={false}>
+    <Header.Link as={NextLink} href={href} {...props} prefetch={true}>
       {children}
     </Header.Link>
   );
