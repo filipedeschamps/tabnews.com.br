@@ -11,3 +11,4 @@ export { default as NextLink, HeaderLink, Link } from './components/Link/index.j
 
 export { default as useUser } from './hooks/useUser/index.js';
 export { default as useMediaQuery } from './hooks/useMediaQuery/index.js';
+export { default as useResize } from './hooks/useResize/index.js';

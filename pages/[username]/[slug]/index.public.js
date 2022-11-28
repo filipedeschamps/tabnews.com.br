@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import { Link, DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
+import { Link, DefaultLayout, Content, TabCoinButtons, useResize } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
@@ -19,6 +19,7 @@ export default function Post({
   parentContentFound,
   contentMetadata,
 }) {
+  const documentSize = useResize();
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -27,7 +28,6 @@ export default function Post({
       revalidateOnReconnect: false,
     }
   );
-
   // TODO: understand why enabling "revalidateOn..." breaks children rendering.
   const { data: children } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
@@ -37,36 +37,23 @@ export default function Post({
       revalidateOnReconnect: false,
     }
   );
-
-  const [confettiWidth, setConfettiWidth] = useState(0);
-  const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    function handleResize() {
-      setConfettiWidth(window.screen.width);
-      setConfettiHeight(window.screen.height);
-    }
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
       setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }
-
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <>
       {showConfetti && (
         <Confetti
-          width={confettiWidth}
-          height={confettiHeight}
+          width={documentSize.width}
+          height={documentSize.height}
           recycle={false}
           numberOfPieces={800}
           tweenDuration={15000}

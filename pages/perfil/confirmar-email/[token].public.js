@@ -1,32 +1,18 @@
 import Confetti from 'react-confetti';
 import fetch from 'cross-fetch';
 import { Box, Flash } from '@primer/react';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { DefaultLayout, useResize } from 'pages/interface/index.js';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
 export default function ActiveUser() {
   const router = useRouter();
+  const documentSize = useResize();
   const { token } = router.query;
 
   const [globalMessage, setGlobalMessage] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [confettiWidth, setConfettiWidth] = useState(0);
-  const [confettiHeight, setConfettiHeight] = useState(0);
-
-  useEffect(() => {
-    function handleResize() {
-      setConfettiWidth(window.screen.width);
-      setConfettiHeight(window.screen.height);
-    }
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleEmailConfirmation = async (token) => {
     try {
@@ -75,8 +61,8 @@ export default function ActiveUser() {
     <>
       {isSuccess && (
         <Confetti
-          width={confettiWidth}
-          height={confettiHeight}
+          width={documentSize.width}
+          height={documentSize.height}
           recycle={false}
           numberOfPieces={800}
           tweenDuration={15000}
