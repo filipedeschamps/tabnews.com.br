@@ -1,13 +1,10 @@
-import Confetti from 'react-confetti';
 import fetch from 'cross-fetch';
 import { Box, Flash } from '@primer/react';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { ConfettiScreen, DefaultLayout } from 'pages/interface/index.js';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useResize } from 'pages/interface/hooks';
 
 export default function ActiveUser() {
-  const documentSize = useResize();
   const router = useRouter();
   const { token } = router.query;
 
@@ -60,24 +57,16 @@ export default function ActiveUser() {
 
   return (
     <>
-      {isSuccess && (
-        <Confetti
-          width={documentSize.width}
-          height={documentSize.height}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
-      )}
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Ativar cadastro' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
-          {isLoading ? (
-            <Flash variant="default">Verificando Token de Ativação...</Flash>
-          ) : (
-            <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
-          )}
-        </Box>
+        <ConfettiScreen showConfetti={isSuccess}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+            {isLoading ? (
+              <Flash variant="default">Verificando Token de Ativação...</Flash>
+            ) : (
+              <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
+            )}
+          </Box>
+        </ConfettiScreen>
       </DefaultLayout>
     </>
   );

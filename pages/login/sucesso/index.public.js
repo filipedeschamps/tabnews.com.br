@@ -1,10 +1,7 @@
 import { Box, Heading, Text } from '@primer/react';
-import { DefaultLayout, useResize } from 'pages/interface/index.js';
-import Confetti from 'react-confetti';
+import { ConfettiScreen, DefaultLayout, useResize } from 'pages/interface/index.js';
 
 export default function ConfirmSignup() {
-  const documentSize = useResize();
-
   return (
     <>
       <style>{`
@@ -14,14 +11,7 @@ export default function ConfirmSignup() {
         }
       `}</style>
       <div className="pl-3 pr-3">
-        <Confetti
-          width={documentSize.width}
-          height={documentSize.height}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
+        <ConfettiScreen showConfetti={true} />
       </div>
 
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirme seu email' }}>

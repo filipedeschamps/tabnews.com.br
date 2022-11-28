@@ -1,13 +1,11 @@
-import Confetti from 'react-confetti';
 import fetch from 'cross-fetch';
 import { Box, Flash } from '@primer/react';
-import { DefaultLayout, useResize } from 'pages/interface/index.js';
+import { ConfettiScreen, DefaultLayout } from 'pages/interface/index.js';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
 export default function ActiveUser() {
   const router = useRouter();
-  const documentSize = useResize();
   const { token } = router.query;
 
   const [globalMessage, setGlobalMessage] = useState(false);
@@ -59,24 +57,16 @@ export default function ActiveUser() {
 
   return (
     <>
-      {isSuccess && (
-        <Confetti
-          width={documentSize.width}
-          height={documentSize.height}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
-      )}
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirmar alteração de email' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
-          {isLoading ? (
-            <Flash variant="default">Verificando Token de Alteração de Email...</Flash>
-          ) : (
-            <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
-          )}
-        </Box>
+        <ConfettiScreen showConfetti={isSuccess}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+            {isLoading ? (
+              <Flash variant="default">Verificando Token de Alteração de Email...</Flash>
+            ) : (
+              <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
+            )}
+          </Box>
+        </ConfettiScreen>
       </DefaultLayout>
     </>
   );

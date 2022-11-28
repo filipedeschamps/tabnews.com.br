@@ -1,7 +1,6 @@
 import useSWR from 'swr';
-import { useEffect, useState } from 'react';
-import Confetti from 'react-confetti';
-import { Link, DefaultLayout, Content, TabCoinButtons, useResize } from 'pages/interface/index.js';
+import { useEffect } from 'react';
+import { Link, DefaultLayout, Content, TabCoinButtons, ConfettiScreen } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
@@ -19,7 +18,6 @@ export default function Post({
   parentContentFound,
   contentMetadata,
 }) {
-  const documentSize = useResize();
   const { data: contentFound } = useSWR(
     `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
     {
@@ -37,79 +35,68 @@ export default function Post({
       revalidateOnReconnect: false,
     }
   );
-  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
-      setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }
   }, []);
 
   return (
     <>
-      {showConfetti && (
-        <Confetti
-          width={documentSize.width}
-          height={documentSize.height}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
-      )}
       <DefaultLayout metadata={contentMetadata}>
-        <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
-
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-          }}>
+        <ConfettiScreen showConfetti={isSuccess}>
+          <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
           <Box
             sx={{
-              pr: [0, null, null, 2],
+              width: '100%',
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
             }}>
-            <TabCoinButtons content={contentFound} />
             <Box
               sx={{
-                borderWidth: 0,
-                borderRightWidth: 1,
-                borderColor: 'border.muted',
-                borderStyle: 'dotted',
-                width: '50%',
-                height: '100%',
-              }}
-            />
+                pr: [0, null, null, 2],
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}>
+              <TabCoinButtons content={contentFound} />
+              <Box
+                sx={{
+                  borderWidth: 0,
+                  borderRightWidth: 1,
+                  borderColor: 'border.muted',
+                  borderStyle: 'dotted',
+                  width: '50%',
+                  height: '100%',
+                }}
+              />
+            </Box>
+
+            <Box sx={{ width: '100%', overflow: 'auto' }}>
+              <Content content={contentFound} mode="view" />
+            </Box>
           </Box>
 
-          <Box sx={{ width: '100%', overflow: 'auto' }}>
-            <Content content={contentFound} mode="view" />
-          </Box>
-        </Box>
+          <Box sx={{ width: '100%' }}>
+            <Box
+              sx={{
+                borderRadius: '6px',
+                borderWidth: 1,
+                borderColor: 'border.default',
+                borderStyle: 'solid',
+                mt: 4,
+                mb: 4,
+                p: 4,
+                wordWrap: 'break-word',
+              }}>
+              <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
+            </Box>
 
-        <Box sx={{ width: '100%' }}>
-          <Box
-            sx={{
-              borderRadius: '6px',
-              borderWidth: 1,
-              borderColor: 'border.default',
-              borderStyle: 'solid',
-              mt: 4,
-              mb: 4,
-              p: 4,
-              wordWrap: 'break-word',
-            }}>
-            <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
+            <RenderChildrenTree childrenList={children} level={0} />
           </Box>
-
-          <RenderChildrenTree childrenList={children} level={0} />
-        </Box>
+        </ConfettiScreen>
       </DefaultLayout>
     </>
   );
