@@ -1,0 +1,70 @@
+name: '🐛 Report de Bug'
+description: Cria um ticket para um bug encontrado.
+title: '🐛 [BUG] - <titulo>'
+labels: ['bug']
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 'Descrição'
+      description: Descrição do seu issue
+      placeholder: Ao realizar '...' operação
+    validations:
+      required: true
+  - type: textarea
+    id: reprod
+    attributes:
+      label: 'Passos para reprodução'
+      description: Descrição dos passos para reprodução
+      value: |
+        1. Vá para '...'
+        2. Clique em '....'
+        3. Chame a API '....'
+        4. Veja o erro
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: 'Evidências'
+      description: Se aplicavel, adicione imagens para enriquecer o troubleshoot.
+      value: |
+        ![DESCRIPTION](LINK.png)
+      render: bash
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: 'Logs'
+      description: Se aplicavel, providencie alguns logs para enriquecer o troubleshoot. Será automaticamente renderizado como código-fonte, sem necessidade de cráse tripla.
+      render: bash
+    validations:
+      required: false
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: 'Navegadores'
+      description: Em qual navegador foi possível verificar o erro?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Opera
+    validations:
+      required: false
+  - type: dropdown
+    id: os
+    attributes:
+      label: 'SO'
+      description: Qual o sistema operacional?
+      multiple: true
+      options:
+        - Windows
+        - Linux
+        - Mac
+    validations:
+      required: false

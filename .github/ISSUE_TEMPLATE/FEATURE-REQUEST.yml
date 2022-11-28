@@ -1,0 +1,22 @@
+name: '💡 Pedido de feature'
+description: Abre um novo ticket para pedido de feature
+title: '💡 [PEDIDO] - <titulo>'
+labels: ['question']
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 'Sumário'
+      description: Escreva uma descrição sobre o seu pedido de feature
+      placeholder: Descreva em poucas linhas o seu pedido
+    validations:
+      required: true
+  - type: textarea
+    id: basic_example
+    attributes:
+      label: 'Exemplos'
+      description: Se aplicavel, adicione algum desenho (papel de pão), de como funcionaria
+      value: |
+        ![DESCRIPTION](LINK.png)
+    validations:
+      required: false
