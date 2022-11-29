@@ -3,6 +3,7 @@ import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
+import { FaTree } from 'react-icons/fa';
 
 export default function Home({ contentListFound, pagination }) {
   return (
@@ -17,6 +18,11 @@ export default function Home({ contentListFound, pagination }) {
           pagination={pagination}
           paginationBasePath="/recentes/pagina"
           revalidatePath="/api/v1/contents?strategy=new"
+          emptyStateProps={{
+            title: 'Nenhum conteúdo encontrado',
+            description: 'Quando eu cheguei era tudo mato...',
+            icon: FaTree,
+          }}
         />
       </DefaultLayout>
     </>
