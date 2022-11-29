@@ -41,14 +41,26 @@ export default function Footer(props) {
             paddingX: [2, null, null, 5],
             flexWrap: 'wrap',
           }}>
-          <Link href="https://github.com/filipedeschamps/tabnews.com.br">GitHub</Link>
-          <Link href="/museu">Museu</Link>
-          <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
+          <Link target="_blank" href="https://github.com/filipedeschamps/tabnews.com.br">
+            GitHub
+          </Link>
+          <Link target="_blank" href="/museu">
+            Museu
+          </Link>
+          <Link
+            target="_blank"
+            href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
             Sobre
           </Link>
-          <Link href="/status">Status</Link>
-          <Link href="/contato">Contato</Link>
-          <Link href="/termos-de-uso">Termos de Uso</Link>
+          <Link target="_blank" href="/status">
+            Status
+          </Link>
+          <Link target="_blank" href="/contato">
+            Contato
+          </Link>
+          <Link target="_blank" href="/termos-de-uso">
+            Termos de Uso
+          </Link>
         </Box>
       </Box>
     </Box>
