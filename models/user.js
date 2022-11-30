@@ -156,9 +156,9 @@ async function create(postedUserData) {
     const query = {
       text: `
         INSERT INTO
-          users (username, email, password, features)
+          users (username, email, password, features, expires_at)
         VALUES
-          ($1, $2, $3, $4)
+          ($1, $2, $3, $4, now() + interval '48 hours')
         RETURNING
           *
         ;`,

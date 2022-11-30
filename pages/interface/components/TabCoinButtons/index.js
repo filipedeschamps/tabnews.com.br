@@ -4,7 +4,7 @@ import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
 import { useRouter } from 'next/router';
 
-import { useUser } from 'pages/interface/index.js';
+import { useUser, Modal } from 'pages/interface/index.js';
 
 export default function TabCoinButtons({ content }) {
   const router = useRouter();
@@ -12,6 +12,12 @@ export default function TabCoinButtons({ content }) {
 
   const [contentObject, setContentObject] = useState(content);
   const [isPosting, setIsPosting] = useState(false);
+
+  const [modalProps, setModalProps] = useState({
+    title: 'Tente novamente mais tarde',
+    description: 'Não foi possível realizar essa operação.',
+    isOpen: false,
+  });
 
   useEffect(() => {
     setContentObject(content);
@@ -71,8 +77,11 @@ export default function TabCoinButtons({ content }) {
         }
         return;
       }
-
-      alert(`${responseBody.message} ${responseBody.action}`);
+      setModalProps({
+        isOpen: true,
+        title: responseBody.message,
+        description: responseBody.action,
+      });
       setIsPosting(false);
     } catch (error) {
       setIsPosting(false);
@@ -87,6 +96,14 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
+      <Modal
+        onClose={() => {
+          setModalProps({
+            isOpen: false,
+          });
+        }}
+        {...modalProps}
+      />
       <Box>
         <IconButton
           variant="invisible"
