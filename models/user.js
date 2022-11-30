@@ -360,6 +360,7 @@ function checkBlockedUsernames(username) {
     'perfil',
     'eu',
     'videos',
+    'recentes',
   ];
 
   if (blockedUsernames.includes(username.toLowerCase())) {
