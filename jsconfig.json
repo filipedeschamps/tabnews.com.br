@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./"],
+      "@constants/*": ["./constants/*"]
+    }
   }
 }
