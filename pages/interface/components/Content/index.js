@@ -17,11 +17,10 @@ import {
   useConfirm,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import PublishedSince from 'pages/interface/components/PublishedSince';
-import { Link, useUser } from 'pages/interface';
+import { Link, PublishedSince, useUser, Viewer } from 'pages/interface';
 
 // Markdown Editor dependencies:
-import { Editor, Viewer } from '@bytemd/react';
+import { Editor } from '@bytemd/react';
 import gfmPlugin from '@bytemd/plugin-gfm';
 import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
@@ -91,8 +90,6 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
-
-  const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
 
   const handleClickDelete = async () => {
     const confirmDelete = await confirm({
@@ -222,7 +219,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
         )}
       </Box>
       <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} plugins={bytemdPluginList} />
+        <Viewer value={contentObject.body} />
       </Box>
       {contentObject.source_url && (
         <Box>

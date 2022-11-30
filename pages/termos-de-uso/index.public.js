@@ -1,5 +1,5 @@
 import { Box, Heading } from '@primer/react';
-import { Viewer } from '@bytemd/react';
+import { Viewer } from 'pages/interface';
 
 import { DefaultLayout } from 'pages/interface/index.js';
 
