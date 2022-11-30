@@ -155,7 +155,7 @@ function EditProfileForm() {
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
         <FormControl id="username">
-          <FormControl.Label id="label-user">Nome de usuário</FormControl.Label>
+          <FormControl.Label id="profile__label-user">Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
             onChange={clearErrors}
@@ -166,7 +166,7 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
-            aria-describedby="label-user"
+            aria-describedby="profile__label-user"
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -178,7 +178,7 @@ function EditProfileForm() {
         </FormControl>
 
         <FormControl id="email" disabled={emailDisabled}>
-          <FormControl.Label id="label-email">Email</FormControl.Label>
+          <FormControl.Label id="profile__label-email">Email</FormControl.Label>
           <TextInput
             ref={emailRef}
             onChange={clearErrors}
@@ -189,7 +189,7 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
-            aria-describedby="label-email"
+            aria-describedby="profile__label-email"
           />
           {errorObject?.key === 'email' && !errorObject?.type && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -222,13 +222,14 @@ function EditProfileForm() {
         </FormControl>
 
         <FormControl id="notifications">
-          <FormControl.Label>Receber notificações por email</FormControl.Label>
+          <FormControl.Label id="profile__notification">Receber notificações por email</FormControl.Label>
 
           <Checkbox
             ref={notificationsRef}
             onChange={clearErrors}
             name="notifications"
             aria-label="Você deseja receber notificações?"
+            aria-describedby="profile__notification"
           />
 
           {errorObject?.key === 'notifications' && (

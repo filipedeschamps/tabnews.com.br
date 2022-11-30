@@ -110,7 +110,7 @@ function SignUpForm() {
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
         <FormControl id="username">
-          <FormControl.Label id="label-user">Nome de usuário</FormControl.Label>
+          <FormControl.Label id="signup__label-user">Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
             onChange={clearErrors}
@@ -121,7 +121,7 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
-            aria-describedby="label-user"
+            aria-describedby="signup__label-user"
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -132,7 +132,7 @@ function SignUpForm() {
           )}
         </FormControl>
         <FormControl id="email">
-          <FormControl.Label id="label-email">Email</FormControl.Label>
+          <FormControl.Label id="signup__label-email">Email</FormControl.Label>
           <TextInput
             ref={emailRef}
             onChange={clearErrors}
@@ -143,7 +143,7 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
-            aria-describedby="label-email"
+            aria-describedby="signup__label-email"
           />
           {errorObject?.key === 'email' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -172,7 +172,7 @@ function SignUpForm() {
         </FormControl>
 
         <FormControl id="password">
-          <FormControl.Label id="label-password">Senha</FormControl.Label>
+          <FormControl.Label id="signup__label-password">Senha</FormControl.Label>
           <TextInput
             ref={passwordRef}
             onChange={clearErrors}
@@ -186,7 +186,7 @@ function SignUpForm() {
             size="large"
             block={true}
             aria-label="Sua senha"
-            aria-describedby="label-password"
+            aria-describedby="signup__label-password"
           />
           {capsLockWarningMessage && (
             <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>

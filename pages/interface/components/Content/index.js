@@ -437,7 +437,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="title">
-              <FormControl.Label visuallyHidden id="label-title">
+              <FormControl.Label visuallyHidden id="content__label-title">
                 Título
               </FormControl.Label>
               <TextInput
@@ -450,7 +450,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 spellCheck={false}
                 placeholder="Título"
                 aria-label="Título"
-                aria-describedby="label-title"
+                aria-describedby="content__label-title"
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
@@ -483,7 +483,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label visuallyHidden id="label-source">
+              <FormControl.Label visuallyHidden id="content__label-source">
                 Fonte (opcional)
               </FormControl.Label>
               <TextInput
@@ -496,7 +496,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 spellCheck={false}
                 placeholder="Fonte (opcional)"
                 aria-label="Fonte (opcional)"
-                aria-describedby="label-source"
+                aria-describedby="content__label-source"
                 block={true}
                 value={newData.source_url}
               />

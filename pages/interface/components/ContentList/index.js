@@ -85,7 +85,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             {itemCount}.
           </Text>
         </Box>,
-        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }} role={'listitem'}>
+        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }} role="listitem">
           <Box
             sx={{
               overflow: 'auto',

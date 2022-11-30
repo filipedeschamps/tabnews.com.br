@@ -108,7 +108,7 @@ function RecoverPasswordForm() {
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
         <FormControl id="password">
-          <FormControl.Label>Senha</FormControl.Label>
+          <FormControl.Label id="recover-token__label-password">Senha</FormControl.Label>
           <TextInput
             ref={passwordRef}
             onChange={clearErrors}
@@ -122,6 +122,7 @@ function RecoverPasswordForm() {
             size="large"
             block={true}
             aria-label="Sua senha"
+            aria-describedby="recover-token__label-password"
           />
           {capsLockWarningMessage && (
             <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
@@ -135,7 +136,7 @@ function RecoverPasswordForm() {
         </FormControl>
 
         <FormControl id="passwordConfirm">
-          <FormControl.Label>Repita a senha</FormControl.Label>
+          <FormControl.Label id="recover-token__label-confirm-password">Repita a senha</FormControl.Label>
           <TextInput
             ref={passwordConfirmRef}
             onChange={clearErrors}
@@ -147,6 +148,7 @@ function RecoverPasswordForm() {
             size="large"
             block={true}
             aria-label="Repita a senha"
+            aria-describedby="recover-token__label-confirm-password"
           />
           {errorObject?.key === 'password_confirm' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

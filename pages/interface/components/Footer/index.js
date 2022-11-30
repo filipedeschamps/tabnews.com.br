@@ -19,7 +19,7 @@ export default function Footer(props) {
           flexWrap: 'wrap-reverse',
           gap: 3,
         }}
-        as={'nav'}>
+        as="nav">
         <Box
           sx={{
             display: 'flex',
