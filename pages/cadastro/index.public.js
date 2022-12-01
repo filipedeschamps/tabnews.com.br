@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
 
-import { suggestEmail } from 'plugin/packs/utils';
+import { suggestEmailFix } from 'plugin/packs/utils';
 
 export default function Register() {
   return (
@@ -52,7 +52,7 @@ function SignUpForm() {
     setIsLoading(true);
     setErrorObject(undefined);
 
-    const suggestedEmail = suggestEmail(email);
+    const suggestedEmail = suggestEmailFix(email);
 
     if (suggestedEmail) {
       setErrorObject({
