@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, userAgent } from 'next/server';
 import rateLimit from 'infra/rate-limit.js';
 import snakeize from 'snakeize';
+import ip from 'models/ip.js';
 
 export const config = {
   matcher: ['/api/:path*'],
@@ -8,6 +9,19 @@ export const config = {
 
 export async function middleware(request) {
   const url = request.nextUrl;
+  console.log({
+    scope: 'MIDDLEWARE_REQUEST',
+    request: {
+      ip: ip.extractFromRequest(request),
+      pathname: request.nextUrl.pathname,
+      host: process.env.VERCEL_URL,
+      url: request.nextUrl,
+      method: request.method,
+      userAgent: userAgent(request),
+      geo: request.geo,
+    },
+    'process.env.NODE_ENV': process.env.NODE_ENV,
+  });
 
   try {
     const rateLimitResult = await rateLimit.check(request);
