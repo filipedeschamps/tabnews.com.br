@@ -21,7 +21,6 @@
     "github-markdown-css": "5.1.0",
     "highlight.js": "11.6.0",
     "ip-anonymize": "0.1.0",
-    "isomorphic-dompurify": "0.24.0",
     "joi": "17.6.3",
     "next": "13.0.0",
     "next-connect": "0.13.0",
@@ -42,6 +41,7 @@
     "snakeize": "0.1.0",
     "styled-components": "5.3.6",
     "swr": "2.0.0-beta.1",
+    "unist-builder": "3.0.0",
     "uuid": "9.0.0"
   },
   "devDependencies": {
