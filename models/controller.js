@@ -38,39 +38,40 @@ function onErrorHandler(error, request, response) {
     error instanceof ValidationError ||
     error instanceof NotFoundError ||
     error instanceof ForbiddenError ||
-    error instanceof UnprocessableEntityError
+    error instanceof UnprocessableEntityError ||
+    error instanceof TooManyRequestsError
   ) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
-    return response.status(error.statusCode).json(snakeize(errorObject));
+    const publicErrorObject = { ...error, requestId: request.context.requestId };
+
+    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+    logger.info(snakeize(privateErrorObject));
+
+    return response.status(error.statusCode).json(snakeize(publicErrorObject));
   }
 
   if (error instanceof UnauthorizedError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
+    const publicErrorObject = { ...error, requestId: request.context.requestId };
+
+    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+    logger.info(snakeize(privateErrorObject));
+
     session.clearSessionIdCookie(response);
-    return response.status(error.statusCode).json(snakeize(errorObject));
+
+    return response.status(error.statusCode).json(snakeize(publicErrorObject));
   }
 
-  if (error instanceof TooManyRequestsError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
-    return response.status(error.statusCode).json(snakeize(errorObject));
-  }
-
-  const errorObject = new InternalServerError({
+  const publicErrorObject = new InternalServerError({
     requestId: request.context.requestId,
     errorId: error.errorId,
-    stack: error.stack,
     statusCode: error.statusCode,
     errorLocationCode: error.errorLocationCode,
   });
 
-  // TODO: Understand why `snakeize` is not logging the
-  // `stack` property of the error object.
-  logger.error(snakeize({ ...errorObject, stack: error.stack }));
+  const privateErrorObject = { ...publicErrorObject, context: { ...request.context }, stack: error.stack };
 
-  return response.status(errorObject.statusCode).json(snakeize(errorObject));
+  logger.error(snakeize(privateErrorObject));
+
+  return response.status(publicErrorObject.statusCode).json(snakeize(publicErrorObject));
 }
 
 function logRequest(request, response, next) {
