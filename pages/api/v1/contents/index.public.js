@@ -7,6 +7,7 @@ import content from 'models/content.js';
 import notification from 'models/notification.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
+import user from 'models/user.js';
 import database from 'infra/database.js';
 import { ForbiddenError } from 'errors/index.js';
 
@@ -15,11 +16,16 @@ export default nextConnect({
   onNoMatch: controller.onNoMatchHandler,
   onError: controller.onErrorHandler,
 })
-  .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
-  .use(controller.logRequest)
   .get(getValidationHandler, getHandler)
-  .post(postValidationHandler, authorization.canRequest('create:content'), firewallValidationHandler, postHandler);
+  .post(
+    controller.injectRequestMetadata,
+    authentication.injectAnonymousOrUser,
+    controller.logRequest,
+    postValidationHandler,
+    authorization.canRequest('create:content'),
+    firewallValidationHandler,
+    postHandler
+  );
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -34,7 +40,7 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToList = request.context.user;
+  const userTryingToList = user.createAnonymous();
 
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
@@ -54,6 +60,9 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+
+  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
+
   return response.status(200).json(secureOutputValues);
 }
 
