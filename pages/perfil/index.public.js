@@ -219,8 +219,8 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="notifications">
-          <FormControl.Label>Receber notificações por email</FormControl.Label>
+        <FormControl id="notifications" sx={{ display: 'flex', gap: 1 }}>
+          <FormControl.Label sx={{ alignSelf: 'center' }}>Receber notificações por email</FormControl.Label>
 
           <Checkbox
             ref={notificationsRef}
