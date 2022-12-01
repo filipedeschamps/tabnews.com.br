@@ -5,12 +5,6 @@ import removeMarkdown from 'models/remove-markdown';
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';
 
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
-import breaksPlugin from '@bytemd/plugin-breaks';
-import gemojiPlugin from '@bytemd/plugin-gemoji';
-
 function generateRss2(contentList) {
   const webserverHost = webserver.getHost();
 
