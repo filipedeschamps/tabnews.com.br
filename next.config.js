@@ -1,4 +1,7 @@
 module.exports = {
+  experimental: {
+    allowMiddlewareResponseBody: true,
+  },
   pageExtensions: ['public.js'],
   eslint: {
     ignoreDuringBuilds: true,
