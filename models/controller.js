@@ -1,6 +1,5 @@
 import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
-import ipAnonymize from 'ip-anonymize';
 
 import ip from 'models/ip.js';
 import session from 'models/session.js';
@@ -24,13 +23,19 @@ async function injectRequestMetadata(request, response, next) {
     clientIp: ip.extractFromRequest(request),
   };
 
-  next();
+  if (next) {
+    next();
+  }
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
-  logger.info(snakeize(errorObject));
-  return response.status(errorObject.statusCode).json(snakeize(errorObject));
+  injectRequestMetadata(request);
+  const publicErrorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
+
+  const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+  logger.info(snakeize(privateErrorObject));
+
+  return response.status(publicErrorObject.statusCode).json(snakeize(publicErrorObject));
 }
 
 function onErrorHandler(error, request, response) {
