@@ -7,6 +7,11 @@ export const config = {
 };
 
 export async function middleware(request) {
+  console.log({
+    host_get: request.headers.get('host'),
+    VERCEL_URL: process.env.VERCEL_URL,
+  });
+
   const url = request.nextUrl;
 
   try {
