@@ -19,12 +19,13 @@ if (!webserver.isLambdaServer()) {
 
 const transporter = nodemailer.createTransport(transporterConfiguration);
 
-async function send({ from, to, subject, text }) {
+async function send({ from, to, subject, text, html }) {
   const mailOptions = {
     from: from,
     to: to,
     subject: subject,
     text: text,
+    html: html,
   };
 
   try {
