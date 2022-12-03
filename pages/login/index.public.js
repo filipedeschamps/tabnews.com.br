@@ -24,12 +24,11 @@ function LoginForm() {
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
   useEffect(() => {
-    if (user && router) {
-      if (router.query?.redirect) {
-        router.push(router.query.redirect);
-      } else {
-        router.push('/publicar');
-      }
+    if (!user || !router) return;
+    if (router.query?.redirect?.startsWith('/')) {
+      router.push(router.query.redirect);
+    } else {
+      router.push('/publicar');
     }
   }, [user, router]);
 

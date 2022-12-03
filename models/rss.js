@@ -1,19 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Viewer } from '@bytemd/react';
+import { Viewer } from 'pages/interface';
 import removeMarkdown from 'models/remove-markdown';
 
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';
 
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
-import breaksPlugin from '@bytemd/plugin-breaks';
-import gemojiPlugin from '@bytemd/plugin-gemoji';
-
 function generateRss2(contentList) {
   const webserverHost = webserver.getHost();
-  const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
 
   // TODO: make this property flexible in the future to
   // support things like: `/[username]/rss`
@@ -41,10 +34,7 @@ function generateRss2(contentList) {
       id: contentUrl,
       link: contentUrl,
       description: removeMarkdown(contentObject.body).replace(/\s+/g, ' ').substring(0, 190) + '...',
-      content: renderToStaticMarkup(<Viewer value={contentObject.body} plugins={bytemdPluginList} />).replace(
-        /[\r\n]/gm,
-        ''
-      ),
+      content: renderToStaticMarkup(<Viewer value={contentObject.body} />).replace(/[\r\n]/gm, ''),
       author: [
         {
           name: contentObject.owner_username,
