@@ -1,3 +1,4 @@
+import Mail from 'mail';
 import email from 'infra/email.js';
 import database from 'infra/database.js';
 import webserver from 'infra/webserver.js';
@@ -39,15 +40,10 @@ async function sendEmailToUser(user, newEmail, tokenId) {
     },
     to: newEmail,
     subject: 'Confirme seu novo email',
-    text: `${user.username}, uma alteração de email foi solicitada.
-
-Clique no link abaixo para confirmar esta alteração:
-
-${emailConfirmationPageEndpoint}
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+    html: Mail.Confirmation({
+      username: user.username,
+      emailConfirmationPageEndpoint,
+    }),
   });
 }
 

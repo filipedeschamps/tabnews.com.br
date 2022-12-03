@@ -3,6 +3,7 @@ import content from 'models/content.js';
 import authorization from 'models/authorization.js';
 import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
+import Mail from 'mail';
 
 async function sendReplyEmailToParentUser(createdContent) {
   const anonymousUser = user.createAnonymous();
@@ -47,15 +48,11 @@ async function sendReplyEmailToParentUser(createdContent) {
         address: 'contato@tabnews.com.br',
       },
       subject: subject,
-      text: `Olá, ${parentContentUser.username}!
-
-${bodyReplyLine}
-
-${childContendUrl}
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+      html: Mail.Notification({
+        username: user.username,
+        childContendUrl,
+        bodyReplyLine,
+      }),
     });
   }
 }

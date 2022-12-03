@@ -1,3 +1,4 @@
+import Mail from 'mail';
 import email from 'infra/email.js';
 import database from 'infra/database.js';
 import webserver from 'infra/webserver.js';
@@ -31,15 +32,10 @@ async function sendEmailToUser(user, tokenId) {
     },
     to: user.email,
     subject: 'Ative seu cadastro no TabNews',
-    text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
-
-${activationPageEndpoint}
-
-Caso você não tenha feito esta requisição, ignore esse email.
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+    html: Mail.Activation({
+      username: user.username,
+      activationPageEndpoint,
+    }),
   });
 }
 
