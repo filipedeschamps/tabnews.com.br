@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser, Link } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Checkbox, Flash, useConfirm } from '@primer/react';
+import authentication from 'models/authentication.js';
 
 export default function EditProfile() {
   return (
@@ -15,6 +16,8 @@ export default function EditProfile() {
   );
 }
 
+let password = 
+
 function EditProfileForm() {
   const router = useRouter();
   const confirm = useConfirm();
@@ -24,6 +27,7 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
+  const passwordRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -53,6 +57,7 @@ function EditProfileForm() {
   async function handleSubmit(event) {
     event.preventDefault();
 
+    const password = passwordRef.current.value;
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
     const notifications = notificationsRef.current.checked;
@@ -86,11 +91,31 @@ function EditProfileForm() {
         return;
       }
 
+    try {
+      await authentication.comparePasswords(password, user.password);
+    } catch (error) {
+      throw new UnauthorizedError({
+        message: `Dados não conferem.`,
+        action: `Verifique se os dados enviados estão corretos.`,
+        errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+      });
+    }
+      
       payload.username = username;
     }
 
     if (user.email !== email) {
       payload.email = email;
+      
+     try {
+        await authentication.comparePasswords(password, user.password);
+      } catch (error) {
+        throw new UnauthorizedError({
+          message: `Dados não conferem.`,
+          action: `Verifique se os dados enviados estão corretos.`,
+          errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+        });
+      }
     }
 
     if (user.notifications !== notifications) {
@@ -234,11 +259,35 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="password">
+        <FormControl id="recover_password">
           <FormControl.Label>Senha</FormControl.Label>
           <Link href="/cadastro/recuperar" sx={{ fontSize: 0 }}>
             Utilize o fluxo de recuperação de senha →
           </Link>
+        </FormControl>
+
+        <FormControl id="password">
+          <FormControl.Label>Confirme sua Senha</FormControl.Label>
+          <TextInput
+            ref={passwordRef}
+            onChange={clearErrors}
+            onKeyDown={detectCapsLock}
+            onKeyUp={detectCapsLock}
+            name="password"
+            type="password"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            size="large"
+            block={true}
+            aria-label="Sua senha"
+          />
+          {capsLockWarningMessage && (
+            <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
+          )}
+          {errorObject?.key === 'password' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+          )}
         </FormControl>
 
         <FormControl>
