@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Text, IconButton } from '@primer/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
