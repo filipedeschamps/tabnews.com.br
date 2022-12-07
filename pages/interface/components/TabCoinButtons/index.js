@@ -25,6 +25,13 @@ export default function TabCoinButtons({ content }) {
     elementCount: 100,
   });
 
+  let isOwnerOfPost;
+  try {
+    isOwnerOfPost = contentObject.owner_id === user.id;
+  } catch (error) {
+    isOwnerOfPost = false;
+  }
+
   const { reward: rewardDebit, isAnimating: isAnimatingDebit } = useReward(`reward-${contentObject.id}`, 'emoji', {
     position: 'absolute',
     lifetime: 100,
@@ -97,7 +104,7 @@ export default function TabCoinButtons({ content }) {
           onClick={() => {
             transactTabCoin('credit');
           }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          disabled={isOwnerOfPost || isPosting || isAnimatingCredit || isAnimatingDebit}
         />
       </Box>
       <Box>
@@ -121,7 +128,7 @@ export default function TabCoinButtons({ content }) {
           onClick={() => {
             transactTabCoin('debit');
           }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          disabled={isOwnerOfPost || isPosting || isAnimatingCredit || isAnimatingDebit}
         />
       </Box>
     </Box>
