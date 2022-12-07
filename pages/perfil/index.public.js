@@ -24,6 +24,7 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
+  const passwordRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -56,6 +57,7 @@ function EditProfileForm() {
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
     const notifications = notificationsRef.current.checked;
+    const password = passwordRef.current.value;
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -100,6 +102,39 @@ function EditProfileForm() {
     if (Object.keys(payload).length === 0) {
       setIsLoading(false);
       return;
+    }
+
+    try {
+      // Qualquer mudança que exista nos campos, será cobrada a senha para confirmar o processo
+      const passwordCheck = await fetch(`/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          password,
+        }),
+      });
+
+      setGlobalErrorMessage(undefined);
+
+      const passwordCheckBody = await passwordCheck.json();
+      passwordRef.current.value = '';
+
+      if (passwordCheck.status !== 201) {
+        usernameRef.current.value = user.username;
+        emailRef.current.value = user.email;
+        notificationsRef.current.checked = user.notifications;
+
+        setErrorObject(passwordCheckBody);
+        setIsLoading(false);
+        return;
+      }
+    } catch (error) {
+      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+      setIsLoading(false);
     }
 
     try {
@@ -234,11 +269,26 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="password">
-          <FormControl.Label>Senha</FormControl.Label>
+        <FormControl id="recover_password">
+          <FormControl.Label>Recuperar Senha</FormControl.Label>
           <Link href="/cadastro/recuperar" sx={{ fontSize: 0 }}>
             Utilize o fluxo de recuperação de senha →
           </Link>
+        </FormControl>
+
+        <FormControl id="password">
+          <FormControl.Label>Confirmar Senha</FormControl.Label>
+          <TextInput
+            ref={passwordRef}
+            name="password"
+            type="password"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            size="large"
+            block={true}
+            aria-label="Sua senha"
+          />
         </FormControl>
 
         <FormControl>
