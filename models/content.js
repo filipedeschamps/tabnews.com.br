@@ -435,7 +435,7 @@ async function checkIfParentIdExists(content, options) {
 }
 
 function parseQueryErrorToCustomError(error) {
-  if (error.databaseErrorCode === '23505') {
+  if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
       action: `Utilize um "title" ou "slug" diferente.`,
