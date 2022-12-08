@@ -102,7 +102,7 @@ export default function Post({
           </Box>
 
           <Box sx={{ width: '100%', overflow: 'auto' }}>
-            <Content content={contentFound} mode="view" />
+            <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
 
@@ -121,7 +121,7 @@ export default function Post({
             <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
           </Box>
 
-          <RenderChildrenTree childrenList={children} level={0} />
+          <RenderChildrenTree key={contentFound.id} childrenList={children} level={0} />
         </Box>
       </DefaultLayout>
     </>
