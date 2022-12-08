@@ -17,6 +17,7 @@ export default function HeaderComponent() {
     <Header
       sx={{
         px: [2, null, null, 3],
+        fontSize: [12, 14],
       }}>
       <Header.Item>
         <HeaderLink href="/">
