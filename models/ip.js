@@ -3,9 +3,16 @@ function extractFromRequest(request) {
 
   if (request instanceof Request) {
     realIp =
-      request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || request.socket.remoteAddress;
+      request.headers.get('cf-connecting-ip') ||
+      request.headers.get('x-real-ip') ||
+      request.socket?.remoteAddress ||
+      '127.0.0.1';
   } else {
-    realIp = request.headers['cf-connecting-ip'] || request.headers['x-real-ip'] || request.socket.remoteAddress;
+    realIp =
+      request.headers['cf-connecting-ip'] ||
+      request.headers['x-real-ip'] ||
+      request.socket?.remoteAddress ||
+      '127.0.0.1';
   }
 
   // Localhost loopback in IPv6
