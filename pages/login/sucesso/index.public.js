@@ -1,6 +1,6 @@
 import { Box, Heading, Text } from '@primer/react';
 import { DefaultLayout } from 'pages/interface/index.js';
-import Confetti from 'react-confetti';
+import Confetti from 'pages/interface/components/Confetti';
 
 export default function ConfirmSignup() {
   return (
