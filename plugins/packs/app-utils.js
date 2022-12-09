@@ -77,7 +77,6 @@ export function suggestEmailFix(typedEmail) {
     ['gmsil.com.ar', 'gmail.com'],
     ['hmail.com.ar', 'gmail.com'],
     ['ygmail.com.ar', 'gmail.com'],
-    ['gmail.cim', 'gmail.com'],
     ['gmail.com.ar', 'gmail.com'],
     ['gmailc.om', 'gmail.com'],
     ['gmnail.com', 'gmail.com'],
