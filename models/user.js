@@ -173,7 +173,6 @@ async function findOneById(userId) {
 }
 
 async function create(postedUserData) {
-  console.log(postedUserData);
   const validUserData = validatePostSchema(postedUserData);
   checkBlockedUsernames(validUserData.username);
   await validateUniqueUsername(validUserData.username);

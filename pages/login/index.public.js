@@ -199,13 +199,8 @@ function LoginForm() {
               type="submit"
               disabled={isLoading}
               sx={{ width: '100%' }}
-              onSuccess={(credentialResponse) => {
-                console.log(credentialResponse);
-                handleGoogleLogin(credentialResponse);
-              }}
-              onError={() => {
-                console.log('Login Failed');
-              }}
+              onSuccess={handleGoogleLogin}
+              onError={() => {}}
             />
             ;
           </FormControl>

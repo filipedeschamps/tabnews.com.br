@@ -58,7 +58,6 @@ async function postHandler(request, response) {
   const { email } = googleUserData;
 
   try {
-    console.log(googleUserData.data, email);
     storedUser = await user.findOneByEmailOrNull(email);
     if (!storedUser) {
       storedUser = await user.createGoogleAccount({
