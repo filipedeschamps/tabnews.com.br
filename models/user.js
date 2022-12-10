@@ -209,7 +209,10 @@ async function create(postedUserData) {
 }
 
 async function createGoogleAccount(postedUserData) {
-  console.log(postedUserData);
+  // Essa regra deve ser pensada melhor
+  (postedUserData.password = 'password-null-from-google'),
+    (postedUserData.username = postedUserData.email.split('@')[0].replace(/[^0-9a-z]/gi, ''));
+
   const validUserData = validatePostSchema(postedUserData);
   checkBlockedUsernames(validUserData.username);
   await validateUniqueUsername(validUserData.username);
@@ -239,7 +242,29 @@ async function createGoogleAccount(postedUserData) {
     newUser.tabcoins = 0;
     newUser.tabcash = 0;
 
-    return newUser;
+    try {
+      await this.removeFeatures(currentUser.id, ['read:activation_token']);
+    } catch (error) {
+      console.log(error);
+    }
+
+    try {
+      await this.addFeatures(currentUser.id, [
+        'create:session',
+        'read:session',
+        'create:content',
+        'create:content:text_root',
+        'create:content:text_child',
+        'update:content',
+        'update:user',
+      ]);
+    } catch (error) {
+      console.log(error);
+    }
+
+    const currentUser = await this.findOneByEmail(email);
+
+    return currentUser;
   }
 }
 

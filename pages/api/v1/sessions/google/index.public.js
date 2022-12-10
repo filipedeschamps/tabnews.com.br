@@ -4,11 +4,9 @@ import user from 'models/user';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
-import activation from 'models/activation.js';
-import validator from 'models/validator.js';
 import session from 'models/session';
 import emailConfirmation from 'models/email-confirmation.js';
-import axios from 'axios';
+import oauth from 'models/oauth.js';
 
 export default nextConnect({
   attachParams: true,
@@ -53,27 +51,20 @@ async function postHandler(request, response) {
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
 
-  // 1° Validar o token recebido pelo front no google https://oauth2.googleapis.com/tokeninfo?id_token={token}
-  // 2° Verificar se existe um usuário
-  //    Caso exista prosseguir com o login
-  //    Caso não exista criar um usuário com uma senha que nunca será acessível
-  // 3° Continuar o fluxo do login passando o email normalmente
-
   let storedUser;
-  let googleUserData;
+
+  let googleUserData = await oauth.getGoogleUserDataFromAPI(request.body.credentials.credential);
+
+  const { email } = googleUserData;
 
   try {
-    googleUserData = await axios.get(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${request.body.credentials.credential}`
-    );
-    if (googleUserData.status != 200) {
-      throw new UnauthorizedError({
-        message: `Dados não conferem.`,
-        action: `Verifique se os dados enviados estão corretos.`,
-        errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+    console.log(googleUserData.data, email);
+    storedUser = await user.findOneByEmailOrNull(email);
+    if (!storedUser) {
+      storedUser = await user.createGoogleAccount({
+        email,
       });
     }
-    console.log(googleUserData);
   } catch (error) {
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
@@ -82,29 +73,13 @@ async function postHandler(request, response) {
     });
   }
 
-  const { email } = googleUserData.data;
-
-  try {
-    console.log(googleUserData.data, email);
-    storedUser = await user.findOneByEmailOrNull(email);
-    if (!storedUser) {
-      // Foi a forma mais facil que eu pensei mas pode ser melhorado
-      await user.createGoogleAccount({
-        email,
-        password: 'password-null-from-google',
-        username: email.split('@')[0].replace(/[^0-9a-z]/gi, ''),
-      });
+  if (authorization.can(storedUser, 'read:activation_token')) {
+    try {
       await emailConfirmation.forceConfirmation(email);
       storedUser = await user.findOneByEmail(email);
-      console.log(storedUser);
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-
-  if (authorization.can(storedUser, 'read:activation_token')) {
-    await emailConfirmation.forceConfirmation(email);
-    storedUser = await user.findOneByEmail(email);
   }
 
   const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
