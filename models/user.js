@@ -101,6 +101,38 @@ async function findOneByEmail(email) {
   return results.rows[0];
 }
 
+async function findOneByEmailOrNull(email) {
+  const query = {
+    text: `
+      WITH user_found AS (
+        SELECT
+          *
+        FROM
+          users
+        WHERE
+          LOWER(email) = LOWER($1)
+        LIMIT
+          1
+      )
+      SELECT
+        user_found.*,
+        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
+        get_current_balance('user:tabcash', user_found.id) as tabcash
+      FROM
+        user_found
+      ;`,
+    values: [email],
+  };
+
+  const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    return null;
+  }
+
+  return results.rows[0];
+}
+
 // TODO: validate userId
 async function findOneById(userId) {
   const query = {
@@ -141,11 +173,47 @@ async function findOneById(userId) {
 }
 
 async function create(postedUserData) {
+  console.log(postedUserData);
   const validUserData = validatePostSchema(postedUserData);
   checkBlockedUsernames(validUserData.username);
   await validateUniqueUsername(validUserData.username);
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
+
+  validUserData.features = ['read:activation_token'];
+
+  const newUser = await runInsertQuery(validUserData);
+  return newUser;
+
+  async function runInsertQuery(validUserData) {
+    const query = {
+      text: `
+        INSERT INTO
+          users (username, email, password, features)
+        VALUES
+          ($1, $2, $3, $4)
+        RETURNING
+          *
+        ;`,
+      values: [validUserData.username, validUserData.email, validUserData.password, validUserData.features],
+    };
+
+    const results = await database.query(query);
+    const newUser = results.rows[0];
+
+    newUser.tabcoins = 0;
+    newUser.tabcash = 0;
+
+    return newUser;
+  }
+}
+
+async function createGoogleAccount(postedUserData) {
+  console.log(postedUserData);
+  const validUserData = validatePostSchema(postedUserData);
+  checkBlockedUsernames(validUserData.username);
+  await validateUniqueUsername(validUserData.username);
+  await validateUniqueEmail(validUserData.email);
 
   validUserData.features = ['read:activation_token'];
 
@@ -607,4 +675,6 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
+  findOneByEmailOrNull,
+  createGoogleAccount,
 });

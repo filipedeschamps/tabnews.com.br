@@ -2,11 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 export default function Login() {
+  /**
+   * Aqui é implementado o client-id (não consegui utilizar via env local)
+   */
+
   return (
     <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
-      <LoginForm />
+      <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || 'inserir a client-id  do google aqui'}>
+        <LoginForm />
+      </GoogleOAuthProvider>
     </DefaultLayout>
   );
 }
@@ -43,6 +50,49 @@ function LoginForm() {
 
   function clearErrors() {
     setErrorObject(undefined);
+  }
+
+  async function handleGoogleLogin(credentials) {
+    setIsLoading(true);
+    setErrorObject(undefined);
+
+    try {
+      const response = await fetch(`/api/v1/sessions/google`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          credentials,
+        }),
+      });
+
+      setGlobalErrorMessage(undefined);
+
+      const responseBody = await response.json();
+
+      if (response.status === 201) {
+        fetchUser();
+        return;
+      }
+
+      if (response.status === 400) {
+        setErrorObject(responseBody);
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.status >= 401) {
+        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        setIsLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.log(error);
+      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+      setIsLoading(false);
+    }
   }
 
   async function handleSubmit(event) {
@@ -141,6 +191,23 @@ function LoginForm() {
             {errorObject?.key === 'password' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
+          </FormControl>
+          <FormControl>
+            <GoogleLogin
+              variant="primary"
+              size="large"
+              type="submit"
+              disabled={isLoading}
+              sx={{ width: '100%' }}
+              onSuccess={(credentialResponse) => {
+                console.log(credentialResponse);
+                handleGoogleLogin(credentialResponse);
+              }}
+              onError={() => {
+                console.log('Login Failed');
+              }}
+            />
+            ;
           </FormControl>
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>

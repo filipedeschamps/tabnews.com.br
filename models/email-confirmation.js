@@ -176,6 +176,29 @@ async function updateUserEmail(userId, newEmail) {
   );
 }
 
+async function forceConfirmation(email) {
+  const currentUser = await user.findOneByEmail(email);
+  try {
+    await user.removeFeatures(currentUser.id, ['read:activation_token']);
+  } catch (error) {
+    console.log(error);
+  }
+
+  try {
+    await user.addFeatures(currentUser.id, [
+      'create:session',
+      'read:session',
+      'create:content',
+      'create:content:text_root',
+      'create:content:text_child',
+      'update:content',
+      'update:user',
+    ]);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function confirmEmailUpdate(tokenId) {
   const tokenObject = await findOneTokenById(tokenId);
 
@@ -232,4 +255,5 @@ export default Object.freeze({
   getEmailConfirmationPageEndpoint,
   confirmEmailUpdate,
   update,
+  forceConfirmation,
 });
