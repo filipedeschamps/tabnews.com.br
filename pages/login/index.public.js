@@ -89,7 +89,6 @@ function LoginForm() {
         return;
       }
     } catch (error) {
-      console.log(error);
       setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
       setIsLoading(false);
     }
@@ -202,7 +201,6 @@ function LoginForm() {
               onSuccess={handleGoogleLogin}
               onError={() => {}}
             />
-            ;
           </FormControl>
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
