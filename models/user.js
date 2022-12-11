@@ -385,7 +385,10 @@ async function update(username, postedUserData, options = {}) {
 
   if ('username' in validPostedUserData) {
     checkBlockedUsernames(validPostedUserData.username);
-    await validateUniqueUsername(validPostedUserData.username);
+
+    if (currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()) {
+      await validateUniqueUsername(validPostedUserData.username);
+    }
   }
 
   if ('email' in validPostedUserData) {
