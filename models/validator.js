@@ -271,6 +271,7 @@ const schemas = {
         .min(1)
         .max(20000)
         .trim()
+        .replace(/<[^/>][^>]*><\/[^>]+>/, '')
         .invalid(null)
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
