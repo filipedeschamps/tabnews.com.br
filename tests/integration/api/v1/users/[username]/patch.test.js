@@ -115,6 +115,50 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(userInDatabase.email).toEqual(defaultUser.email);
     });
 
+    test('Patching itself with a valid and same username but with different case letters', async () => {
+      let defaultUser = await orchestrator.createUser({
+        username: 'regularUser',
+      });
+      defaultUser = await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          username: 'REGULARUser',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: 'REGULARUser',
+        features: defaultUser.features,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
+
+      const defaultUserInDatabase = await user.findOneById(responseBody.id);
+      const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
+      expect(passwordsMatch).toBe(true);
+
+      const userInDatabase = await user.findOneById(responseBody.id);
+      expect(userInDatabase.email).toEqual(defaultUser.email);
+    });
+
     test('Patching itself with a valid, unique but "untrimmed" username', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
@@ -151,13 +195,14 @@ describe('PATCH /api/v1/users/[username]', () => {
     });
 
     test('Patching itself with "username" duplicated exactly (same uppercase letters)', async () => {
-      let defaultUser = await orchestrator.createUser({
-        username: 'SaMeUPPERCASE',
+      await orchestrator.createUser({
+        username: 'SameUPPERCASE',
       });
+      let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/SaMeUPPERCASE`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
         method: 'patch',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +210,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         },
 
         body: JSON.stringify({
-          username: 'SaMeUPPERCASE',
+          username: 'SameUPPERCASE',
         }),
       });
 
@@ -183,13 +228,14 @@ describe('PATCH /api/v1/users/[username]', () => {
     });
 
     test('Patching itself with "username" duplicated (different uppercase letters)', async () => {
-      let defaultUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         username: 'DIFFERENTuppercase',
       });
+      let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/DIFFERENTuppercase`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
         method: 'patch',
         headers: {
           'Content-Type': 'application/json',
