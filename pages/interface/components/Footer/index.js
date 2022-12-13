@@ -27,7 +27,14 @@ export default function Footer(props) {
             gap: 1,
             color: 'fg.subtle',
           }}>
-          <Link href="/" sx={{ color: 'fg.subtle' }}>
+          <Link
+            sx={{
+              color: 'fg.subtle',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            href="/">
             <CgTab size={26} />
           </Link>
           © {new Date().getFullYear()} TabNews

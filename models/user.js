@@ -321,6 +321,7 @@ function checkBlockedUsernames(username) {
     'toc',
     'terms',
     'termos',
+    'termos-de-uso',
     'regras',
     'contrato',
     'cultura',
@@ -334,6 +335,8 @@ function checkBlockedUsernames(username) {
     'popular',
     'cadastro',
     'cadastrar',
+    'interface',
+    'recentes',
     'register',
     'registration',
     'resposta',
@@ -382,7 +385,10 @@ async function update(username, postedUserData, options = {}) {
 
   if ('username' in validPostedUserData) {
     checkBlockedUsernames(validPostedUserData.username);
-    await validateUniqueUsername(validPostedUserData.username);
+
+    if (currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()) {
+      await validateUniqueUsername(validPostedUserData.username);
+    }
   }
 
   if ('email' in validPostedUserData) {

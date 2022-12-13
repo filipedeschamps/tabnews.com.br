@@ -41,6 +41,7 @@
     "snakeize": "0.1.0",
     "styled-components": "5.3.6",
     "swr": "2.0.0-beta.1",
+    "unist-builder": "3.0.0",
     "uuid": "9.0.0"
   },
   "devDependencies": {
