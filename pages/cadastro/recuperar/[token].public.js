@@ -64,6 +64,7 @@ function RecoverPasswordForm() {
     }
 
     try {
+      throw new Error('API desativada');
       setIsLoading(true);
 
       const response = await fetch(`/api/v1/recovery`, {

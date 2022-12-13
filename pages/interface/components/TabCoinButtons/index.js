@@ -37,6 +37,7 @@ export default function TabCoinButtons({ content }) {
   });
 
   async function transactTabCoin(transactionType) {
+    throw new Error('API desativada');
     setIsPosting(true);
 
     if (!user && !isLoading) {

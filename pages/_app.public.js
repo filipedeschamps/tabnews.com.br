@@ -6,6 +6,7 @@ import NextNProgress from 'pages/interface/components/Progressbar/index.js';
 import { DefaultHead } from 'pages/interface/components/Head/index.js';
 
 async function SWRFetcher(resource, init) {
+  throw new Error('API desativada');
   const response = await fetch(resource, init);
   const responseBody = await response.json();
 

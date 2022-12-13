@@ -6,7 +6,7 @@ import { UnauthorizedError } from '/errors/index.js';
 import ip from 'models/ip.js';
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/((?!_next/static|va/|public/|favicon*|manifest.json).*)'],
 };
 
 export async function middleware(request) {
@@ -35,6 +35,15 @@ export async function middleware(request) {
   const url = request.nextUrl;
 
   try {
+    const rateLimitPaths = JSON.parse(process.env.RATE_LIMIT_PATHS || '["/api"]');
+    if (!rateLimitPaths.find((path) => url.pathname?.startsWith(path))) {
+      console.log({ without_rate_limit: url.pathname });
+      return NextResponse.next();
+    }
+    console.log({ with_rate_limit: url.pathname });
+    url.pathname = '/api/v1/_responses/rate-limit-reached';
+    return NextResponse.rewrite(url);
+
     const rateLimitResult = await rateLimit.check(request);
 
     if (!rateLimitResult.success && url.pathname === '/api/v1/sessions') {

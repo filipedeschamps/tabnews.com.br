@@ -12,6 +12,7 @@ export function UserProvider({ children }) {
 
   const fetchUser = useCallback(async () => {
     try {
+      throw new Error('API desativada');
       const response = await fetch(userEndpoint);
       const responseBody = await response.json();
 

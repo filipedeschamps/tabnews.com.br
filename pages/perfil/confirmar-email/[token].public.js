@@ -30,6 +30,7 @@ export default function ActiveUser() {
 
   const handleEmailConfirmation = async (token) => {
     try {
+      throw new Error('API desativada');
       setIsLoading(true);
 
       const response = await fetch(`/api/v1/email-confirmation`, {

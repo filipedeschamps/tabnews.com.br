@@ -55,6 +55,7 @@ function LoginForm() {
     setErrorObject(undefined);
 
     try {
+      throw new Error('API desativada');
       const response = await fetch(`/api/v1/sessions`, {
         method: 'POST',
         headers: {

@@ -64,6 +64,7 @@ function SignUpForm() {
     }
 
     try {
+      throw new Error('API desativada');
       const response = await fetch(`/api/v1/users`, {
         method: 'POST',
         headers: {

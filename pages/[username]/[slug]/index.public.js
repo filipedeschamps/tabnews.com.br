@@ -19,24 +19,28 @@ export default function Post({
   parentContentFound,
   contentMetadata,
 }) {
-  const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
-    {
-      fallbackData: contentFoundFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
+  const contentFound = contentFoundFallback;
+  const children = childrenFallback;
+
+  // const { data: contentFound } = useSWR(
+  //   `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
+  //   {
+  //     fallbackData: contentFoundFallback,
+  //     revalidateOnFocus: false,
+  //     revalidateOnReconnect: false,
+  //     keepPreviousData
+  //   }
+  // );
 
   // TODO: understand why enabling "revalidateOn..." breaks children rendering.
-  const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
-    {
-      fallbackData: childrenFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
+  // const { data: children } = useSWR(
+  //   `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
+  //   {
+  //     fallbackData: childrenFallback,
+  //     revalidateOnFocus: false,
+  //     revalidateOnReconnect: false,
+  //   }
+  // );
 
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
