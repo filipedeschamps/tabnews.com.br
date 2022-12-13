@@ -342,7 +342,7 @@ export async function getStaticProps(context) {
 
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 
-  const oneLineBody = removeMarkdown(secureContentFound.body).replace(/\s+/g, ' ');
+  const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
   const webserverHost = webserver.getHost();
 
@@ -350,7 +350,7 @@ export async function getStaticProps(context) {
     title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
     image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
     url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
-    description: oneLineBody.substring(0, 190),
+    description: oneLineBody,
     published_time: secureContentFound.published_at,
     modified_time: secureContentFound.updated_at,
     author: secureContentFound.owner_username,
@@ -375,7 +375,7 @@ export async function getStaticProps(context) {
       },
     });
 
-    parentContentFound.body = removeMarkdown(parentContentFound.body).replace(/\s+/g, ' ').substring(0, 50);
+    parentContentFound.body = removeMarkdown(parentContentFound.body, { maxLength: 50 });
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
   }
 
