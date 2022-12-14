@@ -404,7 +404,7 @@ function getSlug(title) {
     trim: true,
   });
 
-  const truncatedSlug = generatedSlug.substring(0, 256);
+  const truncatedSlug = generatedSlug.substring(0, 255);
 
   return truncatedSlug;
 }

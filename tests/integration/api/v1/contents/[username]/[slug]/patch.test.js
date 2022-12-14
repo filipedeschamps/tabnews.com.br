@@ -497,6 +497,44 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "body" containing empty Markdown', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título velho',
+        body: 'Body velho',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: `![](https://image-url.com/image.png)
+            <div><a></a></div>`,
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Markdown deve conter algum texto');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "title", "body" and "source_url" containing \\u0000 null characters', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -558,8 +596,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
-        title: '\u200eTítulo começando com caracteres inválidos.',
-        body: '\u200fTexto começando com caracteres inválidos.',
+        title: '\u2800Título começando com caracteres inválidos.',
+        body: 'Texto começando com caracteres inválidos.',
       });
 
       const response = await fetch(
@@ -572,35 +610,21 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           },
           body: JSON.stringify({
             title: 'Título terminando com caracteres inválidos.\u200f',
-            body: 'Texto terminando com caracteres inválidos.\u200e',
+            body: '\u2800Texto terminando com caracteres inválidos.\u200e',
           }),
         }
       );
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-
-      expect(responseBody).toStrictEqual({
-        id: responseBody.id,
-        owner_id: defaultUser.id,
-        parent_id: null,
-        slug: 'titulo-comecando-com-caracteres-invalidos',
-        title: 'Título terminando com caracteres inválidos.',
-        body: 'Texto terminando com caracteres inválidos.',
-        status: 'draft',
-        source_url: null,
-        created_at: responseBody.created_at,
-        updated_at: responseBody.updated_at,
-        published_at: null,
-        deleted_at: null,
-        tabcoins: 0,
-        owner_username: defaultUser.username,
-      });
-
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing more than 20.000 characters', async () => {
@@ -667,6 +691,43 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const responseBody = await response.json();
 
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "body" ending with untrimmed values', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título velho',
+        body: 'Body velho',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Espaço só no fim ',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
@@ -675,7 +736,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'titulo-velho',
         title: 'Título velho',
-        body: 'Espaço no início e no fim',
+        body: 'Espaço só no fim',
         status: 'draft',
         source_url: null,
         created_at: responseBody.created_at,
@@ -990,7 +1051,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 256 characters', async () => {
+    test('Content with "slug" containing more than 255 bytes', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -1010,21 +1071,36 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            slug: 'this-slug-is-to-257-characterssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+            slug: 'this-slug-must-be-changed-to-255-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
           }),
         }
       );
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" deve conter no máximo 256 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'this-slug-must-be-changed-to-255-bytessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
     });
 
     test('Content with "slug" containing special characters', async () => {
@@ -1237,7 +1313,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
-    test('Content with "title" containing more than 256 characters', async () => {
+    test('Content with "title" containing more than 255 characters', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -1258,7 +1334,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           },
           body: JSON.stringify({
             title:
-              'Este título possui 257 caracteresssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+              'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
           }),
         }
       );
@@ -1268,7 +1344,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" deve conter no máximo 256 caracteres.');
+      expect(responseBody.message).toEqual('"title" deve conter no máximo 255 caracteres.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);

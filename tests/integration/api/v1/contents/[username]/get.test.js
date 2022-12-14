@@ -164,7 +164,7 @@ describe('GET /api/v1/contents/[username]', () => {
           parent_id: rootContent.id,
           slug: childContent.slug,
           title: null,
-          body: 'Diferente do teste anterior, o corpo dessa publicação é grande, com quebras de linha, Markdown e ultrapassa o limite de caracteres que iremos devolver pelo response. Motivo Hoje estamos usando o mesmo número de caracteres de um title para que o frontend...',
+          body: 'Diferente do teste anterior, o corpo dessa publicação é grande, com quebras de linha, Markdown e ultrapassa o limite de caracteres que iremos devolver pelo response. Motivo Hoje estamos usando o mesmo número de caracteres de um title para que o fronten...',
           status: 'published',
           source_url: null,
           created_at: childContent.created_at.toISOString(),
