@@ -47,7 +47,7 @@ async function getHandler(request, response) {
 
   for (const content of secureOutputValues) {
     if (content.parent_id) {
-      content.body = shortenAndCleanBody(content.body);
+      content.body = removeMarkdown(content.body, { maxLength: 255 });
     } else {
       delete content.body;
     }
@@ -55,13 +55,4 @@ async function getHandler(request, response) {
 
   controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
   return response.status(200).json(secureOutputValues);
-}
-
-function shortenAndCleanBody(body) {
-  const titleLength = 256;
-  const bodyLength = titleLength - '...'.length;
-  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
-
-  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
-  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
 }

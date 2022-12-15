@@ -33,7 +33,7 @@ function generateRss2(contentList) {
       title: contentObject.title,
       id: contentUrl,
       link: contentUrl,
-      description: removeMarkdown(contentObject.body).replace(/\s+/g, ' ').substring(0, 190) + '...',
+      description: removeMarkdown(contentObject.body, { maxLength: 190 }),
       content: renderToStaticMarkup(<Viewer value={contentObject.body} />).replace(/[\r\n]/gm, ''),
       author: [
         {

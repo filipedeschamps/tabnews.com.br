@@ -219,7 +219,7 @@ export async function getStaticProps(context) {
 
   for (const content of secureContentListFound) {
     if (content.parent_id) {
-      content.body = shortenAndCleanBody(content.body);
+      content.body = removeMarkdown(content.body, { maxLength: 255 });
     } else {
       delete content.body;
     }
@@ -234,13 +234,4 @@ export async function getStaticProps(context) {
 
     revalidate: 10,
   };
-}
-
-function shortenAndCleanBody(body) {
-  const titleLength = 256;
-  const bodyLength = titleLength - '...'.length;
-  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
-
-  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
-  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
 }

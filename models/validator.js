@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { ValidationError } from 'errors/index.js';
+import removeMarkdown from 'models/remove-markdown';
 
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON
@@ -228,17 +229,17 @@ const schemas = {
     return Joi.object({
       slug: Joi.string()
         .min(1)
-        .max(256)
+        .max(255, 'utf8')
         .trim()
+        .truncate()
         .invalid(null)
-        .pattern(/^[a-z0-9](-?[a-z0-9])*$/m)
+        .pattern(/^[a-z0-9](-?[a-z0-9])*$/)
         .when('$required.slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"slug" é um campo obrigatório.`,
           'string.empty': `"slug" não pode estar em branco.`,
           'string.base': `"slug" deve ser do tipo String.`,
-          'string.min': `"slug" deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `"slug" deve conter no máximo {#limit} caracteres.`,
+          'string.min': `"slug" deve conter no mínimo {#limit} caractere.`,
           'string.pattern.base': `"slug" está no formato errado.`,
           'any.invalid': `"slug" possui o valor inválido "null".`,
         }),
@@ -248,11 +249,13 @@ const schemas = {
   title: function () {
     return Joi.object({
       title: Joi.string()
-        .replace(/^\u200e|\u200e$|^\u200f|\u200f$|\u0000/g, '')
+        .replace(
+          /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
+          ''
+        )
         .allow(null)
         .min(1)
-        .max(256)
-        .trim()
+        .max(255)
         .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"title" é um campo obrigatório.`,
@@ -267,11 +270,12 @@ const schemas = {
   body: function () {
     return Joi.object({
       body: Joi.string()
-        .replace(/^\u200e|\u200e$|^\u200f|\u200f$|\u0000/g, '')
+        .pattern(/^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0).*$/su, { invert: true })
+        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
         .min(1)
         .max(20000)
-        .trim()
         .invalid(null)
+        .custom(withoutMarkdown, 'check if is empty without markdown')
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"body" é um campo obrigatório.`,
@@ -280,6 +284,8 @@ const schemas = {
           'string.min': `"body" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"body" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"body" possui o valor inválido "null".`,
+          'string.pattern.invert.base': `"body" deve começar com caracteres visíveis.`,
+          'markdown.empty': `Markdown deve conter algum texto`,
         }),
     });
   },
@@ -785,4 +791,8 @@ const schemas = {
         }),
     });
   },
+};
+
+const withoutMarkdown = (value, helpers) => {
+  return removeMarkdown(value, { trim: true }).length > 0 ? value : helpers.error('markdown.empty');
 };
