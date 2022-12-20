@@ -79,11 +79,13 @@ function EditProfileForm() {
     if (user.username !== username || user.email !== email || user.notifications !== notifications) {
       const confirmChanges = await confirm({
         title: `Você realmente deseja alterar esses itens?`,
-        content: `
-          ${user.username !== username ? `Nome de usuário: ${username};` : ""}
-          ${user.email !== email ? `Email: ${email};` : ""}
-          ${user.notifications !== notifications ? `${notifications ? "Quero receber emails!" : "Não quero receber emails!"}` : ""}
-        `
+        content: (
+          <div dangerouslySetInnerHTML={{ __html: `
+            ${user.username !== username ? `Nome de usuário: ${username};<br>` : ""}
+            ${user.email !== email ? `Email: ${email};<br>` : ""}
+            ${user.notifications !== notifications ? `${notifications ? "Quero receber emails!" : "Não quero receber emails!"}<br>` : ""}
+          `}} />
+        )
       });
 
       if (!confirmChanges) {
