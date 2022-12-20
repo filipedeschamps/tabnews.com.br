@@ -90,10 +90,30 @@ function EditProfileForm() {
     }
 
     if (user.email !== email) {
+      const confirmChangeEmail = await confirm({
+        title: `Você realmente deseja alterar seu email?`,
+        content: `Isto irá alterar seu email.`,
+      });
+
+      if (!confirmChangeEmail) {
+        setIsLoading(false);
+        return;
+      }
+
       payload.email = email;
     }
 
     if (user.notifications !== notifications) {
+      const confirmChangeNotifications = await confirm({
+        title: `Você realmente deseja alterar suas notificações por email?`,
+        content: `Isto irá alterar suas notificações por email.`,
+      });
+
+      if (!confirmChangeNotifications) {
+        setIsLoading(false);
+        return;
+      }
+
       payload.notifications = notifications;
     }
 
