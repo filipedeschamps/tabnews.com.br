@@ -142,7 +142,6 @@ async function findOneById(userId) {
 
 async function create(postedUserData) {
   const validUserData = validatePostSchema(postedUserData);
-  checkBlockedUsernames(validUserData.username);
   await validateUniqueUsername(validUserData.username);
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
@@ -191,191 +190,6 @@ function validatePostSchema(postedUserData) {
   return cleanValues;
 }
 
-function checkBlockedUsernames(username) {
-  const blockedUsernames = [
-    'tabnew',
-    'tabnews',
-    'contato',
-    'contatos',
-    'moderador',
-    'moderadores',
-    'moderadora',
-    'moderadoras',
-    'moderadores',
-    'moderacao',
-    'alerta',
-    'alertas',
-    'dados',
-    'status',
-    'estatisticas',
-    'analytics',
-    'auth',
-    'authentication',
-    'autenticacao',
-    'autorizacao',
-    'loja',
-    'log',
-    'login',
-    'logout',
-    'avatar',
-    'backup',
-    'banner',
-    'banners',
-    'beta',
-    'blog',
-    'posts',
-    'category',
-    'categories',
-    'categoria',
-    'categorias',
-    'tags',
-    'grupo',
-    'grupos',
-    'checkout',
-    'carrinho',
-    'comentario',
-    'comentarios',
-    'comunidade',
-    'comunidades',
-    'vagas',
-    'curso',
-    'cursos',
-    'sobre',
-    'conta',
-    'contas',
-    'anuncio',
-    'anuncios',
-    'anuncie',
-    'anunciar',
-    'afiliado',
-    'afiliados',
-    'criar',
-    'create',
-    'postar',
-    'post',
-    'publicar',
-    'publish',
-    'editar',
-    'editor',
-    'edit',
-    'configuracao',
-    'configuracoes',
-    'configurar',
-    'configure',
-    'config',
-    'preferencias',
-    'conta',
-    'account',
-    'dashboard',
-    'sair',
-    'deslogar',
-    'desconectar',
-    'discussao',
-    'documentacao',
-    'download',
-    'downloads',
-    'draft',
-    'rascunho',
-    'app',
-    'apps',
-    'admin',
-    'administrator',
-    'administrador',
-    'administradora',
-    'administradores',
-    'administracao',
-    'suporte',
-    'support',
-    'pesquisa',
-    'sysadmin',
-    'superuser',
-    'sudo',
-    'root',
-    'user',
-    'users',
-    'rootuser',
-    'guest',
-    'anonymous',
-    'faq',
-    'tag',
-    'tags',
-    'hoje',
-    'ontem',
-    'pagina',
-    'trending',
-    'username',
-    'usuario',
-    'usuarios',
-    'email',
-    'password',
-    'senha',
-    'docs',
-    'documentacao',
-    'guidelines',
-    'diretrizes',
-    'ajuda',
-    'imagem',
-    'imagens',
-    'convite',
-    'convites',
-    'toc',
-    'terms',
-    'termos',
-    'termos-de-uso',
-    'regras',
-    'contrato',
-    'cultura',
-    'licenca',
-    'rss',
-    'newsletter',
-    'newsletters',
-    'notification',
-    'notifications',
-    'notificacoes',
-    'popular',
-    'cadastro',
-    'cadastrar',
-    'interface',
-    'recentes',
-    'register',
-    'registration',
-    'resposta',
-    'respostas',
-    'replies',
-    'reply',
-    'relatorio',
-    'relatorios',
-    'resetar',
-    'resetar-senha',
-    'ceo',
-    'cfo',
-    'cto',
-    'gerente',
-    'membership',
-    'news',
-    'api',
-    'css',
-    'init',
-    'museu',
-    'upgrade',
-    'features',
-    'me',
-    'perfil',
-    'eu',
-    'videos',
-  ];
-
-  if (blockedUsernames.includes(username.toLowerCase())) {
-    throw new ValidationError({
-      message: `Este nome de usuário não está disponível para uso.`,
-      action: 'Escolha outro nome de usuário e tente novamente.',
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME',
-      key: 'username',
-    });
-  }
-}
-
 // TODO: Refactor the interface of this function
 // and the code inside to make it more future proof
 // and to accept update using "userId".
@@ -383,12 +197,11 @@ async function update(username, postedUserData, options = {}) {
   const validPostedUserData = await validatePatchSchema(postedUserData);
   const currentUser = await findOneByUsername(username);
 
-  if ('username' in validPostedUserData) {
-    checkBlockedUsernames(validPostedUserData.username);
-
-    if (currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()) {
-      await validateUniqueUsername(validPostedUserData.username);
-    }
+  if (
+    'username' in validPostedUserData &&
+    currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()
+  ) {
+    await validateUniqueUsername(validPostedUserData.username);
   }
 
   if ('email' in validPostedUserData) {

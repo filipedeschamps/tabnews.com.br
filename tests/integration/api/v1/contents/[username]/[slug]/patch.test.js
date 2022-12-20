@@ -11,7 +11,7 @@ beforeAll(async () => {
 describe('PATCH /api/v1/contents/[username]/[slug]', () => {
   describe('Anonymous user', () => {
     test('Content with minimum valid data', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/username/slug`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/someUsername/slug`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['update:content']);
       const sessionObject = await orchestrator.createSession(userWithoutFeature);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/username/slug`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${userWithoutFeature.username}/slug`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/username/slug`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents//${defaultUser.username}/slug`, {
         method: 'PATCH',
         headers: {
           cookie: `session_id=${sessionObject.token}`,
@@ -141,7 +141,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/username/slug`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/slug`, {
         method: 'PATCH',
         headers: {
           cookie: `session_id=${sessionObject.token}`,
@@ -166,7 +166,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/username/slug`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/slug`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const sessionObject = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/username/%3Cscript%3Ealert%28%29%3Cscript%3E`,
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/%3Cscript%3Ealert%28%29%3Cscript%3E`,
         {
           method: 'PATCH',
           headers: {
