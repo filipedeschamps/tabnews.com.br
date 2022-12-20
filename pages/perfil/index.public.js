@@ -75,46 +75,33 @@ function EditProfileForm() {
 
     const payload = {};
 
-    if (user.username !== username) {
-      const confirmChangeUsername = await confirm({
-        title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isto irá quebrar todas as URLs das suas publicações.`,
+
+    if (user.username !== username || user.email !== email || user.notifications !== notifications) {
+      const confirmChanges = await confirm({
+        title: `Você realmente deseja alterar esses itens?`,
+        content: `
+          ${user.username !== username ? `Nome de usuário: ${username};` : ""}
+          ${user.email !== email ? `Email: ${email};` : ""}
+          ${user.notifications !== notifications ? `${notifications ? "Quero receber emails!" : "Não quero receber emails!"}` : ""}
+        `
       });
 
-      if (!confirmChangeUsername) {
+      if (!confirmChanges) {
         setIsLoading(false);
         return;
       }
 
-      payload.username = username;
-    }
-
-    if (user.email !== email) {
-      const confirmChangeEmail = await confirm({
-        title: `Você realmente deseja alterar seu email?`,
-        content: `Isto irá alterar seu email.`,
-      });
-
-      if (!confirmChangeEmail) {
-        setIsLoading(false);
-        return;
+      if (user.username !== username) {
+        payload.username = username;
       }
 
-      payload.email = email;
-    }
-
-    if (user.notifications !== notifications) {
-      const confirmChangeNotifications = await confirm({
-        title: `Você realmente deseja alterar suas notificações por email?`,
-        content: `Isto irá alterar suas notificações por email.`,
-      });
-
-      if (!confirmChangeNotifications) {
-        setIsLoading(false);
-        return;
+      if (user.email !== email) {
+        payload.email = email;
       }
 
-      payload.notifications = notifications;
+      if (user.notifications !== notifications) {
+        payload.notifications = notifications;
+      }
     }
 
     if (Object.keys(payload).length === 0) {
