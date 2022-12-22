@@ -28,6 +28,23 @@ function extractFromRequest(request) {
   return realIp;
 }
 
+function socketFromRequest(request) {
+  let socketIp = request.socket?.remoteAddress;
+
+  // Localhost loopback in IPv6
+  if (socketIp === '::1') {
+    socketIp = '127.0.0.1';
+  }
+
+  // IPv4-mapped IPv6 addresses
+  if (socketIp?.substr(0, 7) == '::ffff:') {
+    socketIp = socketIp.substr(7);
+  }
+
+  return socketIp;
+}
+
 export default Object.freeze({
   extractFromRequest,
+  socketFromRequest,
 });
