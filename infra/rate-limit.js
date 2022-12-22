@@ -26,6 +26,8 @@ async function check(request) {
   const method = request.method;
   const path = request.nextUrl.pathname;
   const limit = getLimit(method, path, realIp);
+  if (!limit) return { success: true };
+
   let timeout;
 
   try {
@@ -60,6 +62,7 @@ async function check(request) {
 
 function getLimit(method, path, ip) {
   const defaultLimits = {
+    rateLimitPaths: [],
     general: {
       requests: 1000,
       window: '5 m',
@@ -96,6 +99,11 @@ function getLimit(method, path, ip) {
 
   const configurationFromEnvironment = process.env.RATE_LIMITS ? JSON.parse(process.env.RATE_LIMITS) : {};
   const configuration = { ...defaultLimits, ...configurationFromEnvironment };
+
+  if (!configuration.rateLimitPaths.find((rateLimitPath) => path?.startsWith(rateLimitPath))) {
+    return;
+  }
+
   const limitKey = configuration[`${method} ${path}`] ? `${method} ${path}` : 'general';
 
   const limit = {

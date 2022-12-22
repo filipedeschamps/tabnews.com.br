@@ -6,7 +6,7 @@ import { UnauthorizedError } from '/errors/index.js';
 import ip from 'models/ip.js';
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],
 };
 
 export async function middleware(request) {
