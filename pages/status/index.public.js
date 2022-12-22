@@ -18,7 +18,7 @@ export default function Page() {
 
   return (
     <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site' }}>
-      <Box sx={{ display: 'grid', width: '100%' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
         <Box>
