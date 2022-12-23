@@ -1,7 +1,7 @@
 import { Box, Dialog, Button, Text } from '@primer/react';
 
 export default function Modal({ title, isOpen, onClose, description, customButtons }) {
-  const modalButtons = [customButtons ?? <Button sx={{ mr: 1 }} onClick={onClose} children="Fechar" />].flat(Infinity);
+  const modalButtons = [customButtons ?? <Button sx={{ mr: 1 }} onClick={onClose}>Fechar</Button>].flat(Infinity);
 
   return (
     <Dialog isOpen={isOpen} onDismiss={onClose} aria-labelledby="header-id">
