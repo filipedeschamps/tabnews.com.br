@@ -14,7 +14,7 @@ export async function middleware(request) {
   if (!isFromCloudflare(request)) {
     console.log({
       ipClient: ip.extractFromRequest(request),
-      ipSocket: ip.socketFromRequest(request),
+      'x-vercel-proxied-for': request.headers.get('x-vercel-proxied-for'),
       host: request.headers.get('host'),
       path: request.nextUrl.pathname,
     });
@@ -65,7 +65,7 @@ export async function middleware(request) {
 }
 
 function isFromCloudflare(request) {
-  const socketIp = ip.socketFromRequest(request);
+  const socketIp = request.headers.get('x-vercel-proxied-for')?.split(', ').at(-1);
   return socketIp && cloudflareIPs.find((ipRange) => ipCheck.cidrSubnet(ipRange).contains(socketIp));
 }
 
