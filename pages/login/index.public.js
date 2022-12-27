@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text, Spinner } from '@primer/react';
 
 export default function Login() {
   return (
@@ -151,7 +151,7 @@ function LoginForm() {
               disabled={isLoading}
               sx={{ width: '100%' }}
               aria-label="Login">
-              Login
+              {isLoading ? <Spinner size="small" /> : 'Login'}
             </Button>
           </FormControl>
         </Box>
