@@ -228,6 +228,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     title: contentObject?.title || '',
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
+    canonical_url: contentObject?.canonical_url || '',
   });
 
   const confirm = useConfirm();
@@ -267,6 +268,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
       const title = newData.title;
       const body = newData.body;
       const sourceUrl = newData.source_url;
+      const canonicalUrl = newData.canonical_url;
 
       const requestMethod = contentObject?.id ? 'PATCH' : 'POST';
       const requestUrl = contentObject?.id
@@ -286,6 +288,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
       if (sourceUrl || contentObject?.source_url) {
         requestBody.source_url = sourceUrl || null;
+      }
+
+      if (canonicalUrl || contentObject?.canonicalUrl) {
+        requestBody.canonical_url = canonicalUrl || null;
       }
 
       if (contentObject?.parent_id) {
@@ -466,6 +472,28 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               )}
             </FormControl>
           )}
+
+          <FormControl id="canonical_url">
+            <FormControl.Label visuallyHidden>URL canônica (opcional)</FormControl.Label>
+            <TextInput
+              onChange={handleChange}
+              onKeyDown={onKeyDown}
+              name="canonical_url"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              placeholder="URL canônica (opcional)"
+              aria-label="URL canônica (opcional)"
+              block={true}
+              value={newData.canonical_url}
+              type="url"
+            />
+
+            {errorObject?.key === 'canonical_url' && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+          </FormControl>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             {contentObject && (
