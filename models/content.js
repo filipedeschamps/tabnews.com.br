@@ -108,6 +108,7 @@ async function findAll(values = {}, options = {}) {
         ${!values?.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
         contents.status,
         contents.source_url,
+        contents.canonical_url,
         contents.created_at,
         contents.updated_at,
         contents.published_at,
@@ -333,8 +334,8 @@ async function create(postedContent, options = {}) {
       WITH
         inserted_content as (
           INSERT INTO
-            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at, canonical_url)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         )
       SELECT
@@ -346,6 +347,7 @@ async function create(postedContent, options = {}) {
         inserted_content.body,
         inserted_content.status,
         inserted_content.source_url,
+        inserted_content.canonical_url,
         inserted_content.created_at,
         inserted_content.updated_at,
         inserted_content.published_at,
@@ -365,6 +367,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
+        content.canonical_url,
       ],
     };
 
@@ -459,6 +462,7 @@ function validateCreateSchema(content) {
     body: 'required',
     status: 'required',
     source_url: 'optional',
+    canonical_url: 'optional',
   });
 
   if (cleanValues.status === 'deleted') {
@@ -680,7 +684,8 @@ async function update(contentId, postedContent, options = {}) {
             source_url = $7,
             published_at = $8,
             updated_at = (now() at time zone 'utc'),
-            deleted_at = $9
+            deleted_at = $9,
+            canonical_url = $10
           WHERE
             id = $1
           RETURNING *
@@ -698,6 +703,7 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.updated_at,
         updated_content.published_at,
         updated_content.deleted_at,
+        updated_content.canonical_url,
         users.username as owner_username
       FROM
         updated_content
@@ -714,6 +720,7 @@ async function update(contentId, postedContent, options = {}) {
         content.source_url,
         content.published_at,
         content.deleted_at,
+        content.canonical_url,
       ],
     };
     try {
@@ -733,6 +740,7 @@ function validateUpdateSchema(content) {
     body: 'optional',
     status: 'optional',
     source_url: 'optional',
+    canonical_url: 'optional',
   });
 
   return cleanValues;
@@ -792,7 +800,8 @@ async function findChildrenTree(options) {
             created_at,
             updated_at,
             published_at,
-            deleted_at
+            deleted_at,
+            canonical_url
         FROM
           contents
         WHERE
@@ -811,7 +820,8 @@ async function findChildrenTree(options) {
             contents.created_at,
             contents.updated_at,
             contents.published_at,
-            contents.deleted_at
+            contents.deleted_at,
+            contents.canonical_url
           FROM
             contents
           INNER JOIN
@@ -829,6 +839,7 @@ async function findChildrenTree(options) {
         children.body,
         children.status,
         children.source_url,
+        children.canonical_url,
         children.created_at,
         children.updated_at,
         children.published_at,
