@@ -58,7 +58,8 @@ export function DefaultHead() {
 }
 
 export default function Head({ metadata, children }) {
-  const { type, title, description, image, url, noIndex, author, published_time, modified_time } = metadata || {};
+  const { type, title, description, image, url, noIndex, author, published_time, modified_time, canonical_url } =
+    metadata || {};
 
   return (
     <NextHead>
@@ -107,6 +108,8 @@ export default function Head({ metadata, children }) {
       {published_time && <meta property="article:published_time" content={published_time} />}
 
       {modified_time && <meta property="article:modified_time" content={modified_time} />}
+
+      {canonical_url && <link rel="canonical" href={canonical_url} />}
 
       {children}
     </NextHead>
