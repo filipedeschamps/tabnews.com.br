@@ -195,6 +195,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -380,6 +381,52 @@ describe('POST /api/v1/contents', () => {
         body: 'Terminando com caractere proibido no Postgres',
         status: 'draft',
         source_url: 'https://teste-caractere.invalido/',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "title", "body" and "canonical_url" containing \\u0000 null characters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: '\u0000Começando com caractere proibido no Postgres',
+          body: 'Terminando com caractere proibido no Postgres\u0000',
+          canonical_url: 'https://teste-\u0000caractere.invalido/\u0000',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'comecando-com-caractere-proibido-no-postgres',
+        title: 'Começando com caractere proibido no Postgres',
+        body: 'Terminando com caractere proibido no Postgres',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'https://teste-caractere.invalido/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -510,6 +557,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Espaço só no fim',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -583,6 +631,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Instale o Node.js',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -657,6 +706,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Instale o Node.js',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -865,6 +915,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
         tabcoins: 1,
         source_url: null,
+        canonical_url: null,
         created_at: secondContentBody.created_at,
         updated_at: secondContentBody.updated_at,
         published_at: secondContentBody.published_at,
@@ -968,6 +1019,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Instale o Node.js',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1011,6 +1063,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Instale o Node.js',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1054,6 +1107,7 @@ describe('POST /api/v1/contents', () => {
         body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1097,6 +1151,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1140,6 +1195,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1184,6 +1240,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1228,6 +1285,7 @@ describe('POST /api/v1/contents', () => {
         body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
         status: 'published',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
@@ -1403,6 +1461,52 @@ describe('POST /api/v1/contents', () => {
         body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
         status: 'draft',
         source_url: 'http://www.tabnews.com.br/',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing a valid HTTP URL', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'TabNews',
+          body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
+          canonical_url: 'http://www.tabnews.com.br/',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'tabnews',
+        title: 'TabNews',
+        body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'http://www.tabnews.com.br/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1447,6 +1551,52 @@ describe('POST /api/v1/contents', () => {
         body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
         status: 'draft',
         source_url: 'https://www.tabnews.com.br/museu',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing a valid HTTPS URL', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'TabNews: Onde Tudo Começou',
+          body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
+          canonical_url: 'https://www.tabnews.com.br/museu',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'tabnews-onde-tudo-comecou',
+        title: 'TabNews: Onde Tudo Começou',
+        body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'https://www.tabnews.com.br/museu',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1491,6 +1641,52 @@ describe('POST /api/v1/contents', () => {
         body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
         status: 'draft',
         source_url: 'http://nic.xn--vermgensberatung-pwb/',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing a valid long TLD', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Um baita de um Top-Level Domain',
+          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+          canonical_url: 'http://nic.xn--vermgensberatung-pwb/',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'um-baita-de-um-top-level-domain',
+        title: 'Um baita de um Top-Level Domain',
+        body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'http://nic.xn--vermgensberatung-pwb/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1535,6 +1731,52 @@ describe('POST /api/v1/contents', () => {
         body: 'Por exemplo o encurtador do Telegram',
         status: 'draft',
         source_url: 'https://t.me',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing a valid short URL', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'URL bem curta',
+          body: 'Por exemplo o encurtador do Telegram',
+          canonical_url: 'https://t.me',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'url-bem-curta',
+        title: 'URL bem curta',
+        body: 'Por exemplo o encurtador do Telegram',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'https://t.me',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1580,6 +1822,38 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "canonical_url" containing a invalid short TLD', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Um Top-Level Domain menor que o permitido',
+          body: 'TLDs precisam ter pelo menos dois caracteres',
+          canonical_url: 'https://invalidtl.d',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"canonical_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "source_url" containing a invalid long TLD', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -1605,6 +1879,38 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "canonical_url" containing a invalid long TLD', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Um Top-Level Domain maior que o permitido',
+          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+          canonical_url: 'http://tl.dcomvinteecincocaracteres',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"canonical_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1644,6 +1950,38 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "canonical_url" containing a not accepted Protocol', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          canonical_url: 'ftp://www.tabnews.com.br',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"canonical_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "source_url" not containing a protocol', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -1669,6 +2007,38 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "canonical_url" not containing a protocol', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          canonical_url: 'www.tabnews.com.br',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"canonical_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1708,6 +2078,38 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "canonical_url" containing an incomplete URL', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          canonical_url: 'https://lol.',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual(
+        '"canonical_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+      );
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "source_url" containing query parameters', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -1739,6 +2141,52 @@ describe('POST /api/v1/contents', () => {
         body: 'Corpo',
         status: 'draft',
         source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing query parameters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          canonical_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo',
+        title: 'Titulo',
+        body: 'Corpo',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1783,6 +2231,52 @@ describe('POST /api/v1/contents', () => {
         body: 'Corpo',
         status: 'draft',
         source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing fragment component', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          canonical_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo',
+        title: 'Titulo',
+        body: 'Corpo',
+        status: 'draft',
+        source_url: null,
+        canonical_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1826,6 +2320,36 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Content with "canonical_url" containing an empty String', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          canonical_url: '',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('"canonical_url" não pode estar em branco.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Content with "source_url" containing a Null value', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
@@ -1841,6 +2365,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Titulo',
           body: 'Corpo',
           source_url: null,
+          canonical_url: null,
         }),
       });
 
@@ -1857,6 +2382,53 @@ describe('POST /api/v1/contents', () => {
         body: 'Corpo',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
+    test('Content with "canonical_url" containing a Null value', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          title: 'Titulo',
+          body: 'Corpo',
+          source_url: null,
+          canonical_url: null,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'titulo',
+        title: 'Titulo',
+        body: 'Corpo',
+        status: 'draft',
+        source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1902,6 +2474,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -1945,6 +2518,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Body',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -2051,6 +2625,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: null,
@@ -2103,6 +2678,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Deveria criar um slug com UUID V4',
         status: 'published',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
@@ -2156,6 +2732,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Deveria criar um slug baseado no "title"',
         status: 'published',
         source_url: null,
+        canonical_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,

@@ -1,4 +1,3 @@
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
@@ -226,6 +225,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         children_deep_count: 1,
         status: 'published',
         source_url: null,
+        canonical_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContent.updated_at.toISOString(),
@@ -287,6 +287,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         children_deep_count: 3,
         status: 'published',
         source_url: null,
+        canonical_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContent.updated_at.toISOString(),
@@ -353,6 +354,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         children_deep_count: 1,
         status: 'published',
         source_url: null,
+        canonical_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContent.updated_at.toISOString(),
@@ -419,6 +421,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         body: '[Não disponível]',
         status: 'draft',
         source_url: null,
+        canonical_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDrafted.updated_at.toISOString(),
@@ -486,6 +489,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         body: '[Não disponível]',
         status: 'deleted',
         source_url: null,
+        canonical_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDeleted.updated_at.toISOString(),

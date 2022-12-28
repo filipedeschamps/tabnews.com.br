@@ -139,6 +139,7 @@ async function createContent(contentObject) {
     body: contentObject?.body || faker.lorem.paragraphs(5),
     status: contentObject?.status || 'draft',
     source_url: contentObject?.source_url || undefined,
+    canonical_url: contentObject?.canonical_url || undefined,
   });
 }
 
