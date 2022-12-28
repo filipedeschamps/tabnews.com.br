@@ -72,6 +72,7 @@ function patchValidationHandler(request, response, next) {
     body: 'optional',
     status: 'optional',
     source_url: 'optional',
+    canonical_url: 'optional',
   });
 
   request.body = cleanBodyValues;

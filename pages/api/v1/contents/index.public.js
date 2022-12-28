@@ -74,6 +74,7 @@ function postValidationHandler(request, response, next) {
     body: 'required',
     status: 'optional',
     source_url: 'optional',
+    canonical_url: 'optional',
   });
 
   request.body = cleanValues;
