@@ -118,6 +118,7 @@ function filterInput(user, feature, input) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
+      canonical_url: input.canonical_url,
     };
   }
 
@@ -129,6 +130,7 @@ function filterInput(user, feature, input) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
+      canonical_url: input.canonical_url,
     };
   }
 
@@ -140,6 +142,7 @@ function filterInput(user, feature, input) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
+      canonical_url: input.canonical_url,
     };
   }
 
@@ -234,6 +237,7 @@ function filterOutput(user, feature, output) {
       clonedOutput.body = '[Não disponível]';
       clonedOutput.slug = 'nao-disponivel';
       clonedOutput.source_url = null;
+      clonedOutput.canonical_url = null;
     }
 
     filteredOutputValues = validator(clonedOutput, {
