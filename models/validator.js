@@ -332,6 +332,26 @@ const schemas = {
     });
   },
 
+  canonical_url: function () {
+    return Joi.object({
+      canonical_url: Joi.string()
+        .allow(null)
+        .replace(/\u0000/g, '')
+        .trim()
+        .max(2000)
+        .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([\/?#]\S*)?$/u)
+        .when('$required.canonical_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"canonical_url" é um campo obrigatório.`,
+          'string.empty': `"canonical_url" não pode estar em branco.`,
+          'string.base': `"canonical_url" deve ser do tipo String.`,
+          'string.max': `"canonical_url" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"canonical_url" possui o valor inválido "null".`,
+          'string.pattern.base': `"canonical_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.`,
+        }),
+    });
+  },
+
   owner_id: function () {
     return Joi.object({
       owner_id: Joi.string()
@@ -512,6 +532,7 @@ const schemas = {
       'body',
       'status',
       'source_url',
+      'canonical_url',
       'owner_id',
       'username',
       'owner_username',
@@ -615,6 +636,7 @@ const schemas = {
       'body',
       'status',
       'source_url',
+      'canonical_url',
       'created_at',
       'updated_at',
       'published_at',
