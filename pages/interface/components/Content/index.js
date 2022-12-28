@@ -214,6 +214,14 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
           </Text>
         </Box>
       )}
+      {contentObject.canonical_url && (
+        <Box>
+          <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
+            <LinkIcon size={16} /> Publicado originalmente em:{' '}
+            <Link href={contentObject.canonical_url}>{contentObject.canonical_url}</Link>
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }
