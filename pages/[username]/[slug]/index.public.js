@@ -349,6 +349,7 @@ export async function getStaticProps(context) {
     title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
     image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
     url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
+    canonical_url: secureContentFound?.canonical_url,
     description: oneLineBody,
     published_time: secureContentFound.published_at,
     modified_time: secureContentFound.updated_at,
