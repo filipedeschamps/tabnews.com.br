@@ -58,7 +58,7 @@ export function UserProvider({ children }) {
 
     function onFocus() {
       const cachedUser = JSON.parse(localStorage.getItem('user'));
-      setUser((user) => ({ ...user, ...cachedUser }));
+      setUser((user) => (cachedUser?.username ? { ...user, ...cachedUser } : null));
       if (refreshInterval < Date.now() - cachedUser?.cacheTime) fetchUser();
     }
     addEventListener('focus', onFocus);
