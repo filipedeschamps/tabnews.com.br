@@ -501,6 +501,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             {errorObject?.key === 'canonical_url' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
+            <FormControl.Caption id="custom-input-caption">
+              Caso este artigo já esteja publicado em outro lugar, insira o link aqui.{' '}
+              <Link
+                target="_blank"
+                href="https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls?hl=pt-br">
+                Saiba mais
+              </Link>
+              .
+            </FormControl.Caption>
           </FormControl>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
