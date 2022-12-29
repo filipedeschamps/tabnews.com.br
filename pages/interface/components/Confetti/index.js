@@ -15,7 +15,7 @@ export default function Confetti({
 
   useEffect(() => {
     function handleResize() {
-      setConfettiWidth(window.innerWidth);
+      setConfettiWidth(document.body.clientWidth);
       setConfettiHeight(window.innerHeight);
     }
 
