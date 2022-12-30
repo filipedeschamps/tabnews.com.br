@@ -83,10 +83,12 @@ async function patchHandler(request, response) {
   const userTryingToPatch = request.context.user;
   const unfilteredBodyValues = request.body;
 
+  const { username, slug } = request.query;
+
   const contentToBeUpdated = await content.findOne({
     where: {
-      owner_username: request.query.username,
-      slug: request.query.slug,
+      owner_username: username,
+      slug,
       $or: [{ status: 'draft' }, { status: 'published' }],
     },
   });
@@ -172,6 +174,9 @@ async function patchHandler(request, response) {
     await transaction.release();
 
     const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:content', updatedContent);
+
+    // Revalidate page for the updated content
+    response.revalidate(`/${username}/${slug}`);
 
     return response.status(200).json(secureOutputValues);
   } catch (error) {

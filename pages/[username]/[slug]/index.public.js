@@ -12,32 +12,7 @@ import { Box, Tooltip } from '@primer/react';
 import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
 
-export default function Post({
-  contentFound: contentFoundFallback,
-  childrenFound: childrenFallback,
-  rootContentFound,
-  parentContentFound,
-  contentMetadata,
-}) {
-  const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
-    {
-      fallbackData: contentFoundFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
-  // TODO: understand why enabling "revalidateOn..." breaks children rendering.
-  const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
-    {
-      fallbackData: childrenFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
+export default function Post({ contentFound, childrenFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [confettiWidth, setConfettiWidth] = useState(0);
   const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -121,7 +96,7 @@ export default function Post({
             <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
           </Box>
 
-          <RenderChildrenTree key={contentFound.id} childrenList={children} level={0} />
+          <RenderChildrenTree key={contentFound.id} childrenList={childrenFound} level={0} />
         </Box>
       </DefaultLayout>
     </>
@@ -386,6 +361,5 @@ export async function getStaticProps(context) {
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
-    revalidate: 10,
   };
 }

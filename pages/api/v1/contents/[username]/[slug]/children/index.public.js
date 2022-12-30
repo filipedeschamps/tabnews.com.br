@@ -31,10 +31,12 @@ function getValidationHandler(request, response, next) {
 async function getHandler(request, response) {
   const userTryingToGet = request.context.user;
 
+  const { username, slug } = request.query;
+
   const contentFound = await content.findOne({
     where: {
-      owner_username: request.query.username,
-      slug: request.query.slug,
+      owner_username: username,
+      slug,
       status: 'published',
     },
   });
@@ -56,6 +58,9 @@ async function getHandler(request, response) {
   });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+
+  // Revalidate page for the updated content
+  response.revalidate(`${username}/${slug}/children`);
 
   return response.status(200).json(secureOutputValues);
 }
