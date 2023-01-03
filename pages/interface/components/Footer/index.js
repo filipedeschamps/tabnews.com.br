@@ -49,7 +49,6 @@ export default function Footer(props) {
             flexWrap: 'wrap',
           }}>
           <Link href="/contato">Contato</Link>
-          <Link href="/faq">FAQ</Link>
           <Link href="https://github.com/filipedeschamps/tabnews.com.br">GitHub</Link>
           <Link href="/museu">Museu</Link>
           <Link href="/recentes/rss">RSS</Link>
