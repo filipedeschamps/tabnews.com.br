@@ -4,7 +4,7 @@ import { Viewer } from 'pages/interface';
 import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function Page() {
-  const body = `Esta página existe para responder às dúvidas mais frequentes sobre o projeto.
+  const body = `Esta página existe para responder as dúvidas mais frequentes sobre o projeto.
 
   <div id="como-funcionam-as-tabcoins"></div>
 
@@ -30,9 +30,9 @@ export default function Page() {
   <div id="onde-fazer-testes"></div>
 
   ## Onde fazer testes?
-  Testes das mais variadas formas devem ser feitos no ambiente de homologação. Você pode acessar [esse link](https://github.com/filipedeschamps/tabnews.com.br/deployments/activity_log?environment=Preview) para ver a lista de deploys e depois basta clicar em \`View deployment\` no deploy mais recente para acessar o ambiente.
+  Testes das mais variadas formas devem ser feitas no ambiente de homologação. Você pode acessar [esse link](https://github.com/filipedeschamps/tabnews.com.br/deployments/activity_log?environment=Preview) para ver a lista de deploys e depois basta clicar em \`View deployment\` no deploy mais recente para acessar o ambiente.
 
-  Como é um ambiente diferente, você precisará criar uma nova conta lá.
+  Como é um abiente diferente, você precisará criar uma nova conta lá.
 
   <div id="como-posso-fazer-sugestoes-e-ou-reportar-bugs"></div>
 
@@ -51,7 +51,7 @@ export default function Page() {
   <div id="como-posso-contribuir-com-o-tabnews"></div>
 
   ## Como posso contribuir com o TabNews?
-  Além de usar o site e publicar conteúdos de forma saudável, o TabNews é um projeto open source. Isso significa que qualquer pessoa pode contribuir com o código do projeto. Para isso, pedimos que leia o [README do projeto no GitHub](https://github.com/filipedeschamps/tabnews.com.br#readme) e caso ainda tenha dúvidas, você pode ler (essa publicação)[https://www.tabnews.com.br/rodrigoKulb/boas-praticas-para-criar-um-pull-request-no-projeto-tabnews-com-br].
+  Além de usar o site e publicar conteúdos de forma saudável, o TabNews é um projeto open source. Isso significa que qualquer pessoa pode contribuir com o código do projeto. Para isso, pedimos que leia o [README do projeto no GitHub](https://github.com/filipedeschamps/tabnews.com.br#readme) e caso ainda tenha dúvidas, você pode ler [essa publicação)[https://www.tabnews.com.br/rodrigoKulb/boas-praticas-para-criar-um-pull-request-no-projeto-tabnews-com-br].
 
   <div id="que-tipo-de-conteudo-eu-posso-publicar-no-tabnews"></div>
 
