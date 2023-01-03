@@ -33,7 +33,7 @@ async function findAll(values = {}, options = {}) {
 
   const selectClause = buildSelectClause(values);
   const whereClause = buildWhereClause(values?.where);
-  const orderByClause = buildOrderByClause(values?.order);
+  const orderByClause = buildOrderByClause(values);
 
   query.text = `
       WITH content_window AS (
@@ -47,6 +47,7 @@ async function findAll(values = {}, options = {}) {
       ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
       )
       ${selectClause}
+      ${orderByClause}
       ;`;
 
   if (values.where) {
@@ -197,12 +198,12 @@ async function findAll(values = {}, options = {}) {
     }, '');
   }
 
-  function buildOrderByClause(orderBy) {
-    if (!orderBy) {
+  function buildOrderByClause({ order, count }) {
+    if (!order || count) {
       return '';
     }
 
-    return `ORDER BY contents.${orderBy}`;
+    return `ORDER BY contents.${order}`;
   }
 }
 
@@ -403,7 +404,7 @@ function getSlug(title) {
     trim: true,
   });
 
-  const truncatedSlug = generatedSlug.substring(0, 256);
+  const truncatedSlug = generatedSlug.substring(0, 255);
 
   return truncatedSlug;
 }
@@ -435,7 +436,7 @@ async function checkIfParentIdExists(content, options) {
 }
 
 function parseQueryErrorToCustomError(error) {
-  if (error.databaseErrorCode === '23505') {
+  if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
       action: `Utilize um "title" ou "slug" diferente.`,

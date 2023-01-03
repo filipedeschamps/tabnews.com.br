@@ -1,7 +1,6 @@
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
-import Confetti from 'react-confetti';
-import { Link, DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
+import { Link, DefaultLayout, Content, TabCoinButtons, Confetti } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
@@ -38,41 +37,20 @@ export default function Post({
     }
   );
 
-  const [confettiWidth, setConfettiWidth] = useState(0);
-  const [confettiHeight, setConfettiHeight] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    function handleResize() {
-      setConfettiWidth(window.screen.width);
-      setConfettiHeight(window.screen.height);
-    }
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
       setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }
-
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <>
-      {showConfetti && (
-        <Confetti
-          width={confettiWidth}
-          height={confettiHeight}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
-      )}
+      {showConfetti && <Confetti />}
       <DefaultLayout metadata={contentMetadata}>
         <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
 
@@ -102,7 +80,7 @@ export default function Post({
           </Box>
 
           <Box sx={{ width: '100%', overflow: 'auto' }}>
-            <Content content={contentFound} mode="view" />
+            <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
 
@@ -121,7 +99,7 @@ export default function Post({
             <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
           </Box>
 
-          <RenderChildrenTree childrenList={children} level={0} />
+          <RenderChildrenTree key={contentFound.id} childrenList={children} level={0} />
         </Box>
       </DefaultLayout>
     </>
@@ -297,7 +275,6 @@ export async function getStaticProps(context) {
   } catch (error) {
     return {
       notFound: true,
-      revalidate: 1,
     };
   }
 
@@ -342,7 +319,7 @@ export async function getStaticProps(context) {
 
   const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 
-  const oneLineBody = removeMarkdown(secureContentFound.body).replace(/\s+/g, ' ');
+  const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
   const webserverHost = webserver.getHost();
 
@@ -350,7 +327,7 @@ export async function getStaticProps(context) {
     title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
     image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
     url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
-    description: oneLineBody.substring(0, 190),
+    description: oneLineBody,
     published_time: secureContentFound.published_at,
     modified_time: secureContentFound.updated_at,
     author: secureContentFound.owner_username,
@@ -375,7 +352,7 @@ export async function getStaticProps(context) {
       },
     });
 
-    parentContentFound.body = removeMarkdown(parentContentFound.body).replace(/\s+/g, ' ').substring(0, 50);
+    parentContentFound.body = removeMarkdown(parentContentFound.body, { maxLength: 50 });
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
   }
 

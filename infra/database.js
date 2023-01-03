@@ -156,14 +156,15 @@ async function tryToGetNewClient() {
   }
 }
 
+const UNIQUE_CONSTRAINT_VIOLATION = '23505';
+const SERIALIZATION_FAILURE = '40001';
+const UNDEFINED_FUNCTION = '42883';
+
 function parseQueryErrorAndLog(error, query) {
-  const expectedErrorsCode = [
-    '23505', // unique constraint violation
-    '40001', // serialization_failure
-  ];
+  const expectedErrorsCode = [UNIQUE_CONSTRAINT_VIOLATION, SERIALIZATION_FAILURE];
 
   if (!webserver.isLambdaServer()) {
-    expectedErrorsCode.push('42883'); // undefined_function
+    expectedErrorsCode.push(UNDEFINED_FUNCTION);
   }
 
   const errorToReturn = new ServiceError({
@@ -190,4 +191,9 @@ export default Object.freeze({
   query,
   getNewClient,
   transaction,
+  errorCodes: {
+    UNIQUE_CONSTRAINT_VIOLATION,
+    SERIALIZATION_FAILURE,
+    UNDEFINED_FUNCTION,
+  },
 });

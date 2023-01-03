@@ -3,6 +3,7 @@
 
 export default function removeMarkdown(md, options) {
   options = options || {};
+  options.oneLine = options.hasOwnProperty('oneLine') ? options.oneLine : true;
   options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
   options.stripListLeaders = options.hasOwnProperty('stripListLeaders') ? options.stripListLeaders : true;
   options.gfm = options.hasOwnProperty('gfm') ? options.gfm : true;
@@ -85,6 +86,24 @@ export default function removeMarkdown(md, options) {
       // .replace(/(\S+)\n\s*(\S+)/g, '$1 $2')
       // Replace strike through
       .replace(/~(.*?)~/g, '$1');
+
+    if (options.oneLine) {
+      output = output.replace(/\s+/g, ' ');
+    }
+
+    if (output.length > options.maxLength) {
+      output = output
+        .substring(0, options.maxLength - 3)
+        .trim()
+        .concat('...');
+    }
+
+    if (options.trim) {
+      output = output.replace(
+        /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu,
+        ''
+      );
+    }
   } catch (e) {
     console.error(e);
     return md;
