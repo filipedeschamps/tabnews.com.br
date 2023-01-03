@@ -10,7 +10,7 @@ export const config = {
 };
 
 export async function middleware(request) {
-  if (process.env.VERCEL_ENV === 'production' && request.headers.get('host') != 'www.tabnews.com.br') {
+  if (process.env.VERCEL_ENV === 'production' && !ip.isRequestFromCloudflare(request)) {
     const publicErrorObject = new UnauthorizedError({
       message: 'Host não autorizado. Por favor, acesse https://www.tabnews.com.br.',
       action: 'Não repita esta requisição.',
