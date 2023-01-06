@@ -365,7 +365,7 @@ describe('POST /api/v1/users', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: 'admin',
+          username: 'administrator',
           email: 'admin@email.com',
           password: 'validpassword123',
         }),
@@ -377,10 +377,10 @@ describe('POST /api/v1/users', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual('Este nome de usuário não está disponível para uso.');
-      expect(responseBody.action).toEqual('Escolha outro nome de usuário e tente novamente.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('username');
     });
 

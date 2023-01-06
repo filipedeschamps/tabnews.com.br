@@ -40,7 +40,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             mb: 2,
           }}>
           {pagination.previousPage ? (
-            <Link href={previousPageUrl}>
+            <Link href={previousPageUrl} scroll={false}>
               <ChevronLeftIcon size={16} />
               Anterior
             </Link>

@@ -47,11 +47,12 @@ export function DefaultHead() {
       <meta property="twitter:description" content={description} key="twitter:description" />
       <meta property="twitter:image" content={image} key="twitter:image" />
 
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="icon" href={favicon} type="image/png" />
       <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
     </NextHead>
   );
 }

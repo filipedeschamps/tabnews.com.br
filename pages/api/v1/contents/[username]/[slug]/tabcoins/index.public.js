@@ -119,7 +119,7 @@ async function postHandler(request, response) {
       await transaction.query('ROLLBACK');
 
       if (
-        error.databaseErrorCode === '40001' ||
+        error.databaseErrorCode === database.errorCodes.SERIALIZATION_FAILURE ||
         error.stack?.startsWith('error: could not serialize access due to read/write dependencies among transaction')
       ) {
         if (remainingAttempts > 0) {
