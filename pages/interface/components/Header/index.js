@@ -15,6 +15,7 @@ export default function HeaderComponent() {
 
   return (
     <Header
+      id="header"
       sx={{
         px: [2, null, null, 3],
       }}>
