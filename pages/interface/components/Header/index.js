@@ -18,6 +18,8 @@ export default function HeaderComponent() {
       id="header"
       sx={{
         px: [2, null, null, 3],
+        position: 'sticky',
+        top: 0,
       }}>
       <Header.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
