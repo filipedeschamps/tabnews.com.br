@@ -1,37 +1,53 @@
-import ipTools from 'ip';
+import webserver from 'infra/webserver';
+import { isInSubnet, isIP } from 'is-in-subnet';
 
 function extractFromRequest(request) {
+  if (isRequestFromCloudflare(request)) {
+    // Vercel via Cloudflare
+    return request instanceof Request
+      ? request.headers.get('cf-connecting-ip') // edge runtime
+      : request.headers['cf-connecting-ip']; // node runtime
+  }
+
   let realIp;
 
   if (request instanceof Request) {
-    if (isRequestFromCloudflare(request)) {
-      return request.headers.get('cf-connecting-ip');
+    // edge runtime
+    realIp = webserver.isLambdaServer()
+      ? request.headers.get('x-vercel-proxied-for')?.split(', ').at(-1) // Vercel
+      : request.headers.get('x-forwarded-for')?.split(', ').at(-1); // remote development
+  } else {
+    // node runtime
+    realIp = webserver.isLambdaServer()
+      ? request.headers['x-vercel-proxied-for']?.split(', ').at(-1) // Vercel
+      : request.headers['x-forwarded-for']?.split(', ').at(-1); // remote development
+  }
+
+  if (!realIp) {
+    // local development
+    realIp = request.socket?.remoteAddress || '127.0.0.1';
+
+    // Localhost loopback in IPv6
+    if (realIp === '::1') {
+      realIp = '127.0.0.1';
     }
 
-    realIp =
-      request.headers.get('x-vercel-proxied-for')?.split(', ').at(-1) || request.socket?.remoteAddress || '127.0.0.1';
-  } else {
-    realIp =
-      request.headers['x-vercel-proxied-for']?.split(', ').at(-1) || request.socket?.remoteAddress || '127.0.0.1';
-  }
-
-  // Localhost loopback in IPv6
-  if (realIp === '::1') {
-    realIp = '127.0.0.1';
-  }
-
-  // IPv4-mapped IPv6 addresses
-  if (realIp.substr(0, 7) == '::ffff:') {
-    realIp = realIp.substr(7);
+    // IPv4-mapped IPv6 addresses
+    if (realIp.substr(0, 7) == '::ffff:') {
+      realIp = realIp.substr(7);
+    }
   }
 
   return realIp;
 }
 
 function isRequestFromCloudflare(request) {
-  const proxyIp = request.headers.get('x-vercel-proxied-for')?.split(', ').at(-1);
+  const proxyIp =
+    request instanceof Request
+      ? request.headers.get('x-vercel-proxied-for')?.split(', ').at(-1) // edge runtime
+      : request.headers['x-vercel-proxied-for']?.split(', ').at(-1); // node runtime
 
-  return !!(proxyIp && cloudflareIPs.find((ipRange) => ipTools.cidrSubnet(ipRange).contains(proxyIp)));
+  return !!isIP(proxyIp) && isInSubnet(proxyIp, cloudflareIPs);
 }
 
 const cloudflareIPs = [
@@ -62,5 +78,4 @@ const cloudflareIPs = [
 export default Object.freeze({
   extractFromRequest,
   isRequestFromCloudflare,
-  tools: ipTools,
 });
