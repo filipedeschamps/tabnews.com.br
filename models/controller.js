@@ -66,7 +66,7 @@ function onErrorHandler(error, request, response) {
   }
 
   const publicErrorObject = new InternalServerError({
-    requestId: request.context.requestId,
+    requestId: request.context?.requestId,
     errorId: error.errorId,
     statusCode: error.statusCode,
     errorLocationCode: error.errorLocationCode,
