@@ -4,6 +4,8 @@ import { SWRConfig } from 'swr';
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 import NextNProgress from 'pages/interface/components/Progressbar/index.js';
 import { DefaultHead } from 'pages/interface/components/Head/index.js';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -32,6 +34,7 @@ function MyApp({ Component, pageProps }) {
         </SWRConfig>
       </UserProvider>
       <Analytics />
+      <ToastContainer />
     </>
   );
 }

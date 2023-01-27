@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser, Link } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Checkbox, Flash, useConfirm } from '@primer/react';
+import { toast } from 'react-toastify';
 
 export default function EditProfile() {
   return (
@@ -116,12 +117,51 @@ function EditProfileForm() {
 
       const responseBody = await response.json();
 
+      if (responseBody.status_code === 400) {
+        if (responseBody.message) {
+          toast.warn(responseBody.message, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+        if (responseBody.action) {
+          toast.warn(responseBody.action, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+      }
+      if (responseBody.status_code === 200) {
+        if (responseBody.message) {
+          toast.success(responseBody.message, {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'dark',
+          });
+        }
+      }
       if (response.status === 200) {
         await fetchUser();
 
         if (user.email !== email) {
+          let message = `Atenção: Um email de confirmação foi enviado para ${email}`;
           setErrorObject({
-            message: `Atenção: Um email de confirmação foi enviado para ${email}`,
+            message: message,
             key: 'email',
             type: 'confirmation',
           });
@@ -422,5 +462,56 @@ function suggestEmail(typedEmail) {
     }
   }
 
+  function message(message = 'Undefined', type = success, time = 5000) {
+    console.log('message');
+    if (type === 'success') {
+      toast.success(message, {
+        position: 'top-right',
+        autoClose: time,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
+    if (type === 'error') {
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: time,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
+    if (type === 'warn') {
+      toast.warn(message, {
+        position: 'top-right',
+        autoClose: time,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
+    if (type === 'info') {
+      toast.info(message, {
+        position: 'top-right',
+        autoClose: time,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'dark',
+      });
+    }
+  }
   return false;
 }
