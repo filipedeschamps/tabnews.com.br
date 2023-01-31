@@ -4,6 +4,7 @@ import { SWRConfig } from 'swr';
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 import NextNProgress from 'pages/interface/components/Progressbar/index.js';
 import { DefaultHead } from 'pages/interface/components/Head/index.js';
+import SearchContextProvider from 'pages/interface/contexts/searchContex/index.js';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -25,7 +26,9 @@ function MyApp({ Component, pageProps }) {
             <ThemeProvider preventSSRMismatch colorMode="day">
               <BaseStyles>
                 <NextNProgress options={{ showSpinner: false }} />
-                <Component {...pageProps} />
+                <SearchContextProvider>
+                  <Component {...pageProps} />
+                </SearchContextProvider>
               </BaseStyles>
             </ThemeProvider>
           </SSRProvider>

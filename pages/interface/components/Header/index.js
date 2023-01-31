@@ -1,7 +1,7 @@
 import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
-import { HeaderLink, Link, useUser } from 'pages/interface';
+import { HeaderLink, Link, useUser, Searchbar } from 'pages/interface';
 import { useRouter } from 'next/router';
 
 export default function HeaderComponent() {
@@ -32,10 +32,14 @@ export default function HeaderComponent() {
         </HeaderLink>
       </Header.Item>
 
-      <Header.Item full>
+      <Header.Item>
         <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
+      </Header.Item>
+
+      <Header.Item full>
+        <Searchbar />
       </Header.Item>
 
       {!isLoading && !user && (

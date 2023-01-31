@@ -1,10 +1,13 @@
+import { useContext } from 'react';
 import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
+import { SearchContext } from 'pages/interface/contexts/searchContex/index.js';
 
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
+  const { search } = useContext(SearchContext);
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
   // const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
@@ -22,7 +25,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             gap: '0.5rem',
             gridTemplateColumns: 'auto 1fr',
           }}>
-          <RenderItems />
+          <RenderItems filter={search} />
           <EndOfRelevant />
         </Box>
       ) : (
@@ -67,70 +70,73 @@ export default function ContentList({ contentList, pagination, paginationBasePat
     </>
   );
 
-  function RenderItems() {
+  function RenderItems({ filter }) {
     function ChildrenDeepCountText({ count }) {
       return count !== 1 ? `${count} comentários` : `${count} comentário`;
     }
 
+    console.log(filter);
     function TabCoinsText({ count }) {
       return Math.abs(count) !== 1 ? `${count} tabcoins` : `${count} tabcoin`;
     }
 
-    return list.map((contentObject, index) => {
-      const itemCount = index + 1 + listNumberOffset;
-      return [
-        <Box key={itemCount} sx={{ textAlign: 'right' }}>
-          <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
-            {itemCount}.
-          </Text>
-        </Box>,
-        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
-          <Box
-            sx={{
-              overflow: 'auto',
-              fontWeight: 'semibold',
-              fontSize: 2,
-              '> a': {
-                ':link': {
-                  color: 'fg.default',
+    return list
+      .filter((str) => (filter !== '' ? str.title.includes(filter) : str.title))
+      .map((contentObject, index) => {
+        const itemCount = index + 1 + listNumberOffset;
+        return [
+          <Box key={itemCount} sx={{ textAlign: 'right' }}>
+            <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
+              {itemCount}.
+            </Text>
+          </Box>,
+          <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+                '> a': {
+                  ':link': {
+                    color: 'fg.default',
+                  },
+                  ':visited': {
+                    color: 'fg.subtle',
+                  },
                 },
-                ':visited': {
-                  color: 'fg.subtle',
-                },
-              },
-            }}>
-            {contentObject.parent_id ? (
-              <Link
-                sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
-                href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
+              }}>
+              {contentObject.parent_id ? (
+                <Link
+                  sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
+                  href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
+                </Link>
+              ) : (
+                <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  {contentObject.title}
+                </Link>
+              )}
+            </Box>
+            <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+              <Text>
+                <TabCoinsText count={contentObject.tabcoins} />
+              </Text>
+              {' · '}
+              <Text>
+                <ChildrenDeepCountText count={contentObject.children_deep_count} />
+              </Text>
+              {' · '}
+              <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                {contentObject.owner_username}
               </Link>
-            ) : (
-              <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                {contentObject.title}
-              </Link>
-            )}
-          </Box>
-          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
-            <Text>
-              <TabCoinsText count={contentObject.tabcoins} />
-            </Text>
-            {' · '}
-            <Text>
-              <ChildrenDeepCountText count={contentObject.children_deep_count} />
-            </Text>
-            {' · '}
-            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
-            </Link>
-            {' · '}
-            <Text>
-              <PublishedSince date={contentObject.published_at} />
-            </Text>
-          </Box>
-        </Box>,
-      ];
-    });
+              {' · '}
+              <Text>
+                <PublishedSince date={contentObject.published_at} />
+              </Text>
+            </Box>
+          </Box>,
+        ];
+      });
   }
 
   function EndOfRelevant() {

@@ -11,6 +11,9 @@ export { default as Confetti } from './components/Confetti/index.js';
 export { default as NextLink, HeaderLink, Link } from './components/Link/index.js';
 export { default as GoToTopButton } from './components/GoToTopButton/index.js';
 export { default as Viewer, Editor } from './components/Markdown/index.js';
+export { default as Searchbar } from './components/Searchbar/index.js';
 
 export { default as useUser } from './hooks/useUser/index.js';
 export { default as useMediaQuery } from './hooks/useMediaQuery/index.js';
+
+export { default as SearchContext } from './contexts/searchContex/index.js';
