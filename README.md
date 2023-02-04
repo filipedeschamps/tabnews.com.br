@@ -22,6 +22,10 @@ Repositório oficial: https://github.com/filipedeschamps/tabnews.com.br
 
 Github: https://github.com/upe-garanhuns/msw-beta-2022
 
+Regras de contribuição: https://opensource.guide/
+
+IssueTraker: https://github.com/filipedeschamps/tabnews.com.br/issues
+
 ## Escolha do Projeto:
 
 O TabNews tem como objetivo “Tentando construir um pedaço de internet mais massa”, todos os integrantes do grupo de imediato já compartilhavam ideias parecidas e tinham vontade de integrar mais desse ideal que o TabNews através do open source e colaboração tenta construir.
