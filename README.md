@@ -1,5 +1,27 @@
 # [tabnews.com.br](https://www.tabnews.com.br/)
 
+## Sobre
+
+Tabnews é uma plataforma de notícias e entretenimento, criada pelo youtuber Filipe Deschamps. Ela permite que os usuários curtam, compartilhem e discutam notícias e conteúdos interessantes, contribuindo para a construção de um pedaço de internet mais legal. A plataforma apresenta uma interface fácil de usar e oferece acesso a uma ampla variedade de conteúdos, incluindo notícias, artigos, vídeos e imagens. Além disso, a ferramenta permite que os usuários personalizem sua experiência de acordo com seus interesses, garantindo uma navegação mais eficiente e agradável.
+
+### As funcionalidades do site Tabnews incluem:
+
+Notícias e Conteúdos: Usuários podem acessar uma ampla variedade de notícias e conteúdos interessantes, incluindo artigos, vídeos e imagens.
+
+Curtir e Compartilhar: Os usuários podem curtir e compartilhar notícias e conteúdos que gostarem em suas redes sociais.
+
+Discutir: A plataforma permite que os usuários discutam notícias e conteúdos, criando um espaço para debates e interações sociais.
+
+Personalização: Os usuários podem personalizar sua experiência de acordo com seus interesses, garantindo uma navegação mais eficiente e agradável.
+
+Interface Fácil de Uso: A plataforma apresenta uma interface fácil de usar, tornando a navegação simples e intuitiva.
+
+#### Links:
+
+Repositório oficial: https://github.com/filipedeschamps/tabnews.com.br
+
+Github: https://github.com/upe-garanhuns/msw-beta-2022
+
 ## Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
