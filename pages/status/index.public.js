@@ -39,7 +39,7 @@ export default function Page() {
             <BarChart height={400} data={rootContentPublished}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar type="monotone" dataKey="conteudos" fill="#2da44e" />
+              <Bar type="monotone" dataKey="conteúdos" fill="#2da44e" />
             </BarChart>
           </ResponsiveContainer>
         </Box>
