@@ -70,6 +70,8 @@ Você precisa ter duas principais dependências instaladas:
 
 Utiliza `nvm`? Então pode executar `nvm install` na pasta do projeto para instalar e utilizar a versão mais apropriada do Node.js.
 
+[Clique aqui se precisar de ajuda para configurar o Node.js e o Docker em sua máquina](./docs/instalar-node-docker.md)
+
 ### Dependências locais
 
 Então após baixar o repositório, não se esqueça de instalar as dependências locais do projeto:
