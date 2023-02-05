@@ -37,7 +37,7 @@ export default function Footer(props) {
             href="/">
             <CgTab size={26} />
           </Link>
-          © {new Date().getFullYear()} TabNews
+          &copy; {new Date().getFullYear()} TabNews
         </Box>
         <Box
           sx={{
