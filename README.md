@@ -22,6 +22,41 @@ Repositório oficial: https://github.com/filipedeschamps/tabnews.com.br
 
 Github: https://github.com/upe-garanhuns/msw-beta-2022
 
+## Escolha do Projeto:
+
+O TabNews tem como objetivo “Tentando construir um pedaço de internet mais massa”, todos os integrantes do grupo de imediato já compartilhavam ideias parecidas e tinham vontade de integrar mais desse ideal que o TabNews através do open source e colaboração tenta construir.
+
+### O que levou ao Tabnews:
+
+Em um primeiro momento de investigação foi necessário ir ao cerne do problema e saber porque nos identificamos tanto com o TabNews. A “Revolta” que leva ao autor do projeto a ação e que segue com vários internautas compartilhando esse questionamento é simples “a internet deixou de ser um lugar massa”
+
+Para entender melhor o que nos leva ao Projeto é importante considerar as seguintes palavras do Deschamps:
+
+"Não sei se você compartilha comigo a visão de que recentemente a internet deixou de ser um lugar massa, pelo menos em sites onde a mídia principal é primariamente texto. Tudo está com um ruído tão grande, é tanta propaganda e oferta – quando eu navego por sites assim me surge uma sensação que eu sou uma presa, com 10 predadores prontos para atacar – e a gente ali, no meio dessa confusão toda, tentando extrair algum valor.
+
+Mas já de início não quero passar a impressão errada: não tenho nada contra propaganda, ofertas ou marketing. Produtos e serviços precisam de visibilidade e projetos na internet precisam ser viáveis. Essa é a única forma de algo parar em pé, caso contrário, é apenas uma questão de tempo para qualquer iniciativa sumir do mapa.".
+
+### Porquê o Tabnews:
+
+Procurar conteúdo e valor como programador às vezes podem ser desconcertante, citando o criador do projeto Felipe Deschamps:
+"Conteúdos Com Valor Concreto Para Quem Trabalha Com Tecnologia
+
+Quem trabalha com tecnologia de forma séria precisa consumir conteúdos com valor concreto. Então acho que chegou a hora de darmos um volta de 180 graus e ir na contramão do que está acontecendo atualmente nas redes sociais e voltar com o espírito dos fóruns de antigamente.
+
+Nessa época era possível consumir threads (tópicos) que misturavam informações valiosas tanto na postagem principal, quanto nas respostas (e que muitas vezes traziam mais informações valiosas que a postagem principal).
+
+E algo que contribui para isso acontecer é a plataforma dar o mesmo espaço de criação para quem está publicando o conteúdo originalmente e para quem está respondendo. E você pode fazer esse teste aqui e clicar no botão de responder e notar o tamanho da caixa que abre para você elaborar uma resposta (compare com o espaço que o Facebook ou Instagram dão para uma resposta).
+
+E tão legal quanto isso, é que tudo no TabNews é considerado um conteúdo, tanto que uma resposta possui seu próprio link (a sua própria página exclusiva), independente se é a resposta, da resposta da resposta.
+
+Então é aqui que entra uma mecânica importante: nós vamos desestimular comentários simples, como por exemplo um agradecimento "ah valeu! falou..." em favor de comentários que devolvam algum valor concreto. E caso isso não seja possível, será possível devolver valor ao autor do conteúdo através das TabCoins.".
+
+### Conclusão de escolha:
+
+Portanto, é evidente que a ideia que o Tabnews propõe é tentadora e chamativa, deixando claro que a escolha do grupo considera o questionamento principal do autor assim como a motivação de algo centralizado para a comunidade que curte tecnologia.
+
+Nas próprias palavras do Felipe “Nós somos pessoas brutalmente exatas e empáticas, simultaneamente.” Certificando a identificação que o grupo tem com o projeto.
+
 ## Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
