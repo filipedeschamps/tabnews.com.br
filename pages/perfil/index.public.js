@@ -79,6 +79,8 @@ function EditProfileForm() {
       const confirmChangeUsername = await confirm({
         title: `Você realmente deseja alterar seu nome de usuário?`,
         content: `Isto irá quebrar todas as URLs das suas publicações.`,
+        cancelButtonContent: 'Cancelar',
+        confirmButtonContent: 'Sim',
       });
 
       if (!confirmChangeUsername) {
