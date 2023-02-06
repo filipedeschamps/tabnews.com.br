@@ -179,7 +179,7 @@ export default function Page() {
         <Box>
           <h2>Contribuidores</h2>
 
-          <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
+          <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors" target="_blank">
             <picture>
               <img
                 src="https://contributors-img.web.app/image?repo=filipedeschamps/tabnews.com.br&max=500"
