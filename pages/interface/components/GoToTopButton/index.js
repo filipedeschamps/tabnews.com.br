@@ -5,6 +5,13 @@ import { useEffect, useState } from 'react';
 export default function GoToTopButton() {
   const [showButton, setShowButton] = useState(false);
 
+  const handleScrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   useEffect(() => {
     const header = document.querySelector('#header');
     const html = document.querySelector('html');
@@ -29,12 +36,7 @@ export default function GoToTopButton() {
         icon={ChevronUpIcon}
         size="large"
         sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-        onClick={() => {
-          const html = document.querySelector('html');
-
-          html.style.scrollBehavior = 'smooth';
-          html.scrollTop = 0;
-        }}
+        onClick={handleScrollToTop}
       />
     )
   );
