@@ -38,34 +38,29 @@ const availableFeatures = new Set([
   'read:content:tabcoins',
 ]);
 
+const customAuthorizationFunctions = {
+  'update:user' : canUpdateUser,
+  'update:content' : canUpdateContent,
+};
+
+function canUpdateUser(user, resource) {
+  return user.id === resource.id;
+}
+
+function canUpdateContent(user, resource) {
+  return user.id === resource.owner_id || user.features.includes('update:content:others');
+}
+
 function can(user, feature, resource) {
   validateUser(user);
   validateFeature(feature);
 
-  let authorized = false;
-
-  if (user.features.includes(feature)) {
-    authorized = true;
+  const customAuth = customAuthorizationFunctions[feature];
+  if (customAuth) {
+    return resource && customAuth(user, resource);
   }
 
-  // TODO: Double check if this is right and covered by tests
-  if (feature === 'update:user' && resource) {
-    authorized = false;
-
-    if (user.id === resource.id) {
-      authorized = true;
-    }
-  }
-
-  if (feature === 'update:content' && resource) {
-    authorized = false;
-
-    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
-      authorized = true;
-    }
-  }
-
-  return authorized;
+  return user.features.includes(feature);
 }
 
 function filterInput(user, feature, input) {
