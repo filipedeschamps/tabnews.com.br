@@ -96,9 +96,7 @@ export default function TabCoinButtons({ content }) {
           icon={ChevronUpIcon}
           size="small"
           sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-          onClick={() => {
-            transactTabCoin('credit');
-          }}
+          onClick={() => transactTabCoin('credit')}
           disabled={isInAction}
         />
       </Box>
@@ -120,9 +118,7 @@ export default function TabCoinButtons({ content }) {
           icon={ChevronDownIcon}
           size="small"
           sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-          onClick={() => {
-            transactTabCoin('debit');
-          }}
+          onClick={() => transactTabCoin('debit')}
           disabled={isInAction}
         />
       </Box>
