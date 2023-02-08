@@ -79,6 +79,8 @@ export default function TabCoinButtons({ content }) {
     }
   }
 
+  const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit;
+
   return (
     <Box
       sx={{
@@ -97,7 +99,7 @@ export default function TabCoinButtons({ content }) {
           onClick={() => {
             transactTabCoin('credit');
           }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          disabled={isInAction}
         />
       </Box>
       <Box>
@@ -121,7 +123,7 @@ export default function TabCoinButtons({ content }) {
           onClick={() => {
             transactTabCoin('debit');
           }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          disabled={isInAction}
         />
       </Box>
     </Box>
