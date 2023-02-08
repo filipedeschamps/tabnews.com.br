@@ -24,10 +24,25 @@ const bytemdPluginList = [
   gemojiPlugin(),
 ];
 
+// Viewer plugin to open links on new tab
+const modifyHrefTarget = () => ({
+  viewerEffect({ markdownBody }) {
+    const linksArr = Array.from(markdownBody.querySelectorAll('a'));
+    for (let i = 0; i < linksArr.length; i++) {
+      const currentElement = linksArr[i];
+      if (currentElement.getAttribute('href')) {
+        currentElement.setAttribute('target', '_blank');
+      }
+    }
+  },
+});
+
+const viewerPlugins = [...bytemdPluginList, modifyHrefTarget()];
+
 const remarkRehypeOptions = { handlers: { code } };
 
 export default function Viewer({ ...props }) {
-  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} remarkRehype={remarkRehypeOptions} {...props} />;
+  return <ByteMdViewer sanitize={sanitize} plugins={viewerPlugins} remarkRehype={remarkRehypeOptions} {...props} />;
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
