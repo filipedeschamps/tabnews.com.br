@@ -81,6 +81,8 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     const confirmDelete = await confirm({
       title: 'Você tem certeza?',
       content: 'Deseja realmente apagar essa publicação?',
+      cancelButtonContent: 'Cancelar',
+      confirmButtonContent: 'Sim',
     });
 
     if (!confirmDelete) return;
@@ -369,6 +371,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         ? await confirm({
             title: 'Tem certeza que deseja sair da edição?',
             content: 'Os dados não salvos serão perdidos.',
+            cancelButtonContent: 'Cancelar',
+            confirmButtonContent: 'Sim',
           })
         : true;
 
