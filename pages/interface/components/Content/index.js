@@ -53,42 +53,23 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
     }
   }, [localStorageKey, user, contentObject]);
 
-  const renderMap = {
-    view: {
-      Component: ViewMode,
-      props: {
-        setComponentMode,
-        contentObject,
-        viewFrame,
-      },
-    },
-    compact: {
-      Component: CompactMode,
-      props: {
-        setComponentMode,
-      },
-    },
-    edit: {
-      Component: EditMode,
-      props: {
-        setComponentMode,
-        contentObject,
-        setContentObject,
-        localStorageKey,
-        mode,
-      },
-    },
-    deleted: {
-      Component: DeletedMode,
-      props: {
-        viewFrame,
-      },
-    },
-  };
-
-  const { Component, props } = renderMap[mode];
-
-  return <Component {...props} />;
+  if (componentMode === 'view') {
+    return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
+  } else if (componentMode === 'compact') {
+    return <CompactMode setComponentMode={setComponentMode} />;
+  } else if (componentMode === 'edit') {
+    return (
+      <EditMode
+        contentObject={contentObject}
+        setComponentMode={setComponentMode}
+        setContentObject={setContentObject}
+        localStorageKey={localStorageKey}
+        mode={mode}
+      />
+    );
+  } else if (componentMode === 'deleted') {
+    return <DeletedMode viewFrame={viewFrame} />;
+  }
 }
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
