@@ -31,6 +31,8 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     const confirmDelete1 = await confirm({
       title: `Atenção: Você está realizando um Nuke!`,
       content: `Deseja banir o usuário "${userFound.username}" e desfazer todas as suas ações?`,
+      confirmButtonContent: 'Sim',
+      cancelButtonContent: 'Cancelar',
     });
 
     if (!confirmDelete1) return;

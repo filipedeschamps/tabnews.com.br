@@ -213,21 +213,6 @@ const schemas = {
     });
   },
 
-  owner_id: function () {
-    return Joi.object({
-      owner_id: Joi.string()
-        .trim()
-        .guid({ version: 'uuidv4' })
-        .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `"owner_id" é um campo obrigatório.`,
-          'string.empty': `"owner_id" não pode estar em branco.`,
-          'string.base': `"owner_id" deve ser do tipo String.`,
-          'string.guid': `"owner_id" deve possuir um token UUID na versão 4.`,
-        }),
-    });
-  },
-
   slug: function () {
     return Joi.object({
       slug: Joi.string()
