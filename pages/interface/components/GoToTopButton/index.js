@@ -14,13 +14,10 @@ export default function GoToTopButton() {
 
   useEffect(() => {
     const header = document.querySelector('#header');
-    const html = document.querySelector('html');
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         setShowButton(!entry.isIntersecting);
-
-        if (!entry.isIntersecting) html.style.scrollBehavior = 'initial';
       });
     });
 
