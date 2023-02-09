@@ -420,10 +420,10 @@
           "subtle": "var(--color-success-subtle)"
         },
         "attention": {
-          "fg": "#9a6700",
-          "emphasis": "#bf8700",
-          "muted": "rgba(212,167,44,0.4)",
-          "subtle": "#fff8c5"
+          "fg": "var(--color-attention-fg)",
+          "emphasis": "var(--color-attention-emphasis)",
+          "muted": "var(--color-attention-muted)",
+          "subtle": "var(--color-attention-subtle)"
         },
         "severe": {
           "fg": "#bc4c00",
