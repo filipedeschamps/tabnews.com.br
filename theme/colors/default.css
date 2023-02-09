@@ -13,14 +13,14 @@
   --color-border-muted: hsla(210, 18%, 87%, 1);
   --color-border-subtle: rgba(27, 31, 36, 0.15);
 
- --color-success-fg: #1a7f37;
+  --color-success-fg: #1a7f37;
   --color-success-emphasis: #2da44e;
   --color-success-muted: rgba(74, 194, 107, 0.4);
   --color-success-subtle: #dafbe1;
 
   --color-attention-fg: #9a6700;
   --color-attention-emphasis: #bf8700;
-  --color-attention-muted: rgba(212,167,44,0.4);
+  --color-attention-muted: rgba(212, 167, 44, 0.4);
   --color-attention-subtle: #fff8c5;
 
   --color-neutral-emphasis-plus: #24292f;

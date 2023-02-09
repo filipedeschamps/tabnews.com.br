@@ -17,7 +17,7 @@ html[theme='dark']:root {
   --color-success-emphasis: #238636;
   --color-success-muted: rgba(46, 160, 67, 0.4);
   --color-success-subtle: rgba(46, 160, 67, 0.15);
-  
+
   --color-attention-fg: #9a6700;
   --color-attention-emphasis: #bf8700;
   --color-attention-muted: rgba(187, 128, 9, 0.4);

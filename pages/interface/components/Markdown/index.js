@@ -1,5 +1,5 @@
 import { Viewer as ByteMdViewer, Editor as ByteMdEditor } from '@bytemd/react';
-import { Box } from '@primer/react';
+import { Box, useTheme } from '@primer/react';
 import { useEffect, useRef } from 'react';
 
 // ByteMD dependencies:
@@ -33,6 +33,7 @@ export default function Viewer({ ...props }) {
 // Editor is not part of Primer, so error messages and styling need to be created manually
 export function Editor({ isValid, onKeyDown, ...props }) {
   const editorRef = useRef();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const editorElement = editorRef.current;
@@ -57,7 +58,8 @@ export function Editor({ isValid, onKeyDown, ...props }) {
           min-height: 200px;
           border-radius: 6px;
           padding: 1px;
-          border: 1px solid #d0d7de;
+          border: 1px solid ${theme.colors.border.default};
+          background-color: ${theme.colors.canvas.overlay};
         }
 
         .bytemd:focus-within {
@@ -77,11 +79,32 @@ export function Editor({ isValid, onKeyDown, ...props }) {
         .bytemd .bytemd-toolbar {
           border-top-left-radius: 6px;
           border-top-right-radius: 6px;
+          background-color: ${theme.colors.canvas.subtle};
+          border-color: ${theme.colors.border.default};
+        }
+
+        .bytemd .bytemd-toolbar .bytemd-toolbar-tab {
+          color: ${theme.colors.fg.muted};
+        }
+        .bytemd .bytemd-toolbar .bytemd-toolbar-tab-active {
+          color: ${theme.colors.accent.fg};
         }
 
         .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(1),
         .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(4) {
           display: none;
+        }
+
+        .markdown-body {
+          background-color: ${theme.colors.canvas.overlay};
+          color: ${theme.colors.fg.default};
+        }
+        .bytemd .CodeMirror {
+          background: ${theme.colors.canvas.overlay};
+          color: ${theme.colors.fg.default};
+        }
+        .bytemd .CodeMirror .CodeMirror-cursor {
+          border-left: 1px solid ${theme.colors.fg.muted};
         }
 
         .bytemd .bytemd-status {
