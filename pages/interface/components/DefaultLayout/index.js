@@ -1,5 +1,5 @@
 import { Box, Flash } from '@primer/react';
-import { Footer, Head, Header } from 'pages/interface/index.js';
+import { Footer, GoToTopButton, Head, Header } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (
@@ -31,6 +31,15 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           height: '113px',
         }}
       />
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          padding: 3,
+        }}>
+        <GoToTopButton />
+      </Box>
     </>
   );
 }

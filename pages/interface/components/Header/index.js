@@ -31,6 +31,7 @@ export default function HeaderComponent(props) {
 
   return (
     <Header
+      id="header"
       sx={{
         ...props.sx,
         px: [2, null, null, 3],

@@ -102,7 +102,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       expect(uuidVersion(events[2].id)).toEqual(4);
       expect(events[2].type).toEqual('firewall:block_contents:text_root');
       expect(events[2].originator_user_id).toEqual(defaultUser.id);
-      expect(events[2].originator_ip).toEqual('127.0.0.0');
+      expect(events[2].originator_ip).toEqual('127.0.0.1');
       expect(events[2].metadata).toEqual({
         from_rule: 'create:content:text_root',
         contents: [content1.id, content2.id],
@@ -217,7 +217,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       expect(uuidVersion(events[3].id)).toEqual(4);
       expect(events[3].type).toEqual('firewall:block_contents:text_child');
       expect(events[3].originator_user_id).toEqual(defaultUser.id);
-      expect(events[3].originator_ip).toEqual('127.0.0.0');
+      expect(events[3].originator_ip).toEqual('127.0.0.1');
       expect(events[3].metadata).toEqual({
         from_rule: 'create:content:text_child',
         contents: [content1.id, content2.id],
