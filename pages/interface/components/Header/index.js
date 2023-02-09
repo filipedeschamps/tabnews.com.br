@@ -20,7 +20,7 @@ export default function HeaderComponent() {
         px: [2, null, null, 3],
       }}>
       <Header.Item>
-        <HeaderLink href="/">
+        <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
           <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
         </HeaderLink>
