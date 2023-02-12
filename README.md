@@ -16,9 +16,9 @@ Personalização: Os usuários podem personalizar sua experiência de acordo com
 
 Interface Fácil de Uso: A plataforma apresenta uma interface fácil de usar, tornando a navegação simples e intuitiva.
 
-### Arquitetura do Projeto
+## Arquitetura do Projeto
 
-## Linguagens usadas
+### Linguagens usadas
 
 - JavaScript
 - HTML
@@ -26,12 +26,12 @@ Interface Fácil de Uso: A plataforma apresenta uma interface fácil de usar, to
 
 Estas são as linguagens de programação mais comuns usadas para desenvolver aplicações web, especialmente aplicações front-end. JavaScript é uma linguagem de programação interpretada usada tanto no lado do cliente quanto no lado do servidor. HTML é uma linguagem de marcação usada para criar páginas da web. CSS é uma linguagem de estilo usada para estilizar páginas da web. Juntas, estas três linguagens permitem a criação de aplicações web completas e interativas.
 
-## Tecnologias
+### Tecnologias
 
 - Node.js
 - Express
 - React
-- MongoDB
+- Postgres
 - Axios
 - React-dom
 - React-router-dom
@@ -39,19 +39,19 @@ Estas são as linguagens de programação mais comuns usadas para desenvolver ap
 
 Estas tecnologias são comumente usadas para desenvolvimento de aplicações web, especialmente aplicações de back-end e front-end. Node.js é uma plataforma de tempo de execução do lado do servidor baseada em JavaScript, enquanto Express é uma framework para aplicativos web do Node.js. MongoDB é um banco de dados NoSQL usado para armazenar dados não estruturados. React é uma biblioteca JavaScript para criar interfaces de usuário. Axios é uma biblioteca JavaScript usada para realizar requisições HTTP. React-dom, React-router-dom e React-scripts são pacotes de complementos do React. Juntos, estas tecnologias permitem a criação de aplicações web completas e interativas.
 
-## Arquitetura
+### Arquitetura
 
 Com base nas informações fornecidas a arquitetura do projeto é típica de uma aplicação web usando Node.js, Express e React pode incluir as seguintes camadas:
 
 - Front-end: responsável por exibir informações para o usuário e permitir a interação. O front-end é construído usando React e é executado no navegador do usuário.
 - Back-end: responsável por fornecer dados e realizar operações de negócios. O back-end é construído usando Node.js e Express e é executado em um servidor.
-- Banco de dados: responsável por armazenar dados persistentes. O projeto pode estar usando MongoDB como banco de dados.
+- Banco de dados: responsável por armazenar dados persistentes. O projeto estar usando Postgres como banco de dados.
 
-## Referência
+### Referência
 
 As informações foram obtidas a partir do arquivo package.json no repositório do projeto. Este arquivo lista as dependências do projeto, incluindo as tecnologias e frameworks usados. Além disso, as informações foram baseadas na compreensão geral das tecnologias e frameworks mencionados.
 
-## Frameworks
+### Frameworks
 
 - Express
 - React
