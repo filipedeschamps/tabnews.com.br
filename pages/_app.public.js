@@ -4,6 +4,7 @@ import { SWRConfig } from 'swr';
 import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
 import NextNProgress from 'pages/interface/components/Progressbar/index.js';
 import { DefaultHead } from 'pages/interface/components/Head/index.js';
+import '../styles.css';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);

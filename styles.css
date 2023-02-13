@@ -1,0 +1,10 @@
+@media screen and (prefers-color-scheme: dark) {
+  /* Dark mode styles */
+  body {
+    background-color: lightgray;
+  }
+
+  .markdown-body {
+    background-color: lightgray;
+  }
+}
