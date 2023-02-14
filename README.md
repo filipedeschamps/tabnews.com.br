@@ -72,7 +72,7 @@ IssueTraker: https://github.com/filipedeschamps/tabnews.com.br/issues
 
 ## Escolha do Projeto:
 
-O TabNews tem como objetivo “Tentando construir um pedaço de internet mais massa”, todos os integrantes do grupo de imediato já compartilhavam ideias parecidas e tinham vontade de integrar mais desse ideal que o TabNews através do open source e colaboração tenta construir.
+O TabNews tem como objetivo “Tentando construir um pedaço de internet mais massa”, todos os integrantes do grupo de imediato já compartilhavam ideias parecidas e tinham vontade de integrar mais desse ideal que o TabNews através do open source e colaboração tenta construir. Além disso, devido à identificação dos integrantes com as tecnologias utilizadas no projeto com o fato de ter uma comunidade brasileira ativa interagindo, a escolha do Tabnews foi imediata.
 
 ### O que levou ao Tabnews:
 
