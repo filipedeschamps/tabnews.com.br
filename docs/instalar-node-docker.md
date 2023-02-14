@@ -33,7 +33,7 @@ Execute mais esses 2 comandos para permitir o Docker executar sem necessitar per
 ```
 sudo groupadd docker
 
-sudo gpasswd -a $USER docker
+sudo usermod -aG docker $USER
 ```
 
 Após isso reinicie sua máquina.
