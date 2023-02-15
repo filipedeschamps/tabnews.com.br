@@ -247,3 +247,6 @@ npm run commit
 <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=filipedeschamps/tabnews.com.br&max=500" alt="Lista de contribuidores" width="100%"/>
 </a>
+
+## Lições aprendidas:
+- [Atividade 1](/entregas/exercicio-01/licoes-aprendidas.md)
