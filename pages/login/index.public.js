@@ -47,11 +47,6 @@ function LoginForm() {
     setErrorObject(undefined);
   }
 
-  function handlePasswordVisible(event) {
-    event.preventDefault();
-    setIsPasswordVisible(!isPasswordVisible);
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -144,7 +139,8 @@ function LoginForm() {
                 aria-label="Sua senha"
               />
               <button
-                onClick={handlePasswordVisible}
+                type="button"
+                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
                 style={{ border: 'none', background: 'none', position: 'absolute', right: 10, top: 10 }}>
                 {isPasswordVisible ? <EyeIcon size={20} /> : <EyeClosedIcon size={20} />}
               </button>
