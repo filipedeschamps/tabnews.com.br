@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
 
 export default function Register() {
   return (
@@ -24,6 +25,7 @@ function SignUpForm() {
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
@@ -38,6 +40,11 @@ function SignUpForm() {
 
   function clearErrors() {
     setErrorObject(undefined);
+  }
+
+  function handlePasswordVisible(event) {
+    event.preventDefault();
+    setIsPasswordVisible(!isPasswordVisible);
   }
 
   async function handleSubmit(event) {
@@ -171,20 +178,27 @@ function SignUpForm() {
 
         <FormControl id="password">
           <FormControl.Label>Senha</FormControl.Label>
-          <TextInput
-            ref={passwordRef}
-            onChange={clearErrors}
-            onKeyDown={detectCapsLock}
-            onKeyUp={detectCapsLock}
-            name="password"
-            type="password"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            size="large"
-            block={true}
-            aria-label="Sua senha"
-          />
+          <span style={{ width: '100%', position: 'relative' }}>
+            <TextInput
+              ref={passwordRef}
+              onChange={clearErrors}
+              onKeyDown={detectCapsLock}
+              onKeyUp={detectCapsLock}
+              name="password"
+              type={isPasswordVisible ? 'text' : 'password'}
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              size="large"
+              block={true}
+              aria-label="Sua senha"
+            />
+            <button
+              onClick={handlePasswordVisible}
+              style={{ border: 'none', background: 'none', position: 'absolute', right: 10, top: 10 }}>
+              {isPasswordVisible ? <EyeIcon size={20} /> : <EyeClosedIcon size={20} />}
+            </button>
+          </span>
           {capsLockWarningMessage && (
             <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
           )}
