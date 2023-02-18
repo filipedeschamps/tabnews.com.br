@@ -138,12 +138,14 @@ function LoginForm() {
                 block={true}
                 aria-label="Sua senha"
               />
-              <button
+              <Button
+                size="small"
                 type="button"
                 onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                style={{ border: 'none', background: 'none', position: 'absolute', right: 10, top: 10 }}>
+                aria-label="Visualizar senha"
+                sx={{ border: 'none', background: 'none', position: 'absolute', right: 1, top: 2 }}>
                 {isPasswordVisible ? <EyeIcon size={20} /> : <EyeClosedIcon size={20} />}
-              </button>
+              </Button>
             </span>
             {capsLockWarningMessage && (
               <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
