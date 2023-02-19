@@ -137,14 +137,15 @@ function LoginForm() {
                 size="large"
                 block={true}
                 aria-label="Sua senha"
+                sx={{ paddingRight: 45 }}
               />
               <Button
                 size="small"
                 type="button"
                 onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                aria-label="Visualizar senha"
+                aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
                 sx={{ border: 'none', background: 'none', position: 'absolute', right: 1, top: 2 }}>
-                {isPasswordVisible ? <EyeIcon size={20} /> : <EyeClosedIcon size={20} />}
+                {isPasswordVisible ? <EyeClosedIcon size={20} /> : <EyeIcon size={20} />}
               </Button>
             </span>
             {capsLockWarningMessage && (
