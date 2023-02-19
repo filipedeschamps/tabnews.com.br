@@ -33,14 +33,12 @@ describe('POST /api/v1/recovery', () => {
       expect(response.status).toEqual(201);
 
       expect(responseBody).toStrictEqual({
-        id: tokenInDatabase.id,
         used: false,
         expires_at: tokenInDatabase.expires_at.toISOString(),
         created_at: tokenInDatabase.created_at.toISOString(),
         updated_at: tokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
@@ -137,14 +135,12 @@ describe('POST /api/v1/recovery', () => {
       expect(response.status).toEqual(201);
 
       expect(responseBody).toStrictEqual({
-        id: tokenInDatabase.id,
         used: false,
         expires_at: tokenInDatabase.expires_at.toISOString(),
         created_at: tokenInDatabase.created_at.toISOString(),
         updated_at: tokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);

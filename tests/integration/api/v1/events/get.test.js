@@ -68,7 +68,7 @@ describe('GET /api/v1/events [NOT YET IMPLEMENTED]', () => {
       expect(uuidVersion(events[0].id)).toEqual(4);
       expect(events[0].type).toEqual('create:user');
       expect(events[0].originator_user_id).toEqual(createUserResponseBody.id);
-      expect(events[0].originator_ip).toEqual('127.0.0.0');
+      expect(events[0].originator_ip).toEqual('127.0.0.1');
       expect(events[0].metadata).toEqual({
         id: createUserResponseBody.id,
       });
@@ -77,7 +77,7 @@ describe('GET /api/v1/events [NOT YET IMPLEMENTED]', () => {
       expect(uuidVersion(events[1].id)).toEqual(4);
       expect(events[1].type).toEqual('create:content:text_root');
       expect(events[1].originator_user_id).toEqual(createUserResponseBody.id);
-      expect(events[1].originator_ip).toEqual('127.0.0.0');
+      expect(events[1].originator_ip).toEqual('127.0.0.1');
       expect(events[1].metadata).toEqual({
         id: createContentRootResponseBody.id,
       });
@@ -86,7 +86,7 @@ describe('GET /api/v1/events [NOT YET IMPLEMENTED]', () => {
       expect(uuidVersion(events[2].id)).toEqual(4);
       expect(events[2].type).toEqual('create:content:text_child');
       expect(events[2].originator_user_id).toEqual(createUserResponseBody.id);
-      expect(events[2].originator_ip).toEqual('127.0.0.0');
+      expect(events[2].originator_ip).toEqual('127.0.0.1');
       expect(events[2].metadata).toEqual({
         id: createContentChildResponseBody.id,
       });
