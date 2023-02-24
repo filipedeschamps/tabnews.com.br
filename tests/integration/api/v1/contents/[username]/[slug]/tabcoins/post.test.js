@@ -266,7 +266,187 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
     });
 
-    test('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
+    test('With "transaction_type" set to "credit" twice (should be blocked)', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 4,
+      });
+
+      // ROUND 1 OF CREDIT
+      const postTabCoinsResponse1 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'credit',
+          }),
+        }
+      );
+
+      expect(postTabCoinsResponse1.status).toBe(201);
+
+      // ROUND 2 OF CREDIT
+      const postTabCoinsResponse2 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'credit',
+          }),
+        }
+      );
+
+      const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
+
+      expect(postTabCoinsResponse2.status).toBe(400);
+      expect(postTabCoinsResponse2Body).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+        action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+        status_code: 400,
+        error_id: postTabCoinsResponse2Body.error_id,
+        request_id: postTabCoinsResponse2Body.request_id,
+      });
+
+      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const firstUserResponseBody = await firstUserResponse.json();
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const secondUserResponseBody = await secondUserResponse.json();
+
+      expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+    });
+
+    test('With "transaction_type" set to "debit" twice (should be blocked)', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 4,
+      });
+
+      // ROUND 1 OF DEBIT
+      const postTabCoinsResponse1 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'debit',
+          }),
+        }
+      );
+
+      expect(postTabCoinsResponse1.status).toBe(201);
+
+      // ROUND 2 OF DEBIT
+      const postTabCoinsResponse2 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'debit',
+          }),
+        }
+      );
+
+      const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
+
+      expect(postTabCoinsResponse2.status).toBe(400);
+      expect(postTabCoinsResponse2Body).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+        action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+        status_code: 400,
+        error_id: postTabCoinsResponse2Body.error_id,
+        request_id: postTabCoinsResponse2Body.request_id,
+      });
+
+      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const firstUserResponseBody = await firstUserResponse.json();
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const secondUserResponseBody = await secondUserResponse.json();
+
+      expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+    });
+
+    // This tests are beign temporarly skipped because of the new feature of not allowing
+    // to credit/debit twice the same content. This feature is just a temporary test
+    // to a more sofisticated feature that will be implemented in the future.
+
+    test.skip('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
@@ -380,7 +560,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponse2Body.tabcash).toStrictEqual(2);
     });
 
-    test('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
+    test.skip('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
       const timesToFetch = 20;
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
@@ -481,7 +661,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
     });
 
-    test('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
+    test.skip('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
       const timesToFetch = 100;
       const timesSuccessfully = 6;
 
@@ -593,7 +773,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(timesSuccessfully);
     });
 
-    test('With 100 simultaneous posts, enough TabCoins for 90, no db resources, but only responses 201 or 422', async () => {
+    test.skip('With 100 simultaneous posts, enough TabCoins for 90, no db resources, but only responses 201 or 422', async () => {
       const timesToFetch = 100;
       const timesSuccessfully = 90;
 
