@@ -94,11 +94,11 @@ export default function HeaderComponent() {
                     <Truncate>{user.username}</Truncate>
                   </ActionList.LinkItem>
                   <ActionList.Divider />
-                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
-                    Meus conteúdos
-                  </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href="/publicar">
                     Publicar novo conteúdo
+                  </ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
+                    Meus conteúdos
                   </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
