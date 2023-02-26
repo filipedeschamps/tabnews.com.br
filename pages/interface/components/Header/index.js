@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
-  const { pathname } = useRouter();
+  const { pathname, query } = useRouter();
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -32,7 +32,7 @@ export default function HeaderComponent() {
         </HeaderLink>
       </Header.Item>
 
-      <Header.Item full>
+      <Header.Item full={!isLoading && !user}>
         <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
@@ -51,6 +51,14 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <Header.Item full>
+            <HeaderLink
+              href={`/${user.username}`}
+              sx={query.username === `${user.username}` ? activeLinkStyle : undefined}>
+              Meus conteúdos
+            </HeaderLink>
+          </Header.Item>
+
           <Header.Item
             sx={{
               mr: 2,
