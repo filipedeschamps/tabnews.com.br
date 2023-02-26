@@ -7,7 +7,7 @@ import content from 'models/content.js';
 import event from 'models/event.js';
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
-import { NotFoundError, UnprocessableEntityError } from 'errors/index.js';
+import { NotFoundError, UnprocessableEntityError, ValidationError } from 'errors/index.js';
 
 export default nextConnect({
   attachParams: true,
@@ -66,6 +66,10 @@ async function postHandler(request, response) {
       key: 'tabcoins',
     });
   }
+
+  // TODO: Refactor firewall.js to accept other parameters such as content.id
+  // and move this function to there.
+  await canIpUpdateContentTabCoins(request.context.clientIp, contentFound.id);
 
   let currentContentTabCoinsBalance;
 
@@ -146,4 +150,30 @@ async function postHandler(request, response) {
   );
 
   return response.status(201).json(secureOutputValues);
+}
+
+async function canIpUpdateContentTabCoins(clientIp, contentId) {
+  const results = await database.query({
+    text: `
+      SELECT
+        count(*)
+      FROM
+        events
+      WHERE
+        type = 'update:content:tabcoins'
+        AND originator_ip = $1
+        AND metadata->>'content_id' = $2
+        AND created_at > NOW() - INTERVAL '72 hours'
+      ;`,
+    values: [clientIp, contentId],
+  });
+
+  const pass = results.rows[0].count > 0 ? false : true;
+
+  if (!pass) {
+    throw new ValidationError({
+      message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+      action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+    });
+  }
 }
