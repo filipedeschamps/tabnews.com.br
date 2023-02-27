@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, IconButton } from '@primer/react';
+import { Box, Text, IconButton, Tooltip } from '@primer/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
 import { useRouter } from 'next/router';
@@ -87,19 +87,21 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
-      <Box>
-        <IconButton
-          variant="invisible"
-          aria-label="Creditar TabCoin"
-          icon={ChevronUpIcon}
-          size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-          onClick={() => {
-            transactTabCoin('credit');
-          }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
-        />
-      </Box>
+      <Tooltip aria-label="Creditar TabCoin" direction="ne" noDelay={true}>
+        <Box>
+          <IconButton
+            variant="invisible"
+            aria-label="Creditar TabCoin"
+            icon={ChevronUpIcon}
+            size="small"
+            sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+            onClick={() => {
+              transactTabCoin('credit');
+            }}
+            disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          />
+        </Box>
+      </Tooltip>
       <Box>
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px', width: '1px' }}></div>
         <Text
@@ -111,19 +113,21 @@ export default function TabCoinButtons({ content }) {
           {contentObject.tabcoins}
         </Text>
       </Box>
-      <Box>
-        <IconButton
-          variant="invisible"
-          aria-label="Debitar TabCoin"
-          icon={ChevronDownIcon}
-          size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-          onClick={() => {
-            transactTabCoin('debit');
-          }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
-        />
-      </Box>
+      <Tooltip aria-label="Debitar TabCoin" direction="se" noDelay={true}>
+        <Box>
+          <IconButton
+            variant="invisible"
+            aria-label="Debitar TabCoin"
+            icon={ChevronDownIcon}
+            size="small"
+            sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+            onClick={() => {
+              transactTabCoin('debit');
+            }}
+            disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          />
+        </Box>
+      </Tooltip>
     </Box>
   );
 }
