@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout, useUser } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
-import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
+import { FormControl, Box, Heading, Button, Flash, Link, Text } from '@primer/react';
+import { PasswordInput } from 'pages/interface/components/PasswordInput';
+import { EmailInput } from 'pages/interface/components/EmailInput';
 
 export default function Login() {
   return (
@@ -21,9 +22,7 @@ function LoginForm() {
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
   useEffect(() => {
     if (!user || !router) return;
@@ -34,25 +33,11 @@ function LoginForm() {
     }
   }, [user, router]);
 
-  function detectCapsLock(event) {
-    if (event.getModifierState('CapsLock')) {
-      setCapsLockWarningMessage('Atenção: Caps Lock está ativado.');
-      return;
-    }
-
-    setCapsLockWarningMessage(false);
-  }
-
-  function clearErrors() {
-    setErrorObject(undefined);
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
-
     setIsLoading(true);
     setErrorObject(undefined);
 
@@ -104,57 +89,22 @@ function LoginForm() {
           <Heading as="h1" sx={{ mb: 3 }}>
             Login
           </Heading>
-          <FormControl id="email">
-            <FormControl.Label>Email</FormControl.Label>
-            <TextInput
-              ref={emailRef}
-              onChange={clearErrors}
-              name="email"
-              size="large"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              block={true}
-              aria-label="Seu email"
-            />
-            {errorObject?.key === 'email' && (
-              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-            )}
-          </FormControl>
-          <FormControl id="password">
-            <FormControl.Label>Senha</FormControl.Label>
-            <span style={{ width: '100%', position: 'relative' }}>
-              <TextInput
-                ref={passwordRef}
-                onChange={clearErrors}
-                onKeyDown={detectCapsLock}
-                onKeyUp={detectCapsLock}
-                name="password"
-                type={isPasswordVisible ? 'text' : 'password'}
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck={false}
-                size="large"
-                block={true}
-                aria-label="Sua senha"
-                sx={{ paddingRight: 45 }}
-              />
-              <Button
-                size="small"
-                type="button"
-                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
-                sx={{ border: 'none', background: 'none', position: 'absolute', right: 1, top: 2 }}>
-                {isPasswordVisible ? <EyeClosedIcon size={20} /> : <EyeIcon size={20} />}
-              </Button>
-            </span>
-            {capsLockWarningMessage && (
-              <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
-            )}
-            {errorObject?.key === 'password' && (
-              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-            )}
-          </FormControl>
+          <EmailInput
+            inputRef={emailRef}
+            id="email"
+            name="email"
+            label="Email"
+            errorObject={errorObject}
+            setErrorObject={setErrorObject}
+          />
+          <PasswordInput
+            inputRef={passwordRef}
+            id="password"
+            name="password"
+            label="Senha"
+            errorObject={errorObject}
+            setErrorObject={setErrorObject}
+          />
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
             <Button
