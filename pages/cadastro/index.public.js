@@ -2,7 +2,8 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { DefaultLayout } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
-import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
+import { PasswordInput } from 'pages/interface/components/PasswordInput';
+import { EmailInput } from 'pages/interface/components/EmailInput';
 
 export default function Register() {
   return (
@@ -25,18 +26,7 @@ function SignUpForm() {
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
-
-  function detectCapsLock(event) {
-    if (event.getModifierState('CapsLock')) {
-      setCapsLockWarningMessage('Atenção: Caps Lock está ativado.');
-      return;
-    }
-
-    setCapsLockWarningMessage(false);
-  }
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -123,6 +113,7 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
+            sx={{ paddingY: '15px' }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -132,79 +123,25 @@ function SignUpForm() {
             <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
           )}
         </FormControl>
-        <FormControl id="email">
-          <FormControl.Label>Email</FormControl.Label>
-          <TextInput
-            ref={emailRef}
-            onChange={clearErrors}
-            name="email"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu email"
-          />
-          {errorObject?.key === 'email' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-          {errorObject?.key === 'email' && errorObject?.type === 'typo' && (
-            <FormControl.Validation variant="error">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box>Você quis dizer:</Box>
-                <Box>
-                  <Button
-                    variant="invisible"
-                    size="small"
-                    sx={{ p: 1 }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      clearErrors();
-                      emailRef.current.value = errorObject.suggestion;
-                      passwordRef.current.focus();
-                    }}>
-                    {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
-                  </Button>
-                </Box>
-              </Box>
-            </FormControl.Validation>
-          )}
-        </FormControl>
 
-        <FormControl id="password">
-          <FormControl.Label>Senha</FormControl.Label>
-          <span style={{ width: '100%', position: 'relative' }}>
-            <TextInput
-              ref={passwordRef}
-              onChange={clearErrors}
-              onKeyDown={detectCapsLock}
-              onKeyUp={detectCapsLock}
-              name="password"
-              type={isPasswordVisible ? 'text' : 'password'}
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              size="large"
-              block={true}
-              aria-label="Sua senha"
-              sx={{ paddingRight: 45 }}
-            />
-            <Button
-              size="small"
-              type="button"
-              onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-              aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
-              sx={{ border: 'none', background: 'none', position: 'absolute', right: 1, top: 2 }}>
-              {isPasswordVisible ? <EyeClosedIcon size={20} /> : <EyeIcon size={20} />}
-            </Button>
-          </span>
-          {capsLockWarningMessage && (
-            <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
-          )}
-          {errorObject?.key === 'password' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
+        <EmailInput
+          inputRef={emailRef}
+          passwordRef={passwordRef}
+          id="email"
+          name="email"
+          label="Email"
+          errorObject={errorObject}
+          setErrorObject={setErrorObject}
+        />
+
+        <PasswordInput
+          inputRef={passwordRef}
+          id="password"
+          name="password"
+          label="Senha"
+          errorObject={errorObject}
+          setErrorObject={setErrorObject}
+        />
 
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
