@@ -34,7 +34,8 @@ export default function Footer(props) {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            href="/">
+            href="/"
+            aria-label="Voltar para a página inicial">
             <CgTab size={26} />
           </Link>
           &copy; {new Date().getFullYear()} TabNews
