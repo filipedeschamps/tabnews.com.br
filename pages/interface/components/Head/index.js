@@ -53,7 +53,6 @@ export function DefaultHead() {
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-      <meta name="theme-color" content="#24292F" />
     </NextHead>
   );
 }
