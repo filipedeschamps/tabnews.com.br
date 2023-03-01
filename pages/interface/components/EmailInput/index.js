@@ -20,7 +20,6 @@ export function EmailInput(props) {
         spellCheck={false}
         block={true}
         aria-label="Seu email"
-        sx={{ paddingY: '15px' }}
       />
       {errorObject?.key === 'email' && (
         <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
