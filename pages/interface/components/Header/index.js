@@ -1,16 +1,64 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import {
+  Header,
+  Box,
+  ActionMenu,
+  ActionList,
+  IconButton,
+  Truncate,
+  Text,
+  Tooltip,
+  NavList,
+  Dialog,
+} from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
-import { CgTab } from 'react-icons/cg';
+import { CgTab, CgMenu } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
+  const [showMenuMobile, setShowMenuMobile] = useState(false);
+  const [mobileSize, setMobileSize] = useState(false);
+
   const { pathname } = useRouter();
 
   const activeLinkStyle = {
     textDecoration: 'underline',
     textUnderlineOffset: 6,
+  };
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setMobileSize(window.innerWidth < 545);
+    };
+
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, []);
+
+  const menuMobile = () => {
+    return (
+      <>
+        <Header.Item sx={{ display: ['flex', 'none'] }}>
+          <CgMenu size={32} onClick={() => setShowMenuMobile(true)} />
+        </Header.Item>
+        <Dialog isOpen={showMenuMobile} onDismiss={() => setShowMenuMobile(false)} aria-labelledby="menu">
+          <Dialog.Header>
+            <CgMenu />
+          </Dialog.Header>
+          <NavList>
+            <NavList.Item href="/" aria-current="page">
+              Relevantes
+            </NavList.Item>
+            <NavList.Item href="/recentes">Recentes</NavList.Item>
+          </NavList>
+        </Dialog>
+      </>
+    );
   };
 
   return (
@@ -19,20 +67,21 @@ export default function HeaderComponent() {
       sx={{
         px: [2, null, null, 3],
       }}>
-      <Header.Item>
+      {menuMobile()}
+      <Header.Item full={mobileSize}>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
           <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
         </HeaderLink>
       </Header.Item>
 
-      <Header.Item>
+      <Header.Item sx={{ ml: 2, display: ['none', 'flex'] }}>
         <HeaderLink href="/" sx={pathname === '/' || pathname.startsWith('/pagina') ? activeLinkStyle : undefined}>
           Relevantes
         </HeaderLink>
       </Header.Item>
 
-      <Header.Item full>
+      <Header.Item full sx={{ ml: 2, display: ['none', 'flex'] }}>
         <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
