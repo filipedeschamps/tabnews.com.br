@@ -79,6 +79,8 @@ export default function TabCoinButtons({ content }) {
     }
   }
 
+  const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit;
+
   return (
     <Box
       sx={{
@@ -94,10 +96,8 @@ export default function TabCoinButtons({ content }) {
           icon={ChevronUpIcon}
           size="small"
           sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-          onClick={() => {
-            transactTabCoin('credit');
-          }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          onClick={() => transactTabCoin('credit')}
+          disabled={isInAction}
         />
       </Box>
       <Box>
@@ -118,10 +118,8 @@ export default function TabCoinButtons({ content }) {
           icon={ChevronDownIcon}
           size="small"
           sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-          onClick={() => {
-            transactTabCoin('debit');
-          }}
-          disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
+          onClick={() => transactTabCoin('debit')}
+          disabled={isInAction}
         />
       </Box>
     </Box>
