@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Box, Text } from '@primer/react';
+import { Box, Text, Tooltip } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
 
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
@@ -125,7 +125,14 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Link>
             {' · '}
             <Text>
-              <PublishedSince date={contentObject.published_at} />
+              <Tooltip
+                sx={{ position: 'absolute', ml: 1 }}
+                aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
+                  dateStyle: 'full',
+                  timeStyle: 'short',
+                })}>
+                <PublishedSince date={contentObject.published_at} />
+              </Tooltip>
             </Text>
           </Box>
         </Box>,
