@@ -72,6 +72,39 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 }
 
+function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
+  return (
+    <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'absolute', right: 0 }}>
+        {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
+          flickering after this menu appears */}
+        <ActionMenu>
+          <ActionMenu.Anchor>
+            <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+          </ActionMenu.Anchor>
+
+          <ActionMenu.Overlay>
+            <ActionList>
+              <ActionList.Item onClick={() => onComponentModeChange('edit')}>
+                <ActionList.LeadingVisual>
+                  <PencilIcon />
+                </ActionList.LeadingVisual>
+                Editar
+              </ActionList.Item>
+              <ActionList.Item variant="danger" onClick={onDelete}>
+                <ActionList.LeadingVisual>
+                  <TrashIcon />
+                </ActionList.LeadingVisual>
+                Apagar
+              </ActionList.Item>
+            </ActionList>
+          </ActionMenu.Overlay>
+        </ActionMenu>
+      </Box>
+    </Box>
+  );
+}
+
 function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
@@ -119,42 +152,6 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     }
   };
 
-  function ViewModeOptionsMenu() {
-    return (
-      <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0 }}>
-          {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
-            flickering after this menu appears */}
-          <ActionMenu>
-            <ActionMenu.Anchor>
-              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
-            </ActionMenu.Anchor>
-
-            <ActionMenu.Overlay>
-              <ActionList>
-                <ActionList.Item
-                  onClick={() => {
-                    setComponentMode('edit');
-                  }}>
-                  <ActionList.LeadingVisual>
-                    <PencilIcon />
-                  </ActionList.LeadingVisual>
-                  Editar
-                </ActionList.Item>
-                <ActionList.Item variant="danger" onClick={handleClickDelete}>
-                  <ActionList.LeadingVisual>
-                    <TrashIcon />
-                  </ActionList.LeadingVisual>
-                  Apagar
-                </ActionList.Item>
-              </ActionList>
-            </ActionMenu.Overlay>
-          </ActionMenu>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -196,8 +193,9 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               </Tooltip>
             </Link>
           </Box>
-          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
-            ViewModeOptionsMenu()}
+          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
+            <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
+          )}
         </Box>
 
         {!contentObject?.parent_id && contentObject?.title && (
