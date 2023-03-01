@@ -113,7 +113,6 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
-            sx={{ paddingY: '15px' }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
