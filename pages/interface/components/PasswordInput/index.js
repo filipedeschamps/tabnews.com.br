@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FormControl, TextInput } from '@primer/react';
+import { FormControl, IconButton, TextInput, Tooltip } from '@primer/react';
 import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
 
 export function PasswordInput(props) {
@@ -7,6 +7,11 @@ export function PasswordInput(props) {
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
+
+  function handlePasswordVisible(event) {
+    event.preventDefault();
+    setIsPasswordVisible(!isPasswordVisible);
+  }
 
   function detectCapsLock(event) {
     if (event.getModifierState('CapsLock')) {
@@ -25,14 +30,17 @@ export function PasswordInput(props) {
       <FormControl.Label>{label}</FormControl.Label>
       <TextInput
         trailingAction={
-          <TextInput.Action
-            onClick={() => {
-              setIsPasswordVisible(!isPasswordVisible);
-            }}
-            icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
+          <Tooltip
+            sx={{ color: 'fg.subtle', marginRight: '10px' }}
             aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
-            sx={{ color: 'fg.subtle', padding: '0', marginRight: '5px' }}
-          />
+            direction="nw"
+            noDelay={true}>
+            <IconButton
+              onClick={handlePasswordVisible}
+              icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
+              sx={{ padding: '0', border: 'none', color: 'fg.subtle' }}
+            />
+          </Tooltip>
         }
         ref={inputRef}
         onChange={clearErrors}
