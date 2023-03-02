@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser } from 'pages/interface/index.js';
+import { DefaultLayout, useUser, EmailInput, PasswordInput } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, Flash, Link, Text } from '@primer/react';
-import { PasswordInput } from 'pages/interface/components/PasswordInput';
-import { EmailInput } from 'pages/interface/components/EmailInput';
 
 export default function Login() {
   return (
