@@ -13,7 +13,6 @@ import {
   ActionMenu,
   ActionList,
   IconButton,
-  Tooltip,
   useConfirm,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
@@ -182,15 +181,8 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', height: '22px' }}>
-              <Tooltip
-                sx={{ position: 'absolute', ml: 1, mt: '1px' }}
-                aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
-                  dateStyle: 'full',
-                  timeStyle: 'short',
-                })}>
-                <PublishedSince date={contentObject.published_at} />
-              </Tooltip>
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+              <PublishedSince date={contentObject.published_at} />
             </Link>
           </Box>
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
