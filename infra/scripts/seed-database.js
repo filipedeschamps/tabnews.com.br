@@ -3,7 +3,7 @@ const { join, resolve } = require('path');
 
 const { Client } = require('pg');
 const client = new Client({
-  connectionString: 'postgres://local_user:local_password@localhost:54320/tabnews',
+  connectionString: process.env.DATABASE_URL,
   connectionTimeoutMillis: 5000,
   idleTimeoutMillis: 30000,
   allowExitOnIdle: false,
