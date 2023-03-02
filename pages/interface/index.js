@@ -16,3 +16,5 @@ export { default as PasswordInput } from './components/PasswordInput/index.js';
 
 export { default as useUser } from './hooks/useUser/index.js';
 export { default as useMediaQuery } from './hooks/useMediaQuery/index.js';
+
+export { default as suggestEmail } from './helpers/suggestEmail/index.js';
