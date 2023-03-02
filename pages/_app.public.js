@@ -13,6 +13,12 @@ async function SWRFetcher(resource, init) {
 }
 
 function MyApp({ Component, pageProps }) {
+  let colorMode = 'day';
+
+  if (typeof window !== 'undefined') {
+    colorMode = JSON.parse(localStorage.getItem('themeMode'))?.mode || colorMode;
+  }
+
   return (
     <>
       <UserProvider>
@@ -22,7 +28,7 @@ function MyApp({ Component, pageProps }) {
             fetcher: SWRFetcher,
           }}>
           <SSRProvider>
-            <ThemeProvider preventSSRMismatch colorMode="day">
+            <ThemeProvider preventSSRMismatch colorMode={colorMode}>
               <BaseStyles>
                 <NextNProgress options={{ showSpinner: false }} />
                 <Component {...pageProps} />

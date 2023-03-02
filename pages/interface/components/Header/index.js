@@ -1,12 +1,14 @@
 import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
-import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
+import { PersonFillIcon, HomeIcon, SquareFillIcon, MoonIcon, SunIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
+import useThemeMode from 'pages/interface/hooks/useThemeMode';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { pathname } = useRouter();
+  const { colorMode, setThemeMode } = useThemeMode();
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -51,6 +53,19 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <Header.Item
+            sx={{
+              mr: 2,
+              fontSize: 0,
+              fontWeight: 'bold',
+            }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'accent.emphasis' }}
+              onClick={() => setThemeMode(colorMode === 'day' ? 'night' : 'day')}>
+              {colorMode === 'day' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+            </Box>
+          </Header.Item>
+
           <Header.Item
             sx={{
               mr: 2,
