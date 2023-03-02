@@ -1,14 +1,14 @@
 import { Box, Button, FormControl, TextInput } from '@primer/react';
 
-export function EmailInput(props) {
-  const { inputRef, passwordRef, id, name, label, errorObject, setErrorObject } = props;
+export default function EmailInput(props) {
+  const { inputDisabled, inputRef, passwordRef, id, name, label, errorObject, setErrorObject } = props;
 
   function clearErrors() {
     setErrorObject(undefined);
   }
 
   return (
-    <FormControl id={id}>
+    <FormControl id={id} disabled={inputDisabled}>
       <FormControl.Label>{label}</FormControl.Label>
       <TextInput
         ref={inputRef}
