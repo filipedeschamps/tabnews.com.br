@@ -1,11 +1,14 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip, Button } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon, ThreeBarsIcon } from '@primer/octicons-react';
-import { CgTab } from 'react-icons/cg';
+import { CgMenu, CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
+import { createRef, useState } from 'react';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
+  const [open, setOpen] = useState(false);
+  const anchorRef = createRef();
 
   const { pathname } = useRouter();
 
@@ -21,20 +24,28 @@ export default function HeaderComponent() {
         px: [2, null, null, 3],
       }}>
       <Header.Item sx={{ display: ['flex', 'none'] }}>
-        <ActionMenu>
-          <ActionMenu.Anchor>
-            <IconButton icon={ThreeBarsIcon} size="small" aria-label="Abrir menu" />
-          </ActionMenu.Anchor>
+        <button
+          variant="invisible"
+          ref={anchorRef}
+          aria-haspopup="true"
+          aria-expanded={open}
+          style={{ background: 'transparent', border: 'none' }}
+          onClick={() => setOpen(!open)}>
+          <CgMenu size={32} color="#f8f9fc" />
+        </button>
+        <ActionMenu open={open} onOpenChange={setOpen} anchorRef={anchorRef}>
           <ActionMenu.Overlay>
             <ActionList>
               <ActionList.Item sx={{ fontSize: 16 }}>TabNews</ActionList.Item>
               <ActionList.Divider />
-              <ActionList.Item as={Link} href="/">
-                Relevantes
-              </ActionList.Item>
-              <ActionList.Item as={Link} href="/recentes">
-                Recentes
-              </ActionList.Item>
+              <ActionList.Group title="Navegar">
+                <ActionList.Item as={Link} href="/">
+                  Relevantes
+                </ActionList.Item>
+                <ActionList.Item as={Link} href="/recentes">
+                  Recentes
+                </ActionList.Item>
+              </ActionList.Group>
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
