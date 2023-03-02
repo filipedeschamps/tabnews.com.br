@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser, Link } from 'pages/interface/index.js';
+import { DefaultLayout, useUser, Link, EmailInput } from 'pages/interface/index.js';
 import { FormControl, Box, Heading, Button, TextInput, Checkbox, Flash, useConfirm } from '@primer/react';
 
 export default function EditProfile() {
@@ -178,49 +178,15 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="email" disabled={emailDisabled}>
-          <FormControl.Label>Email</FormControl.Label>
-          <TextInput
-            ref={emailRef}
-            onChange={clearErrors}
-            name="email"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu email"
-          />
-          {errorObject?.key === 'email' && !errorObject?.type && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-          {errorObject?.key === 'email' && errorObject?.type === 'typo' && (
-            <FormControl.Validation variant="error">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box>Você quis dizer:</Box>
-                <Box>
-                  <Button
-                    variant="invisible"
-                    size="small"
-                    sx={{ p: 1 }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      clearErrors();
-                      emailRef.current.value = errorObject.suggestion;
-                      passwordRef.current.focus();
-                    }}>
-                    {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
-                  </Button>
-                </Box>
-              </Box>
-            </FormControl.Validation>
-          )}
-
-          {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
-            <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
-
+        <EmailInput
+          inputDisabled={emailDisabled}
+          inputRef={emailRef}
+          id="email"
+          name="email"
+          label="Email"
+          errorObject={errorObject}
+          setErrorObject={setErrorObject}
+        />
         <FormControl id="notifications" sx={{ gap: 2, alignItems: 'center' }}>
           <FormControl.Label>Receber notificações por email</FormControl.Label>
 
