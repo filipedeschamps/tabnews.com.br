@@ -13,16 +13,17 @@ export default function GoToTopButton() {
   };
 
   useEffect(() => {
-    const header = document.querySelector('#header');
+    // Antes era verificado se o header estava ainda em tela para mostrar o botão
+    // Para que funcione com o header dinamico foi modificado para verificar se o usuário
+    // Rolou a página, caso tenha mostre o botão, caso contrario não mostre
+    const handleScroll = () => {
+      setShowButton(window.scrollY > 0);
+    }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        setShowButton(!entry.isIntersecting);
-      });
-    });
-
-    observer.observe(header);
-    return () => observer.disconnect();
+    window.addEventListener('scroll', handleScroll);
+    
+    // Remove o listener quando o componente for desmontado
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
