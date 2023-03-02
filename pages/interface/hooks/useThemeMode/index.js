@@ -23,7 +23,7 @@ export default function useThemeMode() {
       style.innerHTML = `
           body { background-color: ${defaultBgColor} !important; }
           .bytemd-toolbar-icon:hover { background-color: ${defaultBorder} !important; }
-          .markdown-body, .bytemd, .bytemd-toolbar, .bytemd-editor > div {
+          .markdown-body, .bytemd, .bytemd-toolbar, .bytemd-editor > div, .markdown-body tr {
             color: ${defaultFgColor} !important;
             border-color: ${defaultBorder} !important;
             background-color: ${defaultBgColor} !important;

@@ -60,7 +60,7 @@ export default function HeaderComponent() {
               fontWeight: 'bold',
             }}>
             <Box
-              sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'accent.emphasis' }}
+              sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'accent.emphasis', cursor: 'pointer' }}
               onClick={() => setThemeMode(colorMode === 'day' ? 'night' : 'day')}>
               {colorMode === 'day' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
             </Box>
