@@ -8,7 +8,7 @@ export default function PasswordInput(props) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
-  function focusPosEnd(ref) {
+  function focusAfterEnd(ref) {
     setTimeout(() => {
       let len = ref.current.value.length;
       ref.current.focus();
@@ -19,7 +19,7 @@ export default function PasswordInput(props) {
   function handlePasswordVisible(event) {
     event.preventDefault();
     setIsPasswordVisible(!isPasswordVisible);
-    focusPosEnd(inputRef);
+    focusAfterEnd(inputRef);
     detectCapsLock(event);
   }
 
