@@ -123,7 +123,6 @@ function SignUpForm() {
 
         <EmailInput
           inputRef={emailRef}
-          passwordRef={passwordRef}
           id="email"
           name="email"
           label="Email"

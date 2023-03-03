@@ -1,7 +1,7 @@
 import { Box, Button, FormControl, TextInput } from '@primer/react';
 
 export default function EmailInput(props) {
-  const { inputDisabled, inputRef, passwordRef, id, name, label, errorObject, setErrorObject } = props;
+  const { inputDisabled, inputRef, id, name, label, errorObject, setErrorObject } = props;
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -37,7 +37,6 @@ export default function EmailInput(props) {
                   event.preventDefault();
                   clearErrors();
                   inputRef.current.value = errorObject.suggestion;
-                  passwordRef.current.focus();
                 }}>
                 {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
               </Button>
