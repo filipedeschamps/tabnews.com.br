@@ -20,7 +20,7 @@ export default function HeaderComponent() {
         px: [2, null, null, 3],
       }}>
       <Header.Item>
-        <HeaderLink href="/">
+        <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
           <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
         </HeaderLink>
@@ -96,6 +96,9 @@ export default function HeaderComponent() {
                   <ActionList.Divider />
                   <ActionList.LinkItem as={Link} href="/publicar">
                     Publicar novo conteúdo
+                  </ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
+                    Meus conteúdos
                   </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
