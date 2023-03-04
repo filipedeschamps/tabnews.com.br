@@ -14,9 +14,9 @@ function formatTooltipLabel(date) {
   return format(new Date(date), "EEEE, d 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR });
 }
 
-export default function PublishedSince({ date }) {
+export default function PublishedSince({ direction, date }) {
   return (
-    <Tooltip sx={{ position: 'absolute', ml: 1 }} aria-label={formatTooltipLabel(date)}>
+    <Tooltip direction={direction} sx={{ position: 'absolute', ml: 1 }} aria-label={formatTooltipLabel(date)}>
       <span suppressHydrationWarning>{formatPublishedSince(date)}</span>
     </Tooltip>
   );
