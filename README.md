@@ -32,12 +32,11 @@ Estas são as linguagens de programação mais comuns usadas para desenvolver ap
 - Express
 - React
 - Postgres
-- Axios
 - React-dom
 - React-router-dom
 - React-scripts
 
-Estas tecnologias são comumente usadas para desenvolvimento de aplicações web, especialmente aplicações de back-end e front-end. Node.js é uma plataforma de tempo de execução do lado do servidor baseada em JavaScript, enquanto Express é uma framework para aplicativos web do Node.js. MongoDB é um banco de dados NoSQL usado para armazenar dados não estruturados. React é uma biblioteca JavaScript para criar interfaces de usuário. Axios é uma biblioteca JavaScript usada para realizar requisições HTTP. React-dom, React-router-dom e React-scripts são pacotes de complementos do React. Juntos, estas tecnologias permitem a criação de aplicações web completas e interativas.
+Estas tecnologias são comumente usadas para desenvolvimento de aplicações web, especialmente aplicações de back-end e front-end. Node.js é uma plataforma de tempo de execução do lado do servidor baseada em JavaScript, enquanto Express é uma framework para aplicativos web do Node.js. MongoDB é um banco de dados NoSQL usado para armazenar dados não estruturados. React é uma biblioteca JavaScript para criar interfaces de usuário. React-dom, React-router-dom e React-scripts são pacotes de complementos do React. Juntos, estas tecnologias permitem a criação de aplicações web completas e interativas.
 
 ### Arquitetura
 
