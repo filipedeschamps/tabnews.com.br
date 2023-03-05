@@ -106,6 +106,8 @@ async function activateUserByUserId(userId) {
     'create:content:text_child',
     'update:content',
     'update:user',
+    'read:bookmarks',
+    'update:bookmarks',
   ]);
 }
 

@@ -31,6 +31,8 @@ async function seedDevelopmentUsers() {
     'create:content:text_child',
     'update:content',
     'update:user',
+    'update:bookmarks',
+    'read:bookmarks',
     'ban:user',
     'read:migration',
     'create:migration',
@@ -44,6 +46,8 @@ async function seedDevelopmentUsers() {
     'create:content:text_child',
     'update:content',
     'update:user',
+    'update:bookmarks',
+    'read:bookmarks',
   ]);
 
   console.log('------------------------------');

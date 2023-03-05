@@ -9,6 +9,8 @@ const availableFeatures = new Set([
   'read:user:list',
   'update:user',
   'ban:user',
+  'read:bookmarks',
+  'update:bookmarks',
 
   // MIGRATION
   'read:migration',
@@ -65,6 +67,14 @@ function can(user, feature, resource) {
     }
   }
 
+  if (feature === 'update:bookmarks' && resource) {
+    authorized = false;
+
+    if (user.id === resource.id) {
+      authorized = true;
+    }
+  }
+
   return authorized;
 }
 
@@ -96,6 +106,12 @@ function filterInput(user, feature, input) {
       email: input.email,
       password: input.password,
       notifications: input.notifications,
+    };
+  }
+
+  if (feature === 'update:bookmarks' && can(user, feature)) {
+    filteredInputValues = {
+      contentId: input.contentId,
     };
   }
 
@@ -186,6 +202,12 @@ function filterOutput(user, feature, output) {
       tabcash: output.tabcash,
       created_at: output.created_at,
       updated_at: output.updated_at,
+    };
+  }
+
+  if (feature === 'read:bookmarks') {
+    filteredOutputValues = {
+      bookmarks: output.bookmarks,
     };
   }
 
