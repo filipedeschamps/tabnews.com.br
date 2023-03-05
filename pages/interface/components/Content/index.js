@@ -18,7 +18,7 @@ import {
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import { Editor, Link, PublishedSince, useUser, Viewer } from 'pages/interface';
 
-export default function Content({ content, mode = 'view', viewFrame = false, setIsCollapsed }) {
+export default function Content({ content, mode = 'view', viewFrame = false, toggleCollapsed }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -53,7 +53,6 @@ export default function Content({ content, mode = 'view', viewFrame = false, set
   }, [localStorageKey, user, contentObject]);
 
   if (componentMode === 'view') {
-    if (setIsCollapsed) setIsCollapsed(false);
     return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
   } else if (componentMode === 'compact') {
     return <CompactMode setComponentMode={setComponentMode} />;
@@ -68,8 +67,14 @@ export default function Content({ content, mode = 'view', viewFrame = false, set
       />
     );
   } else if (componentMode === 'collapsed') {
-    if (setIsCollapsed) setIsCollapsed(true);
-    return <CollapsedMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
+    return (
+      <CollapsedMode
+        setComponentMode={setComponentMode}
+        contentObject={contentObject}
+        viewFrame={viewFrame}
+        toggleCollapsed={toggleCollapsed}
+      />
+    );
   } else if (componentMode === 'deleted') {
     return <DeletedMode viewFrame={viewFrame} />;
   }
@@ -189,14 +194,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               <PublishedSince date={contentObject.published_at} />
             </Link>
           </Box>
-          {contentObject?.parent_id && !contentObject?.title && (
-            <Box
-              sx={{ width: '100%', marginRight: '40px' }}
-              onClick={() => {
-                setComponentMode('collapsed');
-              }}
-            />
-          )}
+          {contentObject?.parent_id && !contentObject?.title && <Box sx={{ width: '100%', marginRight: '40px' }} />}
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
             <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
           )}
@@ -495,10 +493,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CollapsedMode({ setComponentMode, contentObject, viewFrame }) {
+function CollapsedMode({ setComponentMode, contentObject, viewFrame, toggleCollapsed }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
+
+  const handleClickCollapse = () => {
+    setComponentMode('view');
+    toggleCollapsed();
+  };
 
   const handleClickDelete = async () => {
     const confirmDelete = await confirm({
@@ -566,17 +569,10 @@ function CollapsedMode({ setComponentMode, contentObject, viewFrame }) {
           sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
           <PublishedSince date={contentObject.published_at} />
         </Link>
-        <Box
-          sx={{ width: '100%', height: '1lh' }}
-          onClick={() => {
-            setComponentMode('view');
-          }}
-        />
+        <Box sx={{ width: '100%', height: '1lh' }} onClick={() => handleClickCollapse()} />
       </Box>
       <Box
-        onClick={() => {
-          setComponentMode('view');
-        }}
+        onClick={() => handleClickCollapse()}
         sx={{
           maxWidth: '100%',
           boxSizing: 'border-box',

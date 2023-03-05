@@ -8,7 +8,7 @@ import authorization from 'models/authorization.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
 import { Box, Tooltip } from '@primer/react';
-import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
+import { CommentIcon, CommentDiscussionIcon, NoEntryFillIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
 
 export default function Post({
@@ -196,6 +196,11 @@ function RenderChildrenTree({ childrenList, level }) {
 
 function ChildComponent({ child, level }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleCollapsed = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   if (isCollapsed)
     return (
       <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center', overflow: 'hidden' }}>
@@ -206,7 +211,7 @@ function ChildComponent({ child, level }) {
             wordWrap: 'break-word',
             display: 'flex',
           }}>
-          <Content content={child} mode="collapsed" setIsCollapsed={setIsCollapsed} />
+          <Content content={child} mode="collapsed" toggleCollapsed={toggleCollapsed} />
         </Box>
       </Box>
     );
@@ -228,19 +233,47 @@ function ChildComponent({ child, level }) {
         }}>
         <TabCoinButtons content={child} />
         <Box
+          onClick={() => toggleCollapsed()}
           sx={{
-            borderWidth: 0,
-            borderRightWidth: 1,
-            borderColor: 'border.muted',
-            borderStyle: 'dotted',
-            width: '50%',
+            width: '100%',
             height: '100%',
-          }}
-        />
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            '&:hover div': {
+              borderColor: 'red',
+            },
+            '&:hover .icon-box': {
+              display: 'block',
+            },
+          }}>
+          <Box
+            className="icon-box"
+            sx={{
+              display: 'none',
+              height: '0',
+              position: 'relative',
+              top: '30px',
+              '.octicon-no-entry-fill': { backgroundColor: 'white' },
+            }}>
+            <NoEntryFillIcon size={12} fill={'red'} />
+          </Box>
+          <Box
+            sx={{
+              borderWidth: 0,
+              borderRightWidth: 1,
+              borderColor: 'border.muted',
+              borderStyle: 'dotted',
+              width: '0',
+              height: '100%',
+            }}
+          />
+        </Box>
       </Box>
 
       <Box sx={{ width: '100%', overflow: 'auto' }}>
-        <Content content={child} mode="view" setIsCollapsed={setIsCollapsed} />
+        <Content content={child} mode="view" />
 
         <Box sx={{ mt: 4 }}>
           <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
