@@ -413,6 +413,184 @@ async function addFeatures(userId, features, options) {
   return results.rows[0];
 }
 
+async function addBookmarks(userId, contentsId, options) {
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        bookmarks = array_cat(bookmarks, $1),
+        updated_at = (now() at time zone 'utc')
+      WHERE
+        id = $2
+      RETURNING
+        *
+    ;`,
+    values: [contentsId, userId],
+  };
+
+  const results = await database.query(query, options);
+
+  const updatedUser = results.rows[0];
+  updatedUser.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'user:tabcoin',
+      recipientId: updatedUser.id,
+    },
+    options
+  );
+  updatedUser.tabcash = await balance.getTotal(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: updatedUser.id,
+    },
+    options
+  );
+
+  return results.rows[0];
+}
+
+async function removeBookmarks(userId, contentsId, options) {
+  let lastUpdatedUser;
+
+  if (contentsId?.length > 0) {
+    for (const content of contentsId) {
+      const query = {
+        text: `
+          UPDATE
+            users
+          SET
+            bookmarks = array_remove(bookmarks, $1),
+            updated_at = (now() at time zone 'utc')
+          WHERE
+            id = $2
+          RETURNING
+            *
+        ;`,
+        values: [content, userId],
+      };
+
+      const results = await database.query(query, options);
+      lastUpdatedUser = results.rows[0];
+    }
+  } else {
+    const query = {
+      text: `
+        UPDATE
+          users
+        SET
+          bookmarks = '{}',
+          updated_at = (now() at time zone 'utc')
+        WHERE
+          id = $1
+        RETURNING
+          *
+      ;`,
+      values: [userId],
+    };
+
+    const results = await database.query(query, options);
+    lastUpdatedUser = results.rows[0];
+  }
+
+  lastUpdatedUser.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'user:tabcoin',
+      recipientId: lastUpdatedUser.id,
+    },
+    options
+  );
+  lastUpdatedUser.tabcash = await balance.getTotal(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: lastUpdatedUser.id,
+    },
+    options
+  );
+
+  return lastUpdatedUser;
+}
+
+async function findAllBookmarksByUsername(values = {}, options = {}) {
+  values = validateValues(values);
+
+  const query = {
+    values: [values.username],
+  };
+
+  query.text = `
+      SELECT
+        bookmarks
+      FROM users WHERE username=$1
+      ;`;
+
+  const results = await database.query(query, { transaction: options.transaction });
+
+  return results.rows;
+
+  function validateValues(values) {
+    const cleanValues = validator(values, {
+      username: 'required',
+    });
+
+    return cleanValues;
+  }
+}
+
+async function findAllBookmarksWithContentByUsername(values = {}, options = {}) {
+  values = validateValues(values);
+
+  const query = {
+    values: [values.username],
+  };
+
+  query.text = `
+      SELECT u.username as owner_username, c.*, get_current_balance('content:tabcoin', c.id) as tabcoins,
+      (
+        WITH RECURSIVE children AS (
+          SELECT
+              id,
+              parent_id
+          FROM
+            contents as all_contents
+          WHERE
+            all_contents.id = c.id AND
+            all_contents.status = 'published'
+          UNION ALL
+            SELECT
+              all_contents.id,
+              all_contents.parent_id
+            FROM
+              contents as all_contents
+            INNER JOIN
+              children ON all_contents.parent_id = children.id
+            WHERE
+              all_contents.status = 'published'
+        )
+        SELECT
+          count(children.id)::integer
+        FROM
+          children
+        WHERE
+          children.id NOT IN (c.id)
+      ) as children_deep_count
+      FROM users u
+      JOIN contents c ON u.bookmarks @> ARRAY[c.id]::varchar[] WHERE u.username = $1
+      ;`;
+
+  const results = await database.query(query, { transaction: options.transaction });
+
+  return results.rows;
+
+  function validateValues(values) {
+    const cleanValues = validator(values, {
+      username: 'required',
+    });
+
+    return cleanValues;
+  }
+}
+
 export default Object.freeze({
   create,
   findAll,
@@ -423,4 +601,8 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
+  addBookmarks,
+  removeBookmarks,
+  findAllBookmarksByUsername,
+  findAllBookmarksWithContentByUsername,
 });

@@ -95,6 +95,10 @@ function getLimit(method, path, ip) {
       requests: 50,
       window: '30 m',
     },
+    'PATCH /api/v1/bookmarks': {
+      requests: 50,
+      window: '30 m',
+    },
   };
 
   const configurationFromEnvironment = process.env.RATE_LIMITS ? JSON.parse(process.env.RATE_LIMITS) : {};

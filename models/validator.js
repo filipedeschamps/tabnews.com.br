@@ -779,6 +779,24 @@ const schemas = {
         }),
     });
   },
+
+  content_id: function () {
+    return Joi.object({
+      content_id: Joi.alternatives()
+        .try(
+          Joi.string().trim().invalid(null).guid({ version: 'uuidv4' }),
+          Joi.array().items(Joi.string().guid({ version: 'uuidv4' }))
+        )
+        .when('$required.content_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"content_id" é um campo obrigatório.`,
+          'string.empty': `"content_id" não pode estar em branco.`,
+          'string.base': `"content_id" deve ser do tipo String ou String Array.`,
+          'any.invalid': `"content_id" possui o valor inválido "null".`,
+          'string.guid': `"content_id" deve possuir tokens UUID na versão 4.`,
+        }),
+    });
+  },
 };
 
 const withoutMarkdown = (value, helpers) => {
