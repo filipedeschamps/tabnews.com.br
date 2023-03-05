@@ -191,48 +191,65 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
 }
 
 function RenderChildrenTree({ childrenList, level }) {
-  return childrenList.map((child) => {
+  return childrenList.map((child) => <ChildComponent level={level} key={child.id} child={child} />);
+}
+
+function ChildComponent({ child, level }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  if (isCollapsed)
     return (
-      <Box
-        sx={{
-          width: '100%',
-          wordWrap: 'break-word',
-          display: 'flex',
-          mt: 4,
-        }}
-        key={child.id}>
+      <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center', overflow: 'hidden' }}>
+        <TabCoinButtons content={child} />
         <Box
           sx={{
-            pr: [0, null, null, 2],
+            overflow: 'hidden',
+            wordWrap: 'break-word',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
           }}>
-          <TabCoinButtons content={child} />
-          <Box
-            sx={{
-              borderWidth: 0,
-              borderRightWidth: 1,
-              borderColor: 'border.muted',
-              borderStyle: 'dotted',
-              width: '50%',
-              height: '100%',
-            }}
-          />
-        </Box>
-
-        <Box sx={{ width: '100%', overflow: 'auto' }}>
-          <Content content={child} mode="view" />
-
-          <Box sx={{ mt: 4 }}>
-            <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
-          </Box>
-
-          {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
+          <Content content={child} mode="collapsed" setIsCollapsed={setIsCollapsed} />
         </Box>
       </Box>
     );
-  });
+
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        wordWrap: 'break-word',
+        display: 'flex',
+        mt: 4,
+      }}>
+      <Box
+        sx={{
+          pr: [0, null, null, 2],
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}>
+        <TabCoinButtons content={child} />
+        <Box
+          sx={{
+            borderWidth: 0,
+            borderRightWidth: 1,
+            borderColor: 'border.muted',
+            borderStyle: 'dotted',
+            width: '50%',
+            height: '100%',
+          }}
+        />
+      </Box>
+
+      <Box sx={{ width: '100%', overflow: 'auto' }}>
+        <Content content={child} mode="view" setIsCollapsed={setIsCollapsed} />
+
+        <Box sx={{ mt: 4 }}>
+          <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
+        </Box>
+
+        {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
+      </Box>
+    </Box>
+  );
 }
 
 export async function getStaticPaths() {

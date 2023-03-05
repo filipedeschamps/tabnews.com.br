@@ -18,7 +18,7 @@ import {
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import { Editor, Link, PublishedSince, useUser, Viewer } from 'pages/interface';
 
-export default function Content({ content, mode = 'view', viewFrame = false }) {
+export default function Content({ content, mode = 'view', viewFrame = false, setIsCollapsed }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -53,6 +53,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [localStorageKey, user, contentObject]);
 
   if (componentMode === 'view') {
+    if (setIsCollapsed) setIsCollapsed(false);
     return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
   } else if (componentMode === 'compact') {
     return <CompactMode setComponentMode={setComponentMode} />;
@@ -66,6 +67,9 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         mode={mode}
       />
     );
+  } else if (componentMode === 'collapsed') {
+    if (setIsCollapsed) setIsCollapsed(true);
+    return <CollapsedMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
   } else if (componentMode === 'deleted') {
     return <DeletedMode viewFrame={viewFrame} />;
   }
@@ -174,7 +178,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 1, mt: '2px' }}>
+            sx={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 1, mt: '2px' }}>
             <BranchName as={Link} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </BranchName>
@@ -185,6 +189,14 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               <PublishedSince date={contentObject.published_at} />
             </Link>
           </Box>
+          {contentObject?.parent_id && !contentObject?.title && (
+            <Box
+              sx={{ width: '100%', marginRight: '40px' }}
+              onClick={() => {
+                setComponentMode('collapsed');
+              }}
+            />
+          )}
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
             <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
           )}
@@ -479,6 +491,112 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           </Box>
         </Box>
       </form>
+    </Box>
+  );
+}
+
+function CollapsedMode({ setComponentMode, contentObject, viewFrame }) {
+  const { user, fetchUser } = useUser();
+  const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
+  const confirm = useConfirm();
+
+  const handleClickDelete = async () => {
+    const confirmDelete = await confirm({
+      title: 'Você tem certeza?',
+      content: 'Deseja realmente apagar essa publicação?',
+      cancelButtonContent: 'Cancelar',
+      confirmButtonContent: 'Sim',
+    });
+
+    if (!confirmDelete) return;
+
+    const data = {
+      status: 'deleted',
+    };
+
+    const response = await fetch(`/api/v1/contents/${contentObject.owner_username}/${contentObject.slug}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseBody = await response.json();
+
+    fetchUser();
+
+    if (response.status === 200) {
+      setComponentMode('deleted');
+      return;
+    }
+
+    if ([400, 401, 403].includes(response.status)) {
+      setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+      return;
+    }
+
+    if (response.status >= 500) {
+      setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+      return;
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        width: '100%',
+        borderWidth: viewFrame ? 1 : 0,
+        p: viewFrame ? 4 : 0,
+        borderRadius: '6px',
+        borderColor: 'border.default',
+        borderStyle: 'solid',
+        wordBreak: 'break-word',
+      }}>
+      <Box sx={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 1, mt: '2px' }}>
+        <BranchName as={Link} href={`/${contentObject.owner_username}`}>
+          {contentObject.owner_username}
+        </BranchName>
+        <Link
+          href={`/${contentObject.owner_username}/${contentObject.slug}`}
+          prefetch={false}
+          sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+          <PublishedSince date={contentObject.published_at} />
+        </Link>
+        <Box
+          sx={{ width: '100%', height: '1lh' }}
+          onClick={() => {
+            setComponentMode('view');
+          }}
+        />
+      </Box>
+      <Box
+        onClick={() => {
+          setComponentMode('view');
+        }}
+        sx={{
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          height: '30px',
+          overflow: 'hidden',
+          '& .markdown-body p': {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          },
+        }}>
+        <Viewer value={contentObject.body} />
+      </Box>
+      {contentObject.source_url && (
+        <Box>
+          <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
+            <LinkIcon size={16} /> Fonte: <Link href={contentObject.source_url}>{contentObject.source_url}</Link>
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }
