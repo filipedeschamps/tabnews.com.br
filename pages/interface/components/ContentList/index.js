@@ -5,13 +5,13 @@ import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
 export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
-  const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
+  const listNumberOffset = pagination && paginationBasePath && pagination.perPage * (pagination.currentPage - 1);
 
   // const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
   const list = contentList;
 
-  const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
-  const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
+  const previousPageUrl = pagination && paginationBasePath && `${paginationBasePath}/${pagination?.previousPage}`;
+  const nextPageUrl = pagination && paginationBasePath && `${paginationBasePath}/${pagination?.nextPage}`;
 
   return (
     <>
@@ -29,7 +29,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
         <RenderEmptyMessage {...emptyStateProps} />
       )}
 
-      {list.length > 0 ? (
+      {list.length > 0 && pagination && paginationBasePath ? (
         <Box
           sx={{
             display: 'flex',
@@ -51,7 +51,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Text>
           )}
 
-          {pagination.nextPage ? (
+          {pagination.nextPage && pagination && paginationBasePath ? (
             <Link href={nextPageUrl}>
               Próximo
               <ChevronRightIcon size={16} />
@@ -77,7 +77,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
     }
 
     return list.map((contentObject, index) => {
-      const itemCount = index + 1 + listNumberOffset;
+      const itemCount = index + 1 + (pagination && paginationBasePath ? listNumberOffset : 0);
       return [
         <Box key={itemCount} sx={{ textAlign: 'right' }}>
           <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>

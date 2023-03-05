@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
-import { Link, DefaultLayout, Content, TabCoinButtons, Confetti } from 'pages/interface/index.js';
+import { Link, DefaultLayout, Content, TabCoinButtons, Confetti, BookmarkButton } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
@@ -67,6 +67,7 @@ export default function Post({
               justifyContent: 'center',
             }}>
             <TabCoinButtons content={contentFound} />
+            <BookmarkButton content={contentFound} />
             <Box
               sx={{
                 borderWidth: 0,
