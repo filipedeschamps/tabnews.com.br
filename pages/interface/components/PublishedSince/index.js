@@ -16,7 +16,7 @@ function formatTooltipLabel(date) {
 
 export default function PublishedSince({ date, ...props }) {
   return (
-    <Tooltip direction={direction} sx={{ position: 'absolute', ml: 1 }} aria-label={formatTooltipLabel(date)}>
+    <Tooltip sx={{ position: 'absolute', ml: 1 }} aria-label={formatTooltipLabel(date)} {...props}>
       <span suppressHydrationWarning>{formatPublishedSince(date)}</span>
     </Tooltip>
   );
