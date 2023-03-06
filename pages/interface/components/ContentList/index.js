@@ -125,7 +125,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Link>
             {' · '}
             <Text>
-              <PublishedSince date={contentObject.published_at} />
+              <PublishedSince direction="nw" date={contentObject.published_at} />
             </Text>
           </Box>
         </Box>,
