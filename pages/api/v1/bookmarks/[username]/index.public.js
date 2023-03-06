@@ -16,15 +16,15 @@ export default nextConnect({
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler)
   .patch(
-    patchValidationHandler,
     authorization.canRequest('read:session'),
     authorization.canRequest('update:bookmarks'),
+    patchValidationHandler,
     patchHandler
   )
   .delete(
-    deleteValidationHandler,
     authorization.canRequest('read:session'),
     authorization.canRequest('update:bookmarks'),
+    deleteValidationHandler,
     deleteHandler
   );
 

@@ -177,6 +177,14 @@ async function createFirewallTestFunctions() {
   }
 }
 
+async function addBookmarksToUser(user_id, contents_id) {
+  return await user.addBookmarks(user_id, contents_id);
+}
+
+async function removeBookmarksFromUser(user_id, contents_id) {
+  return await user.removeBookmarks(user_id, contents_id);
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -194,4 +202,6 @@ export default {
   createRecoveryToken,
   createFirewallTestFunctions,
   createBalance,
+  addBookmarksToUser,
+  removeBookmarksFromUser,
 };
