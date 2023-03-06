@@ -14,10 +14,12 @@ function formatTooltipLabel(date) {
   return format(new Date(date), "EEEE, d 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR });
 }
 
-export default function PublishedSince({ date }) {
+export default function PublishedSince({ date, ...props }) {
   return (
-    <Tooltip sx={{ position: 'absolute', ml: 1 }} aria-label={formatTooltipLabel(date)}>
-      <span suppressHydrationWarning>{formatPublishedSince(date)}</span>
+    <Tooltip sx={{ position: 'absolute', ml: 1 }} aria-label={formatTooltipLabel(date)} {...props}>
+      <span style={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
+        {formatPublishedSince(date)}
+      </span>
     </Tooltip>
   );
 }
