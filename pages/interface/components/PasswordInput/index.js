@@ -45,7 +45,16 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
             <IconButton
               onClick={handlePasswordVisible}
               icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
-              sx={{ padding: '0', border: 'none', color: 'fg.subtle' }}
+              sx={{
+                padding: '0',
+                border: 'none',
+                color: 'fg.subtle',
+                background: 'none',
+                boxShadow: 'none',
+                ':hover:not([disabled])': {
+                  background: 'none',
+                },
+              }}
             />
           </Tooltip>
         }
