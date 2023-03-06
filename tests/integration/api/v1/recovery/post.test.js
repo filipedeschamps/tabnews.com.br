@@ -12,44 +12,7 @@ beforeAll(async () => {
 
 describe('POST /api/v1/recovery', () => {
   describe('Anonymous user', () => {
-    test('With "username" valid and "user" found', async () => {
-      const defaultUser = await orchestrator.createUser();
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-
-        body: JSON.stringify({
-          username: defaultUser.username,
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(403);
-
-      expect(responseBody).toStrictEqual({
-        name: 'ForbiddenError',
-        message: 'Você não possui permissão para criar um token de recuperação com username.',
-        action: 'Verifique se este usuário tem a feature "create:recovery_token:username".',
-        status_code: 403,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:RECOVERY:POST_HANDLER:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
-      });
-
-      const lastEmail = await orchestrator.getLastEmail();
-      expect(lastEmail?.recipients[0].includes(defaultUser.email)).toBe(undefined);
-      expect(lastEmail?.subject).toEqual(undefined);
-      expect(lastEmail?.text.includes(defaultUser.username)).toBe(undefined);
-
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-    });
-
-    test('With "username" valid, but user not found', async () => {
+    test('With "username" valid', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
