@@ -3,7 +3,6 @@ import { FormControl, IconButton, TextInput, Tooltip } from '@primer/react';
 import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
-
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
