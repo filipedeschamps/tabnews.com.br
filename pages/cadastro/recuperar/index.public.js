@@ -108,7 +108,7 @@ function RecoverPasswordForm() {
 
         {user?.features.includes('create:recovery_token:username') && (
           <FormControl id="userInput">
-            <FormControl.Label>Digite seu e-mail ou o nome de usuário de outra pessoa</FormControl.Label>
+            <FormControl.Label>Digite seu e-mail ou o nome de usuário da pessoa que deseja ajudar</FormControl.Label>
             <TextInput
               ref={userInputRef}
               onChange={clearErrors}
@@ -146,14 +146,12 @@ function RecoverPasswordForm() {
               block={true}
               aria-label="Seu e-mail"
             />
-            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+            {['userInput', 'email'].includes(errorObject?.key) && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
 
             {errorObject?.type === 'string.alphanum' && (
-              <FormControl.Caption>
-                Dica: use somente letras e números, por exemplo: nomeSobrenome4{' '}
-              </FormControl.Caption>
+              <FormControl.Validation variant="error">"email" deve conter um email válido.</FormControl.Validation>
             )}
           </FormControl>
         )}
