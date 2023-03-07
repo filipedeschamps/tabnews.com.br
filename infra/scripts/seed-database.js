@@ -35,6 +35,7 @@ async function seedDevelopmentUsers() {
     'read:migration',
     'create:migration',
     'update:content:others',
+    'create:recovery_token:username',
   ]);
   await insertUser('user', 'user@user.com', '$2a$04$v0hvAu/y6pJ17LzeCfcKG.rDStO9x5ficm2HTLZIfeDBG8oR/uQXi', [
     'create:session',
@@ -45,7 +46,6 @@ async function seedDevelopmentUsers() {
     'update:content',
     'update:user',
   ]);
-  await addUserFeaturesByUsername('admin', ['create:recovery_token:username']);
 
   console.log('------------------------------');
   console.log('> You can now Login to TabNews using the following credentials:');
@@ -66,39 +66,6 @@ async function seedDevelopmentUsers() {
       if (!error.detail.includes('already exists')) {
         throw error;
       }
-    }
-  }
-
-  async function addUserFeaturesByUsername(username, features) {
-    try {
-      const getUserByUsernameQuery = {
-        text: 'SELECT features FROM users WHERE username = $1;',
-        values: [username],
-      };
-      const resultFromGetUserByUsernameQuery = await client.query(getUserByUsernameQuery);
-      const user = resultFromGetUserByUsernameQuery.rows[0];
-
-      const newFeatures = [];
-      const newFeatureCandidatesWithoutDuplicates = new Set([...features]);
-
-      newFeatureCandidatesWithoutDuplicates.forEach((newFeatureCandidate) => {
-        if (!user.features.includes(newFeatureCandidate)) {
-          newFeatures.push(newFeatureCandidate);
-        }
-      });
-
-      const updateUserFeaturesQuery = {
-        text: `
-          UPDATE users SET features = array_cat(features, $1), updated_at = (now() at time zone 'utc')
-          WHERE username = $2
-          RETURNING *;
-        `,
-        values: [newFeatures, username],
-      };
-
-      await client.query(updateUserFeaturesQuery);
-    } catch (error) {
-      throw error;
     }
   }
 }
