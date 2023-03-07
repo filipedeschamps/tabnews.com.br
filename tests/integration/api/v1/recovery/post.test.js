@@ -12,46 +12,7 @@ beforeAll(async () => {
 
 describe('POST /api/v1/recovery', () => {
   describe('Anonymous user', () => {
-    test('With "username" valid and "user" found', async () => {
-      const defaultUser = await orchestrator.createUser();
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-
-        body: JSON.stringify({
-          username: defaultUser.username,
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
-
-      expect(response.status).toEqual(201);
-
-      expect(responseBody).toStrictEqual({
-        used: false,
-        expires_at: tokenInDatabase.expires_at.toISOString(),
-        created_at: tokenInDatabase.created_at.toISOString(),
-        updated_at: tokenInDatabase.updated_at.toISOString(),
-      });
-
-      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
-
-      const lastEmail = await orchestrator.getLastEmail();
-      expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
-      expect(lastEmail.subject).toEqual('Recuperação de Senha');
-      expect(lastEmail.text.includes(defaultUser.username)).toBe(true);
-      expect(lastEmail.text.includes(recovery.getRecoverPageEndpoint(tokenInDatabase.id))).toBe(true);
-    });
-
-    test('With "username" valid, but user not found', async () => {
+    test('With "username" valid', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
@@ -65,17 +26,16 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toEqual(403);
 
       expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
-        message: 'O "username" informado não foi encontrado no sistema.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
+        name: 'ForbiddenError',
+        message: 'Você não possui permissão para criar um token de recuperação com username.',
+        action: 'Verifique se este usuário tem a feature "create:recovery_token:username".',
+        status_code: 403,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
-        key: 'username',
+        error_location_code: 'CONTROLLER:RECOVERY:POST_HANDLER:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
       });
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -297,6 +257,88 @@ describe('POST /api/v1/recovery', () => {
         error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
         key: 'object',
         type: 'object.min',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+  });
+
+  describe('User with "create:recovery_token:username" feature', () => {
+    test('With "username" valid and "user" found', async () => {
+      const defaultUser = await orchestrator.createUser();
+      const userWithPermission = await orchestrator.createUser();
+      await orchestrator.activateUser(userWithPermission);
+      await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
+      const sessionObject = await orchestrator.createSession(userWithPermission);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+
+        body: JSON.stringify({
+          username: defaultUser.username,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        used: false,
+        expires_at: tokenInDatabase.expires_at.toISOString(),
+        created_at: tokenInDatabase.created_at.toISOString(),
+        updated_at: tokenInDatabase.updated_at.toISOString(),
+      });
+
+      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+
+      const lastEmail = await orchestrator.getLastEmail();
+      expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
+      expect(lastEmail.subject).toEqual('Recuperação de Senha');
+      expect(lastEmail.text.includes(defaultUser.username)).toBe(true);
+      expect(lastEmail.text.includes(recovery.getRecoverPageEndpoint(tokenInDatabase.id))).toBe(true);
+    });
+
+    test('With "username" valid, but user not found', async () => {
+      const userWithPermission = await orchestrator.createUser();
+      await orchestrator.activateUser(userWithPermission);
+      await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
+      const sessionObject = await orchestrator.createSession(userWithPermission);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          username: 'userNotFound',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O "username" informado não foi encontrado no sistema.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+        key: 'username',
       });
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
