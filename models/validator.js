@@ -449,18 +449,6 @@ const schemas = {
     });
   },
 
-  query: function () {
-    return Joi.object({
-      query: Joi.string()
-        .allow('')
-        .when('$required.query', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `"query" é um campo obrigatório.`,
-          'string.base': `"query" deve ser do tipo String.`,
-        }),
-    });
-  },
-
   strategy: function () {
     return Joi.object({
       strategy: Joi.string()
@@ -476,21 +464,6 @@ const schemas = {
           'any.invalid': `"strategy" possui o valor inválido "null".`,
           'any.only': `"strategy" deve possuir um dos seguintes valores: "new", "old" ou "relevant".`,
         }),
-    });
-  },
-
-  like: function () {
-    let likeSchema = Joi.object({}).optional().min(1).messages({
-      'object.base': `"like" deve ser do tipo Object.`,
-    });
-
-    for (const key of ['title']) {
-      const keyValidationFunction = schemas[key];
-      likeSchema = likeSchema.concat(keyValidationFunction());
-    }
-
-    return Joi.object({
-      like: likeSchema,
     });
   },
 

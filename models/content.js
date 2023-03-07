@@ -21,26 +21,7 @@ async function findAll(values = {}, options = {}) {
   }
 
   if (options.strategy === 'relevant_global') {
-    function buildRelevantLike(like) {
-      let likeClause = 'WHERE ';
-
-      const keys = Object.keys(like);
-
-      keys.forEach((key, index) => {
-        likeClause += `ranked.${key} ILIKE '%${like[key]}%'`;
-
-        if (index < keys.length - 1) {
-          likeClause += ' AND ';
-        }
-      });
-
-      return likeClause;
-    }
-
-    const likeClause = buildRelevantLike(values?.like);
-
-    query.text = queries.rankedContent(likeClause ?? '');
-
+    query.text = queries.rankedContent;
     if (values.count) {
       query.values = [1, 0];
     }
@@ -102,7 +83,6 @@ async function findAll(values = {}, options = {}) {
       $or: 'optional',
       limit: 'optional',
       attributes: 'optional',
-      like: 'optional',
     });
 
     return cleanValues;
