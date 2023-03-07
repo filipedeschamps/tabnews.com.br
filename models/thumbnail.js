@@ -36,7 +36,7 @@ export function parseContent(content, parentContent) {
   let title = content.title;
 
   if (!title) {
-    title = removeMarkdown(content.body).substring(0, 120).replace(/\s+/g, ' ');
+    title = removeMarkdown(content.body, { maxLength: 120 });
   }
 
   // Regex to wrap text: https://stackoverflow.com/a/51506718

@@ -23,7 +23,7 @@ function RecoverPasswordForm() {
 
   useEffect(() => {
     if (user && !userIsLoading) {
-      userInputRef.current.value = user.username;
+      userInputRef.current.value = user.email;
     }
   }, [user, userIsLoading]);
 
@@ -100,27 +100,62 @@ function RecoverPasswordForm() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
-        <FormControl id="username">
-          <FormControl.Label>Digite seu usuário ou e-mail</FormControl.Label>
-          <TextInput
-            ref={userInputRef}
-            onChange={clearErrors}
-            name="userInput"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu usuário ou e-mail"
-          />
-          {['userInput', 'email', 'username'].includes(errorObject?.key) && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
+        {user?.features.includes('create:recovery_token:username') && (
+          <Flash variant="default">
+            Você pode ajudar outra pessoa a recuperar sua senha, é só digitar o nome de usuário dela.
+          </Flash>
+        )}
 
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
-          )}
-        </FormControl>
+        {user?.features.includes('create:recovery_token:username') && (
+          <FormControl id="userInput">
+            <FormControl.Label>Digite seu e-mail ou o nome de usuário da pessoa que deseja ajudar</FormControl.Label>
+            <TextInput
+              ref={userInputRef}
+              onChange={clearErrors}
+              name="userInput"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Digite seu e-mail ou o nome de usuário de outra pessoa"
+            />
+            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            {errorObject?.type === 'string.alphanum' && (
+              <FormControl.Caption>
+                Dica: use somente letras e números, por exemplo: nomeSobrenome4{' '}
+              </FormControl.Caption>
+            )}
+          </FormControl>
+        )}
+
+        {!user?.features.includes('create:recovery_token:username') && (
+          <FormControl id="userInput">
+            <FormControl.Label>Digite seu e-mail</FormControl.Label>
+            <TextInput
+              ref={userInputRef}
+              onChange={clearErrors}
+              name="userInput"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Seu e-mail"
+            />
+            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            {errorObject?.type === 'string.alphanum' && (
+              <FormControl.Validation variant="error">"email" deve conter um endereço válido.</FormControl.Validation>
+            )}
+          </FormControl>
+        )}
+
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
           <Button

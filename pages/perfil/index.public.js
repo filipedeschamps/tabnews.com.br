@@ -79,6 +79,8 @@ function EditProfileForm() {
       const confirmChangeUsername = await confirm({
         title: `Você realmente deseja alterar seu nome de usuário?`,
         content: `Isto irá quebrar todas as URLs das suas publicações.`,
+        cancelButtonContent: 'Cancelar',
+        confirmButtonContent: 'Sim',
       });
 
       if (!confirmChangeUsername) {
@@ -219,10 +221,11 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="notifications">
+        <FormControl id="notifications" sx={{ gap: 2, alignItems: 'center' }}>
           <FormControl.Label>Receber notificações por email</FormControl.Label>
 
           <Checkbox
+            sx={{ display: 'flex' }}
             ref={notificationsRef}
             onChange={clearErrors}
             name="notifications"

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 
 import {
@@ -13,26 +13,10 @@ import {
   ActionMenu,
   ActionList,
   IconButton,
-  Tooltip,
   useConfirm,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import PublishedSince from 'pages/interface/components/PublishedSince';
-import { Link, useUser } from 'pages/interface';
-
-// Markdown Editor dependencies:
-import { Editor, Viewer } from '@bytemd/react';
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
-import breaksPlugin from '@bytemd/plugin-breaks';
-import gemojiPlugin from '@bytemd/plugin-gemoji';
-import byteMDLocale from 'bytemd/locales/pt_BR.json';
-import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
-import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
-import 'bytemd/dist/index.min.css';
-import 'highlight.js/styles/github.css';
-import 'github-markdown-css/github-markdown-light.css';
+import { Editor, Link, PublishedSince, useUser, Viewer } from 'pages/interface';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
@@ -87,17 +71,50 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 }
 
+function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
+  return (
+    <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'absolute', right: 0 }}>
+        {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
+          flickering after this menu appears */}
+        <ActionMenu>
+          <ActionMenu.Anchor>
+            <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+          </ActionMenu.Anchor>
+
+          <ActionMenu.Overlay>
+            <ActionList>
+              <ActionList.Item onClick={() => onComponentModeChange('edit')}>
+                <ActionList.LeadingVisual>
+                  <PencilIcon />
+                </ActionList.LeadingVisual>
+                Editar
+              </ActionList.Item>
+              <ActionList.Item variant="danger" onClick={onDelete}>
+                <ActionList.LeadingVisual>
+                  <TrashIcon />
+                </ActionList.LeadingVisual>
+                Apagar
+              </ActionList.Item>
+            </ActionList>
+          </ActionMenu.Overlay>
+        </ActionMenu>
+      </Box>
+    </Box>
+  );
+}
+
 function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
 
-  const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
-
   const handleClickDelete = async () => {
     const confirmDelete = await confirm({
       title: 'Você tem certeza?',
       content: 'Deseja realmente apagar essa publicação?',
+      cancelButtonContent: 'Cancelar',
+      confirmButtonContent: 'Sim',
     });
 
     if (!confirmDelete) return;
@@ -134,42 +151,6 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     }
   };
 
-  function ViewModeOptionsMenu() {
-    return (
-      <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0 }}>
-          {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
-            flickering after this menu appears */}
-          <ActionMenu>
-            <ActionMenu.Anchor>
-              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
-            </ActionMenu.Anchor>
-
-            <ActionMenu.Overlay>
-              <ActionList>
-                <ActionList.Item
-                  onClick={() => {
-                    setComponentMode('edit');
-                  }}>
-                  <ActionList.LeadingVisual>
-                    <PencilIcon />
-                  </ActionList.LeadingVisual>
-                  Editar
-                </ActionList.Item>
-                <ActionList.Item variant="danger" onClick={handleClickDelete}>
-                  <ActionList.LeadingVisual>
-                    <TrashIcon />
-                  </ActionList.LeadingVisual>
-                  Apagar
-                </ActionList.Item>
-              </ActionList>
-            </ActionMenu.Overlay>
-          </ActionMenu>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -200,19 +181,13 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', height: '22px' }}>
-              <Tooltip
-                sx={{ position: 'absolute', ml: 1, mt: '1px' }}
-                aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
-                  dateStyle: 'full',
-                  timeStyle: 'short',
-                })}>
-                <PublishedSince date={contentObject.published_at} />
-              </Tooltip>
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+              <PublishedSince direction="n" date={contentObject.published_at} />
             </Link>
           </Box>
-          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
-            ViewModeOptionsMenu()}
+          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
+            <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
+          )}
         </Box>
 
         {!contentObject?.parent_id && contentObject?.title && (
@@ -222,7 +197,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
         )}
       </Box>
       <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} plugins={bytemdPluginList} />
+        <Viewer value={contentObject.body} />
       </Box>
       {contentObject.source_url && (
         <Box>
@@ -246,16 +221,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
   });
-
-  const editorRef = useRef();
-
-  const bytemdPluginList = [
-    gfmPlugin({ locale: gfmLocale }),
-    highlightSsrPlugin(),
-    mermaidPlugin({ locale: mermaidLocale }),
-    breaksPlugin(),
-    gemojiPlugin(),
-  ];
 
   const confirm = useConfirm();
 
@@ -396,6 +361,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         ? await confirm({
             title: 'Tem certeza que deseja sair da edição?',
             content: 'Os dados não salvos serão perdidos.',
+            cancelButtonContent: 'Cancelar',
+            confirmButtonContent: 'Sim',
           })
         : true;
 
@@ -416,18 +383,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
   const onKeyDown = useCallback(
     (event) => {
+      if (isPosting) return;
       if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
         handleSubmit(event);
+      } else if (event.key === 'Escape') {
+        handleCancel();
       }
     },
-    [handleSubmit]
+    [handleCancel, handleSubmit, isPosting]
   );
-
-  useEffect(() => {
-    const editorElement = editorRef.current;
-    editorElement?.addEventListener('keydown', onKeyDown);
-    return () => editorElement?.removeEventListener('keydown', onKeyDown);
-  }, [onKeyDown]);
 
   return (
     <Box sx={{ mb: 4, width: '100%' }}>
@@ -460,18 +424,14 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             </FormControl>
           )}
 
-          {/* <Editor> is not part of Primer, so error messages and styling need to be created manually */}
           <FormControl id="body">
             <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
-            <Box sx={{ width: '100%' }} ref={editorRef} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
-              <Editor
-                value={newData.body}
-                plugins={bytemdPluginList}
-                onChange={handleChange}
-                mode="tab"
-                locale={byteMDLocale}
-              />
-            </Box>
+            <Editor
+              isValid={errorObject?.key === 'body'}
+              value={newData.body}
+              onChange={handleChange}
+              onKeyDown={onKeyDown}
+            />
 
             {errorObject?.key === 'body' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -519,53 +479,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           </Box>
         </Box>
       </form>
-
-      <style global jsx>{`
-        .bytemd {
-          height: ${mode === 'edit' ? 'calc(100vh - 350px)' : 'calc(100vh - 600px)'};
-          min-height: 200px;
-          border-radius: 6px;
-          padding: 1px;
-          border: 1px solid #d0d7de;
-        }
-
-        .bytemd:focus-within {
-          border-color: #0969da;
-          box-shadow: inset 0 0 0 1px #0969da;
-        }
-
-        .is-invalid .bytemd {
-          border-color: #cf222e;
-        }
-
-        .is-invalid .bytemd:focus-within {
-          border-color: #cf222e;
-          box-shadow: 0 0 0 3px rgb(164 14 38 / 40%);
-        }
-
-        .bytemd .bytemd-toolbar {
-          border-top-left-radius: 6px;
-          border-top-right-radius: 6px;
-        }
-
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(1),
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(4) {
-          display: none;
-        }
-
-        .bytemd .bytemd-status {
-          display: none;
-        }
-
-        .bytemd-fullscreen.bytemd {
-          z-index: 100;
-        }
-
-        .tippy-box {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
-            'Segoe UI Emoji';
-        }
-      `}</style>
     </Box>
   );
 }

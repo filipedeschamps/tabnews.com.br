@@ -14,10 +14,8 @@ function canRequest(ruleId) {
       await rules[ruleId](request.context);
       next();
     } catch (error) {
-      const undefinedFunctionErrorCode = '42883';
-
       // Pass if database's stored procedure is not yet deployed
-      if (error.databaseErrorCode === undefinedFunctionErrorCode) {
+      if (error.databaseErrorCode === database.errorCodes.UNDEFINED_FUNCTION) {
         return next();
       }
 

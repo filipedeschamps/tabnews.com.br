@@ -4,6 +4,7 @@ import snakeize from 'snakeize';
 import logger from 'infra/logger.js';
 import controller from 'models/controller.js';
 import validator from 'models/validator.js';
+import ip from 'models/ip.js';
 import { UnauthorizedError, ForbiddenError, TooManyRequestsError } from 'errors/index.js';
 
 export default nextConnect({
@@ -30,6 +31,8 @@ function logRequest(request, response, next) {
       method: request.method,
       url: request.url,
       body: request.body,
+      clientIp: ip.extractFromRequest(request),
+      type: 'sessions',
     },
   });
 
