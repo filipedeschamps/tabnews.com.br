@@ -1,10 +1,17 @@
-import { useState } from 'react';
-import { FormControl, IconButton, TextInput, Tooltip } from '@primer/react';
+import { useEffect, useState } from 'react';
+import { FormControl, TextInput } from '@primer/react';
 import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
+
+  useEffect(() => {
+    // change tooltip direction of TextInput.Action
+    const tooltip = inputRef.current.parentElement.getElementsByClassName('tooltipped-n')[0];
+    tooltip?.classList.add('tooltipped-nw');
+    tooltip?.classList.remove('tooltipped-n');
+  }, [inputRef]);
 
   function focusAfterEnd(ref) {
     setTimeout(() => {
@@ -37,26 +44,13 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
     <FormControl id={id}>
       <FormControl.Label>{label}</FormControl.Label>
       <TextInput
-        trailingVisual={
-          <Tooltip
+        trailingAction={
+          <TextInput.Action
             aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
-            direction="nw"
-            noDelay={true}>
-            <IconButton
-              onClick={handlePasswordVisible}
-              icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
-              sx={{
-                padding: '0',
-                border: 'none',
-                color: 'fg.subtle',
-                background: 'none',
-                boxShadow: 'none',
-                ':hover:not([disabled])': {
-                  background: 'none',
-                },
-              }}
-            />
-          </Tooltip>
+            onClick={handlePasswordVisible}
+            icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
+            sx={{ color: 'fg.subtle' }}
+          />
         }
         ref={inputRef}
         onChange={clearErrors}
@@ -75,13 +69,7 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
       {capsLockWarningMessage && (
         <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
       )}
-      {errorObject?.key === 'empty' && (
-        <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-      )}
-      {errorObject?.key === 'password' && (
-        <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-      )}
-      {errorObject?.key === 'password_confirm' && (
+      {['empty', 'password', 'password_confirm'].includes(errorObject?.key) && (
         <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
       )}
     </FormControl>
