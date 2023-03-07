@@ -1,6 +1,6 @@
 import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip, Button } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon, ThreeBarsIcon } from '@primer/octicons-react';
-import { CgMenu, CgTab } from 'react-icons/cg';
+import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
 import { createRef, useState } from 'react';
@@ -24,15 +24,16 @@ export default function HeaderComponent() {
         px: [2, null, null, 3],
       }}>
       <Header.Item sx={{ display: ['flex', 'none'] }}>
-        <button
+        <Button
           variant="invisible"
           ref={anchorRef}
           aria-haspopup="true"
           aria-expanded={open}
           style={{ background: 'transparent', border: 'none' }}
+          sx={{ color: 'fg.onEmphasis' }}
           onClick={() => setOpen(!open)}>
-          <CgMenu size={32} color="#f8f9fc" />
-        </button>
+          <ThreeBarsIcon size={24} />
+        </Button>
         <ActionMenu open={open} onOpenChange={setOpen} anchorRef={anchorRef}>
           <ActionMenu.Overlay>
             <ActionList>
