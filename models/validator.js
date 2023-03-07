@@ -527,7 +527,6 @@ const schemas = {
       'owner_id',
       'username',
       'owner_username',
-      'like',
       '$or',
       'attributes',
     ]) {

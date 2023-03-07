@@ -21,23 +21,7 @@ async function findAll(values = {}, options = {}) {
   }
 
   if (options.strategy === 'relevant_global') {
-    const likeClause = buildRelevantLikeClause(values?.where?.like);
-
-    query.text = queries.rankedContent(likeClause);
-
-    if (values.count) {
-      query.values = [1, 0];
-    }
-
-    const relevantResults = await database.query(query, { transaction: options.transaction });
-
-    return relevantResults.rows;
-
-    function buildRelevantLikeClause(like) {
-      if (!like) {
-        return '';
-      }
-
+    function buildRelevantLike(like) {
       let likeClause = 'WHERE ';
 
       const keys = Object.keys(like);
@@ -52,6 +36,18 @@ async function findAll(values = {}, options = {}) {
 
       return likeClause;
     }
+
+    const likeClause = buildRelevantLike(values?.like);
+
+    query.text = queries.rankedContent(likeClause ?? '');
+
+    if (values.count) {
+      query.values = [1, 0];
+    }
+
+    const relevantResults = await database.query(query, { transaction: options.transaction });
+
+    return relevantResults.rows;
   }
 
   const selectClause = buildSelectClause(values);
@@ -80,15 +76,10 @@ async function findAll(values = {}, options = {}) {
           query.values.push(Object.values($orObject)[0]);
         });
       } else {
-        if (values.where[key] && typeof values.where[key] === 'object') {
-          query.values.push(Object.values(values.where[key])[0]);
-        } else {
-          query.values.push(values.where[key]);
-        }
+        query.values.push(values.where[key]);
       }
     });
   }
-
   const results = await database.query(query, { transaction: options.transaction });
 
   return results.rows;
@@ -111,6 +102,7 @@ async function findAll(values = {}, options = {}) {
       $or: 'optional',
       limit: 'optional',
       attributes: 'optional',
+      like: 'optional',
     });
 
     return cleanValues;
@@ -218,13 +210,6 @@ async function findAll(values = {}, options = {}) {
             .join(' OR ');
 
           return `(${$orQuery})`;
-        }
-
-        if (columnName === 'like') {
-          globalIndex += 1;
-
-          const key = Object.keys(columnValue)[0];
-          return `contents.${key} ILIKE $${globalIndex}`;
         }
 
         globalIndex += 1;
