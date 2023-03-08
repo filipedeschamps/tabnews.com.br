@@ -19,6 +19,7 @@ const availableFeatures = new Set([
 
   // RECOVERY_TOKEN
   'read:recovery_token',
+  'create:recovery_token:username',
 
   // EMAIL_CONFIRMATION_TOKEN
   'read:email_confirmation_token',
