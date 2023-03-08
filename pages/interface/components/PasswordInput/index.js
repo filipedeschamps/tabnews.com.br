@@ -49,9 +49,10 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
             aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
             onClick={handlePasswordVisible}
             icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
-            sx={{ color: 'fg.subtle', padding: '0' }}
+            sx={{ color: 'fg.subtle' }}
           />
         }
+        sx={{ minHeight: '46px' }}
         ref={inputRef}
         onChange={clearErrors}
         onKeyDown={detectCapsLock}
