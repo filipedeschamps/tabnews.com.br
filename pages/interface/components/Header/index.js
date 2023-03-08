@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { pathname } = useRouter();
-  const [showHeader, setShowHeader] = useState(0);
+  const [headerTopPos, setheaderTopPos] = useState(0);
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -20,13 +20,12 @@ export default function HeaderComponent() {
     var previousScroll = 0;
 
     const handleScroll = () => {
-      setShowHeader(window.scrollY < previousScroll ? 0 : -headerBoundaries.height);
+      setheaderTopPos(window.scrollY < previousScroll ? 0 : -headerBoundaries.height);
       previousScroll = window.scrollY;
-    }
+    };
 
     window.addEventListener('scroll', handleScroll);
-    
-    // Remove o listener quando o componente for desmontado
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -36,7 +35,7 @@ export default function HeaderComponent() {
       sx={{
         px: [2, null, null, 3],
         position: 'sticky',
-        top: `${showHeader}px`,
+        top: `${headerTopPos}px`,
         transition: 'top 0.3s ease-in-out',
       }}>
       <Header.Item>
