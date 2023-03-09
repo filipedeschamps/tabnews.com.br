@@ -779,6 +779,21 @@ const schemas = {
         }),
     });
   },
+
+  query: function () {
+    return Joi.object({
+      query: Joi.string()
+        .trim()
+        .invalid(null)
+        .when('$required.query', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"query" é um campo obrigatório.`,
+          'string.empty': `"query" não pode estar em branco.`,
+          'string.base': `"query" deve ser do tipo String.`,
+          'any.invalid': `"query" possui o valor inválido "null".`,
+        }),
+    });
+  },
 };
 
 const withoutMarkdown = (value, helpers) => {
