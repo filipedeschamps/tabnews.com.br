@@ -48,6 +48,8 @@ async function findAll(values = {}, options = {}) {
     });
   }
 
+  console.log(query);
+
   const results = await database.query(query, { transaction: options.transaction });
 
   return results;
@@ -59,9 +61,28 @@ async function findAll(values = {}, options = {}) {
 
     let likeClause = '';
 
+    if (like.$or) {
+      console.log(like.$or);
+      const keys = Object.keys(like.$or);
+
+      keys.forEach((key, index) => {
+        likeClause += `contents.${Object.keys(like.$or[key])[0]} ILIKE $${query.values.length + 1}`;
+
+        query.values.push(`%${Object.values(like.$or[key])[0]}%`);
+
+        if (index < keys.length - 1) {
+          likeClause += ' OR ';
+        }
+      });
+    }
+
     const keys = Object.keys(like);
 
     keys.forEach((key, index) => {
+      if (key === '$or') {
+        return;
+      }
+
       likeClause += `contents.${key} ILIKE $${query.values.length + 1}`;
 
       query.values.push(`%${like[key]}%`);
@@ -220,8 +241,7 @@ function parseUserQuery(text) {
       query.body = part.slice(5);
     } else {
       // both
-      query.title = part;
-      query.body = part;
+      query.$or = [{ title: part }, { body: part }];
     }
   }
 
