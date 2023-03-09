@@ -48,8 +48,6 @@ async function findAll(values = {}, options = {}) {
     });
   }
 
-  console.log(query);
-
   const results = await database.query(query, { transaction: options.transaction });
 
   return results;
@@ -62,7 +60,6 @@ async function findAll(values = {}, options = {}) {
     let likeClause = '';
 
     if (like.$or) {
-      console.log(like.$or);
       const keys = Object.keys(like.$or);
 
       keys.forEach((key, index) => {
