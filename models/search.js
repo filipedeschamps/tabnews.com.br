@@ -205,6 +205,26 @@ async function findAll(values = {}, options = {}) {
   }
 }
 
+function parseUserQuery(text) {
+  // example: title:foo body:bar
+  const parts = text.trim().split(/\s+/);
+  let query = {};
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.startsWith('title:')) {
+      query.title = part.slice(6);
+    } else if (part.startsWith('body:')) {
+      query.body = part.slice(5);
+    } else {
+      // query.title = part;
+    }
+  }
+
+  return query;
+}
+
 export default Object.freeze({
   findAll,
+  parseUserQuery,
 });

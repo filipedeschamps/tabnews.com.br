@@ -33,9 +33,7 @@ async function getHandler(request, response) {
 
   const results = await search.findAll({
     where: {
-      search: {
-        title: request.query.query,
-      },
+      search: search.parseUserQuery(request.query.query),
     },
     page: request.query.page,
     per_page: request.query.per_page,
