@@ -213,11 +213,15 @@ function parseUserQuery(text) {
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
     if (part.startsWith('title:')) {
+      // only title
       query.title = part.slice(6);
     } else if (part.startsWith('body:')) {
+      // only body
       query.body = part.slice(5);
     } else {
-      // query.title = part;
+      // both
+      query.title = part;
+      query.body = part;
     }
   }
 
