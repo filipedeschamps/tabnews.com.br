@@ -70,8 +70,8 @@
   "scripts": {
     "dev": "kill-port 3000 && npm run services:up && npm run migration:run && npm run migration:seed && npm run next && npm run services:stop",
     "next": "next dev",
-    "services:up": "docker-compose -f infra/docker-compose.development.yml up -d",
-    "services:stop": "docker-compose -f infra/docker-compose.development.yml stop",
+    "services:up": "docker-compose -f infra/docker-compose.development.yml up -d || docker compose -f infra/docker-compose.development.yml up -d",
+    "services:stop": "docker-compose -f infra/docker-compose.development.yml stop || docker compose -f infra/docker-compose.development.yml stop",
     "build": "cross-env BUILD_TIME=true next build",
     "build:local": "kill-port 3000 && npm run services:up && npm run migration:run && npm run migration:seed && next build && npm run services:stop",
     "start": "next start",
