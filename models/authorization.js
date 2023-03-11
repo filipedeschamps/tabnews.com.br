@@ -53,7 +53,7 @@ function can(user, feature, resource) {
   if (feature === 'update:user' && resource) {
     authorized = false;
 
-    if (user.id === resource.id) {
+    if (user.id === resource.id && user.features.includes('update:user')) {
       authorized = true;
     }
   }
@@ -61,7 +61,7 @@ function can(user, feature, resource) {
   if (feature === 'update:content' && resource) {
     authorized = false;
 
-    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
+    if (user.id === resource.owner_id || user.features.includes('update:content:others')) {
       authorized = true;
     }
   }
