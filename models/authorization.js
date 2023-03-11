@@ -43,18 +43,27 @@ function can(user, feature, resource) {
   validateUser(user);
   validateFeature(feature);
 
-  var authorized = false;
-  if (user.features.includes(feature)) authorized = true;
+  let authorized = false;
 
-  if (Boolean(resource)) {
-    if (feature === 'update:user' || feature === 'update:content') authorized = false;
-    if (
-      !authorized &&
-      ((user.id === resource.id && user.features.includes('update:user')) ||
-        user.id === resource.owner_id ||
-        user.features.includes('update:content:others'))
-    )
+  if (user.features.includes(feature)) {
+    authorized = true;
+  }
+
+  // TODO: Double check if this is right and covered by tests
+  if (feature === 'update:user' && resource) {
+    authorized = false;
+
+    if (user.id === resource.id) {
       authorized = true;
+    }
+  }
+
+  if (feature === 'update:content' && resource) {
+    authorized = false;
+
+    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
+      authorized = true;
+    }
   }
 
   return authorized;
