@@ -73,6 +73,11 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
       {['empty', 'password', 'password_confirm'].includes(errorObject?.key) && (
         <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
       )}
+      <style global jsx>{`
+        ::-ms-reveal {
+          display: none;
+        }
+      `}</style>
     </FormControl>
   );
 }
