@@ -92,6 +92,11 @@ resource "aws_db_parameter_group" "parameter_group" {
     value = "0"
   }
 
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "2000"
+  }
+
   tags = {
     Name        = "${var.environment}-parameter-group"
     Environment = var.environment
