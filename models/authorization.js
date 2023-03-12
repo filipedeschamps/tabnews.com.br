@@ -66,6 +66,14 @@ function can(user, feature, resource) {
     }
   }
 
+  if (feature === 'create:recovery_token:username' && resource) {
+    authorized = false;
+
+    if (resource.username && user.features.includes(feature)) {
+      authorized = true;
+    }
+  }
+
   return authorized;
 }
 
@@ -142,6 +150,28 @@ function filterInput(user, feature, input) {
       status: input.status,
       source_url: input.source_url,
     };
+  }
+
+  if (feature === 'create:recovery_token:username') {
+    if (input.username && !can(user, feature, input)) {
+      throw new ForbiddenError({
+        message: `Usuário não pode executar esta operação.`,
+        action: `Verifique se este usuário possui a feature "${feature}".`,
+        errorLocationCode: 'MODEL:AUTHORIZATION:FILTER_INPUT:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
+      });
+    }
+
+    if (input.username) {
+      filteredInputValues = {
+        username: input.username,
+      };
+    }
+
+    if (input.email) {
+      filteredInputValues = {
+        email: input.email,
+      };
+    }
   }
 
   // Force the clean up of "undefined" values

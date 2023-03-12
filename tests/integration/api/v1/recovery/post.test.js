@@ -30,12 +30,12 @@ describe('POST /api/v1/recovery', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
-        message: 'Você não possui permissão para criar um token de recuperação com username.',
-        action: 'Verifique se este usuário tem a feature "create:recovery_token:username".',
+        message: 'Usuário não pode executar esta operação.',
+        action: 'Verifique se este usuário possui a feature "create:recovery_token:username".',
         status_code: 403,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:RECOVERY:POST_HANDLER:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
+        error_location_code: 'MODEL:AUTHORIZATION:FILTER_INPUT:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
       });
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
