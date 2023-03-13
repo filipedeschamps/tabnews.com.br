@@ -4,6 +4,7 @@
     "@bytemd/plugin-gemoji": "1.20.2",
     "@bytemd/plugin-gfm": "1.20.2",
     "@bytemd/plugin-highlight-ssr": "1.20.2",
+    "@bytemd/plugin-math": "1.20.2",
     "@bytemd/plugin-mermaid": "1.20.2",
     "@bytemd/react": "1.20.2",
     "@primer/octicons-react": "18.2.0",
