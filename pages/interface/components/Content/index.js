@@ -182,7 +182,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
               sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
-              <PublishedSince date={contentObject.published_at} />
+              <PublishedSince direction="n" date={contentObject.published_at} />
             </Link>
           </Box>
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
