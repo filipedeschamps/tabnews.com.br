@@ -111,6 +111,7 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
+            sx={{ minHeight: '46px' }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -132,6 +133,7 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
+            sx={{ minHeight: '46px' }}
           />
           {errorObject?.key === 'email' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

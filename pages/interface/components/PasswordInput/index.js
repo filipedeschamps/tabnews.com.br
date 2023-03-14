@@ -44,7 +44,7 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
     <FormControl id={id}>
       <FormControl.Label>{label}</FormControl.Label>
       <TextInput
-        trailingAction={
+        trailingVisual={
           <TextInput.Action
             aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
             onClick={handlePasswordVisible}
@@ -52,6 +52,7 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
             sx={{ color: 'fg.subtle' }}
           />
         }
+        sx={{ minHeight: '46px' }}
         ref={inputRef}
         onChange={clearErrors}
         onKeyDown={detectCapsLock}
@@ -72,6 +73,11 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
       {['empty', 'password', 'password_confirm'].includes(errorObject?.key) && (
         <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
       )}
+      <style global jsx>{`
+        ::-ms-reveal {
+          display: none;
+        }
+      `}</style>
     </FormControl>
   );
 }

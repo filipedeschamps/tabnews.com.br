@@ -25,9 +25,9 @@ function LoginForm() {
   useEffect(() => {
     if (!user || !router) return;
     if (router.query?.redirect?.startsWith('/')) {
-      router.push(router.query.redirect);
+      router.replace(router.query.redirect);
     } else {
-      router.push('/publicar');
+      router.replace('/publicar');
     }
   }, [user, router]);
 
@@ -104,6 +104,7 @@ function LoginForm() {
               spellCheck={false}
               block={true}
               aria-label="Seu email"
+              sx={{ minHeight: '46px' }}
             />
             {errorObject?.key === 'email' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
