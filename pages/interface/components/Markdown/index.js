@@ -5,20 +5,27 @@ import { useEffect, useRef } from 'react';
 // ByteMD dependencies:
 import gfmPlugin from '@bytemd/plugin-gfm';
 import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
+import mathPlugin from '@bytemd/plugin-math';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
 import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
+import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import 'bytemd/dist/index.min.css';
 import 'highlight.js/styles/github.css';
 import 'github-markdown-css/github-markdown-light.css';
+import 'katex/dist/katex.css';
 
 const bytemdPluginList = [
   gfmPlugin({ locale: gfmLocale }),
   highlightSsrPlugin(),
   mermaidPlugin({ locale: mermaidLocale }),
+  mathPlugin({
+    locale: mathLocale,
+    katexOptions: { output: 'html' },
+  }),
   breaksPlugin(),
   gemojiPlugin(),
 ];
@@ -95,7 +102,7 @@ function sanitize(defaultSchema) {
   const schema = { ...defaultSchema };
   schema.attributes['*'] = schema.attributes['*'].filter((attr) => attr != 'className');
 
-  schema.attributes['*'].push(['className', /^hljs|^language-|^bytemd-mermaid$/]);
+  schema.attributes['*'].push(['className', /^hljs|^language-|^bytemd-mermaid$|^math/]);
 
   return schema;
 }
