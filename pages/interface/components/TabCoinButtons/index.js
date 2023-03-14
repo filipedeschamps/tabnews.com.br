@@ -87,7 +87,7 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
-      <Tooltip aria-label="Creditar TabCoin" direction="ne" noDelay={true}>
+      <Tooltip aria-label="Achei relevante" direction="ne" noDelay={true}>
         <Box>
           <IconButton
             variant="invisible"
@@ -113,7 +113,7 @@ export default function TabCoinButtons({ content }) {
           {contentObject.tabcoins}
         </Text>
       </Box>
-      <Tooltip aria-label="Debitar TabCoin" direction="se" noDelay={true}>
+      <Tooltip aria-label="Não achei relevante" direction="se" noDelay={true}>
         <Box>
           <IconButton
             variant="invisible"
