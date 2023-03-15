@@ -25,9 +25,9 @@ function LoginForm() {
   useEffect(() => {
     if (!user || !router) return;
     if (router.query?.redirect?.startsWith('/')) {
-      router.push(router.query.redirect);
+      router.replace(router.query.redirect);
     } else {
-      router.push('/publicar');
+      router.replace('/publicar');
     }
   }, [user, router]);
 

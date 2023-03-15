@@ -13,5 +13,6 @@ export { default as GoToTopButton } from './components/GoToTopButton/index.js';
 export { default as Viewer, Editor } from './components/Markdown/index.js';
 export { default as PasswordInput } from './components/PasswordInput/index.js';
 
+export { default as useCollapse } from './hooks/useCollapse/index.js';
 export { default as useUser } from './hooks/useUser/index.js';
 export { default as useMediaQuery } from './hooks/useMediaQuery/index.js';

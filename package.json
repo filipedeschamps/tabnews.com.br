@@ -4,6 +4,7 @@
     "@bytemd/plugin-gemoji": "1.20.2",
     "@bytemd/plugin-gfm": "1.20.2",
     "@bytemd/plugin-highlight-ssr": "1.20.2",
+    "@bytemd/plugin-math": "1.20.2",
     "@bytemd/plugin-mermaid": "1.20.2",
     "@bytemd/react": "1.20.2",
     "@primer/octicons-react": "18.2.0",
@@ -42,7 +43,6 @@
     "snakeize": "0.1.0",
     "styled-components": "5.3.8",
     "swr": "2.1.0",
-    "unist-builder": "3.0.1",
     "uuid": "9.0.0"
   },
   "devDependencies": {
