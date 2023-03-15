@@ -1,14 +1,11 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip, Button } from '@primer/react';
+import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon, ThreeBarsIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
-import { createRef, useState } from 'react';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
-  const [open, setOpen] = useState(false);
-  const anchorRef = createRef();
 
   const { pathname } = useRouter();
 
@@ -24,31 +21,21 @@ export default function HeaderComponent() {
         px: [2, null, null, 3],
       }}>
       <Header.Item sx={{ display: ['flex', 'none'] }}>
-        <Button
-          variant="invisible"
-          ref={anchorRef}
-          aria-haspopup="true"
-          aria-expanded={open}
-          style={{ background: 'transparent', border: 'none' }}
-          sx={{ color: 'fg.onEmphasis' }}
-          onClick={() => setOpen(!open)}>
-          <ThreeBarsIcon size={24} />
-        </Button>
-        <ActionMenu open={open} onOpenChange={setOpen} anchorRef={anchorRef}>
+        <ActionMenu>
+          <ActionMenu.Anchor>
+            <IconButton icon={ThreeBarsIcon} size="small" aria-label="Open column options" />
+          </ActionMenu.Anchor>
           <ActionMenu.Overlay>
             <ActionList>
-              <ActionList.Item sx={{ fontSize: 16 }}>TabNews</ActionList.Item>
-              <ActionList.Divider />
-              <ActionList.Group title="Navegar">
-                <ActionList.Item as={Link} href="/">
-                  Relevantes
-                </ActionList.Item>
-                <ActionList.Item as={Link} href="/recentes">
-                  Recentes
-                </ActionList.Item>
-              </ActionList.Group>
+              <ActionList.Item as={Link} href="/">
+                Relevantes
+              </ActionList.Item>
+              <ActionList.Item as={Link} href="/recentes">
+                Recentes
+              </ActionList.Item>
               {user && (
-                <ActionList.Group title="Usuário">
+                <>
+                  <ActionList.Divider />
                   <ActionList.LinkItem as={Link} href="/publicar">
                     Publicar novo conteúdo
                   </ActionList.LinkItem>
@@ -59,11 +46,11 @@ export default function HeaderComponent() {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Divider />
-                </ActionList.Group>
+                  <ActionList.Item variant="danger" onSelect={logout}>
+                    Deslogar
+                  </ActionList.Item>
+                </>
               )}
-              <ActionList.Item variant="danger" onSelect={logout}>
-                Deslogar
-              </ActionList.Item>
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
