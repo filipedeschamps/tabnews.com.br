@@ -47,10 +47,29 @@ export default function HeaderComponent() {
                   Recentes
                 </ActionList.Item>
               </ActionList.Group>
+              {user && (
+                <ActionList.Group title="Usuário">
+                  <ActionList.LinkItem as={Link} href="/publicar">
+                    Publicar novo conteúdo
+                  </ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
+                    Meus conteúdos
+                  </ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href="/perfil">
+                    Editar perfil
+                  </ActionList.LinkItem>
+                  <ActionList.Divider />
+                </ActionList.Group>
+              )}
+              <ActionList.Item variant="danger" onSelect={logout}>
+                Deslogar
+              </ActionList.Item>
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
       </Header.Item>
+
+      <Header.Item sx={{ display: ['block', 'none'] }} full />
 
       <Header.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
@@ -112,7 +131,7 @@ export default function HeaderComponent() {
             </Tooltip>
           </Header.Item>
 
-          <Header.Item sx={{ mr: 0 }}>
+          <Header.Item sx={{ mr: 0, display: ['none', 'flex'] }}>
             <ActionMenu>
               <ActionMenu.Anchor>
                 <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
