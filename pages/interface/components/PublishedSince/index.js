@@ -4,17 +4,25 @@ import { Tooltip } from '@primer/react';
 import { useEffect, useState } from 'react';
 
 function formatPublishedSince(date) {
-  const publishedSince = formatDistanceToNowStrict(new Date(date), {
-    locale: ptBR,
-  });
+  try {
+    const publishedSince = formatDistanceToNowStrict(new Date(date), {
+      locale: ptBR,
+    });
 
-  return `${publishedSince} atrás`;
+    return `${publishedSince} atrás`;
+  } catch (e) {
+    return '';
+  }
 }
 
 function formatTooltipLabel(date, gmt = false) {
   const displayFormat = gmt ? "EEEE, d 'de' MMMM 'de' yyyy 'às' HH:mm z" : "EEEE, d 'de' MMMM 'de' yyyy 'às' HH:mm";
 
-  return format(new Date(date), displayFormat, { locale: ptBR });
+  try {
+    return format(new Date(date), displayFormat, { locale: ptBR });
+  } catch (e) {
+    return '';
+  }
 }
 
 export default function PublishedSince({ date, ...props }) {
