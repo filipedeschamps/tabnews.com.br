@@ -173,6 +173,8 @@ async function patchHandler(request, response) {
 
     const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:content', updatedContent);
 
+    await content.returnTabcoinsWhenDeleted(secureOutputValues.id);
+
     return response.status(200).json(secureOutputValues);
   } catch (error) {
     await transaction.query('ROLLBACK');

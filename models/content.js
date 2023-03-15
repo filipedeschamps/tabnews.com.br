@@ -1066,6 +1066,38 @@ async function findRootContent(values, options = {}) {
   }
 }
 
+async function returnTabcoinsWhenDeleted(content_id) {
+  const query = {
+    text: `
+    INSERT INTO balance_operations (recipient_id, balance_type, amount, originator_id, originator_type) 
+    SELECT 
+      DISTINCT base.originator_id as recipient_id,  
+      'user:tabcoin',        
+      ABS((SELECT 
+        COALESCE(sum(o.amount), 0) 
+        FROM balance_operations as o 
+        WHERE o.balance_type = 'content:tabcoin' 
+        AND o.amount < 0 
+        AND o.originator_id=base.originator_id)) as amount,
+      base.recipient_id as originator_id,
+      'content'
+      FROM balance_operations as base 
+      WHERE base.balance_type = 'content:tabcoin'
+      AND base.amount < 0 
+      AND base.recipient_id = $1 
+      AND (
+          SELECT status
+          FROM contents
+          WHERE id=base.recipient_id
+        ) = 'deleted'
+    ;`,
+    values: [content_id],
+  };
+
+  const results = await database.query(query);
+  return;
+}
+
 export default Object.freeze({
   findAll,
   findOne,
@@ -1074,4 +1106,5 @@ export default Object.freeze({
   findRootContent,
   create,
   update,
+  returnTabcoinsWhenDeleted,
 });
