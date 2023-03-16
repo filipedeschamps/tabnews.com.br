@@ -18,7 +18,7 @@ import {
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import { Editor, Link, PublishedSince, useUser, Viewer } from 'pages/interface';
 
-export default function Content({ content, mode = 'view', viewFrame = false }) {
+export default function Content({ content, mode = 'view', viewFrame = false, onModeChange = () => {} }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -26,6 +26,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   useEffect(() => {
     setComponentMode(mode);
   }, [mode]);
+
+  useEffect(() => {
+    onModeChange(componentMode);
+  }, [componentMode, onModeChange]);
 
   useEffect(() => {
     setContentObject((contentObject) => {
@@ -513,10 +517,11 @@ function DeletedMode({ viewFrame }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 2,
+        height: 'calc(90vh - 64px)',
         width: '100%',
         borderWidth: viewFrame ? 1 : 0,
-        p: viewFrame ? 4 : 0,
         borderRadius: '6px',
         borderColor: 'border.default',
         borderStyle: 'solid',
@@ -527,7 +532,13 @@ function DeletedMode({ viewFrame }) {
           flexDirection: 'column',
           alignItems: 'center',
         }}>
-        Conteúdo apagado com sucesso.
+        <Box sx={{ color: 'danger.fg' }}>
+          <TrashIcon size={40} style={{ marginBottom: '1rem' }} />
+        </Box>
+
+        <Heading sx={{ fontSize: 3 }}>Conteúdo apagado com sucesso.</Heading>
+
+        <Link href="/">Retornar à tela inicial</Link>
       </Box>
     </Box>
   );

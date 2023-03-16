@@ -39,6 +39,7 @@ export default function Post({
 
   const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [contentMode, setContentMode] = useState('view');
 
   useEffect(() => {
     setChildrenToShow(Math.ceil(window.innerHeight / 10));
@@ -62,53 +63,62 @@ export default function Post({
             width: '100%',
             display: 'flex',
           }}>
-          <Box
-            sx={{
-              pr: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}>
-            <TabCoinButtons content={contentFound} />
+          {contentMode !== 'deleted' && (
             <Box
               sx={{
-                borderWidth: 0,
-                borderRightWidth: 1,
-                borderColor: 'border.muted',
-                borderStyle: 'dotted',
-                width: '50%',
-                height: '100%',
-              }}
-            />
-          </Box>
+                pr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}>
+              <TabCoinButtons content={contentFound} />
+              <Box
+                sx={{
+                  borderWidth: 0,
+                  borderRightWidth: 1,
+                  borderColor: 'border.muted',
+                  borderStyle: 'dotted',
+                  width: '50%',
+                  height: '100%',
+                }}
+              />
+            </Box>
+          )}
 
           <Box sx={{ width: '100%', overflow: 'auto' }}>
-            <Content key={contentFound.id} content={contentFound} mode="view" />
+            <Content
+              key={contentFound.id}
+              content={contentFound}
+              mode={contentMode}
+              onModeChange={(mode) => setContentMode(mode)}
+            />
           </Box>
         </Box>
 
-        <Box sx={{ width: '100%' }}>
-          <Box
-            sx={{
-              borderRadius: '6px',
-              borderWidth: 1,
-              borderColor: 'border.default',
-              borderStyle: 'solid',
-              mt: 4,
-              mb: 4,
-              p: 4,
-              wordWrap: 'break-word',
-            }}>
-            <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
-          </Box>
+        {contentMode !== 'deleted' && (
+          <Box sx={{ width: '100%' }}>
+            <Box
+              sx={{
+                borderRadius: '6px',
+                borderWidth: 1,
+                borderColor: 'border.default',
+                borderStyle: 'solid',
+                mt: 4,
+                mb: 4,
+                p: 4,
+                wordWrap: 'break-word',
+              }}>
+              <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
+            </Box>
 
-          <RenderChildrenTree
-            key={contentFound.id}
-            childrenList={children}
-            renderIntent={childrenToShow}
-            renderIncrement={Math.ceil(childrenToShow / 2)}
-          />
-        </Box>
+            <RenderChildrenTree
+              key={contentFound.id}
+              childrenList={children}
+              renderIntent={childrenToShow}
+              renderIncrement={Math.ceil(childrenToShow / 2)}
+            />
+          </Box>
+        )}
       </DefaultLayout>
     </>
   );
