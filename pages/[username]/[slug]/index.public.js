@@ -37,11 +37,11 @@ export default function Post({
     }
   );
 
-  const [childrenToShow, setChildrenToShow] = useState(21);
+  const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    setChildrenToShow(Math.ceil(window.innerHeight / 50));
+    setChildrenToShow(Math.ceil(window.innerHeight / 10));
 
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
