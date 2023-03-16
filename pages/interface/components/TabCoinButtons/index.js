@@ -79,6 +79,8 @@ export default function TabCoinButtons({ content }) {
     }
   }
 
+  const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit;
+
   return (
     <Box
       sx={{
@@ -87,20 +89,16 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
-      <Tooltip aria-label="Achei relevante" direction="ne" noDelay={true}>
-        <Box>
-          <IconButton
-            variant="invisible"
-            aria-label="Creditar TabCoin"
-            icon={ChevronUpIcon}
-            size="small"
-            sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-            onClick={() => {
-              transactTabCoin('credit');
-            }}
-            disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
-          />
-        </Box>
+      <Tooltip aria-label="Achei relevante" direction="ne">
+        <IconButton
+          variant="invisible"
+          aria-label="Creditar TabCoin"
+          icon={ChevronUpIcon}
+          size="small"
+          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+          onClick={() => transactTabCoin('credit')}
+          disabled={isInAction}
+        />
       </Tooltip>
       <Box>
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px', width: '1px' }}></div>
@@ -113,20 +111,16 @@ export default function TabCoinButtons({ content }) {
           {contentObject.tabcoins}
         </Text>
       </Box>
-      <Tooltip aria-label="Não achei relevante" direction="se" noDelay={true}>
-        <Box>
-          <IconButton
-            variant="invisible"
-            aria-label="Debitar TabCoin"
-            icon={ChevronDownIcon}
-            size="small"
-            sx={{ color: 'fg.subtle', lineHeight: '18px' }}
-            onClick={() => {
-              transactTabCoin('debit');
-            }}
-            disabled={isPosting || isAnimatingCredit || isAnimatingDebit}
-          />
-        </Box>
+      <Tooltip aria-label="Não achei relevante" direction="ne">
+        <IconButton
+          variant="invisible"
+          aria-label="Debitar TabCoin"
+          icon={ChevronDownIcon}
+          size="small"
+          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+          onClick={() => transactTabCoin('debit')}
+          disabled={isInAction}
+        />
       </Tooltip>
     </Box>
   );

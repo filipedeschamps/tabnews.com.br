@@ -4,6 +4,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
+import { ForbiddenError } from 'errors';
 
 export default nextConnect({
   attachParams: true,
@@ -30,6 +31,14 @@ function postValidationHandler(request, response, next) {
 async function postHandler(request, response) {
   const userTryingToRecover = request.context.user;
   const validatedInputValues = request.body;
+
+  if (validatedInputValues.username && !authorization.can(userTryingToRecover, 'create:recovery_token:username')) {
+    throw new ForbiddenError({
+      message: `Você não possui permissão para criar um token de recuperação com username.`,
+      action: `Verifique se este usuário tem a feature "create:recovery_token:username".`,
+      errorLocationCode: 'CONTROLLER:RECOVERY:POST_HANDLER:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
+    });
+  }
 
   const tokenObject = await recovery.createAndSendRecoveryEmail(validatedInputValues);
 

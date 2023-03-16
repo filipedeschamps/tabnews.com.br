@@ -1,14 +1,14 @@
 import useSWR from 'swr';
 import { useEffect, useState } from 'react';
-import { Link, DefaultLayout, Content, TabCoinButtons, Confetti } from 'pages/interface/index.js';
+import { Link, DefaultLayout, Content, TabCoinButtons, Confetti, useCollapse } from 'pages/interface/index.js';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import validator from 'models/validator.js';
 import authorization from 'models/authorization.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
-import { Box, Tooltip } from '@primer/react';
-import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
+import { Box, Button, Tooltip } from '@primer/react';
+import { CommentIcon, CommentDiscussionIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
 
 export default function Post({
@@ -37,9 +37,12 @@ export default function Post({
     }
   );
 
+  const [childrenToShow, setChildrenToShow] = useState(21);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
+    setChildrenToShow(Math.ceil(window.innerHeight / 50));
+
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
@@ -61,7 +64,7 @@ export default function Post({
           }}>
           <Box
             sx={{
-              pr: [0, null, null, 2],
+              pr: 2,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -99,7 +102,12 @@ export default function Post({
             <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
           </Box>
 
-          <RenderChildrenTree key={contentFound.id} childrenList={children} level={0} />
+          <RenderChildrenTree
+            key={contentFound.id}
+            childrenList={children}
+            renderIntent={childrenToShow}
+            renderIncrement={Math.ceil(childrenToShow / 2)}
+          />
         </Box>
       </DefaultLayout>
     </>
@@ -190,9 +198,15 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, level }) {
-  return childrenList.map((child) => {
-    return (
+function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
+  const { filteredTree, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
+
+  return filteredTree.map((child) => {
+    const { children = [], groupedCount, id, renderIntent, renderShowMore } = child;
+    const labelShowMore = Math.min(renderIncrement, groupedCount);
+    const plural = labelShowMore > 1 ? 's' : '';
+
+    return !renderIntent && !renderShowMore ? null : (
       <Box
         sx={{
           width: '100%',
@@ -200,36 +214,89 @@ function RenderChildrenTree({ childrenList, level }) {
           display: 'flex',
           mt: 4,
         }}
-        key={child.id}>
-        <Box
-          sx={{
-            pr: [0, null, null, 2],
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-          <TabCoinButtons content={child} />
-          <Box
-            sx={{
-              borderWidth: 0,
-              borderRightWidth: 1,
-              borderColor: 'border.muted',
-              borderStyle: 'dotted',
-              width: '50%',
-              height: '100%',
-            }}
-          />
-        </Box>
+        key={id}>
+        {renderIntent ? (
+          <>
+            <Box
+              sx={{
+                mr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}>
+              <TabCoinButtons content={child} />
+              <Tooltip
+                direction="ne"
+                aria-label={`Ocultar resposta${plural}`}
+                role="button"
+                onClick={() => handleCollapse(id)}
+                sx={{
+                  cursor: 'pointer',
+                  width: '80%',
+                  height: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mt: 1,
+                  mx: '10%',
+                  '&:hover': {
+                    div: {
+                      display: 'block',
+                      borderLeftWidth: 1,
+                      borderColor: 'btn.danger.hoverBg',
+                      borderStyle: 'dashed',
+                    },
+                    svg: {
+                      backgroundColor: 'white',
+                    },
+                  },
+                }}>
+                <Box
+                  sx={{
+                    display: 'none',
+                    position: 'relative',
+                    width: '0%',
+                    left: '-7px',
+                    color: 'btn.danger.hoverBg',
+                    borderStyle: 'hidden!important',
+                  }}>
+                  <FoldIcon />
+                </Box>
+                <Box
+                  sx={{
+                    borderWidth: 0,
+                    borderRightWidth: 1,
+                    borderLeftWidth: 0,
+                    borderColor: 'border.muted',
+                    borderStyle: 'dotted',
+                    width: 0,
+                    transition: 'border 0.1s cubic-bezier(1,1,1,0)',
+                  }}
+                />
+              </Tooltip>
+            </Box>
 
-        <Box sx={{ width: '100%', overflow: 'auto' }}>
-          <Content content={child} mode="view" />
+            <Box sx={{ width: '100%', overflow: 'auto' }}>
+              <Content content={child} mode="view" />
 
-          <Box sx={{ mt: 4 }}>
-            <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
-          </Box>
+              <Box sx={{ mt: 4 }}>
+                <Content content={{ parent_id: id }} mode="compact" viewFrame={true} />
+              </Box>
 
-          {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
-        </Box>
+              {children.length > 0 && (
+                <RenderChildrenTree
+                  childrenList={children}
+                  renderIntent={renderIntent - 1}
+                  renderIncrement={renderIncrement}
+                />
+              )}
+            </Box>
+          </>
+        ) : (
+          <Button onClick={() => handleExpand(id)} variant="invisible">
+            <UnfoldIcon /> {`Ver mais ${labelShowMore} resposta${plural}`}
+            {labelShowMore != groupedCount && ` (${groupedCount} ocultas)`}
+          </Button>
+        )}
       </Box>
     );
   });

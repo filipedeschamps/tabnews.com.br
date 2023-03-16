@@ -13,7 +13,6 @@ import {
   ActionMenu,
   ActionList,
   IconButton,
-  Tooltip,
   useConfirm,
 } from '@primer/react';
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
@@ -72,6 +71,39 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 }
 
+function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
+  return (
+    <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'absolute', right: 0 }}>
+        {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
+          flickering after this menu appears */}
+        <ActionMenu>
+          <ActionMenu.Anchor>
+            <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+          </ActionMenu.Anchor>
+
+          <ActionMenu.Overlay>
+            <ActionList>
+              <ActionList.Item onClick={() => onComponentModeChange('edit')}>
+                <ActionList.LeadingVisual>
+                  <PencilIcon />
+                </ActionList.LeadingVisual>
+                Editar
+              </ActionList.Item>
+              <ActionList.Item variant="danger" onClick={onDelete}>
+                <ActionList.LeadingVisual>
+                  <TrashIcon />
+                </ActionList.LeadingVisual>
+                Apagar
+              </ActionList.Item>
+            </ActionList>
+          </ActionMenu.Overlay>
+        </ActionMenu>
+      </Box>
+    </Box>
+  );
+}
+
 function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
@@ -119,42 +151,6 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     }
   };
 
-  function ViewModeOptionsMenu() {
-    return (
-      <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0 }}>
-          {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
-            flickering after this menu appears */}
-          <ActionMenu>
-            <ActionMenu.Anchor>
-              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
-            </ActionMenu.Anchor>
-
-            <ActionMenu.Overlay>
-              <ActionList>
-                <ActionList.Item
-                  onClick={() => {
-                    setComponentMode('edit');
-                  }}>
-                  <ActionList.LeadingVisual>
-                    <PencilIcon />
-                  </ActionList.LeadingVisual>
-                  Editar
-                </ActionList.Item>
-                <ActionList.Item variant="danger" onClick={handleClickDelete}>
-                  <ActionList.LeadingVisual>
-                    <TrashIcon />
-                  </ActionList.LeadingVisual>
-                  Apagar
-                </ActionList.Item>
-              </ActionList>
-            </ActionMenu.Overlay>
-          </ActionMenu>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -185,19 +181,13 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', height: '22px' }}>
-              <Tooltip
-                sx={{ position: 'absolute', ml: 1, mt: '1px' }}
-                aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
-                  dateStyle: 'full',
-                  timeStyle: 'short',
-                })}>
-                <PublishedSince date={contentObject.published_at} />
-              </Tooltip>
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+              <PublishedSince direction="n" date={contentObject.published_at} />
             </Link>
           </Box>
-          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
-            ViewModeOptionsMenu()}
+          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
+            <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
+          )}
         </Box>
 
         {!contentObject?.parent_id && contentObject?.title && (
