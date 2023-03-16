@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-export default function useCollapse({ childrenList, renderIntent = 20, renderIncrement = 10, flatten = true }) {
+export default function useCollapse({ childrenList, renderIntent = 20, renderIncrement = 10, flatten = false }) {
   const flattenedTree = useMemo(flattenTree, [childrenList, flatten]);
   const [childrenState, setChildrenState] = useState(() => computeStates(flattenedTree, renderIntent));
 
