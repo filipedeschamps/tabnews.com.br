@@ -21,7 +21,7 @@ export function DefaultHead() {
     noIndex: false,
   };
 
-  const { type, title, description, image, url, noIndex } = defaultMetadata;
+  const { type, title, description, image, url } = defaultMetadata;
 
   return (
     <NextHead>

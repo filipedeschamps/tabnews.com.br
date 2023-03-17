@@ -930,55 +930,6 @@ function rankContentListByRelevance(contentList) {
   }
 }
 
-async function findChildrenCount(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const childrenCount = await recursiveDatabaseLookup(values, options);
-  return childrenCount;
-
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            id,
-            parent_id
-        FROM
-          contents
-        WHERE
-          contents.id = $1 AND
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.id,
-            contents.parent_id
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
-      )
-      SELECT
-        count(children.id)::integer
-      FROM
-        children
-      WHERE
-        children.id NOT IN ($1);`,
-      values: [values.where.id],
-    };
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0].count;
-  }
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
-}
-
 async function findRootContent(values, options = {}) {
   values.where = validateWhereSchema(values?.where);
   const rootContentFound = await recursiveDatabaseLookup(values, options);

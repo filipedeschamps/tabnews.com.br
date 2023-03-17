@@ -1,4 +1,4 @@
-import { Box, Flash } from '@primer/react';
+import { Box } from '@primer/react';
 import { Footer, GoToTopButton, Head, Header } from 'pages/interface/index.js';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {

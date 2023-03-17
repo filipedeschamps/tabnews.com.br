@@ -1,10 +1,9 @@
-import useSWR from 'swr';
 import { Box, Text } from '@primer/react';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
 
 import { Link, PublishedSince, EmptyState } from 'pages/interface';
 
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
+export default function ContentList({ contentList, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
 
   // const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });

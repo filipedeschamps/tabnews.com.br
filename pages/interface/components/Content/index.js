@@ -210,7 +210,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
