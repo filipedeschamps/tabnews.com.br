@@ -90,7 +90,8 @@ export default function Post({
               key={contentFound.id}
               content={contentFound}
               mode={contentMode}
-              onModeChange={(mode) => setContentMode(mode)}
+              onModeChange={setContentMode}
+              asRoot={true}
             />
           </Box>
         </Box>

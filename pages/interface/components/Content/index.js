@@ -18,7 +18,13 @@ import {
 import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
 import { Editor, Link, PublishedSince, useUser, Viewer } from 'pages/interface';
 
-export default function Content({ content, mode = 'view', viewFrame = false, onModeChange = () => {} }) {
+export default function Content({
+  content,
+  mode = 'view',
+  viewFrame = false,
+  onModeChange = () => {},
+  asRoot = false,
+}) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -71,7 +77,7 @@ export default function Content({ content, mode = 'view', viewFrame = false, onM
       />
     );
   } else if (componentMode === 'deleted') {
-    return <DeletedMode viewFrame={viewFrame} />;
+    return <DeletedMode viewFrame={viewFrame} asRoot={asRoot} />;
   }
 }
 
@@ -510,7 +516,7 @@ function CompactMode({ setComponentMode }) {
   );
 }
 
-function DeletedMode({ viewFrame }) {
+function DeletedMode({ viewFrame, asRoot }) {
   return (
     <Box
       sx={{
@@ -519,7 +525,7 @@ function DeletedMode({ viewFrame }) {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 2,
-        height: 'calc(90vh - 64px)',
+        height: !asRoot ? 'fit-content' : 'calc(90vh - 64px)',
         width: '100%',
         borderWidth: viewFrame ? 1 : 0,
         borderRadius: '6px',
@@ -538,7 +544,7 @@ function DeletedMode({ viewFrame }) {
 
         <Heading sx={{ fontSize: 3 }}>Conteúdo apagado com sucesso.</Heading>
 
-        <Link href="/">Retornar à tela inicial</Link>
+        {asRoot && <Link href="/">Retornar à tela inicial</Link>}
       </Box>
     </Box>
   );
