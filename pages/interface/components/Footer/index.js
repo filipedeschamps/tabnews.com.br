@@ -45,7 +45,7 @@ export default function Footer(props) {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: [2, 3, 4, 5],
+            gap: [3, null, 4, 5],
             paddingX: [2, null, null, 5],
             flexWrap: 'wrap',
           }}>
