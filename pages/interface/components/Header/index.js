@@ -9,6 +9,7 @@ export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { pathname } = useRouter();
   const [headerTopPos, setheaderTopPos] = useState(0);
+  const [useHeaderTransition, setUseHeaderTransition] = useState(false);
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -20,8 +21,26 @@ export default function HeaderComponent() {
     var previousScroll = 0;
 
     const handleScroll = () => {
-      setheaderTopPos(window.scrollY < previousScroll ? 0 : -headerBoundaries.height);
+      setUseHeaderTransition(false);
+      const scrollDown = window.scrollY - previousScroll > 0;
+      setheaderTopPos((h) => Math.min(0, Math.max(-headerBoundaries.height, h + (previousScroll - window.scrollY))));
       previousScroll = window.scrollY;
+
+      const scrollThreshold = 5;
+      let scrollTimeout;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setUseHeaderTransition(true);
+        setheaderTopPos((h) =>
+          scrollDown
+            ? h < -scrollThreshold
+              ? -headerBoundaries.height
+              : 0
+            : h > -headerBoundaries.height + scrollThreshold
+            ? 0
+            : -headerBoundaries.height
+        );
+      }, 300);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -36,7 +55,7 @@ export default function HeaderComponent() {
         px: [2, null, null, 3],
         position: 'sticky',
         top: `${headerTopPos}px`,
-        transition: 'top 0.3s ease-in-out',
+        transition: useHeaderTransition ? 'top 0.3s ease-in-out' : 'none',
       }}>
       <Header.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
