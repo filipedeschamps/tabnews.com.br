@@ -1,6 +1,5 @@
 module.exports = {
   experimental: {
-    allowMiddlewareResponseBody: true,
     scrollRestoration: true,
   },
   pageExtensions: ['public.js'],
@@ -10,7 +9,6 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
-  swcMinify: false,
   async redirects() {
     return [
       {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Text, IconButton } from '@primer/react';
+import { Box, Text, IconButton, Tooltip } from '@primer/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@primer/octicons-react';
 import { useReward } from 'react-rewards';
 import { useRouter } from 'next/router';
@@ -89,7 +89,7 @@ export default function TabCoinButtons({ content }) {
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
       }}>
-      <Box>
+      <Tooltip aria-label="Achei relevante" direction="ne">
         <IconButton
           variant="invisible"
           aria-label="Creditar TabCoin"
@@ -99,7 +99,7 @@ export default function TabCoinButtons({ content }) {
           onClick={() => transactTabCoin('credit')}
           disabled={isInAction}
         />
-      </Box>
+      </Tooltip>
       <Box>
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px', width: '1px' }}></div>
         <Text
@@ -111,7 +111,7 @@ export default function TabCoinButtons({ content }) {
           {contentObject.tabcoins}
         </Text>
       </Box>
-      <Box>
+      <Tooltip aria-label="Não achei relevante" direction="ne">
         <IconButton
           variant="invisible"
           aria-label="Debitar TabCoin"
@@ -121,7 +121,7 @@ export default function TabCoinButtons({ content }) {
           onClick={() => transactTabCoin('debit')}
           disabled={isInAction}
         />
-      </Box>
+      </Tooltip>
     </Box>
   );
 }
