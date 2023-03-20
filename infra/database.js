@@ -20,7 +20,7 @@ const configurations = {
   allowExitOnIdle: true,
 };
 
-if (!webserver.isLambdaServer()) {
+if (!webserver.isServerlessRuntime) {
   configurations.max = 30;
 
   // https://github.com/filipedeschamps/tabnews.com.br/issues/84
@@ -48,7 +48,7 @@ async function query(query, options = {}) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
       client.release();
-      if (tooManyConnections && webserver.isLambdaServer()) {
+      if (tooManyConnections && webserver.isServerlessRuntime) {
         await cache.pool.end();
         cache.pool = null;
       }
@@ -80,7 +80,7 @@ async function checkForTooManyConnections(client) {
 
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 5000;
-  const maxConnectionsTolerance = 0.7;
+  const maxConnectionsTolerance = 0.8;
 
   if (cache.maxConnections === null || cache.reservedConnections === null) {
     const [maxConnections, reservedConnections] = await getConnectionLimits();
@@ -88,11 +88,7 @@ async function checkForTooManyConnections(client) {
     cache.reservedConnections = reservedConnections;
   }
 
-  if (
-    !cache.openedConnections === null ||
-    !cache.openedConnectionsLastUpdate === null ||
-    currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge
-  ) {
+  if (cache.openedConnections === null || currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge) {
     const openedConnections = await getOpenedConnections();
     cache.openedConnections = openedConnections;
     cache.openedConnectionsLastUpdate = currentTime;
@@ -163,7 +159,7 @@ const UNDEFINED_FUNCTION = '42883';
 function parseQueryErrorAndLog(error, query) {
   const expectedErrorsCode = [UNIQUE_CONSTRAINT_VIOLATION, SERIALIZATION_FAILURE];
 
-  if (!webserver.isLambdaServer()) {
+  if (!webserver.isServerlessRuntime) {
     expectedErrorsCode.push(UNDEFINED_FUNCTION);
   }
 
