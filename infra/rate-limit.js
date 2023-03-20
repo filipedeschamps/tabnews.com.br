@@ -6,7 +6,7 @@ import ip from 'models/ip.js';
 
 async function check(request) {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    if (!webserver.isLambdaServer()) {
+    if (!webserver.isServerlessRuntime) {
       return { success: true };
     }
 

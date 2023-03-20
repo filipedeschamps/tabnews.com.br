@@ -44,13 +44,11 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
 }
 
 function getActivationApiEndpoint() {
-  const webserverHost = webserver.getHost();
-  return `${webserverHost}/api/v1/activation`;
+  return `${webserver.host}/api/v1/activation`;
 }
 
 function getActivationPageEndpoint(tokenId) {
-  const webserverHost = webserver.getHost();
-  return tokenId ? `${webserverHost}/cadastro/ativar/${tokenId}` : `${webserverHost}/cadastro/ativar`;
+  return tokenId ? `${webserver.host}/cadastro/ativar/${tokenId}` : `${webserver.host}/cadastro/ativar`;
 }
 
 async function findOneTokenByUserId(userId) {

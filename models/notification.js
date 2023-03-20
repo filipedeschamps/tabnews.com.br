@@ -76,9 +76,7 @@ function getBodyReplyLine({ createdContent, rootContent }) {
 }
 
 function getChildContendUrl({ owner_username, slug }) {
-  let webserverHost = webserver.getHost();
-
-  return `${webserverHost}/${owner_username}/${slug}`;
+  return `${webserver.host}/${owner_username}/${slug}`;
 }
 
 export default Object.freeze({
