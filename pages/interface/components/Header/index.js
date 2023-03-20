@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
-  const { pathname } = useRouter();
+  const { asPath } = useRouter();
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -27,13 +27,13 @@ export default function HeaderComponent() {
       </Header.Item>
 
       <Header.Item>
-        <HeaderLink href="/" sx={pathname === '/' || pathname.startsWith('/pagina') ? activeLinkStyle : undefined}>
+        <HeaderLink href="/" sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : undefined}>
           Relevantes
         </HeaderLink>
       </Header.Item>
 
       <Header.Item full>
-        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') ? activeLinkStyle : undefined}>
+        <HeaderLink href="/recentes" sx={asPath.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
       </Header.Item>
@@ -41,7 +41,7 @@ export default function HeaderComponent() {
       {!isLoading && !user && (
         <>
           <Header.Item>
-            <HeaderLink href="/login">Login</HeaderLink>
+            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Login</HeaderLink>
           </Header.Item>
           <Header.Item>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
