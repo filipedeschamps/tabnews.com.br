@@ -787,7 +787,7 @@ const withoutMarkdown = (value, helpers) => {
 
 function checkReservedUsernames(username, helpers) {
   if (
-    (webserver.isLambdaServer() && reservedDevUsernames.includes(username.toLowerCase())) ||
+    (webserver.isServerlessRuntime && reservedDevUsernames.includes(username.toLowerCase())) ||
     reservedUsernames.includes(username.toLowerCase()) ||
     reservedUsernamesStartingWith.find((reserved) => username.toLowerCase().startsWith(reserved))
   ) {

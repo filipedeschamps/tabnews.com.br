@@ -388,12 +388,10 @@ export async function getStaticProps(context) {
 
   const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
-  const webserverHost = webserver.getHost();
-
   const contentMetadata = {
     title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
-    image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
-    url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
+    image: `${webserver.host}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
+    url: `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
     description: oneLineBody,
     published_time: secureContentFound.published_at,
     modified_time: secureContentFound.updated_at,

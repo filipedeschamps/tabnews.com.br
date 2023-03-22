@@ -12,7 +12,7 @@ async function compare(providedPassword, storedPassword) {
 function getNumberOfSaltRounds() {
   let saltRounds = 14;
 
-  if (!webserver.isLambdaServer()) {
+  if (!webserver.isServerlessRuntime) {
     saltRounds = 1;
   }
 

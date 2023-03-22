@@ -10,8 +10,9 @@ import session from 'models/session.js';
 import content from 'models/content.js';
 import recovery from 'models/recovery.js';
 import balance from 'models/balance.js';
+import webserver from 'infra/webserver.js';
 
-const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
+const webserverUrl = webserver.host;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
 async function waitForAllServices() {
