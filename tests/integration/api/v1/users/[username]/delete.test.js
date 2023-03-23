@@ -1,8 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import password from 'models/password.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -529,7 +527,9 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      // secondUserSession
+      await orchestrator.createSession(secondUser);
 
       const nuke1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
         method: 'DELETE',

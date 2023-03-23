@@ -735,7 +735,8 @@ describe('POST /api/v1/contents', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const existingContent = await orchestrator.createContent({
+      // existingContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
@@ -780,7 +781,8 @@ describe('POST /api/v1/contents', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const existingContent = await orchestrator.createContent({
+      // existingContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
@@ -2629,7 +2631,9 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail1).toBe(null);
 
         // 6) ENABLE NOTIFICATIONS FOR FIRST USER
-        const userPatchResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
+
+        // userPatchResponse2
+        await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

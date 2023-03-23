@@ -9,7 +9,7 @@ const retry = require('async-retry');
  */
 const healthCheckDB = async () => {
   return await retry(
-    async (bail, tries) => {
+    async (tries) => {
       if (tries > 25) {
         console.log(
           `> Trying to connect to Database #${tries}. Are you running the postgres container? Run npm run services:up to start database service`
@@ -17,7 +17,7 @@ const healthCheckDB = async () => {
       }
 
       return await new Promise((resolve, reject) => {
-        exec(`docker exec postgres-dev pg_isready`, async (error, stdout, stderr) => {
+        exec(`docker exec postgres-dev pg_isready`, async (stdout) => {
           healthCheckStatus = stdout;
           console.log('health check postgres: ', healthCheckStatus);
 

@@ -276,7 +276,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(firstUser);
       const firstUserSessionObject = await orchestrator.createSession(firstUser);
 
-      const firstUserContent = await orchestrator.createContent({
+      // firstUserContent
+      await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Conteúdo do primeiro usuário',
         status: 'published',
@@ -848,7 +849,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const firstContent = await orchestrator.createContent({
+      // firstContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Primeiro conteúdo',
         body: 'Primeiro conteúdo',
@@ -901,7 +903,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const firstContent = await orchestrator.createContent({
+      // firstContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Primeiro conteúdo',
         body: 'Primeiro conteúdo',
