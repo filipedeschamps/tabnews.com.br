@@ -18,7 +18,6 @@ export function DefaultHead() {
     description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.',
     url: `${webserverHost}${router.asPath}`,
     type: 'website',
-    noIndex: false,
   };
 
   const { type, title, description, image, url } = defaultMetadata;

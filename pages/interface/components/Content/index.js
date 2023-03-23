@@ -63,7 +63,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         setComponentMode={setComponentMode}
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
-        mode={mode}
       />
     );
   } else if (componentMode === 'deleted') {

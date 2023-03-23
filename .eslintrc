@@ -15,8 +15,7 @@
       "error",
       {
         "vars": "all",
-        "args": "after-used",
-        "ignoreRestSiblings": false
+        "args": "after-used"
       }
     ]
   }
