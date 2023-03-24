@@ -540,6 +540,29 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       amountToDebit = oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings;
     } else {
       amountToDebit = userDefaultEarnings;
+      const query = {
+        text: `
+        select distinct events.originator_user_id as user_id, balance_operations.recipient_id as content_id from balance_operations
+        left join contents on contents.id = balance_operations.recipient_id
+        left join events on events.id = balance_operations.originator_id
+        where balance_operations.amount < 0 
+        and balance_operations.balance_type='content:tabcoin'
+        and balance_operations.recipient_id = $1
+        ;`,
+        values: [newContent.id],
+      };
+
+      const results = await database.query(query);
+      results.rows.forEach(async (contentBeingDeleted) => {
+        if (!contentBeingDeleted.user_id) return;
+        await balance.create({
+          balanceType: 'user:tabcoin',
+          recipientId: contentBeingDeleted.user_id,
+          amount: 1,
+          originatorType: 'event',
+          originatorId: options.eventId,
+        });
+      });
     }
 
     await balance.create(

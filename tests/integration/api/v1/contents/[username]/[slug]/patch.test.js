@@ -1895,6 +1895,173 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(republishedResponseBody.request_id)).toEqual(4);
     });
 
+    test('Content with "status" set to "deleted" should not return tabcoin - no downvotes - no tabcoins ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 1,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+    });
+
+    test('Content with "status" set to "deleted" should return tabcoin - 1 downvote - 1 tabcoins ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      const secondUserSession = await orchestrator.createSession(secondUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      const postTabCoinsResponse = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'debit',
+          }),
+        }
+      );
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const SecondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const SecondUserResponseBody = await SecondUserResponse.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(SecondUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(-1);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 0,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+    });
+
     test('Content with "status" set to "non_existent_status"', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
