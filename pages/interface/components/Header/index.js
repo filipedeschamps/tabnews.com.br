@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
-  const { pathname } = useRouter();
+  const { asPath } = useRouter();
   const [headerTopPos, setheaderTopPos] = useState(0);
   const [useHeaderTransition, setUseHeaderTransition] = useState(false);
 
@@ -65,13 +65,13 @@ export default function HeaderComponent() {
       </Header.Item>
 
       <Header.Item>
-        <HeaderLink href="/" sx={pathname === '/' || pathname.startsWith('/pagina') ? activeLinkStyle : undefined}>
+        <HeaderLink href="/" sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : undefined}>
           Relevantes
         </HeaderLink>
       </Header.Item>
 
       <Header.Item full>
-        <HeaderLink href="/recentes" sx={pathname.startsWith('/recentes') ? activeLinkStyle : undefined}>
+        <HeaderLink href="/recentes" sx={asPath.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
       </Header.Item>
@@ -79,7 +79,7 @@ export default function HeaderComponent() {
       {!isLoading && !user && (
         <>
           <Header.Item>
-            <HeaderLink href="/login">Login</HeaderLink>
+            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Login</HeaderLink>
           </Header.Item>
           <Header.Item>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
