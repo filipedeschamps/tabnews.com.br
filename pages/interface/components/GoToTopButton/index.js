@@ -1,5 +1,5 @@
+import { IconButton } from '@/TabNewsUI';
 import { ChevronUpIcon } from '@primer/octicons-react';
-import { IconButton } from '@primer/react';
 import { useEffect, useState } from 'react';
 
 export default function GoToTopButton() {

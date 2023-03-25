@@ -1,22 +1,25 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/router';
-
 import {
-  FormControl,
-  Box,
-  Button,
-  TextInput,
-  Flash,
-  Heading,
-  Text,
-  BranchName,
-  ActionMenu,
   ActionList,
+  ActionMenu,
+  Box,
+  BranchName,
+  Button,
+  Editor,
+  Flash,
+  FormControl,
+  Heading,
   IconButton,
+  Link,
+  PublishedSince,
+  Text,
+  TextInput,
   useConfirm,
-} from '@primer/react';
-import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import { Editor, Link, PublishedSince, useUser, Viewer } from 'pages/interface';
+  Viewer,
+} from '@/TabNewsUI';
+import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@primer/octicons-react';
+import { useRouter } from 'next/router';
+import { useUser } from 'pages/interface';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);

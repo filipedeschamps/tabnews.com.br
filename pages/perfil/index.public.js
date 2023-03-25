@@ -1,7 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  Checkbox,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  Link,
+  TextInput,
+  useConfirm,
+} from '@/TabNewsUI';
+import { useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser, Link } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Checkbox, Flash, useConfirm } from '@primer/react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function EditProfile() {
   return (

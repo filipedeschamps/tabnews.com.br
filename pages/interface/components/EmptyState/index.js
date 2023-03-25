@@ -1,4 +1,4 @@
-import { Text, Heading, Box, Button } from '@primer/react';
+import { Box, Button, Heading, Text } from '@/TabNewsUI';
 import { PlusIcon } from '@primer/octicons-react';
 
 export default function EmptyState(props) {

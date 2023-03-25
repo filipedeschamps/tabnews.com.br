@@ -1,21 +1,21 @@
-import { Viewer as ByteMdViewer, Editor as ByteMdEditor } from '@bytemd/react';
-import { Box } from '@primer/react';
+import { Box } from '@/TabNewsUI';
+import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
 import { useEffect, useRef } from 'react';
 
 // ByteMD dependencies:
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mathPlugin from '@bytemd/plugin-math';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
 import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
-import byteMDLocale from 'bytemd/locales/pt_BR.json';
+import gfmPlugin from '@bytemd/plugin-gfm';
 import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
+import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
+import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
+import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import 'bytemd/dist/index.min.css';
-import 'highlight.js/styles/github.css';
+import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import 'github-markdown-css/github-markdown-light.css';
+import 'highlight.js/styles/github.css';
 import 'katex/dist/katex.css';
 
 const bytemdPluginList = [

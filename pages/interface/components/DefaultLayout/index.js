@@ -1,5 +1,5 @@
-import { Box, Flash } from '@primer/react';
-import { Footer, GoToTopButton, Head, Header } from 'pages/interface/index.js';
+import { Box, Footer, GoToTopButton, Header } from '@/TabNewsUI';
+import { Head } from 'pages/interface';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (

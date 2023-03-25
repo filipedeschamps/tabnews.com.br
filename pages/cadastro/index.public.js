@@ -1,7 +1,6 @@
-import { useState, useRef } from 'react';
+import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { DefaultLayout, PasswordInput } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { useRef, useState } from 'react';
 
 export default function Register() {
   return (

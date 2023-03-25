@@ -1,16 +1,28 @@
-import useSWR from 'swr';
-import { useState } from 'react';
-import { DefaultLayout, ContentList, useUser } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
-import removeMarkdown from 'models/remove-markdown.js';
-import { NotFoundError } from 'errors/index.js';
-import { FaUser } from 'react-icons/fa';
-import { useRouter } from 'next/router';
-import { Box, Pagehead, ActionMenu, ActionList, Flash, IconButton, useConfirm, LabelGroup, Label } from '@primer/react';
+import {
+  ActionList,
+  ActionMenu,
+  Box,
+  ContentList,
+  DefaultLayout,
+  Flash,
+  IconButton,
+  Label,
+  LabelGroup,
+  Pagehead,
+  useConfirm,
+} from '@/TabNewsUI';
 import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
+import { NotFoundError } from 'errors/index.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import { useRouter } from 'next/router';
+import { useUser } from 'pages/interface';
+import { useState } from 'react';
+import { FaUser } from 'react-icons/fa';
+import useSWR from 'swr';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
