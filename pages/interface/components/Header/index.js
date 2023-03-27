@@ -7,6 +7,8 @@ import {
   Link,
   PrimerHeader,
   Text,
+  ThemeSelector,
+  ThemeSwitcher,
   Tooltip,
   Truncate,
 } from '@/TabNewsUI';
@@ -51,11 +53,17 @@ export default function HeaderComponent() {
 
       {!isLoading && !user && (
         <>
-          <PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ mr: 2 }}>
+            <ThemeSwitcher />
+          </PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Login</HeaderLink>
           </PrimerHeader.Item>
-          <PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
+          </PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ display: ['flex', 'none'] }}>
+            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Entrar</HeaderLink>
           </PrimerHeader.Item>
         </>
       )}
@@ -115,6 +123,10 @@ export default function HeaderComponent() {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Divider />
+
+                  <ThemeSelector />
+                  <ActionList.Divider />
+
                   <ActionList.Item variant="danger" onSelect={logout}>
                     Deslogar
                   </ActionList.Item>
