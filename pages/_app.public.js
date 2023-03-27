@@ -1,4 +1,4 @@
-import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider } from '@/TabNewsUI';
+import { ThemeProvider } from '@/TabNewsUI';
 import { Analytics } from '@vercel/analytics/react';
 import { DefaultHead, UserProvider } from 'pages/interface';
 import { SWRConfig } from 'swr';
@@ -12,25 +12,15 @@ async function SWRFetcher(resource, init) {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <>
-      <UserProvider>
-        <DefaultHead />
-        <SWRConfig
-          value={{
-            fetcher: SWRFetcher,
-          }}>
-          <SSRProvider>
-            <PrimerThemeProvider preventSSRMismatch colorMode="day">
-              <BaseStyles>
-                <NextNProgress options={{ showSpinner: false }} />
-                <Component {...pageProps} />
-              </BaseStyles>
-            </PrimerThemeProvider>
-          </SSRProvider>
-        </SWRConfig>
-      </UserProvider>
+    <UserProvider>
+      <DefaultHead />
+      <SWRConfig value={{ fetcher: SWRFetcher }}>
+        <ThemeProvider>
+          <Component {...pageProps} />
+        </ThemeProvider>
+      </SWRConfig>
       <Analytics />
-    </>
+    </UserProvider>
   );
 }
 

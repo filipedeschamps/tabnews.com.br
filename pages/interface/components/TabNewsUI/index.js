@@ -12,6 +12,7 @@ export { default as PasswordInput } from '@/PasswordInput/index.js';
 export { default as NextNProgress } from '@/Progressbar/index.js';
 export { default as PublishedSince } from '@/PublishedSince/index.js';
 export { default as TabCoinButtons } from '@/TabCoinButtons/index.js';
+export { default as ThemeProvider } from '@/ThemeProvider/index.js';
 export {
   ActionList,
   ActionMenu,
@@ -30,6 +31,7 @@ export {
   Link as PrimerLink,
   NavList,
   Pagehead,
+  SegmentedControl,
   SSRProvider,
   Text,
   TextInput,
@@ -37,4 +39,5 @@ export {
   Tooltip,
   Truncate,
   useConfirm,
+  useTheme,
 } from '@primer/react';

@@ -1,5 +1,8 @@
-import Document, { Html, Head, Main, NextScript } from 'next/document';
+import Document, { Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 import { ServerStyleSheet } from 'styled-components';
+
+const noFlashScript = `document.documentElement.setAttribute('data-no-flash', true)`;
 
 export default class MyDocument extends Document {
   static async getInitialProps(ctx) {
@@ -32,6 +35,9 @@ export default class MyDocument extends Document {
       <Html lang="pt-br">
         <Head />
         <body>
+          <Script id="theme" strategy="beforeInteractive">
+            {noFlashScript}
+          </Script>
           <Main />
           <NextScript />
         </body>
