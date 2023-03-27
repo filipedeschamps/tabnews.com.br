@@ -1,7 +1,18 @@
+/* eslint-disable */
+// TODO: check approach eslint rune or Confetti function props
+
 import ReactConfetti from 'react-confetti';
 import { useEffect, useState } from 'react';
 
-export default function Confetti({ width = 0, height = 0, ...props }) {
+export default function Confetti({
+  width = 0,
+  height = 0,
+  recycle = false,
+  numberOfPieces = 800,
+  tweenDuration = 15000,
+  gravity = 0.15,
+  ...props
+}) {
   const [confettiWidth, setConfettiWidth] = useState(width);
   const [confettiHeight, setConfettiHeight] = useState(height);
 

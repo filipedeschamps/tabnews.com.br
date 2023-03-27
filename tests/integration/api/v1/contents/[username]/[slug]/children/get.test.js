@@ -287,7 +287,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
-      // childBranchBLevel2Content3
+      // childBranchALevel3
       await orchestrator.createContent({
         parent_id: childBranchALevel2.id,
         owner_id: firstUser.id,
