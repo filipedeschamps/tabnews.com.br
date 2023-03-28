@@ -1,4 +1,4 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
+import { Header, Box, Button, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
 import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
 import { CgTab } from 'react-icons/cg';
 import { HeaderLink, Link, useUser } from 'pages/interface';
@@ -51,6 +51,11 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <Header.Item>
+            <HeaderLink href="/publicar">
+              <Button variant="primary">+ Publicar novo conteúdo</Button>
+            </HeaderLink>
+          </Header.Item>
           <Header.Item
             sx={{
               mr: 2,
