@@ -1,5 +1,4 @@
-import { Box, Heading, Link, Text } from '@primer/react';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { Box, DefaultLayout, Heading, Link, Text } from '@/TabNewsUI';
 
 export default function ConfirmRecoverPassword() {
   return (

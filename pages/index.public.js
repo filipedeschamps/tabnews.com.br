@@ -1,7 +1,7 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { FaTree } from 'react-icons/fa';
 

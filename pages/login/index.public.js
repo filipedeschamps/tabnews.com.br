@@ -1,7 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  Link,
+  PasswordInput,
+  Text,
+  TextInput,
+} from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser, PasswordInput } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { useUser } from 'pages/interface';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Login() {
   return (
@@ -104,7 +115,8 @@ function LoginForm() {
               spellCheck={false}
               block={true}
               aria-label="Seu email"
-              sx={{ minHeight: '46px' }}
+              contrast
+              sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
             />
             {errorObject?.key === 'email' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

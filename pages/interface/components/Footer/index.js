@@ -1,5 +1,4 @@
-import { Box } from '@primer/react';
-import { Link } from 'pages/interface';
+import { Box, Link } from '@/TabNewsUI';
 import { CgTab } from 'react-icons/cg';
 
 export default function Footer(props) {
