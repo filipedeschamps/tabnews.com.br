@@ -406,6 +406,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <FormControl id="title">
               <FormControl.Label visuallyHidden>Título</FormControl.Label>
               <TextInput
+                contrast
+                sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
                 name="title"
@@ -445,6 +447,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <FormControl id="source_url">
               <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
               <TextInput
+                contrast
+                sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
                 name="source_url"

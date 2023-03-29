@@ -115,7 +115,8 @@ function LoginForm() {
               spellCheck={false}
               block={true}
               aria-label="Seu email"
-              sx={{ minHeight: '46px' }}
+              contrast
+              sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
             />
             {errorObject?.key === 'email' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

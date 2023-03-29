@@ -1,4 +1,4 @@
-import { Box, SegmentedControl, useTheme, Button } from '@/TabNewsUI';
+import { Box, Button, SegmentedControl, useTheme } from '@/TabNewsUI';
 import { MoonIcon, SunIcon } from '@primer/octicons-react';
 
 export default function ThemeSelector({ ...props }) {
@@ -49,6 +49,7 @@ export function ThemeSwitcher({ ...props }) {
 
   return (
     <Button
+      aria-label='Alternar tema entre "claro" e "escuro"'
       onClick={handleSwitchMode}
       variant="invisible"
       sx={{

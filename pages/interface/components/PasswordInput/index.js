@@ -52,7 +52,8 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
             sx={{ color: 'fg.subtle' }}
           />
         }
-        sx={{ minHeight: '46px' }}
+        contrast
+        sx={{ minHeight: '46px', pl: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
         ref={inputRef}
         onChange={clearErrors}
         onKeyDown={detectCapsLock}
