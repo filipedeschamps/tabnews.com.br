@@ -77,7 +77,7 @@ export default function HeaderComponent() {
               fontWeight: 'bold',
             }}>
             <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'accent.emphasis' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#0969da' }}>
                 <SquareFillIcon size={16} />
                 <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins?.toLocaleString('pt-BR')}</Text>
               </Box>
@@ -91,7 +91,7 @@ export default function HeaderComponent() {
               fontWeight: 'bold',
             }}>
             <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'success.emphasis' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#2da44e' }}>
                 <SquareFillIcon size={16} />
                 <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash?.toLocaleString('pt-BR')}</Text>
               </Box>
