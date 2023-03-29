@@ -1,4 +1,4 @@
-import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider } from '@/TabNewsUI';
+import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider, ViewerStyles } from '@/TabNewsUI';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { createGlobalStyle } from 'styled-components';
 
@@ -8,11 +8,11 @@ const NoFleshGlobalStyle = createGlobalStyle`html[data-no-flash='true']:root {vi
 const removeNoFlashStyle = () => setTimeout(() => document.documentElement.removeAttribute('data-no-flash'));
 const useBrowserLayoutEffect = typeof document === 'undefined' ? useEffect : useLayoutEffect;
 
-export default function ThemeProvider({ children, ...props }) {
-  const [colorMode, setColorMode] = useState('day');
+export default function ThemeProvider({ children, defaultColorMode, ...props }) {
+  const [colorMode, setColorMode] = useState(defaultColorMode === 'night' ? 'night' : 'day');
 
   useBrowserLayoutEffect(() => {
-    const cachedColorMode = localStorage.getItem('colorMode') || 'auto';
+    const cachedColorMode = localStorage.getItem('colorMode') || colorMode;
     setColorMode(cachedColorMode);
     removeNoFlashStyle();
   }, []);
@@ -24,6 +24,7 @@ export default function ThemeProvider({ children, ...props }) {
           <NextNProgress options={{ showSpinner: false }} />
           <NoFleshGlobalStyle />
           {children}
+          <ViewerStyles />
         </BaseStyles>
       </PrimerThemeProvider>
     </SSRProvider>

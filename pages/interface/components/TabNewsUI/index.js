@@ -8,6 +8,7 @@ export { default as GoToTopButton } from '@/GoToTopButton/index.js';
 export { default as Header } from '@/Header/index.js';
 export { default as NextLink, HeaderLink, Link, NavItem } from '@/Link';
 export { default as Viewer, Editor } from '@/Markdown/index.js';
+export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles/index.js';
 export { default as PasswordInput } from '@/PasswordInput/index.js';
 export { default as NextNProgress } from '@/Progressbar/index.js';
 export { default as PublishedSince } from '@/PublishedSince/index.js';

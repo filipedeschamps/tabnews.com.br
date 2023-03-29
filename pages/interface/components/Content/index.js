@@ -436,6 +436,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               value={newData.body}
               onChange={handleChange}
               onKeyDown={onKeyDown}
+              compact={!!contentObject?.parent_id}
             />
 
             {errorObject?.key === 'body' && (
