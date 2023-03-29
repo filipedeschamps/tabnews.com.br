@@ -11,7 +11,7 @@ const configurations = {
   database: process.env.POSTGRES_DB,
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
-  connectionTimeoutMillis: 1000,
+  connectionTimeoutMillis: 2000,
   idleTimeoutMillis: 30000,
   max: 1,
   ssl: {
