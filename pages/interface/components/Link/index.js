@@ -21,10 +21,12 @@ export function HeaderLink({ href, children, ...props }) {
 export default NextLink;
 
 export function NavItem({ href, children, ...props }) {
-  const router = useRouter();
-  const isCurrent = typeof href === 'string' ? router.asPath === href : router.pathname === href.pathname;
+  const { asPath, pathname } = useRouter();
+
+  const isCurrent = typeof href === 'string' ? asPath === href : pathname === href.pathname;
+  
   return (
-    <NavList.Item as={NextLink} href={href} aria-current={isCurrent ? 'page' : false} prefetch={false} {...props}>
+    <NavList.Item as={NextLink} href={href} aria-current={isCurrent} prefetch={false} {...props}>
       {children}
     </NavList.Item>
   );
