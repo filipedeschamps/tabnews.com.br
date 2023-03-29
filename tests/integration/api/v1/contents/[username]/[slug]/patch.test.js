@@ -1895,7 +1895,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(republishedResponseBody.request_id)).toEqual(4);
     });
 
-    test('Content with "status" set to "deleted" should not return tabcoin - no downvotes - no tabcoins ', async () => {
+    test('Content with "status" set to "deleted" should not return tabcoin - no downvotes - no upvotes ', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -1934,6 +1934,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(200);
 
       expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1962,14 +1963,13 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
     });
 
-    test('Content with "status" set to "deleted" should return tabcoin - 1 downvote - 1 tabcoins ', async () => {
+    test('Content with "status" set to "deleted" should not return tabcoin - no downvote - 1 upvotes ', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1984,18 +1984,288 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         amount: 2,
       });
 
-      const postTabCoinsResponse = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}/tabcoins`,
+      const postTabCoinsResponse = await orchestrator.createTabcoinForContent(
+        secondUser.id,
+        defaultUserContent.id,
+        '127.0.0.1',
+        'credit'
+      );
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'POST',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
+            cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            transaction_type: 'debit',
+            status: 'deleted',
           }),
         }
+      );
+
+      const responseBody = await response.json();
+
+      const SecondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const SecondUserResponseBody = await SecondUserResponse.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(SecondUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(SecondUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 2,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should not return tabcoin - no downvote - 2 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+
+      const thirdUser = await orchestrator.createUser();
+      await orchestrator.activateUser(thirdUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: thirdUser.id,
+        amount: 2,
+      });
+
+      await orchestrator.createTabcoinForContent(secondUser.id, defaultUserContent.id, '127.0.0.1', 'credit');
+      await orchestrator.createTabcoinForContent(thirdUser.id, defaultUserContent.id, '127.0.0.2', 'credit');
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const SecondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const SecondUserResponseBody = await SecondUserResponse.json();
+
+      const ThirdUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const ThirdUserResponseBody = await ThirdUserResponse.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(ThirdUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(ThirdUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(SecondUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(SecondUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 3,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should not return tabcoin - no downvote - 49 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      let usernames = [];
+
+      for (let i = 0; i < 49; i++) {
+        const currentUser = await orchestrator.createUser();
+        await orchestrator.activateUser(currentUser);
+
+        usernames.push(currentUser.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentUser.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentUser.id, defaultUserContent.id, '127.0.0.1', 'credit');
+      }
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      usernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(0);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 50,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should return tabcoin - 1 downvote - 0 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      const postTabCoinsResponse = await orchestrator.createTabcoinForContent(
+        secondUser.id,
+        defaultUserContent.id,
+        '127.0.0.1',
+        'debit'
       );
 
       const response = await fetch(
@@ -2033,7 +2303,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(200);
 
       expect(SecondUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(SecondUserResponseBody.tabcash).toStrictEqual(1);
+
       expect(DefaultUserResponseBody.tabcoins).toStrictEqual(-1);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2051,15 +2324,649 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         deleted_at: responseBody.deleted_at,
         owner_username: defaultUser.username,
       });
+    });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
-      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+    test('Content with "status" set to "deleted" should return tabcoin - 2 downvote - 0 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+
+      const thirdUser = await orchestrator.createUser();
+      await orchestrator.activateUser(thirdUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: thirdUser.id,
+        amount: 2,
+      });
+
+      await orchestrator.createTabcoinForContent(secondUser.id, defaultUserContent.id, '127.0.0.1', 'debit');
+      await orchestrator.createTabcoinForContent(thirdUser.id, defaultUserContent.id, '127.0.0.2', 'debit');
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const SecondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const SecondUserResponseBody = await SecondUserResponse.json();
+
+      const ThirdUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const ThirdUserResponseBody = await ThirdUserResponse.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(ThirdUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(ThirdUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(SecondUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(SecondUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(-2);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: -1,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should return tabcoin - 49 downvote - 0 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      let usernames = [];
+
+      for (let i = 0; i < 49; i++) {
+        const currentUser = await orchestrator.createUser();
+        await orchestrator.activateUser(currentUser);
+
+        usernames.push(currentUser.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentUser.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentUser.id, defaultUserContent.id, '127.0.0.1', 'debit');
+      }
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      usernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(1);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(-49);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: -48,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should not return tabcoin - 1 downvote - 1 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+
+      const thirdUser = await orchestrator.createUser();
+      await orchestrator.activateUser(thirdUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: thirdUser.id,
+        amount: 2,
+      });
+
+      await orchestrator.createTabcoinForContent(secondUser.id, defaultUserContent.id, '127.0.0.1', 'debit');
+      await orchestrator.createTabcoinForContent(thirdUser.id, defaultUserContent.id, '127.0.0.1', 'credit');
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      const SecondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const SecondUserResponseBody = await SecondUserResponse.json();
+
+      const ThirdUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${thirdUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const ThirdUserResponseBody = await ThirdUserResponse.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(SecondUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(SecondUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(ThirdUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(ThirdUserResponseBody.tabcash).toStrictEqual(1);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 1,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should return tabcoin - 49 downvote - 49 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      let DownUsernames = [];
+      let UpUsernames = [];
+
+      for (let i = 0; i < 49; i++) {
+        const currentDown = await orchestrator.createUser();
+        await orchestrator.activateUser(currentDown);
+
+        const currentUp = await orchestrator.createUser();
+        await orchestrator.activateUser(currentUp);
+
+        DownUsernames.push(currentDown.username);
+        UpUsernames.push(currentUp.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentDown.id,
+          amount: 2,
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentUp.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentDown.id, defaultUserContent.id, '127.0.0.1', 'debit');
+        await orchestrator.createTabcoinForContent(currentUp.id, defaultUserContent.id, '127.0.0.1', 'credit');
+      }
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      DownUsernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(0);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      UpUsernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(0);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 1,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should not return tabcoin - 19 downvote - 49 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      let DownUsernames = [];
+      let UpUsernames = [];
+
+      for (let i = 0; i < 49; i++) {
+        const currentUp = await orchestrator.createUser();
+        await orchestrator.activateUser(currentUp);
+
+        UpUsernames.push(currentUp.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentUp.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentUp.id, defaultUserContent.id, '127.0.0.1', 'credit');
+      }
+
+      for (let i = 0; i < 19; i++) {
+        const currentDown = await orchestrator.createUser();
+        await orchestrator.activateUser(currentDown);
+
+        DownUsernames.push(currentDown.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentDown.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentDown.id, defaultUserContent.id, '127.0.0.1', 'debit');
+      }
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      DownUsernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(0);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      UpUsernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(0);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: 31,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
+    });
+
+    test('Content with "status" set to "deleted" should return tabcoin - 49 downvote - 39 upvotes ', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+        status: 'published',
+      });
+
+      let DownUsernames = [];
+      let UpUsernames = [];
+
+      for (let i = 0; i < 39; i++) {
+        const currentUp = await orchestrator.createUser();
+        await orchestrator.activateUser(currentUp);
+
+        UpUsernames.push(currentUp.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentUp.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentUp.id, defaultUserContent.id, '127.0.0.1', 'credit');
+      }
+
+      for (let i = 0; i < 49; i++) {
+        const currentDown = await orchestrator.createUser();
+        await orchestrator.activateUser(currentDown);
+
+        DownUsernames.push(currentDown.username);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: currentDown.id,
+          amount: 2,
+        });
+
+        await orchestrator.createTabcoinForContent(currentDown.id, defaultUserContent.id, '127.0.0.1', 'debit');
+      }
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            status: 'deleted',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      const DefaultUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const DefaultUserResponseBody = await DefaultUserResponse.json();
+
+      DownUsernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(1);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      UpUsernames.forEach(async (username) => {
+        const CurrentUser = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const CurrentUserBody = await CurrentUser.json();
+
+        expect(CurrentUserBody.tabcoins).toStrictEqual(0);
+        expect(CurrentUserBody.tabcash).toStrictEqual(1);
+      });
+
+      expect(response.status).toEqual(200);
+
+      expect(DefaultUserResponseBody.tabcoins).toStrictEqual(-10);
+      expect(DefaultUserResponseBody.tabcash).toStrictEqual(0);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'Body',
+        status: 'deleted',
+        tabcoins: -9,
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: responseBody.deleted_at,
+        owner_username: defaultUser.username,
+      });
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {

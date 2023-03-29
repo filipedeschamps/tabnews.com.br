@@ -11,6 +11,7 @@ import content from 'models/content.js';
 import recovery from 'models/recovery.js';
 import balance from 'models/balance.js';
 import webserver from 'infra/webserver.js';
+import event from 'models/event.js';
 
 const webserverUrl = webserver.host;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -178,6 +179,109 @@ async function createFirewallTestFunctions() {
   }
 }
 
+async function createTabcoinForContent(userId, contentId, clientIp, transactionType) {
+  const contentFound = await content.findOne({
+    where: {
+      id: contentId,
+      status: 'published',
+    },
+  });
+
+  if (!contentFound) {
+    throw new NotFoundError({
+      message: `O conteúdo informado não foi encontrado no sistema.`,
+      action: 'Verifique se o "slug" está digitado corretamente.',
+      stack: new Error().stack,
+      errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:CONTENT_NOT_FOUND',
+      key: 'slug',
+    });
+  }
+
+  if (userId.id === contentFound.owner_id) {
+    throw new UnprocessableEntityError({
+      message: `Você não pode realizar esta operação em conteúdos de sua própria autoria.`,
+      action: 'Realize esta operação em conteúdos de outros usuários.',
+      stack: new Error().stack,
+      errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:OWN_CONTENT',
+      key: 'tabcoins',
+    });
+  }
+
+  let currentContentTabCoinsBalance;
+
+  await tabcoinsTransaction(null, 5);
+
+  async function tabcoinsTransaction(transaction, remainingAttempts) {
+    if (!transaction) {
+      transaction = await database.transaction();
+    }
+
+    try {
+      await transaction.query('BEGIN');
+      await transaction.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+
+      const tabCoinsRequiredAmount = 2;
+
+      const currentEvent = await event.create(
+        {
+          type: 'update:content:tabcoins',
+          originatorUserId: userId,
+          originatorIp: clientIp,
+          metadata: {
+            transaction_type: transactionType,
+            from_user_id: userId,
+            content_owner_id: contentFound.owner_id,
+            content_id: contentFound.id,
+            amount: tabCoinsRequiredAmount,
+          },
+        },
+        {
+          transaction: transaction,
+        }
+      );
+
+      currentContentTabCoinsBalance = await balance.rateContent(
+        {
+          contentId: contentFound.id,
+          contentOwnerId: contentFound.owner_id,
+          fromUserId: userId,
+          transactionType: transactionType,
+        },
+        {
+          eventId: currentEvent.id,
+          transaction: transaction,
+        }
+      );
+
+      await transaction.query('COMMIT');
+      await transaction.release();
+    } catch (error) {
+      await transaction.query('ROLLBACK');
+
+      if (
+        error.databaseErrorCode === database.errorCodes.SERIALIZATION_FAILURE ||
+        error.stack?.startsWith('error: could not serialize access due to read/write dependencies among transaction')
+      ) {
+        if (remainingAttempts > 0) {
+          await tabcoinsTransaction(transaction, remainingAttempts - 1);
+        } else {
+          await transaction.release();
+          throw new UnprocessableEntityError({
+            message: `Muitos votos ao mesmo tempo.`,
+            action: 'Tente realizar esta operação mais tarde.',
+            errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
+          });
+        }
+      } else {
+        await transaction.release();
+        throw error;
+      }
+    }
+  }
+
+  return currentContentTabCoinsBalance;
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -195,4 +299,5 @@ export default {
   createRecoveryToken,
   createFirewallTestFunctions,
   createBalance,
+  createTabcoinForContent,
 };
