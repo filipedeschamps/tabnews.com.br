@@ -3,7 +3,7 @@ import NextHead from 'next/head';
 import { useRouter } from 'next/router';
 import { useMediaQuery } from 'pages/interface/index.js';
 
-const webserverHost = webserver.getHost();
+const webserverHost = webserver.host;
 
 export function DefaultHead() {
   const router = useRouter();

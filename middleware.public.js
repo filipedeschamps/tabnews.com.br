@@ -4,13 +4,14 @@ import rateLimit from 'infra/rate-limit.js';
 import snakeize from 'snakeize';
 import { UnauthorizedError } from '/errors/index.js';
 import ip from 'models/ip.js';
+import webserver from 'infra/webserver.js';
 
 export const config = {
   matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],
 };
 
 export async function middleware(request) {
-  if (process.env.VERCEL_ENV === 'production' && !ip.isRequestFromCloudflare(request)) {
+  if (webserver.isProduction && !ip.isRequestFromCloudflare(request)) {
     const publicErrorObject = new UnauthorizedError({
       message: 'Host não autorizado. Por favor, acesse https://www.tabnews.com.br.',
       action: 'Não repita esta requisição.',

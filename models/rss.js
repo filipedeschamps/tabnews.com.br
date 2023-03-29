@@ -6,7 +6,7 @@ import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';
 
 function generateRss2(contentList) {
-  const webserverHost = webserver.getHost();
+  const webserverHost = webserver.host;
 
   // TODO: make this property flexible in the future to
   // support things like: `/[username]/rss`
