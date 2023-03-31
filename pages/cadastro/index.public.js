@@ -1,7 +1,6 @@
-import { useState, useRef } from 'react';
+import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { DefaultLayout, PasswordInput } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { useRef, useState } from 'react';
 
 export default function Register() {
   return (
@@ -111,7 +110,8 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
-            sx={{ minHeight: '46px' }}
+            contrast
+            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -133,7 +133,8 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
-            sx={{ minHeight: '46px' }}
+            contrast
+            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'email' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

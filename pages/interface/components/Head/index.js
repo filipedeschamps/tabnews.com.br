@@ -1,7 +1,7 @@
+import { useMediaQuery } from 'pages/interface';
 import webserver from 'infra/webserver.js';
 import NextHead from 'next/head';
 import { useRouter } from 'next/router';
-import { useMediaQuery } from 'pages/interface/index.js';
 
 const webserverHost = webserver.host;
 
@@ -18,10 +18,9 @@ export function DefaultHead() {
     description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.',
     url: `${webserverHost}${router.asPath}`,
     type: 'website',
-    noIndex: false,
   };
 
-  const { type, title, description, image, url, noIndex } = defaultMetadata;
+  const { type, title, description, image, url } = defaultMetadata;
 
   return (
     <NextHead>

@@ -1,4 +1,4 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
+import { DefaultLayout, ContentList } from '@/TabNewsUI';
 import user from 'models/user.js';
 import content from 'models/content.js';
 import authorization from 'models/authorization.js';

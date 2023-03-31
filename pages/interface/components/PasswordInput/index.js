@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { FormControl, TextInput } from '@primer/react';
+import { FormControl, TextInput } from '@/TabNewsUI';
 import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
+import { useEffect, useState } from 'react';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -52,7 +52,8 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
             sx={{ color: 'fg.subtle' }}
           />
         }
-        sx={{ minHeight: '46px' }}
+        contrast
+        sx={{ minHeight: '46px', pl: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
         ref={inputRef}
         onChange={clearErrors}
         onKeyDown={detectCapsLock}

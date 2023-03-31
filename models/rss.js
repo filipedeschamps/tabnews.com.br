@@ -1,6 +1,6 @@
-import { renderToStaticMarkup } from 'react-dom/server';
-import { Viewer } from 'pages/interface';
+import { Viewer } from '@/TabNewsUI';
 import removeMarkdown from 'models/remove-markdown';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';

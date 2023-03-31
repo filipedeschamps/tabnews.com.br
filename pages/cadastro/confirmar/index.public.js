@@ -1,6 +1,5 @@
-import { Box, Heading, Text } from '@primer/react';
-import { useState, useEffect } from 'react';
-import { DefaultLayout } from 'pages/interface/index.js';
+import { Box, DefaultLayout, Heading, Text } from '@/TabNewsUI';
+import { useEffect, useState } from 'react';
 
 export default function ConfirmSignup() {
   const [email, setEmail] = useState('');
