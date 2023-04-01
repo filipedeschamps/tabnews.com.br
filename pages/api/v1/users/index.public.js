@@ -8,6 +8,7 @@ import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
+import recaptchaHandler from 'models/recaptcha';
 
 export default nextConnect({
   attachParams: true,
@@ -20,6 +21,7 @@ export default nextConnect({
   .get(authorization.canRequest('read:user:list'), getHandler)
   .post(
     postValidationHandler,
+    recaptchaHandler,
     authorization.canRequest('create:user'),
     firewall.canRequest('create:user'),
     postHandler
@@ -40,6 +42,7 @@ function postValidationHandler(request, response, next) {
     username: 'required',
     email: 'required',
     password: 'required',
+    recaptchaToken: 'required',
   });
 
   request.body = cleanValues;

@@ -1,6 +1,9 @@
 import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
+
+const recaptchaPublicKey = process.env.NEXT_PUBLIC_RECAPTCHA_PUBLIC_KEY;
 
 export default function Register() {
   return (
@@ -20,6 +23,7 @@ function SignUpForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const passwordRef = useRef('');
+  const recaptchaRef = useRef('');
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +39,7 @@ function SignUpForm() {
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
+    const recaptchaToken = recaptchaRef.current.getValue();
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -63,8 +68,11 @@ function SignUpForm() {
           username: username,
           email: email,
           password: password,
+          recaptchaToken: recaptchaToken,
         }),
       });
+
+      recaptchaRef.current.reset();
 
       setGlobalErrorMessage(undefined);
 
@@ -79,6 +87,11 @@ function SignUpForm() {
       if (response.status === 400) {
         setErrorObject(responseBody);
         setIsLoading(false);
+
+        if (responseBody.key === 'recaptchaToken') {
+          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        }
+
         return;
       }
 
@@ -183,6 +196,9 @@ function SignUpForm() {
             Criar cadastro
           </Button>
         </FormControl>
+        <Box display={'flex'} alignItems={'center'} justifyContent={'center'}>
+          <ReCAPTCHA sitekey={recaptchaPublicKey} ref={recaptchaRef} />
+        </Box>
       </Box>
     </form>
   );
