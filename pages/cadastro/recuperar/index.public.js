@@ -2,6 +2,9 @@ import { Box, Button, DefaultLayout, Flash, FormControl, Heading, TextInput } fr
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { useEffect, useRef, useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
+
+const recaptchaPublicKey = process.env.NEXT_PUBLIC_RECAPTCHA_PUBLIC_KEY;
 
 export default function RecoverPassword() {
   return (
@@ -20,6 +23,7 @@ function RecoverPasswordForm() {
   const { user, isLoading: userIsLoading } = useUser();
 
   const userInputRef = useRef('');
+  const recaptchaRef = useRef('');
 
   useEffect(() => {
     if (user && !userIsLoading) {
@@ -40,6 +44,7 @@ function RecoverPasswordForm() {
     let email;
     let username;
     const userInput = userInputRef.current.value;
+    const recaptchaToken = recaptchaRef.current.getValue();
 
     if (!userInput) {
       setErrorObject({
@@ -67,8 +72,11 @@ function RecoverPasswordForm() {
         body: JSON.stringify({
           email,
           username,
+          recaptchaToken: recaptchaToken,
         }),
       });
+
+      recaptchaRef.current.reset();
 
       setGlobalErrorMessage(undefined);
       const responseBody = await response.json();
@@ -81,6 +89,11 @@ function RecoverPasswordForm() {
       if (response.status === 400) {
         setErrorObject(responseBody);
         setIsLoading(false);
+
+        if (responseBody.key === 'recaptchaToken') {
+          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        }
+
         return;
       }
 
@@ -172,6 +185,9 @@ function RecoverPasswordForm() {
             Recuperar
           </Button>
         </FormControl>
+        <Box display={'flex'} alignItems={'center'} justifyContent={'center'}>
+          <ReCAPTCHA sitekey={recaptchaPublicKey} ref={recaptchaRef} />
+        </Box>
       </Box>
     </form>
   );

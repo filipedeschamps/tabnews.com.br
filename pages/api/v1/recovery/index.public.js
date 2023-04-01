@@ -5,6 +5,7 @@ import authorization from 'models/authorization.js';
 import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
 import { ForbiddenError } from 'errors';
+import recaptchaHandler from 'models/recaptcha';
 
 export default nextConnect({
   attachParams: true,
@@ -14,13 +15,14 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .post(postValidationHandler, postHandler)
+  .post(postValidationHandler, recaptchaHandler, postHandler)
   .patch(patchValidationHandler, patchHandler);
 
 function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     username: 'optional',
     email: 'optional',
+    recaptchaToken: 'required',
   });
 
   request.body = cleanValues;
