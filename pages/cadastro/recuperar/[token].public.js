@@ -1,8 +1,7 @@
-import { useState, useRef } from 'react';
+import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput } from '@/TabNewsUI';
 import fetch from 'cross-fetch';
-import { FormControl, Box, Heading, Button, Flash } from '@primer/react';
-import { DefaultLayout, PasswordInput } from 'pages/interface/index.js';
 import { useRouter } from 'next/router';
+import { useRef, useState } from 'react';
 
 export default function RecoverPassword() {
   return (

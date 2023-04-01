@@ -1,5 +1,5 @@
+import { NavList, PrimerHeader, PrimerLink } from '@/TabNewsUI';
 import NextLink from 'next/link';
-import { Header, Link as PrimerLink, NavList } from '@primer/react';
 import { useRouter } from 'next/router';
 
 export function Link({ href, children, ...props }) {
@@ -12,9 +12,9 @@ export function Link({ href, children, ...props }) {
 
 export function HeaderLink({ href, children, ...props }) {
   return (
-    <Header.Link as={NextLink} href={href} prefetch={false} {...props}>
+    <PrimerHeader.Link as={NextLink} href={href} prefetch={false} {...props}>
       {children}
-    </Header.Link>
+    </PrimerHeader.Link>
   );
 }
 

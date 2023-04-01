@@ -1,8 +1,21 @@
-import { Header, Box, ActionMenu, ActionList, IconButton, Truncate, Text, Tooltip } from '@primer/react';
-import { PersonFillIcon, HomeIcon, SquareFillIcon } from '@primer/octicons-react';
-import { CgTab } from 'react-icons/cg';
-import { HeaderLink, Link, useUser } from 'pages/interface';
+import {
+  ActionList,
+  ActionMenu,
+  Box,
+  HeaderLink,
+  IconButton,
+  Link,
+  PrimerHeader,
+  Text,
+  ThemeSelector,
+  ThemeSwitcher,
+  Tooltip,
+  Truncate,
+} from '@/TabNewsUI';
+import { HomeIcon, PersonFillIcon, SquareFillIcon } from '@primer/octicons-react';
 import { useRouter } from 'next/router';
+import { useUser } from 'pages/interface';
+import { CgTab } from 'react-icons/cg';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
@@ -14,72 +27,78 @@ export default function HeaderComponent() {
   };
 
   return (
-    <Header
+    <PrimerHeader
       id="header"
       sx={{
         px: [2, null, null, 3],
       }}>
-      <Header.Item>
+      <PrimerHeader.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
           <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
         </HeaderLink>
-      </Header.Item>
+      </PrimerHeader.Item>
 
-      <Header.Item>
+      <PrimerHeader.Item>
         <HeaderLink href="/" sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : undefined}>
           Relevantes
         </HeaderLink>
-      </Header.Item>
+      </PrimerHeader.Item>
 
-      <Header.Item full>
+      <PrimerHeader.Item full>
         <HeaderLink href="/recentes" sx={asPath.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
-      </Header.Item>
+      </PrimerHeader.Item>
 
       {!isLoading && !user && (
         <>
-          <Header.Item>
+          <PrimerHeader.Item sx={{ mr: 2 }}>
+            <ThemeSwitcher />
+          </PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Login</HeaderLink>
-          </Header.Item>
-          <Header.Item>
+          </PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
-          </Header.Item>
+          </PrimerHeader.Item>
+          <PrimerHeader.Item sx={{ display: ['flex', 'none'] }}>
+            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Entrar</HeaderLink>
+          </PrimerHeader.Item>
         </>
       )}
 
       {user && (
         <>
-          <Header.Item
+          <PrimerHeader.Item
             sx={{
               mr: 2,
               fontSize: 0,
               fontWeight: 'bold',
             }}>
             <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'accent.emphasis' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#0969da' }}>
                 <SquareFillIcon size={16} />
                 <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins?.toLocaleString('pt-BR')}</Text>
               </Box>
             </Tooltip>
-          </Header.Item>
+          </PrimerHeader.Item>
 
-          <Header.Item
+          <PrimerHeader.Item
             sx={{
               mr: 2,
               fontSize: 0,
               fontWeight: 'bold',
             }}>
             <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: 'success.emphasis' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#2da44e' }}>
                 <SquareFillIcon size={16} />
                 <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash?.toLocaleString('pt-BR')}</Text>
               </Box>
             </Tooltip>
-          </Header.Item>
+          </PrimerHeader.Item>
 
-          <Header.Item sx={{ mr: 0 }}>
+          <PrimerHeader.Item sx={{ mr: 0 }}>
             <ActionMenu>
               <ActionMenu.Anchor>
                 <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
@@ -104,15 +123,19 @@ export default function HeaderComponent() {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Divider />
+
+                  <ThemeSelector />
+                  <ActionList.Divider />
+
                   <ActionList.Item variant="danger" onSelect={logout}>
                     Deslogar
                   </ActionList.Item>
                 </ActionList>
               </ActionMenu.Overlay>
             </ActionMenu>
-          </Header.Item>
+          </PrimerHeader.Item>
         </>
       )}
-    </Header>
+    </PrimerHeader>
   );
 }

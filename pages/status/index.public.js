@@ -1,8 +1,6 @@
+import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
-import { Box, Heading, Label, LabelGroup, Truncate } from '@primer/react';
-import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
-
-import { DefaultLayout } from 'pages/interface/index.js';
 
 export default function Page() {
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {

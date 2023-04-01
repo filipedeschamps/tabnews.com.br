@@ -1,7 +1,4 @@
-import { Box, Heading } from '@primer/react';
-import { Viewer } from 'pages/interface';
-
-import { DefaultLayout } from 'pages/interface/index.js';
+import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const body = `Ao utilizar o TabNews você está de acordo com os seguintes termos:

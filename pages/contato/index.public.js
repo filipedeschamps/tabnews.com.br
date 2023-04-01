@@ -1,7 +1,4 @@
-import { Box, Heading } from '@primer/react';
-import { Viewer } from 'pages/interface';
-
-import { DefaultLayout } from 'pages/interface/index.js';
+import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const body = `Leia com atenção qual a melhor forma de entrar em contato:

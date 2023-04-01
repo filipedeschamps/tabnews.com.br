@@ -1,15 +1,15 @@
-import useSWR from 'swr';
-import { useEffect, useState } from 'react';
-import { Link, DefaultLayout, Content, TabCoinButtons, Confetti, useCollapse } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import validator from 'models/validator.js';
-import authorization from 'models/authorization.js';
-import removeMarkdown from 'models/remove-markdown.js';
+import { Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
+import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
 import { NotFoundError } from 'errors/index.js';
-import { Box, Button, Tooltip } from '@primer/react';
-import { CommentIcon, CommentDiscussionIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import { useCollapse } from 'pages/interface';
+import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 export default function Post({
   contentFound: contentFoundFallback,
@@ -74,7 +74,7 @@ export default function Post({
               sx={{
                 borderWidth: 0,
                 borderRightWidth: 1,
-                borderColor: 'border.muted',
+                borderColor: 'btn.activeBorder',
                 borderStyle: 'dotted',
                 width: '50%',
                 height: '100%',
@@ -82,7 +82,7 @@ export default function Post({
             />
           </Box>
 
-          <Box sx={{ width: '100%', overflow: 'auto' }}>
+          <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
             <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -246,7 +246,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                       borderStyle: 'dashed',
                     },
                     svg: {
-                      backgroundColor: 'white',
+                      backgroundColor: 'canvas.default',
                     },
                   },
                 }}>
@@ -266,7 +266,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                     borderWidth: 0,
                     borderRightWidth: 1,
                     borderLeftWidth: 0,
-                    borderColor: 'border.muted',
+                    borderColor: 'btn.activeBorder',
                     borderStyle: 'dotted',
                     width: 0,
                     transition: 'border 0.1s cubic-bezier(1,1,1,0)',
@@ -275,7 +275,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
               </Tooltip>
             </Box>
 
-            <Box sx={{ width: '100%', overflow: 'auto' }}>
+            <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
               <Content content={child} mode="view" />
 
               <Box sx={{ mt: 4 }}>
