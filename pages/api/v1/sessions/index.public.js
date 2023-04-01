@@ -7,6 +7,7 @@ import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
 import activation from 'models/activation.js';
 import validator from 'models/validator.js';
 import session from 'models/session';
+import recaptchaHandler from 'models/recaptcha';
 
 export default nextConnect({
   attachParams: true,
@@ -18,7 +19,7 @@ export default nextConnect({
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), getHandler)
   .delete(authorization.canRequest('read:session'), deleteHandler)
-  .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
+  .post(postValidationHandler, recaptchaHandler, authorization.canRequest('create:session'), postHandler);
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
@@ -45,6 +46,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    recaptchaToken: 'required',
   });
 
   request.body = cleanValues;

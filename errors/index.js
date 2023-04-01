@@ -138,3 +138,15 @@ export class UnprocessableEntityError extends BaseError {
     });
   }
 }
+
+export class RecaptchaError extends BaseError {
+  constructor({ message, action, stack, errorLocationCode }) {
+    super({
+      message: message || 'O desafio não foi realizado com sucesso.',
+      action: action || 'Realize o desafio novamento ou atualize a página.',
+      statusCode: 400,
+      stack: stack,
+      errorLocationCode: errorLocationCode,
+    });
+  }
+}

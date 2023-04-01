@@ -12,6 +12,10 @@ import {
 } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
 import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
+
+const recaptchaPublicKey = process.env.NEXT_PUBLIC_RECAPTCHA_PUBLIC_KEY;
 
 export default function Login() {
   return (
@@ -26,6 +30,7 @@ function LoginForm() {
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
+  const recaptchaRef = useRef('');
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +45,7 @@ function LoginForm() {
 
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
+    const recaptchaToken = recaptchaRef.current.getValue();
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -54,8 +60,11 @@ function LoginForm() {
         body: JSON.stringify({
           email: email,
           password: password,
+          recaptchaToken: recaptchaToken,
         }),
       });
+
+      recaptchaRef.current.reset();
 
       setGlobalErrorMessage(undefined);
 
@@ -69,6 +78,11 @@ function LoginForm() {
       if (response.status === 400) {
         setErrorObject(responseBody);
         setIsLoading(false);
+
+        if (responseBody.key === 'recaptchaToken') {
+          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        }
+
         return;
       }
 
@@ -131,6 +145,9 @@ function LoginForm() {
               Login
             </Button>
           </FormControl>
+          <Box display={'flex'} alignItems={'center'} justifyContent={'center'}>
+            <ReCAPTCHA sitekey={recaptchaPublicKey} ref={recaptchaRef} />
+          </Box>
         </Box>
       </form>
       <Box sx={{ mt: 6, width: '100%', textAlign: 'center', fontSize: 1 }} display="flex" flexDirection="column">
