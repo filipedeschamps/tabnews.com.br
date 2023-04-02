@@ -80,7 +80,7 @@ export function EditorColors() {
         }
         .tippy-box[data-theme~='light-border'] {
           background-color: ${colors.canvas.default};
-          color: ${colors.fg.subtle};
+          color: ${colors.fg.default};
           box-shadow: ${shadows.overlay.shadow};
         }
         .tippy-box[data-theme~='light-border'] > .tippy-backdrop {
