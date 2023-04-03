@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 
-export default function useCollapse({ childrenList, renderIntent = 20, renderIncrement = 10, flatten = false }) {
+export default function useCollapse({
+  childrenList,
+  renderIntent = 20,
+  renderIncrement = 10,
+  flatten = false,
+  minimalSubTree = 3,
+}) {
   const flattenedTree = useMemo(flattenTree, [childrenList, flatten]);
   const [childrenState, setChildrenState] = useState(() => computeStates(flattenedTree, renderIntent));
 
   useEffect(() => {
     setChildrenState((lastState) => computeStates(flattenedTree, renderIntent, lastState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flattenedTree, renderIntent]);
 
   const filteredTree = useMemo(() => {
@@ -24,6 +31,7 @@ export default function useCollapse({ childrenList, renderIntent = 20, renderInc
   function computeStates(children, renderIntent, lastState = []) {
     let newStates = [];
     let remaining = renderIntent;
+    let treeIntent = minimalSubTree;
     let grouperIndex = null;
     let deltaIndex = 0;
 
@@ -46,9 +54,15 @@ export default function useCollapse({ childrenList, renderIntent = 20, renderInc
       }
 
       if (remaining > 0) {
+        if (remaining < treeIntent) {
+          treeIntent = remaining;
+        }
+        const renderIntent = treeIntent > child.children_deep_count ? 1 + child.children_deep_count : treeIntent;
+        remaining -= renderIntent;
+
         newStates.push({
           id: child.id,
-          renderIntent: 1,
+          renderIntent: renderIntent,
           groupedCount: 1 + child.children_deep_count,
           renderShowMore: false,
         });
@@ -56,6 +70,7 @@ export default function useCollapse({ childrenList, renderIntent = 20, renderInc
 
       if (remaining === 0) {
         grouperIndex = index;
+        remaining -= 1;
 
         newStates.push({
           id: child.id,
@@ -77,8 +92,6 @@ export default function useCollapse({ childrenList, renderIntent = 20, renderInc
           renderShowMore: false,
         });
       }
-
-      remaining -= 1;
     });
 
     for (const child of newStates) {
@@ -146,8 +159,8 @@ export default function useCollapse({ childrenList, renderIntent = 20, renderInc
   }
 
   function flattenTree() {
+    if (!childrenList?.length) return [];
     if (!flatten) return childrenList;
-    if (!childrenList.length > 0) return [];
 
     let flattenTree = [...childrenList];
 
