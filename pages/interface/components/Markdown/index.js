@@ -1,6 +1,6 @@
-import { Box, EditorColors, EditorStyles } from '@/TabNewsUI';
+import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
 import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // ByteMD dependencies:
 import breaksPlugin from '@bytemd/plugin-breaks';
@@ -15,10 +15,9 @@ import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import 'katex/dist/katex.css';
 
-const bytemdPluginList = [
+const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
   highlightSsrPlugin(),
-  mermaidPlugin({ locale: mermaidLocale }),
   mathPlugin({
     locale: mathLocale,
     katexOptions: { output: 'html' },
@@ -27,12 +26,41 @@ const bytemdPluginList = [
   gemojiPlugin(),
 ];
 
-export default function Viewer({ ...props }) {
-  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} {...props} />;
+function usePlugins() {
+  const { colorScheme } = useTheme();
+
+  const plugins = useMemo(() => {
+    const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
+
+    return [...bytemdPluginBaseList, mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme })];
+  }, [colorScheme]);
+
+  return plugins;
+}
+
+export default function Viewer({ value: _value, ...props }) {
+  const bytemdPluginList = usePlugins();
+  const [value, setValue] = useState(_value);
+
+  useEffect(() => {
+    let timeout;
+
+    setValue((value) => {
+      timeout = setTimeout(() => setValue(value));
+      return value + '\n\u0160';
+    });
+
+    return () => clearTimeout(timeout);
+  }, [bytemdPluginList]);
+
+  useEffect(() => setValue(_value), [_value]);
+
+  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} value={value} {...props} />;
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
 export function Editor({ isValid, onKeyDown, compact, ...props }) {
+  const bytemdPluginList = usePlugins();
   const editorMode = 'split'; // 'tab'
   const editorRef = useRef();
 

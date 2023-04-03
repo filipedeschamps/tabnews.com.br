@@ -68,6 +68,9 @@ export function EditorColors() {
         .bytemd-fullscreen.bytemd {
           background-color: ${colors.canvas.subtle};
         }
+        .bytemd-fullscreen.bytemd:focus-within {
+          box-shadow: none;
+        }
         .tippy-box {
           background-color: ${colors.neutral.emphasisPlus};
           color: ${colors.fg.onEmphasis};
@@ -77,7 +80,7 @@ export function EditorColors() {
         }
         .tippy-box[data-theme~='light-border'] {
           background-color: ${colors.canvas.default};
-          color: ${colors.fg.subtle};
+          color: ${colors.fg.default};
           box-shadow: ${shadows.overlay.shadow};
         }
         .tippy-box[data-theme~='light-border'] > .tippy-backdrop {
@@ -277,16 +280,20 @@ export function EditorStyles({ mode, compact }) {
           display: ${mode === 'split' ? 'none' : 'inline-block'};
         }
         .bytemd-body {
-          height: ${compact ? '30vh' : 'calc(100vh - 350px)'};
-          min-height: 200px;
+          height: ${compact ? '30vh' : 'calc(100vh - 410px)'};
+          min-height: 150px;
           overflow: auto;
           resize: vertical;
           border-radius: 4px;
         }
         .bytemd-fullscreen .bytemd-body {
-          height: calc(100vh - 100px);
+          flex: 1;
+          resize: none;
         }
-
+        .bytemd-fullscreen {
+          display: flex !important;
+          flex-direction: column;
+        }
         .bytemd {
           display: inline-block;
           width: 100%;
@@ -297,7 +304,6 @@ export function EditorStyles({ mode, compact }) {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji,
             Segoe UI Emoji;
           box-sizing: border-box;
-          resize: vertical;
         }
         .bytemd * {
           box-sizing: border-box;
@@ -564,6 +570,9 @@ export function EditorStyles({ mode, compact }) {
         }
         .CodeMirror-sizer {
           position: relative;
+        }
+        .CodeMirror-sizer > div {
+          box-sizing: content-box;
         }
         .CodeMirror-vscrollbar,
         .CodeMirror-hscrollbar,
@@ -1800,7 +1809,9 @@ export function ViewerStyles() {
           background-color: ${colors.canvas.subtle};
           border-radius: 6px;
         }
-
+        .markdown-body .math {
+          overflow: auto;
+        }
         .markdown-body pre code,
         .markdown-body pre tt {
           display: inline;
