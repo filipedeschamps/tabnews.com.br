@@ -34,7 +34,7 @@ function LoginForm() {
   const [errorObject, setErrorObject] = useState(undefined);
 
   useEffect(() => {
-    if (!user || !router) return;
+    if (!user || !router || user.proxyResponse) return;
     if (router.query?.redirect?.startsWith('/')) {
       router.replace(router.query.redirect);
     } else {
