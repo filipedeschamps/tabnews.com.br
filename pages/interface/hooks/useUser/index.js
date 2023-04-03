@@ -1,3 +1,5 @@
+import webserver from 'infra/webserver';
+import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 const userEndpoint = '/api/v1/user';
@@ -10,6 +12,7 @@ export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(undefined);
+  const router = useRouter();
 
   const fetchUser = useCallback(async () => {
     try {
@@ -30,7 +33,21 @@ export function UserProvider({ children }) {
 
         setUser(fetchedUser);
         localStorage.setItem('user', JSON.stringify(cachedUserProperties));
+        localStorage.removeItem('reloadTime');
       } else {
+        if (webserver.isProduction && !response.headers.get('x-vercel-id')) {
+          // If is proxy response, then go to /login and reload page
+          if (localStorage.getItem('reloadTime') > Date.now() - 30000) return;
+          if (router.pathname === '/login') {
+            localStorage.setItem('reloadTime', Date.now());
+            router.reload();
+          } else {
+            setUser((user) => (user?.id ? { ...user, proxyResponse: true } : null));
+            await router.push(`/login?redirect=${router.asPath}`);
+          }
+          return;
+        }
+
         setUser(null);
         localStorage.removeItem('user');
         const error = new Error(responseBody.message);
@@ -40,7 +57,7 @@ export function UserProvider({ children }) {
     } catch (error) {
       setError(error);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
