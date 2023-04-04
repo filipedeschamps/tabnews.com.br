@@ -20,7 +20,7 @@ export function UserProvider({ children }) {
       const response = await fetch(userEndpoint);
       const responseBody = await response.json();
 
-      if (response.status !== 401 && response.status !== 403) {
+      if (response.status === 200) {
         const fetchedUser = responseBody;
 
         const cachedUserProperties = {
@@ -35,28 +35,32 @@ export function UserProvider({ children }) {
         setUser(fetchedUser);
         localStorage.setItem('user', JSON.stringify(cachedUserProperties));
         localStorage.removeItem('reloadTime');
-      } else {
-        if (webserver.isProduction && !response.headers.get('x-vercel-id')) {
-          // If is proxy response, then go to /login and reload page
-          if (localStorage.getItem('reloadTime') > Date.now() - 30000) return;
-          if (router.pathname === '/login') {
-            localStorage.setItem('reloadTime', Date.now());
-            router.reload();
-          } else {
-            setUser((user) => (user?.id ? { ...user, proxyResponse: true } : null));
-            await router.push(`/login?redirect=${router.asPath}`);
-          }
-          return;
-        }
+      }
 
-        setUser(null);
-        localStorage.removeItem('user');
+      if (response.status >= 400) {
         const error = new Error(responseBody.message);
         error.status = response.status;
         throw error;
       }
     } catch (error) {
       setError(error);
+      if (
+        error.status === undefined ||
+        (error.status === 403 && webserver.isProduction && !response.headers.get('x-vercel-id'))
+      ) {
+        // If is proxy error, then go to login page and reload if is already there
+        if (localStorage.getItem('reloadTime') > Date.now() - 30000) return;
+        if (router.pathname === '/login') {
+          localStorage.setItem('reloadTime', Date.now());
+          router.reload();
+        } else {
+          setUser((user) => (user?.id ? { ...user, proxyResponse: true } : null));
+          await router.push(`/login?redirect=${router.asPath}`);
+        }
+      } else if (error.status === 401 || error.status === 403) {
+        setUser(null);
+        localStorage.removeItem('user');
+      }
     }
   }, [router]);
 
