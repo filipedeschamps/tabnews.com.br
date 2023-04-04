@@ -11,6 +11,7 @@ const UserContext = createContext();
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(undefined);
   const router = useRouter();
 
@@ -62,15 +63,15 @@ export function UserProvider({ children }) {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     (async () => {
-      if (storedUser) {
+      if (storedUser && isLoading && !isFetching) {
         setUser(JSON.parse(storedUser));
+        setIsFetching(true);
         await fetchUser();
+        setIsFetching(false);
       }
       setIsLoading(false);
     })();
-  }, [fetchUser]);
 
-  useEffect(() => {
     if (isLoading) return;
 
     function onFocus() {
@@ -81,7 +82,23 @@ export function UserProvider({ children }) {
     addEventListener('focus', onFocus);
 
     return () => removeEventListener('focus', onFocus);
-  }, [fetchUser, isLoading]);
+  }, [fetchUser, isFetching, isLoading]);
+
+  useEffect(() => {
+    if (!router || router.pathname !== '/login') return;
+
+    (async () => {
+      if (user?.proxyResponse || !user?.id) await fetchUser();
+
+      if (!user?.id) return;
+
+      if (router.query?.redirect?.startsWith('/')) {
+        router.replace(router.query.redirect);
+      } else {
+        router.replace('/');
+      }
+    })();
+  }, [user, router, fetchUser]);
 
   const logout = useCallback(async () => {
     try {
