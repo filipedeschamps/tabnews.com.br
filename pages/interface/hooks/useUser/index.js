@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 const userEndpoint = '/api/v1/user';
 const sessionEndpoint = '/api/v1/sessions';
+const protectedRoutes = ['/login', '/cadastro', '/cadastro/recuperar'];
 const refreshInterval = 600000; // 10 minutes
 
 const UserContext = createContext();
@@ -46,11 +47,11 @@ export function UserProvider({ children }) {
       setError(error);
       if (
         error.status === undefined ||
-        (error.status === 403 && webserver.isProduction && !response.headers.get('x-vercel-id'))
+        (error.status === 403 && webserver.isProduction && !response?.headers.get('x-vercel-id'))
       ) {
         // If is proxy error, then go to login page and reload if is already there
         if (localStorage.getItem('reloadTime') > Date.now() - 30000) return;
-        if (router.pathname === '/login') {
+        if (protectedRoutes.includes(router.pathname)) {
           localStorage.setItem('reloadTime', Date.now());
           router.reload();
         } else {
@@ -89,12 +90,12 @@ export function UserProvider({ children }) {
   }, [fetchUser, isFetching, isLoading]);
 
   useEffect(() => {
-    if (!router || router.pathname !== '/login') return;
+    if (!router || !protectedRoutes.includes(router.pathname)) return;
 
     (async () => {
       if (user?.proxyResponse || !user?.id) await fetchUser();
 
-      if (!user?.id) return;
+      if (!user?.id || router.pathname !== '/login') return;
 
       if (router.query?.redirect?.startsWith('/')) {
         router.replace(router.query.redirect);
