@@ -10,9 +10,8 @@ import {
   Text,
   TextInput,
 } from '@/TabNewsUI';
-import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 export default function Login() {
   return (
@@ -23,8 +22,7 @@ export default function Login() {
 }
 
 function LoginForm() {
-  const { user, fetchUser } = useUser();
-  const router = useRouter();
+  const { fetchUser } = useUser();
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
@@ -32,15 +30,6 @@ function LoginForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-
-  useEffect(() => {
-    if (!user || !router || user.proxyResponse) return;
-    if (router.query?.redirect?.startsWith('/')) {
-      router.replace(router.query.redirect);
-    } else {
-      router.replace('/');
-    }
-  }, [user, router]);
 
   function clearErrors() {
     setErrorObject(undefined);
