@@ -779,17 +779,6 @@ const schemas = {
         }),
     });
   },
-
-  recaptchaToken: function () {
-    return Joi.object({
-      recaptchaToken: Joi.string().trim().required().messages({
-        'any.required': `"recaptchaToken" é um campo obrigatório.`,
-        'string.empty': `"recaptchaToken" não pode estar em branco.`,
-        'string.base': `"recaptchaToken" deve ser do tipo String.`,
-        'any.invalid': `"recaptchaToken" possui o valor inválido "null".`,
-      }),
-    });
-  },
 };
 
 const withoutMarkdown = (value, helpers) => {

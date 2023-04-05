@@ -42,7 +42,6 @@ function postValidationHandler(request, response, next) {
     username: 'required',
     email: 'required',
     password: 'required',
-    recaptchaToken: 'required',
   });
 
   request.body = cleanValues;

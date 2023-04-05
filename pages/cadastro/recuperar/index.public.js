@@ -23,7 +23,7 @@ function RecoverPasswordForm() {
   const { user, isLoading: userIsLoading } = useUser();
 
   const userInputRef = useRef('');
-  const recaptchaRef = useRef('');
+  const recaptchaRef = useRef(null);
 
   useEffect(() => {
     if (user && !userIsLoading) {
@@ -68,11 +68,11 @@ function RecoverPasswordForm() {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'x-recaptcha-token': recaptchaToken,
         },
         body: JSON.stringify({
           email,
           username,
-          recaptchaToken: recaptchaToken,
         }),
       });
 
@@ -90,7 +90,7 @@ function RecoverPasswordForm() {
         setErrorObject(responseBody);
         setIsLoading(false);
 
-        if (responseBody.key === 'recaptchaToken') {
+        if (responseBody.key === 'recaptcha') {
           setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
         }
 

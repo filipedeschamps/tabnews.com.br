@@ -17,6 +17,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -47,6 +48,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -81,6 +83,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -118,6 +121,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -149,6 +153,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -181,6 +186,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -238,6 +244,7 @@ describe('POST /api/v1/recovery', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({}),
@@ -277,6 +284,7 @@ describe('POST /api/v1/recovery', () => {
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
 
         body: JSON.stringify({
@@ -320,6 +328,7 @@ describe('POST /api/v1/recovery', () => {
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'userNotFound',
@@ -343,6 +352,49 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+  });
+
+  describe('Recaptcha', () => {
+    test('Not send recaptcha token', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'user',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Desafio não foi respondido.');
+      expect(responseBody.action).toEqual('Por favor, responda o desafio.');
+    });
+
+    test('Invalid or expired recaptcha token', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-recaptcha-token': 'invalid-or-expired-token',
+        },
+        body: JSON.stringify({
+          username: 'user',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Desafio inválido ou expirado.');
+      expect(responseBody.action).toEqual('Por favor, responda novamente o desafio.');
     });
   });
 });

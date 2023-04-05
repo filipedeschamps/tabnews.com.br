@@ -23,7 +23,7 @@ function SignUpForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const passwordRef = useRef('');
-  const recaptchaRef = useRef('');
+  const recaptchaRef = useRef(null);
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,12 +63,12 @@ function SignUpForm() {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'x-recaptcha-token': recaptchaToken,
         },
         body: JSON.stringify({
           username: username,
           email: email,
           password: password,
-          recaptchaToken: recaptchaToken,
         }),
       });
 
@@ -88,7 +88,7 @@ function SignUpForm() {
         setErrorObject(responseBody);
         setIsLoading(false);
 
-        if (responseBody.key === 'recaptchaToken') {
+        if (responseBody.key === 'recaptcha') {
           setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
         }
 

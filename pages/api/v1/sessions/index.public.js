@@ -46,7 +46,6 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
-    recaptchaToken: 'required',
   });
 
   request.body = cleanValues;

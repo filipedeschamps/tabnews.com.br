@@ -12,7 +12,6 @@ import {
 } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
 import { useRef, useState } from 'react';
-import { useEffect, useRef, useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 
 const recaptchaPublicKey = process.env.NEXT_PUBLIC_RECAPTCHA_PUBLIC_KEY;
@@ -30,7 +29,7 @@ function LoginForm() {
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
-  const recaptchaRef = useRef('');
+  const recaptchaRef = useRef(null);
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,11 +55,11 @@ function LoginForm() {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'x-recaptcha-token': recaptchaToken,
         },
         body: JSON.stringify({
           email: email,
           password: password,
-          recaptchaToken: recaptchaToken,
         }),
       });
 
@@ -79,7 +78,7 @@ function LoginForm() {
         setErrorObject(responseBody);
         setIsLoading(false);
 
-        if (responseBody.key === 'recaptchaToken') {
+        if (responseBody.key === 'recaptcha') {
           setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
         }
 

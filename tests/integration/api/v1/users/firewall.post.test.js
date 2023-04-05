@@ -18,6 +18,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'request1',
@@ -30,6 +31,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'request2',
@@ -42,6 +44,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'request3',

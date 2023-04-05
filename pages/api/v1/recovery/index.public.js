@@ -22,7 +22,6 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     username: 'optional',
     email: 'optional',
-    recaptchaToken: 'required',
   });
 
   request.body = cleanValues;

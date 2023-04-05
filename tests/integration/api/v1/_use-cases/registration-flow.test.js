@@ -25,6 +25,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
+        'x-recaptcha-token': 'recaptcha-token-test',
       },
       body: JSON.stringify({
         username: 'RegularRegistrationFlow',
@@ -106,6 +107,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
+        'x-recaptcha-token': 'recaptcha-token-test',
       },
       body: JSON.stringify({
         email: 'RegularRegistrationFlow@gmail.com',

@@ -24,6 +24,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'emailToBeFoundAndAccepted@gmail.com',
@@ -64,6 +65,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'emailToBeFoundAndLostFeature@gmail.com',
@@ -93,6 +95,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'emailToBeFoundAndRejected@gmail.com',
@@ -124,6 +127,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'wrongpassword@gmail.com',
@@ -155,6 +159,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'IFORGOTMYEMAIL@gmail.com',
@@ -179,6 +184,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           password: 'validPassword',
@@ -203,6 +209,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: '',
@@ -228,6 +235,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 12345,
@@ -253,6 +261,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'invalidemail',
@@ -278,6 +287,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
@@ -302,6 +312,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
@@ -327,6 +338,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
@@ -352,6 +364,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
@@ -377,6 +390,7 @@ describe('POST /api/v1/sessions', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
@@ -413,6 +427,65 @@ describe('POST /api/v1/sessions', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('object');
+    });
+  });
+
+  describe('Recaptcha', () => {
+    test('Not send recaptcha token', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailToTestRecaptcha@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: defaultUser.email,
+          password: defaultUser.password,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Desafio não foi respondido.');
+      expect(responseBody.action).toEqual('Por favor, responda o desafio.');
+    });
+
+    test('Invalid or expired recaptcha token', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailToTestRecaptcha2@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-recaptcha-token': 'invalid-or-expired-token',
+        },
+        body: JSON.stringify({
+          email: defaultUser.email,
+          password: defaultUser.password,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Desafio inválido ou expirado.');
+      expect(responseBody.action).toEqual('Por favor, responda novamente o desafio.');
     });
   });
 });

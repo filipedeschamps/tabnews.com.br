@@ -17,6 +17,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'uniqueUserName',
@@ -56,6 +57,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'postWithUnknownKey',
@@ -92,6 +94,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'extraSpaceInTheEnd ',
@@ -132,6 +135,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'SaMeUPPERCASE',
@@ -144,6 +148,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'SaMeUPPERCASE',
@@ -170,6 +175,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'DIFFERENTuppercase',
@@ -182,6 +188,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'differentUPPERCASE',
@@ -208,6 +215,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           email: 'valid@email.com',
@@ -233,6 +241,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: null,
@@ -259,6 +268,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: '',
@@ -285,6 +295,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 12345,
@@ -311,6 +322,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'invalid!user_name',
@@ -337,6 +349,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'userWith31Characterssssssssssss',
@@ -363,6 +376,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'administrator',
@@ -389,6 +403,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'anotherUserName111',
@@ -401,6 +416,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'anotherUserName222',
@@ -427,6 +443,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'willTryToReuseEmail111',
@@ -439,6 +456,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'willTryToReuseEmail222',
@@ -465,6 +483,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -490,6 +509,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -516,6 +536,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -542,6 +563,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -568,6 +590,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -593,6 +616,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -619,6 +643,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -645,6 +670,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -671,6 +697,7 @@ describe('POST /api/v1/users', () => {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          'x-recaptcha-token': 'recaptcha-token-test',
         },
         body: JSON.stringify({
           username: 'notUsedUserName',
@@ -727,6 +754,53 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('object');
+    });
+  });
+
+  describe('Recaptcha', () => {
+    test('Not send recaptcha token', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'recaptchaTest',
+          email: 'emailTestRecaptcha@gmail.com',
+          password: 'ValidPassword',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Desafio não foi respondido.');
+      expect(responseBody.action).toEqual('Por favor, responda o desafio.');
+    });
+
+    test('Invalid or expired recaptcha token', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-recaptcha-token': 'invalid-or-expired-token',
+        },
+        body: JSON.stringify({
+          username: 'recaptchaTest2',
+          email: 'emailTestRecaptcha2@gmail.com',
+          password: 'ValidPassword',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Desafio inválido ou expirado.');
+      expect(responseBody.action).toEqual('Por favor, responda novamente o desafio.');
     });
   });
 });
