@@ -370,7 +370,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         title: 'Root content title',
         body: 'Root content body',
-        status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
 
@@ -419,12 +418,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         body: '[Não disponível]',
         status: 'draft',
         source_url: null,
-        published_at: rootContent.published_at.toISOString(),
+        published_at: null,
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDrafted.updated_at.toISOString(),
         deleted_at: null,
         owner_username: firstUser.username,
-        tabcoins: 1,
+        tabcoins: 0,
         children_deep_count: 0,
       });
     });

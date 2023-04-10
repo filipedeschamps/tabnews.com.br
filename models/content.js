@@ -619,6 +619,7 @@ async function update(contentId, postedContent, options = {}) {
   const newContent = { ...oldContent, ...validPostedContent };
 
   throwIfContentIsAlreadyDeleted(oldContent);
+  throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
   checkRootContentTitle(newContent);
   checkForParentIdRecursion(newContent);
 
@@ -748,6 +749,18 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
       message: `Não é possível alterar informações de um conteúdo já deletado.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_DELETED',
+      statusCode: 400,
+      key: 'status',
+    });
+  }
+}
+
+function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
+  if (oldContent.status === 'published' && newContent.status === 'draft') {
+    throw new ValidationError({
+      message: `Não é possível alterar para rascunho um conteúdo já publicado.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
       statusCode: 400,
       key: 'status',
     });
