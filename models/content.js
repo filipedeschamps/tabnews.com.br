@@ -536,7 +536,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
     let amountToDebit;
 
-    const userEarnings = await prestige.getByContentId(oldContent.id);
+    const userEarnings = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
 
     if (oldContent.tabcoins > 0) {
       amountToDebit = contentDefaultEarnings - oldContent.tabcoins - userEarnings;
@@ -565,7 +565,10 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     // We should credit if the content already existed and is now being published for the first time.
     (oldContent && !oldContent.published_at && newContent.status === 'published')
   ) {
-    const userEarnings = await prestige.getByUserId(newContent.owner_id, { isRoot: !newContent.parent_id });
+    const userEarnings = await prestige.getByUserId(newContent.owner_id, {
+      isRoot: !newContent.parent_id,
+      transaction: options.transaction,
+    });
 
     if (userEarnings < 0) {
       throw new ForbiddenError({

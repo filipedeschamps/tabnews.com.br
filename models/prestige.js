@@ -1,10 +1,13 @@
 import database from 'infra/database';
 
-async function getByContentId(contentId) {
-  const result = await database.query({
-    text: queryByContentId,
-    values: [contentId],
-  });
+async function getByContentId(contentId, { transaction } = {}) {
+  const result = await database.query(
+    {
+      text: queryByContentId,
+      values: [contentId],
+    },
+    { transaction }
+  );
   return result.rows[0].amount;
 }
 
@@ -37,15 +40,19 @@ async function getByUserId(
     timeOffset = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
     isRoot,
     limit = 10,
+    transaction,
   } = {}
 ) {
   // Minimum percentage of content classified as relevant to earn tabcoins by publishing
   const thresholdPercentage = 0.6;
 
-  const result = await database.query({
-    text: queryByUserId,
-    values: [userId, timeOffset, isRoot, limit],
-  });
+  const result = await database.query(
+    {
+      text: queryByUserId,
+      values: [userId, timeOffset, isRoot, limit],
+    },
+    { transaction }
+  );
 
   const length = result.rows?.length;
 
