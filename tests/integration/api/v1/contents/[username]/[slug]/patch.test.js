@@ -2999,6 +2999,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3042,6 +3043,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3085,6 +3087,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3128,6 +3131,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 5 });
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3135,6 +3139,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: 'Body',
           status: 'published',
         });
+
+        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBodyBefore = await userResponseBefore.json();
+
+        expect(userResponseBodyBefore.tabcoins).toEqual(5);
+        expect(userResponseBodyBefore.tabcash).toEqual(0);
+
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1 });
 
         const contentResponse = await fetch(
           `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
@@ -3171,6 +3189,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3178,6 +3197,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: 'Body',
           status: 'published',
         });
+
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 8 });
 
         await orchestrator.createBalance({
           balanceType: 'content:tabcoin',
@@ -3236,6 +3257,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3243,6 +3265,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: 'Body',
           status: 'published',
         });
+
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 10 });
 
         await orchestrator.createBalance({
           balanceType: 'content:tabcoin',
@@ -3301,6 +3325,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3374,6 +3399,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
@@ -3426,6 +3452,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
@@ -3479,6 +3506,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(firstUser.id);
+        await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
@@ -3534,7 +3563,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(2);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3542,6 +3571,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
@@ -3607,6 +3637,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(firstUser.id);
+        await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
@@ -3670,6 +3702,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
@@ -3735,6 +3768,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
@@ -3798,6 +3832,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
@@ -3881,6 +3916,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(firstUser.id);
+        await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
@@ -3924,7 +3961,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse1Body = await userResponse1.json();
 
-        expect(userResponse1Body.tabcoins).toEqual(2);
+        expect(userResponse1Body.tabcoins).toEqual(1);
         expect(userResponse1Body.tabcash).toEqual(0);
 
         const publishedContentResponse = await fetch(
@@ -3954,7 +3991,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(2);
+        expect(userResponse2Body.tabcoins).toEqual(1);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
     });
