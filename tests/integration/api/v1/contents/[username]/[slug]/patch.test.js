@@ -2993,66 +2993,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER'
       );
     });
-  });
-
-  describe('User with "update:content:others" feature', () => {
-    test('Content from another user', async () => {
-      const privilegedUser = await orchestrator.createUser();
-      await orchestrator.addFeaturesToUser(privilegedUser, ['update:content:others']);
-      await orchestrator.activateUser(privilegedUser);
-      const privilegedUserSessionObject = await orchestrator.createSession(privilegedUser);
-
-      const secondUser = await orchestrator.createUser();
-      const secondUserContent = await orchestrator.createContent({
-        owner_id: secondUser.id,
-        title: 'Conteúdo do Segundo Usuário antes do patch!',
-        body: 'Body antes do patch!',
-        status: 'published',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${privilegedUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Novo title.',
-            body: 'Novo body.',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
-
-      expect(responseBody).toStrictEqual({
-        id: secondUserContent.id,
-        owner_id: secondUser.id,
-        parent_id: null,
-        slug: 'conteudo-do-segundo-usuario-antes-do-patch',
-        title: 'Novo title.',
-        body: 'Novo body.',
-        status: 'published',
-        source_url: null,
-        created_at: responseBody.created_at,
-        updated_at: responseBody.updated_at,
-        published_at: responseBody.published_at,
-        deleted_at: null,
-        tabcoins: 1,
-        owner_username: secondUser.username,
-      });
-
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
-      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
-    });
 
     describe('TabCoins', () => {
       test('"root" content updated from "draft" to "draft" status', async () => {
@@ -4017,6 +3957,66 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponse2Body.tabcoins).toEqual(2);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
+    });
+  });
+
+  describe('User with "update:content:others" feature', () => {
+    test('Content from another user', async () => {
+      const privilegedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(privilegedUser, ['update:content:others']);
+      await orchestrator.activateUser(privilegedUser);
+      const privilegedUserSessionObject = await orchestrator.createSession(privilegedUser);
+
+      const secondUser = await orchestrator.createUser();
+      const secondUserContent = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        title: 'Conteúdo do Segundo Usuário antes do patch!',
+        body: 'Body antes do patch!',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${privilegedUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Novo title.',
+            body: 'Novo body.',
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: secondUserContent.id,
+        owner_id: secondUser.id,
+        parent_id: null,
+        slug: 'conteudo-do-segundo-usuario-antes-do-patch',
+        title: 'Novo title.',
+        body: 'Novo body.',
+        status: 'published',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        owner_username: secondUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
+      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
     });
   });
 });
