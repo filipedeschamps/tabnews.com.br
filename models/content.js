@@ -713,7 +713,6 @@ async function update(contentId, postedContent, options = {}) {
 
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
-    parent_id: 'optional',
     slug: 'optional',
     title: 'optional',
     body: 'optional',

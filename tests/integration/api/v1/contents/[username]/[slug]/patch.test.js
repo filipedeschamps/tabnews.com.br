@@ -2641,29 +2641,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toEqual(400);
 
-      expect(responseBody).toStrictEqual({
-        id: responseBody.id,
-        owner_id: defaultUser.id,
-        parent_id: rootContent.id,
-        slug: 'child-content-title',
-        title: 'Child content title',
-        body: 'Child content body',
-        status: 'draft',
-        source_url: null,
-        created_at: responseBody.created_at,
-        updated_at: responseBody.updated_at,
-        published_at: null,
-        deleted_at: null,
-        tabcoins: 0,
-        owner_username: defaultUser.username,
-      });
-
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title" and "parent_id" set to Null', async () => {
@@ -2699,29 +2686,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toEqual(400);
 
-      expect(responseBody).toStrictEqual({
-        id: responseBody.id,
-        owner_id: defaultUser.id,
-        parent_id: null,
-        slug: 'child-content-title',
-        title: 'Child content title',
-        body: 'Child content body',
-        status: 'draft',
-        source_url: null,
-        created_at: responseBody.created_at,
-        updated_at: responseBody.updated_at,
-        published_at: null,
-        deleted_at: null,
-        tabcoins: 0,
-        owner_username: defaultUser.username,
-      });
-
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content without "title" and "parent_id" set to Null', async () => {
@@ -2758,14 +2732,29 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: rootContent.id,
+        slug: 'child-content-title',
+        title: null,
+        body: 'Child content body',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
     });
 
     test('Content with "parent_id" set to itself', async () => {
@@ -2794,13 +2783,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
+      expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" não deve apontar para o próprio conteúdo.');
-      expect(responseBody.action).toEqual('Utilize um "parent_id" diferente do "id" do mesmo conteúdo.');
+      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "parent_id" containing a Number', async () => {
@@ -2944,13 +2934,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'
-      );
-      expect(responseBody.action).toEqual('Utilize um "parent_id" que aponte para um conteúdo que existe.');
+      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content from another user', async () => {
