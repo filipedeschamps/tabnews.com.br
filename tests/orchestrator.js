@@ -178,6 +178,94 @@ async function createFirewallTestFunctions() {
   }
 }
 
+// Prestige does not have to be an integer, so it can be given rationally.
+// If the denominator is 0, the respective prestige will not be created.
+async function createPrestige(
+  userId,
+  {
+    rootPrestigeNumerator = 2,
+    rootPrestigeDenominator = 1,
+    childPrestigeNumerator = 1,
+    childPrestigeDenominator = 1,
+  } = {}
+) {
+  if (
+    rootPrestigeDenominator < 0 ||
+    childPrestigeDenominator < 0 ||
+    rootPrestigeDenominator > 10 ||
+    childPrestigeDenominator > 10
+  ) {
+    throw new Error('rootPrestigeDenominator and childPrestigeDenominator must be between 0 and 10');
+  }
+
+  const rootContents = [];
+  const childContents = [];
+
+  jest.useFakeTimers({
+    now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+    advanceTimers: true,
+  });
+
+  for (let i = 0; i < rootPrestigeDenominator; i++) {
+    rootContents.push(
+      await createContent({
+        owner_id: userId,
+        title: faker.lorem.words(3),
+        body: faker.lorem.paragraphs(1),
+        status: 'published',
+      })
+    );
+  }
+
+  let parentId = rootContents[0]?.id;
+
+  if (childPrestigeDenominator && !parentId) {
+    const parent = await createContent({
+      owner_id: userId,
+      title: faker.lorem.words(3),
+      body: faker.lorem.paragraphs(1),
+      status: 'draft',
+    });
+
+    parentId = parent.id;
+  }
+
+  for (let i = 0; i < childPrestigeDenominator; i++) {
+    childContents.push(
+      await createContent({
+        parent_id: parentId,
+        owner_id: userId,
+        body: faker.lorem.paragraphs(1),
+        status: 'published',
+      })
+    );
+  }
+
+  jest.useRealTimers();
+
+  if (rootContents.length) {
+    await createBalance({
+      balanceType: 'content:tabcoin',
+      recipientId: rootContents[0].id,
+      amount: rootPrestigeNumerator,
+      originatorType: 'orchestrator',
+      originatorId: rootContents[0].id,
+    });
+  }
+
+  if (childContents.length) {
+    await createBalance({
+      balanceType: 'content:tabcoin',
+      recipientId: childContents[0].id,
+      amount: childPrestigeNumerator + childPrestigeDenominator,
+      originatorType: 'orchestrator',
+      originatorId: childContents[0].id,
+    });
+  }
+
+  return [...rootContents, ...childContents];
+}
+
 export default {
   waitForAllServices,
   dropAllTables,
@@ -195,4 +283,5 @@ export default {
   createRecoveryToken,
   createFirewallTestFunctions,
   createBalance,
+  createPrestige,
 };
