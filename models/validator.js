@@ -947,6 +947,7 @@ const reservedUsernames = [
   'superuser',
   'suporte',
   'support',
+  'swr',
   'sysadmin',
   'tabnew',
   'tabnews',

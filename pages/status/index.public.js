@@ -1,17 +1,12 @@
 import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import analytics from 'models/analytics.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
 
-export default function Page() {
+export default function Page({ usersCreated, rootContentPublished, childContentPublished }) {
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
     refreshInterval: 1000 * 10,
-  });
-  const { data: usersCreated } = useSWR('/api/v1/analytics/users-created', { refreshInterval: 1000 * 60 * 5 });
-  const { data: rootContentPublished } = useSWR('/api/v1/analytics/root-content-published', {
-    refreshInterval: 1000 * 60 * 5,
-  });
-  const { data: childContentPublished } = useSWR('/api/v1/analytics/child-content-published', {
-    refreshInterval: 1000 * 60 * 5,
   });
 
   return (
@@ -191,3 +186,19 @@ export default function Page() {
     </DefaultLayout>
   );
 }
+
+export const getStaticProps = getStaticPropsRevalidate(async () => {
+  const childContentPublished = await analytics.getChildContentsPublished();
+  const rootContentPublished = await analytics.getRootContentsPublished();
+  const usersCreated = await analytics.getUsersCreated();
+
+  return {
+    props: {
+      usersCreated,
+      rootContentPublished,
+      childContentPublished,
+    },
+    revalidate: 30,
+    swr: { refreshInterval: 1000 * 60 * 5 },
+  };
+});
