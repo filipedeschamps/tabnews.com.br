@@ -1,3 +1,4 @@
+import Loadind from '@/Loading';
 import {
   Box,
   Button,
@@ -128,7 +129,7 @@ function LoginForm() {
               disabled={isLoading}
               sx={{ width: '100%' }}
               aria-label="Login">
-              Login
+              {isLoading ? <Loadind /> : 'Login'}
             </Button>
           </FormControl>
         </Box>

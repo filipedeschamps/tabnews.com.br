@@ -1,3 +1,4 @@
+import Loadind from '@/Loading';
 import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
@@ -180,7 +181,7 @@ function SignUpForm() {
             disabled={isLoading}
             sx={{ width: '100%' }}
             aria-label="Criar cadastro">
-            Criar cadastro
+            {isLoading ? <Loadind /> : 'Criar cadastro'}
           </Button>
         </FormControl>
       </Box>
