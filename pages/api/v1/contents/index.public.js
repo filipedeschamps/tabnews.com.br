@@ -17,10 +17,10 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
+  .use(controller.logRequest)
   .get(getValidationHandler, getHandler)
   .post(
     authentication.injectAnonymousOrUser,
-    controller.logRequest,
     postValidationHandler,
     authorization.canRequest('create:content'),
     firewallValidationHandler,

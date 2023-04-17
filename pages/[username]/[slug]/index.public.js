@@ -7,36 +7,11 @@ import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 import { useCollapse } from 'pages/interface';
 import { useEffect, useState } from 'react';
-import useSWR from 'swr';
 
-export default function Post({
-  contentFound: contentFoundFallback,
-  childrenFound: childrenFallback,
-  rootContentFound,
-  parentContentFound,
-  contentMetadata,
-}) {
-  const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
-    {
-      fallbackData: contentFoundFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
-  // TODO: understand why enabling "revalidateOn..." breaks children rendering.
-  const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
-    {
-      fallbackData: childrenFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
+export default function Post({ contentFound, childrenFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -104,7 +79,7 @@ export default function Post({
 
           <RenderChildrenTree
             key={contentFound.id}
-            childrenList={children}
+            childrenList={childrenFound}
             renderIntent={childrenToShow}
             renderIncrement={Math.ceil(childrenToShow / 2)}
           />
@@ -331,7 +306,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   try {
@@ -430,5 +405,6 @@ export async function getStaticProps(context) {
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
     revalidate: 10,
+    swr: { revalidateOnFocus: false },
   };
-}
+});

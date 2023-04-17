@@ -3,6 +3,7 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 
 export default function Home({ contentListFound, pagination }) {
   return (
@@ -26,7 +27,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   context.params = context.params ? context.params : {};
@@ -67,4 +68,4 @@ export async function getStaticProps(context) {
     // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
     revalidate: 10,
   };
-}
+});
