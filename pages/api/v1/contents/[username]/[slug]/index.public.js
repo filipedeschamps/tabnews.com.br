@@ -7,6 +7,7 @@ import content from 'models/content.js';
 import database from 'infra/database.js';
 import event from 'models/event.js';
 import { ForbiddenError, NotFoundError } from 'errors/index.js';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
@@ -14,10 +15,14 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler)
-  .patch(patchValidationHandler, authorization.canRequest('update:content'), patchHandler);
+  .patch(
+    authentication.injectAnonymousOrUser,
+    patchValidationHandler,
+    authorization.canRequest('update:content'),
+    patchHandler
+  );
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -30,9 +35,8 @@ function getValidationHandler(request, response, next) {
   next();
 }
 
-// TODO: cache the response
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const userTryingToGet = user.createAnonymous();
 
   const contentFound = await content.findOne({
     where: {
@@ -53,6 +57,8 @@ async function getHandler(request, response) {
   }
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+
+  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
   return response.status(200).json(secureOutputValues);
 }
