@@ -1,4 +1,5 @@
 export { default as Confetti } from '@/Confetti/index.js';
+export { default as Loadind } from '@/Loading/index.js';
 export { default as Content } from '@/Content/index.js';
 export { default as ContentList } from '@/ContentList/index.js';
 export { default as DefaultLayout } from '@/DefaultLayout/index.js';

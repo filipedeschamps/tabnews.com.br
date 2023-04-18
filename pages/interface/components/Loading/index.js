@@ -11,6 +11,7 @@ export default function Loadind() {
           width: 20px;
           height: 20px;
           box-sizing: border-box;
+          color: #fff;
           border: solid 2px transparent;
           border-radius: 50%;
           -webkit-animation: nprogresss-spinner 400ms linear infinite;

@@ -1,4 +1,3 @@
-import Loadind from '@/Loading';
 import {
   Box,
   Button,
@@ -10,6 +9,7 @@ import {
   PasswordInput,
   Text,
   TextInput,
+  Loadind,
 } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
 import { useRef, useState } from 'react';
