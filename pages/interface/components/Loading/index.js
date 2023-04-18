@@ -8,8 +8,8 @@ export default function Loadind() {
       </div>
       <style jsx global>{`
         .spinner-icon {
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
           box-sizing: border-box;
           border: solid 2px transparent;
           border-radius: 50%;
