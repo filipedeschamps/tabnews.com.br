@@ -1,5 +1,14 @@
-import Loadind from '@/Loading';
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
+import {
+  Box,
+  Button,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  PasswordInput,
+  TextInput,
+  Loadind,
+} from '@/TabNewsUI';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
 
