@@ -15,7 +15,7 @@ import { useRef, useState } from 'react';
 
 export default function Login() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
       <LoginForm />
     </DefaultLayout>
   );
