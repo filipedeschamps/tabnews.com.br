@@ -96,7 +96,11 @@ export function UserProvider({ children }) {
 
       if (!user?.id || router.pathname !== '/login') return;
 
-      if (router.query?.redirect?.startsWith('/')) {
+      if (
+        router.query?.redirect?.startsWith('/') &&
+        !router.query.redirect.startsWith('/login') &&
+        !router.query.redirect.startsWith('/cadastro')
+      ) {
         router.replace(router.query.redirect);
       } else {
         router.replace('/');
