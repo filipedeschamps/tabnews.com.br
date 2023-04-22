@@ -3,7 +3,7 @@ import { ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
 import { useRevalidate } from 'next-swr';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
 
 export default function TabCoinButtons({ content }) {
@@ -12,6 +12,11 @@ export default function TabCoinButtons({ content }) {
 
   const [contentObject, setContentObject] = useRevalidate(content);
   const [isPosting, setIsPosting] = useState(false);
+
+  useEffect(() => {
+    setContentObject(content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content.id]);
 
   const { reward: rewardCredit, isAnimating: isAnimatingCredit } = useReward(`reward-${contentObject.id}`, 'confetti', {
     position: 'absolute',

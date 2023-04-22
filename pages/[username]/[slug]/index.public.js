@@ -44,7 +44,7 @@ export default function Post({ contentFound, childrenFound, rootContentFound, pa
               flexDirection: 'column',
               justifyContent: 'center',
             }}>
-            <TabCoinButtons content={contentFound} />
+            <TabCoinButtons key={contentFound.id} content={contentFound} />
             <Box
               sx={{
                 borderWidth: 0,
