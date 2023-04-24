@@ -66,5 +66,7 @@ async function getHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
 
+  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
+
   return response.status(200).json(secureOutputValues);
 }

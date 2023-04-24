@@ -18,7 +18,7 @@ const recaptchaPublicKey = process.env.NEXT_PUBLIC_RECAPTCHA_PUBLIC_KEY;
 
 export default function Login() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
       <LoginForm />
     </DefaultLayout>
   );

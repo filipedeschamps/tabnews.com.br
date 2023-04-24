@@ -41,14 +41,13 @@ export function UserProvider({ children }) {
       if (response.status >= 400) {
         const error = new Error(responseBody.message);
         error.status = response.status;
+        error.isProxyResponse =
+          response.status === 403 && webserver.isProduction && !response.headers.get('x-vercel-id');
         throw error;
       }
     } catch (error) {
       setError(error);
-      if (
-        error.status === undefined ||
-        (error.status === 403 && webserver.isProduction && !response?.headers.get('x-vercel-id'))
-      ) {
+      if (error.status === undefined || error.isProxyResponse) {
         // If is proxy error, then go to login page and reload if is already there
         if (localStorage.getItem('reloadTime') > Date.now() - 30000) return;
         if (protectedRoutes.includes(router.pathname)) {
@@ -97,7 +96,11 @@ export function UserProvider({ children }) {
 
       if (!user?.id || router.pathname !== '/login') return;
 
-      if (router.query?.redirect?.startsWith('/')) {
+      if (
+        router.query?.redirect?.startsWith('/') &&
+        !router.query.redirect.startsWith('/login') &&
+        !router.query.redirect.startsWith('/cadastro')
+      ) {
         router.replace(router.query.redirect);
       } else {
         router.replace('/');

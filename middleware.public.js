@@ -48,6 +48,13 @@ export async function middleware(request) {
       return NextResponse.rewrite(url);
     }
 
+    if (url.pathname === '/api/v1/swr') {
+      return new NextResponse(JSON.stringify({ timestamp: Date.now() }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     return NextResponse.next();
   } catch (error) {
     console.error(snakeize({ message: error.message, ...error }));

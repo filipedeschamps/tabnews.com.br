@@ -1,5 +1,6 @@
 import { Box, IconButton, Text, Tooltip } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
+import { useRevalidate } from 'next-swr';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { useEffect, useState } from 'react';
@@ -9,12 +10,13 @@ export default function TabCoinButtons({ content }) {
   const router = useRouter();
   const { user, isLoading, fetchUser } = useUser();
 
-  const [contentObject, setContentObject] = useState(content);
+  const [contentObject, setContentObject] = useRevalidate(content);
   const [isPosting, setIsPosting] = useState(false);
 
   useEffect(() => {
     setContentObject(content);
-  }, [content]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content.id]);
 
   const { reward: rewardCredit, isAnimating: isAnimatingCredit } = useReward(`reward-${contentObject.id}`, 'confetti', {
     position: 'absolute',

@@ -3,6 +3,7 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 import { FaTree } from 'react-icons/fa';
 
 export default function Home({ contentListFound, pagination }) {
@@ -25,7 +26,7 @@ export default function Home({ contentListFound, pagination }) {
   );
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   context.params = context.params ? context.params : {};
@@ -66,4 +67,4 @@ export async function getStaticProps(context) {
     },
     revalidate: 10,
   };
-}
+});

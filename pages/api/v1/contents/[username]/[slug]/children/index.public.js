@@ -1,10 +1,10 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import { NotFoundError } from 'errors/index.js';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
@@ -12,7 +12,6 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .get(getValidationHandler, getHandler);
 
@@ -29,7 +28,7 @@ function getValidationHandler(request, response, next) {
 
 // TODO: cache the response
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const userTryingToGet = user.createAnonymous();
 
   const contentFound = await content.findOne({
     where: {
@@ -56,6 +55,8 @@ async function getHandler(request, response) {
   });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+
+  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
   return response.status(200).json(secureOutputValues);
 }

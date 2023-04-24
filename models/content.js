@@ -4,8 +4,9 @@ import database from 'infra/database.js';
 import validator from 'models/validator.js';
 import user from 'models/user.js';
 import balance from 'models/balance.js';
-import { ValidationError } from 'errors/index.js';
+import { ForbiddenError, ValidationError } from 'errors/index.js';
 import queries from 'models/queries';
+import prestige from 'models/prestige';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -503,7 +504,6 @@ function populatePublishedAtValue(oldContent, newContent) {
 }
 
 async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
-  const userDefaultEarnings = 2;
   const contentDefaultEarnings = 1;
 
   // We should not credit or debit if the parent content is from the same user.
@@ -530,23 +530,25 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
   // We should debit if the content was once "published", but now is being "deleted".
   // 1) If content `tabcoins` is positive, we need to extract the `contentDefaultEarnings`
-  // from it and then debit all additional tabcoins from the user, including `userDefaultEarnings`.
+  // from it and then debit all additional tabcoins from the user, including `userEarnings`.
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
-  // creation of the content represented in `userDefaultEarnings`.
+  // creation of the content represented in `userEarnings`.
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
     let amountToDebit;
 
+    const userEarnings = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
+
     if (oldContent.tabcoins > 0) {
-      amountToDebit = oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings;
+      amountToDebit = contentDefaultEarnings - oldContent.tabcoins - userEarnings;
     } else {
-      amountToDebit = userDefaultEarnings;
+      amountToDebit = -userEarnings;
     }
 
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: amountToDebit * -1,
+        amount: amountToDebit,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -557,43 +559,30 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     return;
   }
 
-  // We should credit if the content already existed and is now being published for the first time.
-  if (oldContent && !oldContent.published_at && newContent.status === 'published') {
+  if (
+    // We should credit if the content is being created directly with "published" status.
+    (!oldContent && newContent.published_at) ||
+    // We should credit if the content already existed and is now being published for the first time.
+    (oldContent && !oldContent.published_at && newContent.status === 'published')
+  ) {
+    const userEarnings = await prestige.getByUserId(newContent.owner_id, {
+      isRoot: !newContent.parent_id,
+      transaction: options.transaction,
+    });
+
+    if (userEarnings < 0) {
+      throw new ForbiddenError({
+        message: 'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
+        action: 'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
+        errorLocationCode: 'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
+      });
+    }
+
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: userDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
-
-    await balance.create(
-      {
-        balanceType: 'content:tabcoin',
-        recipientId: newContent.id,
-        amount: contentDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
-    return;
-  }
-
-  // We should credit if the content is being created directly with "published" status.
-  if (!oldContent && newContent.published_at) {
-    await balance.create(
-      {
-        balanceType: 'user:tabcoin',
-        recipientId: newContent.owner_id,
-        amount: userDefaultEarnings,
+        amount: userEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -633,6 +622,7 @@ async function update(contentId, postedContent, options = {}) {
   const newContent = { ...oldContent, ...validPostedContent };
 
   throwIfContentIsAlreadyDeleted(oldContent);
+  throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
   checkRootContentTitle(newContent);
   checkForParentIdRecursion(newContent);
 
@@ -727,7 +717,6 @@ async function update(contentId, postedContent, options = {}) {
 
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
-    parent_id: 'optional',
     slug: 'optional',
     title: 'optional',
     body: 'optional',
@@ -763,6 +752,18 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
       message: `Não é possível alterar informações de um conteúdo já deletado.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_DELETED',
+      statusCode: 400,
+      key: 'status',
+    });
+  }
+}
+
+function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
+  if (oldContent.status === 'published' && newContent.status === 'draft') {
+    throw new ValidationError({
+      message: `Não é possível alterar para rascunho um conteúdo já publicado.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
       statusCode: 400,
       key: 'status',
     });

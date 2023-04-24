@@ -21,6 +21,13 @@ export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { asPath } = useRouter();
 
+  const loginUrl =
+    !asPath || user || asPath.startsWith('/cadastro')
+      ? '/login'
+      : asPath.startsWith('/login')
+      ? asPath
+      : `/login?redirect=${asPath}`;
+
   const activeLinkStyle = {
     textDecoration: 'underline',
     textUnderlineOffset: 6,
@@ -57,13 +64,13 @@ export default function HeaderComponent() {
             <ThemeSwitcher />
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
-            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Login</HeaderLink>
+            <HeaderLink href={loginUrl}>Login</HeaderLink>
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['flex', 'none'] }}>
-            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Entrar</HeaderLink>
+            <HeaderLink href={loginUrl}>Entrar</HeaderLink>
           </PrimerHeader.Item>
         </>
       )}

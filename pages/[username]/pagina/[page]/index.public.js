@@ -5,6 +5,7 @@ import authorization from 'models/authorization.js';
 import validator from 'models/validator.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import { NotFoundError } from 'errors/index.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 
 export default function Home({ contentListFound, pagination, username }) {
   return (
@@ -28,7 +29,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   try {
@@ -88,4 +89,4 @@ export async function getStaticProps(context) {
 
     revalidate: 10,
   };
-}
+});
