@@ -456,9 +456,9 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[0].title).toEqual('Conteúdo #31');
       expect(responseBody[1].title).toEqual('Conteúdo #36');
       expect(responseBody[2].title).toEqual('Conteúdo #60');
-      expect(responseBody[3].title).toEqual('Conteúdo #59');
-      expect(responseBody[6].title).toEqual('Conteúdo #56');
-      expect(responseBody[7].title).toEqual('Conteúdo #6');
+      expect(responseBody[3].title).toEqual('Conteúdo #6');
+      expect(responseBody[4].title).toEqual('Conteúdo #59');
+      expect(responseBody[7].title).toEqual('Conteúdo #56');
       expect(responseBody[27].title).toEqual('Conteúdo #33');
       expect(responseBody[28].title).toEqual('Conteúdo #32');
       expect(responseBody[29].title).toEqual('Conteúdo #30');

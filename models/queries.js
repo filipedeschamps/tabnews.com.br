@@ -60,6 +60,7 @@ const rankedContent = `
     ),
     group_3 AS (
         (SELECT
+            DISTINCT ON (owner_id)
             *,
             3 as rank_group
         FROM ranked_published_root_contents
@@ -67,6 +68,7 @@ const rankedContent = `
             published_at > NOW() - INTERVAL '12 hours'
             AND id NOT IN (SELECT id FROM group_2)
         ORDER BY
+            owner_id,
             published_at DESC
         LIMIT 5)
         UNION ALL
