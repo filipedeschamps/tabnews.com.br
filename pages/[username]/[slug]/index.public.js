@@ -258,11 +258,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
               </Box>
 
               {children.length > 0 && (
-                <RenderChildrenTree
-                  childrenList={children}
-                  renderIntent={renderIntent - 1}
-                  renderIncrement={renderIncrement}
-                />
+                <RenderChildrenTree childrenList={children} renderIntent={0} renderIncrement={renderIncrement} />
               )}
             </Box>
           </>
