@@ -24,7 +24,7 @@ if (!webserver.isServerlessRuntime) {
   configurations.max = 30;
 
   // https://github.com/filipedeschamps/tabnews.com.br/issues/84
-  delete configurations.ssl;
+  // delete configurations.ssl;
 }
 
 const cache = {
