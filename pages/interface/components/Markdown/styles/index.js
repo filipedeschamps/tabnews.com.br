@@ -875,7 +875,6 @@ export function ViewerStyles() {
   // based on "highlight.js" and "github-markdown-css"
 
   const {
-    resolvedColorScheme,
     theme: { colors, shadows },
   } = useTheme();
 
@@ -884,10 +883,6 @@ export function ViewerStyles() {
   return (
     <style jsx global>
       {`
-        html:root {
-          color-scheme: ${resolvedColorScheme};
-          background: ${colors.canvas.default};
-        }
         pre code.hljs {
           display: block;
           overflow-x: auto;
