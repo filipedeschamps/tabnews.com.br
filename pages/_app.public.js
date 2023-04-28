@@ -13,17 +13,17 @@ async function SWRFetcher(resource, init) {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <UserProvider>
-      <DefaultHead />
-      <SWRConfig value={{ fetcher: SWRFetcher }}>
-        <ThemeProvider>
+    <ThemeProvider>
+      <UserProvider>
+        <DefaultHead />
+        <SWRConfig value={{ fetcher: SWRFetcher }}>
           <RevalidateProvider swr={{ swrPath: '/api/v1/swr', ...pageProps.swr }}>
             <Component {...pageProps} />
           </RevalidateProvider>
-        </ThemeProvider>
-      </SWRConfig>
-      <Analytics />
-    </UserProvider>
+        </SWRConfig>
+        <Analytics />
+      </UserProvider>
+    </ThemeProvider>
   );
 }
 
