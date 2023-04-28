@@ -2,7 +2,8 @@ import Document, { Head, Html, Main, NextScript } from 'next/document';
 import Script from 'next/script';
 import { ServerStyleSheet } from 'styled-components';
 
-const noFlashScript = `document.documentElement.setAttribute('data-no-flash', true)`;
+const noFlashScript = `if (['auto','night'].includes(localStorage.getItem('colorMode')))
+document.documentElement.setAttribute('data-no-flash', true)`;
 
 export default class MyDocument extends Document {
   static async getInitialProps(ctx) {
