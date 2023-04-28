@@ -1,9 +1,12 @@
-import { Pool, Client } from 'pg';
+import { Client, Pool, neonConfig } from '@neondatabase/serverless';
 import retry from 'async-retry';
 import { ServiceError } from 'errors/index.js';
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
 import snakeize from 'snakeize';
+import ws from 'ws';
+
+neonConfig.webSocketConstructor = ws;
 
 const configurations = {
   user: process.env.POSTGRES_USER,
@@ -14,17 +17,11 @@ const configurations = {
   connectionTimeoutMillis: 2000,
   idleTimeoutMillis: 30000,
   max: 1,
-  ssl: {
-    rejectUnauthorized: false,
-  },
   allowExitOnIdle: true,
 };
 
 if (!webserver.isServerlessRuntime) {
   configurations.max = 30;
-
-  // https://github.com/filipedeschamps/tabnews.com.br/issues/84
-  // delete configurations.ssl;
 }
 
 const cache = {
