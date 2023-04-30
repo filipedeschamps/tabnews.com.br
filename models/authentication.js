@@ -22,23 +22,23 @@ async function comparePasswords(providedPassword, passwordHash) {
   }
 }
 
-async function injectAnonymousOrUser(request, response, next) {
+async function injectAnonymousOrUser(request, response, next, options = {}) {
   if (request.cookies?.session_id) {
     const cleanCookies = validator(request.cookies, {
       session_id: 'required',
     });
     request.cookies.session_id = cleanCookies.session_id;
 
-    await injectAuthenticatedUser(request, response);
+    await injectAuthenticatedUser(request, response, options);
     return next();
   } else {
     injectAnonymousUser(request);
     return next();
   }
 
-  async function injectAuthenticatedUser(request, response) {
+  async function injectAuthenticatedUser(request, response, options = {}) {
     const sessionObject = await session.findOneValidFromRequest(request);
-    const userObject = await user.findOneById(sessionObject.user_id);
+    const userObject = await user.findOneById(sessionObject.user_id, options);
 
     if (!authorization.can(userObject, 'read:session')) {
       throw new ForbiddenError({
