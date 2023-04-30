@@ -25,9 +25,8 @@ async function findAll() {
   return results.rows;
 }
 
-async function findOneByUsername(username) {
-  const query = {
-    text: `
+async function findOneByUsername(username, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -37,18 +36,25 @@ async function findOneByUsername(username) {
           LOWER(username) = LOWER($1)
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [username],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -63,9 +69,8 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
-async function findOneByEmail(email) {
-  const query = {
-    text: `
+async function findOneByEmail(email, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -75,18 +80,25 @@ async function findOneByEmail(email) {
           LOWER(email) = LOWER($1)
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [email],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -102,9 +114,8 @@ async function findOneByEmail(email) {
 }
 
 // TODO: validate userId
-async function findOneById(userId) {
-  const query = {
-    text: `
+async function findOneById(userId, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -114,14 +125,21 @@ async function findOneById(userId) {
           id = $1
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [userId],
   };
 

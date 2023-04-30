@@ -9,7 +9,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
+  .use(injectUserWithBalance)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), getHandler);
 
@@ -19,4 +19,10 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:user:self', authenticatedUser);
 
   return response.status(200).json(secureOutputValues);
+}
+
+function injectUserWithBalance(request, response, next) {
+  return authentication.injectAnonymousOrUser(request, response, next, {
+    withBalance: true,
+  });
 }
