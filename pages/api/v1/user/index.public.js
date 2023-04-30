@@ -10,7 +10,7 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
+  .use(injectUserWithBalance)
   .use(controller.logRequest)
   .get(authorization.canRequest('read:session'), renewSessionIfNecessary, getHandler);
 
@@ -32,4 +32,10 @@ async function renewSessionIfNecessary(request, response, next) {
     request.context.session = sessionObject;
   }
   return next();
+}
+
+function injectUserWithBalance(request, response, next) {
+  return authentication.injectAnonymousOrUser(request, response, next, {
+    withBalance: true,
+  });
 }
