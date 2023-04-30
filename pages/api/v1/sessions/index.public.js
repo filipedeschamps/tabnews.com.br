@@ -16,18 +16,8 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(authorization.canRequest('read:session'), getHandler)
   .delete(authorization.canRequest('read:session'), deleteHandler)
   .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
-
-async function getHandler(request, response) {
-  const authenticatedUser = request.context.user;
-  const sessionObject = request.context.session;
-
-  const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
-
-  return response.status(200).json(secureOutputValues);
-}
 
 async function deleteHandler(request, response) {
   const authenticatedUser = request.context.user;

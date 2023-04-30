@@ -131,6 +131,10 @@ async function createSession(userObject) {
   return await session.create(userObject.id);
 }
 
+async function findSessionByToken(token) {
+  return await session.findOneValidByToken(token);
+}
+
 async function createContent(contentObject) {
   return await content.create({
     parent_id: contentObject?.parent_id || undefined,
@@ -276,6 +280,7 @@ export default {
   createUser,
   activateUser,
   createSession,
+  findSessionByToken,
   addFeaturesToUser,
   removeFeaturesFromUser,
   createContent,
