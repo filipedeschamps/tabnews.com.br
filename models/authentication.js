@@ -48,12 +48,10 @@ async function injectAnonymousOrUser(request, response, next, options = {}) {
       });
     }
 
-    const sessionRenewed = await session.renew(sessionObject.id, response);
-
     request.context = {
       ...request.context,
       user: userObject,
-      session: sessionRenewed,
+      session: sessionObject,
     };
   }
 
