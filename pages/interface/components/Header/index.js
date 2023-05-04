@@ -12,11 +12,10 @@ import {
   Tooltip,
   Truncate,
 } from '@/TabNewsUI';
-import { HomeIcon, PersonFillIcon, SquareFillIcon } from '@primer/octicons-react';
+import { HomeIcon, PersonFillIcon, SquareFillIcon, PlusIcon } from '@primer/octicons-react';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { CgTab } from 'react-icons/cg';
-import { MdAdd } from 'react-icons/md';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
@@ -80,11 +79,12 @@ export default function HeaderComponent() {
         <>
           <PrimerHeader.Item
             sx={{
+              display: ['none', 'flex'],
               mr: 2,
             }}>
             <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
-              <HeaderLink href="/publicar" aria-label="Publicar novo conteúdo">
-                <MdAdd size={20} color="white" />
+              <HeaderLink href="/publicar">
+                <PlusIcon size={16} />
               </HeaderLink>
             </Tooltip>
           </PrimerHeader.Item>
