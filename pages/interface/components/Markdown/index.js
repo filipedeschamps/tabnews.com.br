@@ -1,27 +1,23 @@
-import { Viewer as ByteMdViewer, Editor as ByteMdEditor } from '@bytemd/react';
-import { Box } from '@primer/react';
-import { useEffect, useRef } from 'react';
+import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
+import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // ByteMD dependencies:
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mathPlugin from '@bytemd/plugin-math';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
 import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
-import byteMDLocale from 'bytemd/locales/pt_BR.json';
+import gfmPlugin from '@bytemd/plugin-gfm';
 import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
+import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
+import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
+import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
-import 'bytemd/dist/index.min.css';
-import 'highlight.js/styles/github.css';
-import 'github-markdown-css/github-markdown-light.css';
+import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import 'katex/dist/katex.css';
 
-const bytemdPluginList = [
+const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
   highlightSsrPlugin(),
-  mermaidPlugin({ locale: mermaidLocale }),
   mathPlugin({
     locale: mathLocale,
     katexOptions: { output: 'html' },
@@ -30,12 +26,42 @@ const bytemdPluginList = [
   gemojiPlugin(),
 ];
 
-export default function Viewer({ ...props }) {
-  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} {...props} />;
+function usePlugins() {
+  const { colorScheme } = useTheme();
+
+  const plugins = useMemo(() => {
+    const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
+
+    return [...bytemdPluginBaseList, mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme })];
+  }, [colorScheme]);
+
+  return plugins;
+}
+
+export default function Viewer({ value: _value, ...props }) {
+  const bytemdPluginList = usePlugins();
+  const [value, setValue] = useState(_value);
+
+  useEffect(() => {
+    let timeout;
+
+    setValue((value) => {
+      timeout = setTimeout(() => setValue(value));
+      return value + '\n\u0160';
+    });
+
+    return () => clearTimeout(timeout);
+  }, [bytemdPluginList]);
+
+  useEffect(() => setValue(_value), [_value]);
+
+  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} value={value} {...props} />;
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
-export function Editor({ isValid, onKeyDown, ...props }) {
+export function Editor({ isValid, onKeyDown, compact, ...props }) {
+  const bytemdPluginList = usePlugins();
+  const editorMode = 'split'; // 'tab'
   const editorRef = useRef();
 
   useEffect(() => {
@@ -44,56 +70,18 @@ export function Editor({ isValid, onKeyDown, ...props }) {
     return () => editorElement?.removeEventListener('keydown', onKeyDown);
   }, [onKeyDown]);
 
+  useEffect(() => {
+    editorRef.current
+      ?.getElementsByClassName('bytemd-toolbar-right')[0]
+      ?.querySelector('[bytemd-tippy-path="2"]')
+      ?.click();
+  }, []);
+
   return (
     <Box sx={{ width: '100%' }} ref={editorRef} className={isValid ? 'is-invalid' : ''}>
-      <ByteMdEditor plugins={bytemdPluginList} mode="tab" locale={byteMDLocale} sanitize={sanitize} {...props} />
-
-      <style global jsx>{`
-        .bytemd {
-          height: calc(100vh - 350px);
-          min-height: 200px;
-          border-radius: 6px;
-          padding: 1px;
-          border: 1px solid #d0d7de;
-        }
-
-        .bytemd:focus-within {
-          border-color: #0969da;
-          box-shadow: inset 0 0 0 1px #0969da;
-        }
-
-        .is-invalid .bytemd {
-          border-color: #cf222e;
-        }
-
-        .is-invalid .bytemd:focus-within {
-          border-color: #cf222e;
-          box-shadow: 0 0 0 3px rgb(164 14 38 / 40%);
-        }
-
-        .bytemd .bytemd-toolbar {
-          border-top-left-radius: 6px;
-          border-top-right-radius: 6px;
-        }
-
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(1),
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(4) {
-          display: none;
-        }
-
-        .bytemd .bytemd-status {
-          display: none;
-        }
-
-        .bytemd-fullscreen.bytemd {
-          z-index: 100;
-        }
-
-        .tippy-box {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
-            'Segoe UI Emoji';
-        }
-      `}</style>
+      <ByteMdEditor plugins={bytemdPluginList} mode={editorMode} locale={byteMDLocale} sanitize={sanitize} {...props} />
+      <EditorStyles compact={compact} mode={editorMode} />
+      <EditorColors />
     </Box>
   );
 }

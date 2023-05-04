@@ -1,19 +1,28 @@
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { DefaultLayout, useUser, PasswordInput } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import {
+  Box,
+  Button,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  Link,
+  PasswordInput,
+  Text,
+  TextInput,
+} from '@/TabNewsUI';
+import { useUser } from 'pages/interface';
+import { useRef, useState } from 'react';
 
 export default function Login() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
       <LoginForm />
     </DefaultLayout>
   );
 }
 
 function LoginForm() {
-  const { user, fetchUser } = useUser();
-  const router = useRouter();
+  const { fetchUser } = useUser();
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
@@ -21,15 +30,6 @@ function LoginForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-
-  useEffect(() => {
-    if (!user || !router) return;
-    if (router.query?.redirect?.startsWith('/')) {
-      router.replace(router.query.redirect);
-    } else {
-      router.replace('/');
-    }
-  }, [user, router]);
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -104,7 +104,8 @@ function LoginForm() {
               spellCheck={false}
               block={true}
               aria-label="Seu email"
-              sx={{ minHeight: '46px' }}
+              contrast
+              sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
             />
             {errorObject?.key === 'email' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

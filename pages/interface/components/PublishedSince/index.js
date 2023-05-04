@@ -1,6 +1,6 @@
-import { formatDistanceToNowStrict, format } from 'date-fns';
+import { Tooltip } from '@/TabNewsUI';
+import { format, formatDistanceToNowStrict } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Tooltip } from '@primer/react';
 import { useEffect, useState } from 'react';
 
 function formatPublishedSince(date) {

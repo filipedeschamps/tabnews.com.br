@@ -1,42 +1,17 @@
-import useSWR from 'swr';
-import { useEffect, useState } from 'react';
-import { Link, DefaultLayout, Content, TabCoinButtons, Confetti, useCollapse } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import validator from 'models/validator.js';
-import authorization from 'models/authorization.js';
-import removeMarkdown from 'models/remove-markdown.js';
+import { Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
+import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
 import { NotFoundError } from 'errors/index.js';
-import { Box, Button, Tooltip } from '@primer/react';
-import { CommentIcon, CommentDiscussionIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
 import webserver from 'infra/webserver.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
+import { useCollapse } from 'pages/interface';
+import { useEffect, useState } from 'react';
 
-export default function Post({
-  contentFound: contentFoundFallback,
-  childrenFound: childrenFallback,
-  rootContentFound,
-  parentContentFound,
-  contentMetadata,
-}) {
-  const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
-    {
-      fallbackData: contentFoundFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
-  // TODO: understand why enabling "revalidateOn..." breaks children rendering.
-  const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
-    {
-      fallbackData: childrenFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
+export default function Post({ contentFound, childrenFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -69,12 +44,12 @@ export default function Post({
               flexDirection: 'column',
               justifyContent: 'center',
             }}>
-            <TabCoinButtons content={contentFound} />
+            <TabCoinButtons key={contentFound.id} content={contentFound} />
             <Box
               sx={{
                 borderWidth: 0,
                 borderRightWidth: 1,
-                borderColor: 'border.muted',
+                borderColor: 'btn.activeBorder',
                 borderStyle: 'dotted',
                 width: '50%',
                 height: '100%',
@@ -82,7 +57,7 @@ export default function Post({
             />
           </Box>
 
-          <Box sx={{ width: '100%', overflow: 'auto' }}>
+          <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
             <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -104,7 +79,7 @@ export default function Post({
 
           <RenderChildrenTree
             key={contentFound.id}
-            childrenList={children}
+            childrenList={childrenFound}
             renderIntent={childrenToShow}
             renderIncrement={Math.ceil(childrenToShow / 2)}
           />
@@ -246,7 +221,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                       borderStyle: 'dashed',
                     },
                     svg: {
-                      backgroundColor: 'white',
+                      backgroundColor: 'canvas.default',
                     },
                   },
                 }}>
@@ -266,7 +241,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                     borderWidth: 0,
                     borderRightWidth: 1,
                     borderLeftWidth: 0,
-                    borderColor: 'border.muted',
+                    borderColor: 'btn.activeBorder',
                     borderStyle: 'dotted',
                     width: 0,
                     transition: 'border 0.1s cubic-bezier(1,1,1,0)',
@@ -275,7 +250,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
               </Tooltip>
             </Box>
 
-            <Box sx={{ width: '100%', overflow: 'auto' }}>
+            <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
               <Content content={child} mode="view" />
 
               <Box sx={{ mt: 4 }}>
@@ -331,7 +306,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   try {
@@ -430,5 +405,6 @@ export async function getStaticProps(context) {
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
     revalidate: 10,
+    swr: { revalidateOnFocus: false },
   };
-}
+});

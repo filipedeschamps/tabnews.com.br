@@ -184,7 +184,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -250,7 +250,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(-1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -338,7 +338,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -426,7 +426,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(-1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {

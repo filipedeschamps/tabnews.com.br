@@ -480,7 +480,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "body" containing untrimmed values', async () => {
+    test('Content with "body" ending with untrimmed values', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -2680,6 +2680,7 @@ describe('POST /api/v1/contents', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -2714,6 +2715,7 @@ describe('POST /api/v1/contents', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -2792,6 +2794,7 @@ describe('POST /api/v1/contents', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
@@ -2838,6 +2841,7 @@ describe('POST /api/v1/contents', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
@@ -2872,7 +2876,457 @@ describe('POST /api/v1/contents', () => {
 
         const userResponseBody = await userResponse.json();
 
-        expect(userResponseBody.tabcoins).toEqual(2);
+        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+    });
+
+    describe('Prestige', () => {
+      test('should not be able to create "root" content with negative prestige by more than 40%', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -4, rootPrestigeDenominator: 9 });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(403);
+        expect(responseBody.status_code).toEqual(403);
+        expect(responseBody.name).toEqual('ForbiddenError');
+        expect(responseBody.message).toEqual(
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+        );
+        expect(responseBody.action).toEqual(
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+        );
+        expect(uuidVersion(responseBody.error_id)).toEqual(4);
+        expect(uuidVersion(responseBody.request_id)).toEqual(4);
+        expect(responseBody.error_location_code).toEqual(
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+        );
+      });
+
+      test('should not be able to create "child" content with negative prestige by more than 40%', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -4, childPrestigeDenominator: 9 });
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Não deveria conseguir por possuir comentários mal avaliados.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await childResponse.json();
+
+        expect(childResponse.status).toEqual(403);
+        expect(responseBody.status_code).toEqual(403);
+        expect(responseBody.name).toEqual('ForbiddenError');
+        expect(responseBody.message).toEqual(
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+        );
+        expect(responseBody.action).toEqual(
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+        );
+        expect(uuidVersion(responseBody.error_id)).toEqual(4);
+        expect(uuidVersion(responseBody.request_id)).toEqual(4);
+        expect(responseBody.error_location_code).toEqual(
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+        );
+      });
+
+      test('Should be able to create "root" content with negative prestige by 40%', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -4, rootPrestigeDenominator: 10 });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'title',
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should be able to create "child" content with negative prestige by 40%', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -4, childPrestigeDenominator: 10 });
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await childResponse.json();
+
+        expect(childResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should not be able to earn tabcoins if it has less than 60% prestige in "root" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1, rootPrestigeDenominator: 2 });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'title',
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should not be able to earn tabcoins if it has less than 60% prestige in "child" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 1, childPrestigeDenominator: 2 });
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Deve conseguir publicar, mas não deve ganhar TabCoins',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await childResponse.json();
+
+        expect(childResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Deve conseguir publicar, mas não deve ganhar TabCoins',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should be able to earn tabcoins if it has 60% prestige in "root" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 6, rootPrestigeDenominator: 10 });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'title',
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should be able to earn tabcoins if it has 60% prestige in "child" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 6, childPrestigeDenominator: 10 });
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Deve conseguir publicar e ganhar TabCoins.',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await childResponse.json();
+
+        expect(childResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Deve conseguir publicar e ganhar TabCoins.',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
       });
     });
