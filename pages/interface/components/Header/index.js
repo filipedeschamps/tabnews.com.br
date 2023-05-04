@@ -17,7 +17,6 @@ import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { CgTab } from 'react-icons/cg';
 import { MdAdd } from 'react-icons/md';
-import { GrAdd } from 'react-icons/gr';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
@@ -79,6 +78,17 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <PrimerHeader.Item
+            sx={{
+              mr: 2,
+            }}>
+            <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
+              <HeaderLink href="/publicar" aria-label="Publicar novo conteúdo">
+                <MdAdd size={20} color="white" />
+              </HeaderLink>
+            </Tooltip>
+          </PrimerHeader.Item>
+
           <PrimerHeader.Item
             sx={{
               mr: 2,
