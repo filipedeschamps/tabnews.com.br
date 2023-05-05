@@ -235,6 +235,7 @@ function filterOutput(user, feature, output) {
       clonedOutput.body = '[Não disponível]';
       clonedOutput.slug = 'nao-disponivel';
       clonedOutput.source_url = null;
+      clonedOutput.children_deep_count = 0;
     }
 
     filteredOutputValues = validator(clonedOutput, {

@@ -60,7 +60,7 @@ async function getHandler(request, response) {
 
   const rootContentFound = await content.findRootContent({
     where: {
-      id: contentFound.id,
+      id: contentFound.parent_id,
     },
   });
 
