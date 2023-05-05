@@ -807,16 +807,12 @@ async function findTree(options) {
       )
       SELECT
         children.*,
-        ${options.where.owner_username ? '$1' : 'users.username'} as owner_username,
+        users.username as owner_username,
         get_current_balance('content:tabcoin', children.id) as tabcoins
       FROM
         children
-      ${
-        options.where.owner_username
-          ? ''
-          : `INNER JOIN
-        users ON children.owner_id = users.id`
-      }
+      INNER JOIN
+        users ON children.owner_id = users.id
       ;`,
       values: values,
     };
@@ -928,7 +924,7 @@ function getContentScore(contentObject) {
   const initialBoost = ageInMilliseconds < boostPeriodInMilliseconds ? 3 : 1;
   const gravity = Math.exp(-ageInMilliseconds / ageBaseInMilliseconds);
   const score = (tabcoins - offset) * initialBoost;
-  const finalScore = tabcoins > 0 ? score * gravity : score * (1 - gravity);
+  const finalScore = tabcoins > 0 ? score * (1 + gravity) : score * (1 - gravity);
   return finalScore;
 }
 
