@@ -1,6 +1,6 @@
 import { Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
 import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
-import { NotFoundError } from 'errors/index.js';
+import { NotFoundError, ValidationError } from 'errors/index.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
@@ -328,6 +328,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       });
     }
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return {
+        notFound: true,
+      };
+    }
+
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
