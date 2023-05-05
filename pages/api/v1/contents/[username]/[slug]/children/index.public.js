@@ -26,7 +26,6 @@ function getValidationHandler(request, response, next) {
   next();
 }
 
-// TODO: cache the response
 async function getHandler(request, response) {
   const userTryingToGet = user.createAnonymous();
 
@@ -48,7 +47,7 @@ async function getHandler(request, response) {
     });
   }
 
-  const childrenFound = await content.findChildrenTree({
+  const childrenFound = await content.findTree({
     where: {
       parent_id: contentFound.id,
     },

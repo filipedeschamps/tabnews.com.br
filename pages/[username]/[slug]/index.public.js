@@ -6,12 +6,11 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
-import validator from 'models/validator.js';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useCollapse } from 'pages/interface';
 import { useEffect, useState } from 'react';
 
-export default function Post({ contentFound, childrenFound, rootContentFound, parentContentFound, contentMetadata }) {
+export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -79,7 +78,7 @@ export default function Post({ contentFound, childrenFound, rootContentFound, pa
 
           <RenderChildrenTree
             key={contentFound.id}
-            childrenList={childrenFound}
+            childrenList={contentFound.children}
             renderIntent={childrenToShow}
             renderIncrement={Math.ceil(childrenToShow / 2)}
           />
@@ -309,29 +308,17 @@ export async function getStaticPaths() {
 export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
-  try {
-    context.params = validator(context.params, {
-      username: 'required',
-      slug: 'required',
-    });
-  } catch (error) {
-    return {
-      notFound: true,
-    };
-  }
-
-  let contentFound;
+  let contentTreeFound;
 
   try {
-    contentFound = await content.findOne({
+    contentTreeFound = await content.findTree({
       where: {
         owner_username: context.params.username,
         slug: context.params.slug,
-        status: 'published',
       },
     });
 
-    if (!contentFound) {
+    if (!contentTreeFound?.length) {
       throw new NotFoundError({
         message: `O conteúdo informado não foi encontrado no sistema.`,
         action: 'Verifique se o "slug" está digitado corretamente.',
@@ -351,15 +338,9 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     throw error;
   }
 
-  const secureContentFound = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+  const secureContentTree = authorization.filterOutput(userTryingToGet, 'read:content:list', contentTreeFound);
 
-  const childrenFound = await content.findChildrenTree({
-    where: {
-      parent_id: contentFound.id,
-    },
-  });
-
-  const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+  const secureContentFound = secureContentTree[0];
 
   const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
@@ -380,7 +361,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   if (secureContentFound.parent_id) {
     const rootContentFound = await content.findRootContent({
       where: {
-        id: secureContentFound.id,
+        id: secureContentFound.parent_id,
       },
     });
 
@@ -399,7 +380,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
-      childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
       rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),

@@ -130,7 +130,7 @@ async function findAll(values = {}, options = {}) {
             FROM
               contents as all_contents
             WHERE
-              all_contents.id = contents.id AND
+              all_contents.parent_id = contents.id AND
               all_contents.status = 'published'
             UNION ALL
               SELECT
@@ -147,8 +147,6 @@ async function findAll(values = {}, options = {}) {
             count(children.id)::integer
           FROM
             children
-          WHERE
-            children.id NOT IN (contents.id)
         ) as children_deep_count
       FROM
         contents
@@ -770,95 +768,81 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
   }
 }
 
-async function findChildrenTree(options) {
+async function findTree(options) {
   options.where = validateWhereSchema(options?.where);
-  const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenFlatListRanked = rankContentListByRelevance(childrenFlatList);
-  const childrenTree = flatListToTree(childrenFlatListRanked);
-  return childrenTree.children;
+  let values;
+  if (options.where.parent_id) {
+    values = [options.where.parent_id];
+  } else if (options.where.id) {
+    values = [options.where.id];
+  } else if (options.where.slug) {
+    values = [options.where.owner_username, options.where.slug];
+  }
+
+  const flatList = await recursiveDatabaseLookup(options);
+  return flatListToTree(flatList);
 
   async function recursiveDatabaseLookup(options) {
     const query = {
       text: `
       WITH RECURSIVE children AS (
         SELECT
-            id,
-            owner_id,
-            parent_id,
-            slug,
-            title,
-            body,
-            status,
-            source_url,
-            created_at,
-            updated_at,
-            published_at,
-            deleted_at
+            *
         FROM
           contents
         WHERE
-          contents.id = $1 AND
+          ${options.where.parent_id ? 'contents.parent_id = $1 AND' : ''}
+          ${options.where.id ? 'contents.id = $1 AND' : ''}
+          ${options.where.slug ? whereOwnerAndSlug('$1', '$2') : ''}
           contents.status = 'published'
         UNION ALL
           SELECT
-            contents.id,
-            contents.owner_id,
-            contents.parent_id,
-            contents.slug,
-            contents.title,
-            contents.body,
-            contents.status,
-            contents.source_url,
-            contents.created_at,
-            contents.updated_at,
-            contents.published_at,
-            contents.deleted_at
+            contents.*
           FROM
             contents
           INNER JOIN
             children ON contents.parent_id = children.id
           WHERE
             contents.status = 'published'
-
       )
       SELECT
-        children.id,
-        children.owner_id,
-        children.parent_id,
-        children.slug,
-        children.title,
-        children.body,
-        children.status,
-        children.source_url,
-        children.created_at,
-        children.updated_at,
-        children.published_at,
-        children.deleted_at,
-        users.username as owner_username,
+        children.*,
+        ${options.where.owner_username ? '$1' : 'users.username'} as owner_username,
         get_current_balance('content:tabcoin', children.id) as tabcoins
       FROM
         children
-      INNER JOIN
-        users ON children.owner_id = users.id
-      ORDER BY
-        children.published_at ASC;
+      ${
+        options.where.owner_username
+          ? ''
+          : `INNER JOIN
+        users ON children.owner_id = users.id`
+      }
       ;`,
-      values: [options.where.parent_id],
+      values: values,
     };
     const results = await database.query(query);
     return results.rows;
   }
 
   function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      parent_id: 'required',
-    });
+    let options = {};
+
+    if (where.parent_id) {
+      options.parent_id = 'required';
+    } else if (where.slug) {
+      options.owner_username = 'required';
+      options.slug = 'required';
+    } else {
+      options.id = 'required';
+    }
+
+    const cleanValues = validator(where, options);
 
     return cleanValues;
   }
 
   function flatListToTree(list) {
-    let tree;
+    const childrenTree = [];
     const table = {};
 
     list.forEach((row) => {
@@ -870,16 +854,21 @@ async function findChildrenTree(options) {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
       } else {
-        tree = row;
+        childrenTree.push(row);
       }
     });
 
-    recursiveInjectChildrenDeepCount(tree);
+    const childrenTreeRanked = rankContentListByRelevance(childrenTree);
+
+    childrenTreeRanked.forEach((child) => {
+      recursiveInjectChildrenDeepCount(child);
+    });
 
     function recursiveInjectChildrenDeepCount(node) {
       let count = node.children.length;
 
       if (node.children) {
+        node.children = rankContentListByRelevance(node.children);
         node.children.forEach((child) => {
           count += recursiveInjectChildrenDeepCount(child);
         });
@@ -889,8 +878,24 @@ async function findChildrenTree(options) {
       return count;
     }
 
-    return tree;
+    return childrenTreeRanked;
   }
+}
+
+function whereOwnerAndSlug($1, $2) {
+  return `
+    contents.owner_id = (
+        SELECT
+          id
+        FROM
+          users
+        WHERE
+          LOWER(username) = LOWER(${$1})
+        LIMIT
+          1
+    ) AND
+    contents.slug = ${$2} AND
+  `;
 }
 
 function rankContentListByRelevance(contentList) {
@@ -908,76 +913,23 @@ function rankContentListByRelevance(contentList) {
   function sortByScore(first, second) {
     return second.score - first.score;
   }
-
-  // Inspired by:
-  // https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
-  // https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
-  function getContentScore(contentObject) {
-    const tabcoins = contentObject.tabcoins;
-    const secondsSinceEpoch = Math.floor(new Date() / 1000);
-    const publishedAtInSeconds = Math.floor(new Date(contentObject.published_at) / 1000);
-    const ageInSeconds = secondsSinceEpoch - publishedAtInSeconds;
-    const ageBase = 60 * 60 * 1; // 1 hour
-    const boostPeriodInSeconds = 60 * 10; // 10 minutes
-    const initialBoost = ageInSeconds < boostPeriodInSeconds ? 10 : 1;
-    const tabcoinsAntiGravity = 1.5;
-    const tabcoinsWithAntiGravity = Math.pow(Math.abs(tabcoins), tabcoinsAntiGravity);
-    const tabcoinsWithCorrectSign = tabcoins > 0 ? tabcoinsWithAntiGravity : tabcoinsWithAntiGravity * -1;
-    const gravity = 1.8;
-
-    const scoreDecimals = (tabcoinsWithCorrectSign + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
-    const finalScore = scoreDecimals * 10000;
-    return finalScore;
-  }
 }
 
-async function findChildrenCount(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const childrenCount = await recursiveDatabaseLookup(values, options);
-  return childrenCount;
+// Inspired by:
+// https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
+// https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
+const ageBaseInMilliseconds = 1000 * 60 * 60 * 6; // 6 hours
+const boostPeriodInMilliseconds = 1000 * 60 * 10; // 10 minutes
+const offset = 0.5;
 
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            id,
-            parent_id
-        FROM
-          contents
-        WHERE
-          contents.id = $1 AND
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.id,
-            contents.parent_id
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
-      )
-      SELECT
-        count(children.id)::integer
-      FROM
-        children
-      WHERE
-        children.id NOT IN ($1);`,
-      values: [values.where.id],
-    };
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0].count;
-  }
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
+function getContentScore(contentObject) {
+  const tabcoins = contentObject.tabcoins;
+  const ageInMilliseconds = Date.now() - new Date(contentObject.published_at);
+  const initialBoost = ageInMilliseconds < boostPeriodInMilliseconds ? 3 : 1;
+  const gravity = Math.exp(-ageInMilliseconds / ageBaseInMilliseconds);
+  const score = (tabcoins - offset) * initialBoost;
+  const finalScore = tabcoins > 0 ? score * gravity : score * (1 - gravity);
+  return finalScore;
 }
 
 async function findRootContent(values, options = {}) {
@@ -1003,7 +955,6 @@ async function findRootContent(values, options = {}) {
           contents
         WHERE
           id = $1
-          AND parent_id IS NOT NULL
       UNION ALL
         SELECT
           contents.*
@@ -1032,7 +983,7 @@ async function findRootContent(values, options = {}) {
             FROM
               contents
             WHERE
-              contents.id = child_to_root_tree.id AND
+              contents.parent_id = child_to_root_tree.id AND
               contents.status = 'published'
             UNION ALL
               SELECT
@@ -1049,8 +1000,6 @@ async function findRootContent(values, options = {}) {
             count(children.id)::integer
           FROM
             children
-          WHERE
-            children.id NOT IN (child_to_root_tree.id)
         ) as children_deep_count
       FROM
         child_to_root_tree
@@ -1070,7 +1019,7 @@ async function findRootContent(values, options = {}) {
 export default Object.freeze({
   findAll,
   findOne,
-  findChildrenTree,
+  findTree,
   findWithStrategy,
   findRootContent,
   create,
