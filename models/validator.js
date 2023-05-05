@@ -99,6 +99,7 @@ const schemas = {
         .max(30)
         .trim()
         .invalid(null)
+        .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.owner_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"owner_username" é um campo obrigatório.`,
@@ -108,6 +109,7 @@ const schemas = {
           'string.min': `"owner_username" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"owner_username" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"owner_username" possui o valor inválido "null".`,
+          'username.reserved': `Este nome de usuário não está disponível para uso.`,
         }),
     });
   },
