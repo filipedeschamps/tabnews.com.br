@@ -2,6 +2,7 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import session from 'models/session';
 
 export default nextConnect({
@@ -12,6 +13,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(injectUserWithBalance)
   .use(controller.logRequest)
+  .use(cacheControl.noCache)
   .get(authorization.canRequest('read:session'), renewSessionIfNecessary, getHandler);
 
 async function getHandler(request, response) {

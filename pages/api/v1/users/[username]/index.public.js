@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import user from 'models/user.js';
 import ban from 'models/ban.js';
@@ -16,14 +17,16 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
   .patch(
+    cacheControl.noCache,
     authentication.injectAnonymousOrUser,
     patchValidationHandler,
     authorization.canRequest('update:user'),
     patchHandler
   )
   .delete(
+    cacheControl.noCache,
     authentication.injectAnonymousOrUser,
     deleteValidationHandler,
     authorization.canRequest('ban:user'),
@@ -47,8 +50,6 @@ async function getHandler(request, response) {
   });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
-
-  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
   return response.status(200).json(secureOutputValues);
 }

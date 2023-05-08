@@ -72,7 +72,13 @@ function onErrorHandler(error, request, response) {
     errorLocationCode: error.errorLocationCode,
   });
 
-  const privateErrorObject = { ...publicErrorObject, context: { ...request.context }, stack: error.stack };
+  const privateErrorObject = {
+    ...new InternalServerError({
+      ...error,
+      requestId: request.context?.requestId,
+    }),
+    context: { ...request.context },
+  };
 
   logger.error(snakeize(privateErrorObject));
 

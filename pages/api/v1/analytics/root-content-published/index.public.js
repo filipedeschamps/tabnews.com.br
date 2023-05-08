@@ -1,6 +1,7 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import analytics from 'models/analytics.js';
+import cacheControl from 'models/cache-control';
 
 export default nextConnect({
   attachParams: true,
@@ -9,11 +10,11 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(300))
   .get(getHandler);
 
 async function getHandler(request, response) {
   const contentsPublished = await analytics.getRootContentsPublished();
 
-  response.setHeader('Cache-Control', 'public, 300, stale-while-revalidate');
   return response.status(200).json(contentsPublished);
 }

@@ -5,6 +5,7 @@ import user from 'models/user.js';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import validator from 'models/validator.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
@@ -17,6 +18,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.noCache)
   .get(authorization.canRequest('read:user:list'), getHandler)
   .post(
     postValidationHandler,
