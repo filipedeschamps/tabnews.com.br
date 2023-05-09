@@ -122,10 +122,37 @@ function injectPaginationHeaders(pagination, endpoint, response) {
   response.setHeader('X-Pagination-Total-Rows', pagination.totalRows);
 }
 
+function injectSearchPaginationHeaders(pagination, endpoint, response) {
+  const links = [];
+  const baseUrl = `${webserver.host}${endpoint}?search_term=${pagination.search_term}&search_scope=${pagination.search_scope}`;
+
+  if (pagination.firstPage) {
+    links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
+  }
+
+  if (pagination.previousPage) {
+    links.push(`<${baseUrl}&page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
+  }
+
+  if (pagination.nextPage) {
+    links.push(`<${baseUrl}&page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
+  }
+
+  if (pagination.lastPage) {
+    links.push(`<${baseUrl}&page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
+  }
+
+  const linkHeaderString = links.join(', ');
+
+  response.setHeader('Link', linkHeaderString);
+  response.setHeader('X-Pagination-Total-Rows', pagination.totalRows);
+}
+
 export default Object.freeze({
   injectRequestMetadata,
   onNoMatchHandler,
   onErrorHandler,
   logRequest,
   injectPaginationHeaders,
+  injectSearchPaginationHeaders,
 });

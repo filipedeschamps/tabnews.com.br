@@ -135,6 +135,8 @@ async function searchContent(inputValues) {
       nextPage: nextPage,
       previousPage: previousPage,
       lastPage: lastPage,
+      search_term: inputValues.search_term,
+      search_scope: 'contents',
     };
   }
 }

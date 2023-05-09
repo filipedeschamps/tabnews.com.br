@@ -36,7 +36,7 @@ async function getHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/search', response);
+  controller.injectSearchPaginationHeaders(results.pagination, '/api/v1/search', response);
 
   response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
