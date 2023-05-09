@@ -44,7 +44,7 @@ async function searchContent(inputValues) {
         id
       FROM contents
       WHERE contents.parent_id IS NOT DISTINCT FROM $3 AND contents.status = $4 AND (to_tsvector('portuguese', unaccent(title)) @@ to_tsquery('portuguese', unaccent($5)) OR to_tsvector('portuguese', unaccent(body)) @@ to_tsquery('portuguese', unaccent($5)))
-      ORDER BY ts_rank(to_tsvector(contents.body),to_tsquery($5)) DESC NULLS LAST
+      ORDER BY ts_rank(to_tsvector(contents.body),to_tsquery($5)) DESC NULLS LAST, published_at DESC
       LIMIT $1 OFFSET $2
     )
     SELECT
@@ -94,7 +94,7 @@ async function searchContent(inputValues) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
-      ORDER BY ts_rank(to_tsvector(contents.body), to_tsquery($5)) DESC NULLS LAST;
+      ORDER BY ts_rank(to_tsvector(contents.body), to_tsquery($5)) DESC NULLS LAST, published_at DESC;
   `;
 
   const queryResult = await database.query(query);
@@ -120,7 +120,7 @@ async function searchContent(inputValues) {
   }
 
   function getPagination(rows) {
-    const totalRows = rows.length;
+    const totalRows = rows[0]?.total_rows || 0;
     const perPage = inputValues.per_page;
     const firstPage = 1;
     const lastPage = Math.ceil(totalRows / inputValues.per_page);

@@ -124,7 +124,10 @@ function injectPaginationHeaders(pagination, endpoint, response) {
 
 function injectSearchPaginationHeaders(pagination, endpoint, response) {
   const links = [];
-  const baseUrl = `${webserver.host}${endpoint}?search_term=${pagination.search_term}&search_scope=${pagination.search_scope}`;
+  const baseUrl = `${webserver.host}${endpoint}?search_term=${pagination.search_term.replaceAll(
+    ' ',
+    '%20'
+  )}&search_scope=${pagination.search_scope}`;
 
   if (pagination.firstPage) {
     links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
