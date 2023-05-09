@@ -43,7 +43,7 @@ async function searchContent(inputValues) {
         COUNT(*) OVER()::INTEGER as total_rows,
         id
       FROM contents
-      WHERE contents.parent_id IS NOT DISTINCT FROM $3 AND contents.status = $4 AND (to_tsvector(title) @@ to_tsquery($5) OR to_tsvector(body) @@ to_tsquery($5))
+      WHERE contents.parent_id IS NOT DISTINCT FROM $3 AND contents.status = $4 AND (to_tsvector('portuguese', unaccent(title)) @@ to_tsquery('portuguese', unaccent($5)) OR to_tsvector('portuguese', unaccent(body)) @@ to_tsquery('portuguese', unaccent($5)))
       ORDER BY ts_rank(to_tsvector(contents.body),to_tsquery($5)) DESC NULLS LAST
       LIMIT $1 OFFSET $2
     )
