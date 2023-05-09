@@ -3,6 +3,7 @@ import controller from 'models/controller.js';
 import user from 'models/user';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
 import activation from 'models/activation.js';
 import validator from 'models/validator.js';
@@ -16,6 +17,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.noCache)
   .delete(authorization.canRequest('read:session'), deleteHandler)
   .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
 

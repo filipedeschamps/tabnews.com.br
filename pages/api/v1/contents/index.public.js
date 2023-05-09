@@ -2,6 +2,7 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
@@ -18,8 +19,9 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
   .post(
+    cacheControl.noCache,
     authentication.injectAnonymousOrUser,
     postValidationHandler,
     authorization.canRequest('create:content'),
@@ -60,8 +62,6 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
-
-  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
   return response.status(200).json(secureOutputValues);
 }

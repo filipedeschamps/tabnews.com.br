@@ -3,6 +3,7 @@ import cookie from 'cookie';
 import database from 'infra/database.js';
 import { UnauthorizedError } from 'errors/index.js';
 import validator from 'models/validator.js';
+import cacheControl from 'models/cache-control';
 
 const SESSION_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
@@ -21,6 +22,7 @@ async function create(userId) {
 }
 
 function setSessionIdCookieInResponse(sessionToken, response) {
+  cacheControl.noCache(undefined, response);
   response.setHeader('Set-Cookie', [
     cookie.serialize('session_id', sessionToken, {
       httpOnly: true,
@@ -74,6 +76,7 @@ async function expireAllFromUserId(userId, options = {}) {
 
 // TODO: mark session as invalid also in Database.
 function clearSessionIdCookie(response) {
+  cacheControl.noCache(undefined, response);
   response.setHeader('Set-Cookie', [
     cookie.serialize('session_id', 'invalid', {
       httpOnly: true,

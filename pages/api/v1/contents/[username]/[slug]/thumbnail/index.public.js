@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+import cacheControl from 'models/cache-control';
 import controller from 'models/controller';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
@@ -12,6 +13,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(60))
   .get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
@@ -48,6 +50,5 @@ async function getHandler(request, response) {
 
   response.statusCode = 200;
   response.setHeader('Content-Type', `image/png`);
-  response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate');
   response.end(thumbnailPng);
 }
