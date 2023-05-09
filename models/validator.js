@@ -779,6 +779,37 @@ const schemas = {
         }),
     });
   },
+
+  search_term: function () {
+    return Joi.object({
+      search_term: Joi.string()
+        .allow(null, '')
+        .trim()
+        .when('$required.search_term', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"search_term" é um campo obrigatório.`,
+          'string.empty': `"search_term" não pode estar em branco.`,
+          'string.base': `"search_term" deve ser do tipo String.`,
+        }),
+    });
+  },
+
+  search_scope: function () {
+    return Joi.object({
+      search_scope: Joi.string()
+        .trim()
+        .valid('contents')
+        .invalid(null)
+        .when('$required.search_scope', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"search_scope" é um campo obrigatório.`,
+          'string.empty': `"search_scope" não pode estar em branco.`,
+          'string.base': `"search_scope" deve ser do tipo String.`,
+          'any.invalid': `"search_scope" possui o valor inválido "null".`,
+          'any.only': `"search_scope" deve possuir um dos seguintes valores: "contents".`,
+        }),
+    });
+  },
 };
 
 const withoutMarkdown = (value, helpers) => {
