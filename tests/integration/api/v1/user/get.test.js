@@ -1,7 +1,6 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
-import authentication from 'models/authentication';
+import { RequestBuilder } from 'tests/builders';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -12,93 +11,99 @@ beforeAll(async () => {
 describe('GET /api/v1/user', () => {
   describe('Anonymous user', () => {
     test('Retrieving the endpoint', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`);
+      const builder = await RequestBuilder.create({
+        url: '/user',
+      }).call();
 
-      const responseBody = await response.json();
+      const expectedBody = {
+        status_code: 403,
+        name: 'ForbiddenError',
+        message: 'Usuário não pode executar esta operação.',
+        action: 'Verifique se este usuário possui a feature "read:session".',
+        error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
+      };
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:session".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(403);
+      builder.expectResponseCookie({});
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet).toStrictEqual({});
+      expect(uuidVersion(builder.response.body.error_id)).toEqual(4);
+      expect(uuidVersion(builder.response.body.request_id)).toEqual(4);
     });
 
     test('Retrieving the endpoint with malformatted "session_id" (too short)', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
+      const builder = await RequestBuilder.create({
+        url: '/user',
         headers: {
           cookie: `session_id=tooshort`,
         },
-      });
+      }).call();
 
-      const responseBody = await response.json();
+      const expectedBody = {
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"session_id" deve possuir 96 caracteres.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'session_id',
+      };
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"session_id" deve possuir 96 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('session_id');
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(400);
+      builder.expectResponseCookie({});
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet).toStrictEqual({});
+      expect(uuidVersion(builder.response.body.error_id)).toEqual(4);
+      expect(uuidVersion(builder.response.body.request_id)).toEqual(4);
     });
 
     test('Retrieving the endpoint with malformatted "session_id" (too long)', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
+      const builder = await RequestBuilder.create({
+        url: '/user',
         headers: {
           cookie: `session_id=97characterslongggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg`,
         },
-      });
+      }).call();
 
-      const responseBody = await response.json();
+      const expectedBody = {
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"session_id" deve possuir 96 caracteres.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'session_id',
+      };
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"session_id" deve possuir 96 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('session_id');
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(400);
+      builder.expectResponseCookie({});
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet).toStrictEqual({});
+      expect(uuidVersion(builder.response.body.error_id)).toEqual(4);
+      expect(uuidVersion(builder.response.body.request_id)).toEqual(4);
     });
 
     test('Retrieving the endpoint with correct length "session_id", but with invalid characters', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
+      const builder = await RequestBuilder.create({
+        url: '/user',
         headers: {
           cookie: `session_id=%208427a9as213d2a80da05b25c76b43fa539ec09303fb7ea146ba661208c1a475ed0d91847f16123d257c858994e4aaf8`,
         },
-      });
+      }).call();
 
-      const responseBody = await response.json();
+      const expectedBody = {
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"session_id" deve conter apenas caracteres alfanuméricos.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'session_id',
+      };
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"session_id" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('session_id');
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(400);
+      builder.expectResponseCookie({});
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet).toStrictEqual({});
+      expect(uuidVersion(builder.response.body.error_id)).toEqual(4);
+      expect(uuidVersion(builder.response.body.request_id)).toEqual(4);
     });
   });
 
@@ -108,17 +113,14 @@ describe('GET /api/v1/user', () => {
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
+      const builder = await RequestBuilder.create({
+        url: '/user',
         headers: {
           cookie: `session_id=${defaultUserSession.token}`,
         },
-      });
+      }).call();
 
-      const responseBody = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(responseBody).toStrictEqual({
+      const expectedBody = {
         id: defaultUser.id,
         username: defaultUser.username,
         email: defaultUser.email,
@@ -128,10 +130,11 @@ describe('GET /api/v1/user', () => {
         tabcash: defaultUser.tabcash,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
-      });
+      };
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet).toStrictEqual({});
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(200);
+      builder.expectResponseCookie({});
 
       const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
       expect(sessionObject).toStrictEqual(defaultUserSession);
@@ -143,30 +146,27 @@ describe('GET /api/v1/user', () => {
       const sessionObject = await orchestrator.createSession(defaultUser);
       await orchestrator.removeFeaturesFromUser(defaultUser, ['read:session']);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
+      const builder = await RequestBuilder.create({
+        url: '/user',
         headers: {
           cookie: `session_id=${sessionObject.token}`,
         },
-      });
+      }).call();
 
-      const responseBody = await response.json();
+      const expectedBody = {
+        status_code: 403,
+        name: 'ForbiddenError',
+        message: 'Você não possui permissão para executar esta ação.',
+        action: 'Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".',
+        error_location_code: 'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
+      };
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para executar esta ação.');
-      expect(responseBody.action).toEqual(
-        'Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".'
-      );
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
-        'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION'
-      );
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(403);
+      builder.expectResponseCookie({});
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet).toStrictEqual({});
+      expect(uuidVersion(builder.response.body.error_id)).toEqual(4);
+      expect(uuidVersion(builder.response.body.request_id)).toEqual(4);
     });
 
     test('With expired session', async () => {
@@ -181,29 +181,35 @@ describe('GET /api/v1/user', () => {
 
       jest.useRealTimers();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
+      const builder = await RequestBuilder.create({
+        url: '/user',
         headers: {
           cookie: `session_id=${defaultUserSession.token}`,
         },
-      });
+      }).call();
 
-      const responseBody = await response.json();
+      const expectedBody = {
+        status_code: 401,
+        name: 'UnauthorizedError',
+        message: 'Usuário não possui sessão ativa.',
+        action: 'Verifique se este usuário está logado.',
+      };
+      const expectedCookie = {
+        session_id: {
+          name: 'session_id',
+          value: 'invalid',
+          maxAge: -1,
+          path: '/',
+          httpOnly: true,
+        },
+      };
 
-      expect(response.status).toEqual(401);
-      expect(responseBody.status_code).toEqual(401);
-      expect(responseBody.name).toEqual('UnauthorizedError');
-      expect(responseBody.message).toEqual('Usuário não possui sessão ativa.');
-      expect(responseBody.action).toEqual('Verifique se este usuário está logado.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      builder.expectResponseBody(expectedBody);
+      builder.expectResponseStatus(401);
+      builder.expectResponseCookie(expectedCookie, true);
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-      expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
-      expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);
-      expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-      expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+      expect(uuidVersion(builder.response.body.error_id)).toEqual(4);
+      expect(uuidVersion(builder.response.body.request_id)).toEqual(4);
 
       const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
       expect(sessionObject).toBeUndefined();
@@ -225,17 +231,14 @@ describe('GET /api/v1/user', () => {
 
         const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
+        const builder = await RequestBuilder.create({
+          url: '/user',
           headers: {
             cookie: `session_id=${sessionObjectBeforeRenew.token}`,
           },
-        });
+        }).call();
 
-        const responseBody = await response.json();
-
-        expect(response.status).toBe(200);
-        expect(responseBody).toStrictEqual({
+        const expectedBody = {
           id: defaultUser.id,
           username: defaultUser.username,
           email: defaultUser.email,
@@ -245,14 +248,20 @@ describe('GET /api/v1/user', () => {
           tabcash: defaultUser.tabcash,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
-        });
+        };
+        const expectedCookie = {
+          session_id: {
+            name: 'session_id',
+            value: sessionObjectBeforeRenew.token,
+            maxAge: 60 * 60 * 24 * 30,
+            path: '/',
+            httpOnly: true,
+          },
+        };
 
-        const parsedCookiesFromGet = authentication.parseSetCookies(response);
-        expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-        expect(parsedCookiesFromGet.session_id.value).toEqual(sessionObjectBeforeRenew.token);
-        expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-        expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-        expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+        builder.expectResponseBody(expectedBody, true);
+        builder.expectResponseStatus(200);
+        builder.expectResponseCookie(expectedCookie, true);
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
         expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
@@ -278,17 +287,14 @@ describe('GET /api/v1/user', () => {
 
         expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
+        const builder = await RequestBuilder.create({
+          url: '/user',
           headers: {
             cookie: `session_id=${sessionObjectBeforeRenew.token}`,
           },
-        });
+        }).call();
 
-        const responseBody = await response.json();
-
-        expect(response.status).toBe(200);
-        expect(responseBody).toStrictEqual({
+        const expectedBody = {
           id: defaultUser.id,
           username: defaultUser.username,
           email: defaultUser.email,
@@ -298,14 +304,21 @@ describe('GET /api/v1/user', () => {
           tabcash: defaultUser.tabcash,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
-        });
+        };
 
-        const parsedCookiesFromGet = authentication.parseSetCookies(response);
-        expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-        expect(parsedCookiesFromGet.session_id.value).toEqual(sessionObjectBeforeRenew.token);
-        expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-        expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-        expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+        const expectedCookie = {
+          session_id: {
+            name: 'session_id',
+            value: sessionObjectBeforeRenew.token,
+            maxAge: 60 * 60 * 24 * 30,
+            path: '/',
+            httpOnly: true,
+          },
+        };
+
+        builder.expectResponseBody(expectedBody, true);
+        builder.expectResponseStatus(200);
+        builder.expectResponseCookie(expectedCookie, true);
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
         expect(sessionObjectAfterRenew.id).toEqual(sessionObjectBeforeRenew.id);
@@ -330,17 +343,14 @@ describe('GET /api/v1/user', () => {
 
         expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
+        const builder = await RequestBuilder.create({
+          url: '/user',
           headers: {
             cookie: `session_id=${sessionObjectBeforeRenew.token}`,
           },
-        });
+        }).call();
 
-        const responseBody = await response.json();
-
-        expect(response.status).toBe(200);
-        expect(responseBody).toStrictEqual({
+        const expectedBody = {
           id: defaultUser.id,
           username: defaultUser.username,
           email: defaultUser.email,
@@ -350,10 +360,12 @@ describe('GET /api/v1/user', () => {
           tabcash: defaultUser.tabcash,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
-        });
+        };
+        const expectedCookie = {};
 
-        const parsedCookiesFromGet = authentication.parseSetCookies(response);
-        expect(parsedCookiesFromGet).toStrictEqual({});
+        builder.expectResponseBody(expectedBody, true);
+        builder.expectResponseStatus(200);
+        builder.expectResponseCookie(expectedCookie);
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
         expect(sessionObjectAfterRenew).toStrictEqual(sessionObjectBeforeRenew);
