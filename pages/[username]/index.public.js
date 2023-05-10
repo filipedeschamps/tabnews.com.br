@@ -28,7 +28,7 @@ import useSWR from 'swr';
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
     fallbackData: userFoundFallback,
-    revalidateOnMount: true,
+    revalidateOnMount: false,
   });
 
   const { user, isLoading } = useUser();
@@ -140,7 +140,6 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${userFound.username}/pagina`}
-          revalidatePath={`/api/v1/contents/${userFound.username}?strategy=new`}
           emptyStateProps={{
             isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',
@@ -201,19 +200,24 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   }
 
   let results;
+  let secureUserFound;
 
   try {
+    const userFound = await user.findOneByUsername(context.params.username);
+
+    secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
+
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        owner_username: context.params.username,
+        owner_id: secureUserFound.id,
         status: 'published',
       },
       page: context.params.page,
       per_page: context.params.per_page,
     });
   } catch (error) {
-    // `content` model will throw a `NotFoundError` if the user is not found.
+    // `user` model will throw a `NotFoundError` if the user is not found.
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
@@ -227,9 +231,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const contentListFound = results.rows;
 
   const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
-  const userFound = await user.findOneByUsername(context.params.username);
-  const secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
 
   for (const content of secureContentListFound) {
     if (content.parent_id) {

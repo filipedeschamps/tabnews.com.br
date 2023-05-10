@@ -96,7 +96,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
@@ -105,7 +106,8 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const NotRootContentPublished = await orchestrator.createContent({
+      // NotRootContentPublished
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
@@ -115,7 +117,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const NotRootContentDraft = await orchestrator.createContent({
+      // NotRootContentDraft
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quinto conteúdo criado',
@@ -186,7 +189,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
@@ -195,7 +199,8 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const NotRootContentPublished = await orchestrator.createContent({
+      // NotRootContentPublished
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
@@ -205,7 +210,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const NotRootContentDraft = await orchestrator.createContent({
+      // NotRootContentDraft
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quinto conteúdo criado',
@@ -284,7 +290,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const level3Content = await orchestrator.createContent({
+      // level3Content
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: level2Content.id,
         body: 'Nível 3',

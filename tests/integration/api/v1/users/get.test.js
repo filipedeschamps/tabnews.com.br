@@ -12,10 +12,10 @@ describe('GET /api/v1/users', () => {
   describe('Anonymous user', () => {
     test('Anonymous user trying to retrieve user list', async () => {
       let defaultUser = await orchestrator.createUser();
-      defaultUser = await orchestrator.activateUser(defaultUser);
+      await orchestrator.activateUser(defaultUser);
       let privilegedUser = await orchestrator.createUser();
       privilegedUser = await orchestrator.activateUser(privilegedUser);
-      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
+      await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
       const responseBody = await response.json();
@@ -37,7 +37,7 @@ describe('GET /api/v1/users', () => {
       defaultUser = await orchestrator.activateUser(defaultUser);
       let privilegedUser = await orchestrator.createUser();
       privilegedUser = await orchestrator.activateUser(privilegedUser);
-      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
+      await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
 
       let defaultUserSession = await orchestrator.createSession(defaultUser);
 

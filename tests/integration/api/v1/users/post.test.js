@@ -128,7 +128,8 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "username" duplicated exactly (same uppercase letters)', async () => {
-      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+      // firstResponse
+      await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +167,8 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "username" duplicated (different uppercase letters)', async () => {
-      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+      // firstResponse
+      await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
@@ -385,7 +387,8 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "email" duplicated (same uppercase letters)', async () => {
-      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+      // firstResponse
+      await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
@@ -423,7 +426,8 @@ describe('POST /api/v1/users', () => {
     });
 
     test('With "email" duplicated (different uppercase letters)', async () => {
-      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+      // firstResponse
+      await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
