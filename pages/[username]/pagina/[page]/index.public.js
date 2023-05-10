@@ -15,7 +15,6 @@ export default function Home({ contentListFound, pagination, username }) {
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${username}/pagina`}
-          revalidatePath={`/api/v1/contents/${username}?strategy=new&page=${pagination.currentPage}`}
         />
       </DefaultLayout>
     </>
@@ -39,19 +38,23 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       per_page: 'optional',
     });
   } catch (error) {
-    console.log(error);
     return {
       notFound: true,
     };
   }
 
   let results;
+  let secureUserFound;
 
   try {
+    const userFound = await user.findOneByUsername(context.params.username);
+
+    secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
+
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        owner_username: context.params.username,
+        owner_id: secureUserFound.id,
         status: 'published',
       },
       page: context.params.page,
@@ -84,7 +87,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     props: {
       contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
       pagination: results.pagination,
-      username: context.params.username,
+      username: secureUserFound.username,
     },
 
     revalidate: 10,

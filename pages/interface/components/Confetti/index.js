@@ -29,10 +29,10 @@ export default function Confetti({
     <ReactConfetti
       width={confettiWidth}
       height={confettiHeight}
-      recycle={false}
-      numberOfPieces={800}
-      tweenDuration={15000}
-      gravity={0.15}
+      recycle={recycle}
+      numberOfPieces={numberOfPieces}
+      tweenDuration={tweenDuration}
+      gravity={gravity}
       {...props}
     />
   );
