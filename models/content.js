@@ -298,16 +298,20 @@ async function create(postedContent, options = {}) {
   checkRootContentTitle(validContent);
 
   if (validContent.parent_id) {
-    await checkIfParentIdExists(validContent, {
-      transaction: options.transaction,
-    });
+    const parentContent = await checkIfParentIdExists(validContent, { transaction: options.transaction });
+
+    populateRootIdValue(parentContent, validContent);
   }
 
   populatePublishedAtValue(null, validContent);
 
-  const newContent = await runInsertQuery(validContent, {
+  let newContent = await runInsertQuery(validContent, {
     transaction: options.transaction,
   });
+
+  if (!newContent.parent_id) {
+    newContent = await updateContentWithRootId(newContent, options);
+  }
 
   await creditOrDebitTabCoins(null, newContent, {
     eventId: options.eventId,
@@ -332,8 +336,8 @@ async function create(postedContent, options = {}) {
       WITH
         inserted_content as (
           INSERT INTO
-            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            contents (root_id, parent_id, owner_id, slug, title, body, status, source_url, published_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         )
       SELECT
@@ -356,6 +360,7 @@ async function create(postedContent, options = {}) {
         users ON inserted_content.owner_id = users.id
       ;`,
       values: [
+        content.root_id,
         content.parent_id,
         content.owner_id,
         content.slug,
@@ -367,6 +372,43 @@ async function create(postedContent, options = {}) {
       ],
     };
 
+    try {
+      const results = await database.query(query, { transaction: options.transaction });
+      return results.rows[0];
+    } catch (error) {
+      throw parseQueryErrorToCustomError(error);
+    }
+  }
+
+  async function updateContentWithRootId(content, options) {
+    const query = {
+      text: `
+      WITH
+        updated_content as (
+          UPDATE contents SET root_id = id WHERE id = $1
+          RETURNING *
+        )
+      SELECT
+        updated_content.id,
+        updated_content.owner_id,
+        updated_content.parent_id,
+        updated_content.slug,
+        updated_content.title,
+        updated_content.body,
+        updated_content.status,
+        updated_content.source_url,
+        updated_content.created_at,
+        updated_content.updated_at,
+        updated_content.published_at,
+        updated_content.deleted_at,
+        users.username as owner_username
+      FROM
+        updated_content
+      INNER JOIN
+        users ON updated_content.owner_id = users.id
+      ;`,
+      values: [content.id],
+    };
     try {
       const results = await database.query(query, { transaction: options.transaction });
       return results.rows[0];
@@ -413,7 +455,7 @@ function populateStatus(postedContent) {
 }
 
 async function checkIfParentIdExists(content, options) {
-  const existingContent = await findOne(
+  const parentContent = await findOne(
     {
       where: {
         id: content.parent_id,
@@ -422,16 +464,18 @@ async function checkIfParentIdExists(content, options) {
     options
   );
 
-  if (!existingContent) {
-    throw new ValidationError({
-      message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
-      action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
-      statusCode: 400,
-      key: 'parent_id',
-    });
+  if (parentContent) {
+    return parentContent;
   }
+
+  throw new ValidationError({
+    message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
+    action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
+    stack: new Error().stack,
+    errorLocationCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
+    statusCode: 400,
+    key: 'parent_id',
+  });
 }
 
 function parseQueryErrorToCustomError(error) {
@@ -499,6 +543,15 @@ function populatePublishedAtValue(oldContent, newContent) {
     newContent.published_at = new Date();
     return;
   }
+}
+
+function populateRootIdValue(parentContent, newContent) {
+  if (parentContent.root_id) {
+    newContent.root_id = parentContent.root_id;
+    return;
+  }
+
+  newContent.root_id = parentContent.id;
 }
 
 async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
