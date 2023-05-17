@@ -30,13 +30,9 @@ async function searchContent(inputValues) {
   inputValues.page = inputValues.page || 1;
   const offset = (inputValues.page - 1) * inputValues.per_page;
 
-  query.values = [
-    inputValues.per_page || 30,
-    offset,
-    null,
-    'published',
-    getSearchWordsFromSearchTerm(inputValues.search_term),
-  ];
+  const searchWords = getSearchWordsFromSearchTerm(inputValues.search_term);
+
+  query.values = [inputValues.per_page || 30, offset, null, 'published', searchWords];
 
   query.text = `WITH content_window AS (
       SELECT
@@ -94,7 +90,7 @@ async function searchContent(inputValues) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
-      ORDER BY ts_rank(to_tsvector(contents.body), to_tsquery($5)) DESC NULLS LAST, published_at DESC;
+      ${getOrder(searchWords)}
   `;
 
   const queryResult = await database.query(query);
@@ -103,6 +99,14 @@ async function searchContent(inputValues) {
   results.pagination = getPagination(queryResult.rows);
 
   return results;
+
+  function getOrder(searchWords) {
+    if (searchWords.split(' | ').length > 1) {
+      return 'ORDER BY ts_rank(to_tsvector(contents.body), to_tsquery($5)) DESC NULLS LAST, published_at DESC;';
+    } else {
+      return 'ORDER BY published_at DESC;';
+    }
+  }
 
   function getSearchWordsFromSearchTerm(searchTerm) {
     return searchTerm
