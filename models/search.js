@@ -40,7 +40,7 @@ async function searchContent(inputValues) {
         id
       FROM contents
       WHERE contents.parent_id IS NOT DISTINCT FROM $3 AND contents.status = $4 AND (to_tsvector('portuguese', unaccent(title)) @@ to_tsquery('portuguese', unaccent($5)) OR to_tsvector('portuguese', unaccent(body)) @@ to_tsquery('portuguese', unaccent($5)))
-      ORDER BY ts_rank(to_tsvector(contents.body),to_tsquery($5)) DESC NULLS LAST, published_at DESC
+      ${getOrder()}
       LIMIT $1 OFFSET $2
     )
     SELECT
@@ -90,7 +90,7 @@ async function searchContent(inputValues) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
-      ${getOrder(searchWords)}
+      ${getOrder()};
   `;
 
   const queryResult = await database.query(query);
@@ -100,11 +100,11 @@ async function searchContent(inputValues) {
 
   return results;
 
-  function getOrder(searchWords) {
+  function getOrder() {
     if (searchWords.split(' | ').length > 1) {
-      return 'ORDER BY ts_rank(to_tsvector(contents.body), to_tsquery($5)) DESC NULLS LAST, published_at DESC;';
+      return 'ORDER BY ts_rank(to_tsvector(contents.body), to_tsquery($5)) DESC NULLS LAST, published_at DESC';
     } else {
-      return 'ORDER BY published_at DESC;';
+      return 'ORDER BY published_at DESC';
     }
   }
 
