@@ -22,11 +22,13 @@ async function sendReplyEmailToParentUser(createdContent) {
     }
 
     const childContendUrl = getChildContendUrl(secureCreatedContent);
-    const rootContent = await content.findRootContent({
-      where: {
-        id: secureCreatedContent.id,
-      },
-    });
+    const rootContent = parentContent.parent_id
+      ? await content.findRootContent({
+          where: {
+            id: parentContent.parent_id,
+          },
+        })
+      : parentContent;
 
     const secureRootContent = authorization.filterOutput(anonymousUser, 'read:content', rootContent);
 

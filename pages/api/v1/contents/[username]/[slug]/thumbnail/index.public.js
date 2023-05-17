@@ -39,9 +39,9 @@ async function getHandler(request, response) {
   if (!contentFound) {
     throw new NotFoundError({
       message: `Este conteúdo não está disponível.`,
-      action: 'Verifique se o "slug" está digitado corretamente ou considere o fato do conteúdo ter sido despublicado.',
+      action: 'Verifique se o endereço foi digitado corretamente ou considere o fato do conteúdo ter sido excluído.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:CONTENT_NOT_FOUND',
       key: 'slug',
     });
   }

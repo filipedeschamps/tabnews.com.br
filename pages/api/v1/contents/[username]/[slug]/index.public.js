@@ -51,9 +51,9 @@ async function getHandler(request, response) {
   if (!contentFound) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
-      action: 'Verifique se o "slug" está digitado corretamente.',
+      action: 'Verifique se os dados foram digitados corretamente.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:GET_HANDLER:CONTENT_NOT_FOUND',
       key: 'slug',
     });
   }
@@ -100,9 +100,9 @@ async function patchHandler(request, response) {
   if (!contentToBeUpdated) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
-      action: 'Verifique se o "slug" está digitado corretamente.',
+      action: 'Verifique se os dados foram digitados corretamente.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CONTENT_NOT_FOUND',
       key: 'slug',
     });
   }

@@ -28,11 +28,11 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
 
@@ -60,11 +60,11 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
 
@@ -132,11 +132,11 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
 
@@ -177,11 +177,11 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:PARENT:GET_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
 

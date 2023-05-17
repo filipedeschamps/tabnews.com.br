@@ -42,9 +42,9 @@ async function getHandler(request, response) {
   if (!contentFound) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
-      action: 'Verifique se o "slug" está digitado corretamente.',
+      action: 'Verifique se os dados foram digitados corretamente.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:ROOT:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:ROOT:GET_HANDLER:CONTENT_NOT_FOUND',
       key: 'slug',
     });
   }

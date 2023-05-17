@@ -31,9 +31,7 @@ export default nextConnect({
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
-    page: 'optional',
-    per_page: 'optional',
-    strategy: 'optional',
+    contents_query_string: 'optional',
   });
 
   request.query = cleanValues;
@@ -42,26 +40,19 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToList = user.createAnonymous();
+  const userTryingToGet = user.createAnonymous();
 
-  const results = await content.findWithStrategy({
-    strategy: request.query.strategy,
-    where: {
-      parent_id: null,
-      status: 'published',
-    },
-    attributes: {
-      exclude: ['body'],
-    },
-    page: request.query.page,
-    per_page: request.query.per_page,
-  });
+  let feature = request.query.parent_id ? 'read:content:list' : 'read:content';
 
-  const contentList = results.rows;
+  let results = await content.find(request.query);
 
-  const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
+  if (results?.pagination) {
+    controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+    results = results.rows;
+    feature = 'read:content:list';
+  }
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, feature, results);
 
   return response.status(200).json(secureOutputValues);
 }

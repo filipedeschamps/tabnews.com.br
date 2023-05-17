@@ -30,12 +30,11 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'Este conteúdo não está disponível.',
-        action:
-          'Verifique se o "slug" está digitado corretamente ou considere o fato do conteúdo ter sido despublicado.',
+        action: 'Verifique se o endereço foi digitado corretamente ou considere o fato do conteúdo ter sido excluído.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
 
@@ -63,12 +62,11 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'Este conteúdo não está disponível.',
-        action:
-          'Verifique se o "slug" está digitado corretamente ou considere o fato do conteúdo ter sido despublicado.',
+        action: 'Verifique se o endereço foi digitado corretamente ou considere o fato do conteúdo ter sido excluído.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
 

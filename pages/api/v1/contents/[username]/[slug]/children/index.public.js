@@ -31,29 +31,24 @@ function getValidationHandler(request, response, next) {
 async function getHandler(request, response) {
   const userTryingToGet = user.createAnonymous();
 
-  const contentFound = await content.findOne({
+  const contentTreeFound = await content.findTree({
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      status: 'published',
     },
   });
 
-  if (!contentFound) {
+  if (!contentTreeFound?.length) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
-      action: 'Verifique se o "slug" está digitado corretamente.',
+      action: 'Verifique se os dados foram digitados corretamente.',
       stack: new Error().stack,
-      errorLocationCode: 'CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND',
+      errorLocationCode: 'CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:CONTENT_NOT_FOUND',
       key: 'slug',
     });
   }
 
-  const childrenFound = await content.findTree({
-    where: {
-      parent_id: contentFound.id,
-    },
-  });
+  const childrenFound = contentTreeFound[0].children;
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
 

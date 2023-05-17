@@ -10,13 +10,14 @@ import { getStaticPropsRevalidate } from 'next-swr';
 import { useCollapse } from 'pages/interface';
 import { useEffect, useState } from 'react';
 
+const GET_VIA_GSP = 15;
+const CHILDREN_TO_RENDER = 10;
+const RENDER_INCREMENT = 7;
+
 export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
-  const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    setChildrenToShow(Math.ceil(window.innerHeight / 10));
-
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
@@ -78,9 +79,10 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
 
           <RenderChildrenTree
             key={contentFound.id}
+            id={contentFound.id}
+            childrenDeepCount={contentFound.children_deep_count}
             childrenList={contentFound.children}
-            renderIntent={childrenToShow}
-            renderIncrement={Math.ceil(childrenToShow / 2)}
+            renderIntent={CHILDREN_TO_RENDER}
           />
         </Box>
       </DefaultLayout>
@@ -172,13 +174,16 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
-  const { filteredTree, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
+function RenderChildrenTree(childrenTreeProps) {
+  const { childrenWithState, handleCollapse, handleExpand } = useCollapse({
+    renderIncrement: RENDER_INCREMENT,
+    ...childrenTreeProps,
+  });
 
-  return filteredTree.map((child) => {
-    const { children = [], groupedCount, id, renderIntent, renderShowMore } = child;
-    const labelShowMore = Math.min(renderIncrement, groupedCount);
-    const plural = labelShowMore > 1 ? 's' : '';
+  return childrenWithState.map((child) => {
+    const { children, children_deep_count, groupedCount, hiddenAvailable, id, renderIntent, renderShowMore } = child;
+    const labelShowMore = Math.min(groupedCount, hiddenAvailable, RENDER_INCREMENT) || '';
+    const plural = labelShowMore != 1 ? 's' : '';
 
     return !renderIntent && !renderShowMore ? null : (
       <Box
@@ -256,11 +261,12 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                 <Content content={{ parent_id: id }} mode="compact" viewFrame={true} />
               </Box>
 
-              {children.length > 0 && (
+              {children_deep_count > 0 && (
                 <RenderChildrenTree
+                  id={id}
+                  childrenDeepCount={children_deep_count}
                   childrenList={children}
                   renderIntent={renderIntent - 1}
-                  renderIncrement={renderIncrement}
                 />
               )}
             </Box>
@@ -316,14 +322,15 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
         owner_username: context.params.username,
         slug: context.params.slug,
       },
+      per_page: GET_VIA_GSP,
     });
 
     if (!contentTreeFound?.length) {
       throw new NotFoundError({
         message: `O conteúdo informado não foi encontrado no sistema.`,
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         stack: new Error().stack,
-        errorLocationCode: 'PAGES:USERNAME:SLUG:GET_STATIC_PROPS:SLUG_NOT_FOUND',
+        errorLocationCode: 'PAGES:USERNAME:SLUG:GET_STATIC_PROPS:CONTENT_NOT_FOUND',
         key: 'slug',
       });
     }

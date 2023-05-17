@@ -2,15 +2,13 @@ import { v4 as uuidV4 } from 'uuid';
 import slug from 'slug';
 import database from 'infra/database.js';
 import validator from 'models/validator.js';
-import user from 'models/user.js';
 import balance from 'models/balance.js';
-import { ForbiddenError, ValidationError } from 'errors/index.js';
+import { ForbiddenError, NotFoundError, ValidationError } from 'errors/index.js';
 import queries from 'models/queries';
 import prestige from 'models/prestige';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
-  await replaceOwnerUsernameWithOwnerId(values);
   const offset = (values.page - 1) * values.per_page;
 
   const query = {
@@ -53,6 +51,7 @@ async function findAll(values = {}, options = {}) {
 
   if (values.where) {
     Object.keys(values.where).forEach((key) => {
+      if (key === '$not_null') return;
       if (key === '$or') {
         values.where[key].forEach(($orObject) => {
           query.values.push(Object.values($orObject)[0]);
@@ -66,14 +65,6 @@ async function findAll(values = {}, options = {}) {
 
   return results.rows;
 
-  async function replaceOwnerUsernameWithOwnerId(values) {
-    if (values?.where?.owner_username) {
-      const userOwner = await user.findOneByUsername(values.where.owner_username);
-      values.where.owner_id = userOwner.id;
-      delete values.where.owner_username;
-    }
-  }
-
   function validateValues(values) {
     const cleanValues = validator(values, {
       page: 'optional',
@@ -81,7 +72,6 @@ async function findAll(values = {}, options = {}) {
       order: 'optional',
       where: 'optional',
       count: 'optional',
-      $or: 'optional',
       limit: 'optional',
       attributes: 'optional',
     });
@@ -191,6 +181,15 @@ async function findAll(values = {}, options = {}) {
           return `(${$orQuery})`;
         }
 
+        if (columnName === '$not_null') {
+          return columnValue.map((columnName) => `contents.${columnName} IS NOT NULL`).join(' AND ');
+        }
+
+        if (columnName === 'owner_username') {
+          globalIndex += 1;
+          return whereOwnerUsername(`$${globalIndex}`);
+        }
+
         globalIndex += 1;
         return `contents.${columnName} = $${globalIndex}`;
       }
@@ -247,7 +246,7 @@ async function findWithStrategy(options = {}) {
     const results = {};
     const options = {};
 
-    if (!values?.where?.owner_username) {
+    if (!values?.where?.owner_username && !values?.where?.owner_id && values?.where?.parent_id === null) {
       options.strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';
@@ -769,50 +768,72 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
 }
 
 async function findTree(options) {
-  options.where = validateWhereSchema(options?.where);
-  let values;
-  if (options.where.parent_id) {
-    values = [options.where.parent_id];
-  } else if (options.where.id) {
-    values = [options.where.id];
-  } else if (options.where.slug) {
-    values = [options.where.owner_username, options.where.slug];
-  }
+  const { per_page, strategy, published_before, published_after } = validateOptionsSchema(options);
+  const { parent_id, id, owner_id, owner_username, slug } = validateWhereSchema(options?.where);
+  const values = [per_page, parent_id, id, owner_id, owner_username, slug, published_before, published_after].filter(
+    (value) => value !== undefined
+  );
 
-  const flatList = await recursiveDatabaseLookup(options);
+  const flatList = await recursiveDatabaseLookup();
   return flatListToTree(flatList);
 
-  async function recursiveDatabaseLookup(options) {
+  async function recursiveDatabaseLookup() {
+    const sortDirection =
+      (strategy !== 'old' && published_after) || (strategy === 'old' && !published_before) ? 'ASC' : 'DESC';
     const query = {
       text: `
-      WITH RECURSIVE children AS (
+      WITH RECURSIVE tree AS (
         SELECT
-            *
-        FROM
-          contents
+          id,
+          (CASE WHEN parent_id IS NULL THEN ARRAY[]::uuid[] ELSE ARRAY[parent_id] END) AS path,
+          ARRAY[published_at] AS sort_array
+        FROM contents
         WHERE
-          ${options.where.parent_id ? 'contents.parent_id = $1 AND' : ''}
-          ${options.where.id ? 'contents.id = $1 AND' : ''}
-          ${options.where.slug ? whereOwnerAndSlug('$1', '$2') : ''}
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.*
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
+          ${parent_id ? 'contents.parent_id = $2 AND' : ''}
+          ${id ? 'contents.id = $2 AND' : ''}
+          ${owner_username && !owner_id ? `${whereOwnerUsername('$2')} AND` : ''}
+          ${owner_id ? `contents.owner_id = $2 AND` : ''}
+          ${slug ? 'contents.slug = $3 AND' : ''}
+          status = 'published'
+      UNION ALL 
+        SELECT
+          contents.id,
+          path || contents.parent_id,
+          sort_array || contents.published_at AS sort_array
+        FROM contents
+        INNER JOIN tree ON contents.parent_id = tree.id
+        WHERE contents.status = 'published'
+      ),
+
+      paginated_tree AS (
+        SELECT
+          tree.*,
+          (SELECT COUNT(*) FROM tree t 
+          WHERE tree.id = ANY(t.path)
+          ) AS children_deep_count
+        FROM tree
+        WHERE
+          ${published_before ? 'tree.sort_array[1] < $3 AND' : ''}
+          ${published_after ? 'tree.sort_array[1] > $3 AND' : ''}
+          array_length(tree.sort_array, 1) < 5
+        ORDER BY
+          tree.sort_array[1] ${sortDirection},
+          tree.sort_array[2] ${sortDirection} NULLS FIRST,
+          tree.sort_array[3] ${sortDirection} NULLS FIRST,
+          tree.sort_array[4] ${sortDirection} NULLS FIRST
+        LIMIT $1
       )
+
       SELECT
-        children.*,
+        contents.*,
+        paginated_tree.children_deep_count,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', children.id) as tabcoins
-      FROM
-        children
+        get_current_balance('content:tabcoin', contents.id) as tabcoins
+      FROM paginated_tree
       INNER JOIN
-        users ON children.owner_id = users.id
+        contents ON contents.id = paginated_tree.id
+      INNER JOIN
+        users ON contents.owner_id = users.id
       ;`,
       values: values,
     };
@@ -820,17 +841,37 @@ async function findTree(options) {
     return results.rows;
   }
 
+  function validateOptionsSchema(options) {
+    return validator(options, {
+      per_page: 'optional',
+      published_before: 'optional',
+      published_after: 'optional',
+      strategy: 'optional',
+    });
+  }
+
   function validateWhereSchema(where) {
     let options = {};
 
     if (where.parent_id) {
       options.parent_id = 'required';
-    } else if (where.slug) {
+    } else if (where.id) {
+      options.id = 'required';
+    } else if (where.owner_id) {
+      options.owner_id = 'required';
+      options.slug = 'required';
+    } else if (where.owner_username) {
       options.owner_username = 'required';
       options.slug = 'required';
-    } else {
-      options.id = 'required';
-    }
+    } else
+      throw new ValidationError({
+        message: `Você precisa fornecer um "parent_id", "id" ou a combinação do "slug" com "owner_id" ou "owner_username" para buscar uma árvore de conteúdo.`,
+        action: `Verifique se forneceu os dados corretos.`,
+        stack: new Error().stack,
+        errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
+        statusCode: 400,
+        key: 'status',
+      });
 
     const cleanValues = validator(where, options);
 
@@ -838,7 +879,7 @@ async function findTree(options) {
   }
 
   function flatListToTree(list) {
-    const childrenTree = [];
+    const tree = { children: [] };
     const table = {};
 
     list.forEach((row) => {
@@ -850,35 +891,40 @@ async function findTree(options) {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
       } else {
-        childrenTree.push(row);
+        tree.children.push(row);
       }
     });
 
-    const childrenTreeRanked = rankContentListByRelevance(childrenTree);
+    sortRecursively(tree);
 
-    childrenTreeRanked.forEach((child) => {
-      recursiveInjectChildrenDeepCount(child);
-    });
+    return tree.children;
 
-    function recursiveInjectChildrenDeepCount(node) {
-      let count = node.children.length;
-
+    function sortRecursively(node) {
       if (node.children) {
-        node.children = rankContentListByRelevance(node.children);
+        node.children = sortContentByStrategy(node.children, strategy);
         node.children.forEach((child) => {
-          count += recursiveInjectChildrenDeepCount(child);
+          sortRecursively(child);
         });
       }
-
-      node.children_deep_count = count;
-      return count;
     }
 
-    return childrenTreeRanked;
+    function sortContentByStrategy(contentList) {
+      if (strategy === 'new') {
+        return contentList.sort((first, second) => {
+          return new Date(second.published_at) - new Date(first.published_at);
+        });
+      }
+      if (strategy === 'old') {
+        return contentList.sort((first, second) => {
+          return new Date(first.published_at) - new Date(second.published_at);
+        });
+      }
+      return rankContentListByRelevance(contentList);
+    }
   }
 }
 
-function whereOwnerAndSlug($1, $2) {
+function whereOwnerUsername($n) {
   return `
     contents.owner_id = (
         SELECT
@@ -886,11 +932,10 @@ function whereOwnerAndSlug($1, $2) {
         FROM
           users
         WHERE
-          LOWER(username) = LOWER(${$1})
+          LOWER(username) = LOWER(${$n})
         LIMIT
           1
-    ) AND
-    contents.slug = ${$2} AND
+    )
   `;
 }
 
@@ -1012,7 +1057,107 @@ async function findRootContent(values, options = {}) {
   }
 }
 
+async function find({
+  parent_id,
+  id,
+  owner_id,
+  owner_username,
+  slug,
+  with_parent,
+  with_root,
+  with_children,
+  strategy,
+  page,
+  per_page,
+  published_before,
+  published_after,
+}) {
+  const options = {
+    with_children,
+    with_parent,
+    with_root,
+    strategy,
+    page,
+    per_page,
+    published_before,
+    published_after,
+  };
+
+  if (parent_id) return await findTree({ where: { parent_id }, ...options });
+
+  if (id) return await findContent({ where: { id } }, options);
+
+  if (owner_id && slug) return await findContent({ where: { owner_id, slug } }, options);
+
+  if (owner_username && slug) return await findContent({ where: { owner_username, slug } }, options);
+
+  if (slug)
+    throw new ValidationError({
+      message: `Você está tentando buscar um conteúdo pelo "slug", mas não informou o "owner_id" ou "owner_username".`,
+      action: `Informe também o "owner_id" ou "owner_username" para buscar um conteúdo pelo "slug".`,
+      stack: new Error().stack,
+      error_location_code: 'MODEL:CONTENT:FIND:MISSING_OWNER_ID_OR_USERNAME',
+    });
+
+  if (options?.with_parent)
+    throw new ValidationError({
+      message: `"with_parent" não pode ser utilizado sem "id" ou "slug".`,
+      action: `Informe dados de um conteúdo específico para obter o "parent".`,
+      stack: new Error().stack,
+      error_location_code: 'MODEL:CONTENT:FIND:MISSING_ID_OR_SLUG',
+    });
+
+  if (options?.with_root === false && options?.with_children === false)
+    throw new ValidationError({
+      message: `A busca precisa retornar conteúdos "root" (with_root) e/ou "child" (with_children).`,
+      action: `Verifique se os dados foram digitados corretamente.`,
+      stack: new Error().stack,
+      error_location_code: 'MODEL:CONTENT:FIND:MISSING_ROOT_AND_CHILDREN_FLAG',
+    });
+
+  return await findWithStrategy({
+    where: {
+      parent_id: with_children || with_root === false ? undefined : null,
+      $not_null: with_root === false ? ['parent_id'] : undefined,
+      owner_id,
+      owner_username,
+      status: 'published',
+    },
+    attributes: { exclude: ['body'] },
+    ...options,
+  });
+
+  async function findContent(query, options) {
+    const content = options.with_children
+      ? await findTree({ ...query, ...options }).then((trees) => trees[0])
+      : await findOne({
+          where: { ...query.where, status: 'published' },
+        });
+
+    if (!content)
+      throw new NotFoundError({
+        message: `O conteúdo informado não foi encontrado no sistema.`,
+        action: 'Verifique se os dados foram digitados corretamente.',
+        stack: new Error().stack,
+        errorLocationCode: 'MODEL:CONTENT:FIND:CONTENT_NOT_FOUND',
+      });
+
+    if (options?.with_parent && content.parent_id) {
+      content.parent = await findOne({ where: { id: content.parent_id } });
+    }
+
+    if (options?.with_root && content.parent_id) {
+      content.root = content.parent?.parent_id
+        ? await findRootContent({ where: { id: content.parent.parent_id } })
+        : content.parent || (await findRootContent({ where: { id: content.parent_id } }));
+    }
+
+    return content;
+  }
+}
+
 export default Object.freeze({
+  find,
   findAll,
   findOne,
   findTree,

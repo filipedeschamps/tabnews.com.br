@@ -264,11 +264,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(response.status).toEqual(404);
       expect(responseBody.status_code).toEqual(404);
       expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
+      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toEqual('Verifique se os dados foram digitados corretamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:PATCH_HANDLER:CONTENT_NOT_FOUND');
     });
 
     test('Content with "username" existent, but "slug" non-existent', async () => {
@@ -303,10 +303,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(404);
       expect(responseBody.name).toEqual('NotFoundError');
       expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
+      expect(responseBody.action).toEqual('Verifique se os dados foram digitados corretamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND');
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:PATCH_HANDLER:CONTENT_NOT_FOUND');
     });
 
     test('Content with "username" and "slug" pointing to content from another user', async () => {
@@ -1304,11 +1304,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1803,11 +1803,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(republishedResponseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
-        action: 'Verifique se o "slug" está digitado corretamente.',
+        action: 'Verifique se os dados foram digitados corretamente.',
         status_code: 404,
         error_id: republishedResponseBody.error_id,
         request_id: republishedResponseBody.request_id,
-        error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+        error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:CONTENT_NOT_FOUND',
         key: 'slug',
       });
       expect(uuidVersion(republishedResponseBody.error_id)).toEqual(4);
