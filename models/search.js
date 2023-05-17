@@ -8,14 +8,14 @@ async function doSearch(values) {
     contents: searchContent,
   };
 
-  const scopeSearch = scopes[values.search_scope];
+  const scopeSearch = scopes[values.search_scope || 'contents'];
   return await scopeSearch(values);
 
   function validateValues(values) {
     const cleanValues = validator(values, {
       page: 'optional',
       per_page: 'optional',
-      search_scope: 'required',
+      search_scope: 'optional',
       search_term: 'required',
     });
 

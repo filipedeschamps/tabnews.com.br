@@ -19,7 +19,7 @@ function getValidationHandler(request, response, next) {
     page: 'optional',
     per_page: 'optional',
     search_term: 'required',
-    search_scope: 'required',
+    search_scope: 'optional',
   });
 
   request.query = cleanValues;

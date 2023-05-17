@@ -41,21 +41,8 @@ describe('GET /api/v1/search', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/search?search_term=teste`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
-        message: '"search_scope" é um campo obrigatório.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
-        key: 'search_scope',
-        type: 'any.required',
-      });
-
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(response.status).toEqual(200);
+      expect(responseBody).toEqual([]);
     });
 
     test('With invalid search_scope', async () => {
