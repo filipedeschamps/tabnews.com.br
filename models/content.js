@@ -212,13 +212,28 @@ async function findOne(values, options = {}) {
 }
 
 async function findWithStrategy(options = {}) {
+  const findAllInitTime = performance.now();
+  let rankStartTime, rankEndTime;
+  let strategy = options.strategy;
+
   const strategies = {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
   };
 
-  return await strategies[options.strategy](options);
+  const queryReturn = await strategies[options.strategy](options);
+
+  const findAllEndTime = performance.now();
+
+  console.log({
+    findWithStrategyTime: findAllEndTime - findAllInitTime,
+    rankTime: rankEndTime - rankStartTime,
+    ...options,
+    strategy,
+  });
+
+  return queryReturn;
 
   async function getNew(options = {}) {
     const results = {};
@@ -248,6 +263,7 @@ async function findWithStrategy(options = {}) {
 
     if (!values?.where?.owner_username && !values?.where?.owner_id && values?.where?.parent_id === null) {
       options.strategy = 'relevant_global';
+      strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';
 
@@ -256,7 +272,9 @@ async function findWithStrategy(options = {}) {
     if (options.strategy === 'relevant_global') {
       results.rows = contentList;
     } else {
+      rankStartTime = performance.now();
       results.rows = rankContentListByRelevance(contentList);
+      rankEndTime = performance.now();
     }
 
     values.totalRows = results.rows[0]?.total_rows;
@@ -768,14 +786,33 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
 }
 
 async function findTree(options) {
+  const findTreeStartTime = performance.now();
   const { per_page, strategy, published_before, published_after } = validateOptionsSchema(options);
   const { parent_id, id, owner_id, owner_username, slug } = validateWhereSchema(options?.where);
   const values = [per_page, parent_id, id, owner_id, owner_username, slug, published_before, published_after].filter(
     (value) => value !== undefined
   );
 
+  const queryStartTime = performance.now();
   const flatList = await recursiveDatabaseLookup();
-  return flatListToTree(flatList);
+  const queryEndTime = performance.now();
+  const tree = flatListToTree(flatList);
+  const findTreeEndTime = performance.now();
+  console.log({
+    findTreeTime: findTreeEndTime - findTreeStartTime,
+    queryTime: queryEndTime - queryStartTime,
+    flatListToTreeTime: findTreeEndTime - queryEndTime,
+    per_page,
+    strategy,
+    published_before,
+    published_after,
+    parent_id,
+    id,
+    owner_id,
+    owner_username,
+    slug,
+  });
+  return tree;
 
   async function recursiveDatabaseLookup() {
     const sortDirection =

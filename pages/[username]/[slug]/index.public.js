@@ -312,6 +312,7 @@ export async function getStaticPaths() {
 }
 
 export const getStaticProps = getStaticPropsRevalidate(async (context) => {
+  const contentPageStartTime = performance.now();
   const userTryingToGet = user.createAnonymous();
 
   let contentTreeFound;
@@ -389,6 +390,8 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     parentContentFound.body = removeMarkdown(parentContentFound.body, { maxLength: 50 });
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
   }
+
+  console.log({ contentPageTime: performance.now() - contentPageStartTime });
 
   return {
     props: {

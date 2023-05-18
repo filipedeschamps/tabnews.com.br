@@ -40,6 +40,7 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
+  const getContentStartTime = performance.now();
   const userTryingToGet = user.createAnonymous();
 
   let feature = request.query.parent_id ? 'read:content:list' : 'read:content';
@@ -52,7 +53,16 @@ async function getHandler(request, response) {
     feature = 'read:content:list';
   }
 
+  const filterOutputStartTime = performance.now();
   const secureOutputValues = authorization.filterOutput(userTryingToGet, feature, results);
+
+  const getContentsEndTime = performance.now();
+
+  console.log({
+    getContentTotalTime: getContentsEndTime - getContentStartTime,
+    filterOutputTotalTime: getContentsEndTime - filterOutputStartTime,
+    query: request.query,
+  });
 
   return response.status(200).json(secureOutputValues);
 }
