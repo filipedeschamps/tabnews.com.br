@@ -72,7 +72,6 @@ function patchValidationHandler(request, response, next) {
   request.query = cleanQueryValues;
 
   const cleanBodyValues = validator(request.body, {
-    parent_id: 'optional',
     slug: 'optional',
     title: 'optional',
     body: 'optional',

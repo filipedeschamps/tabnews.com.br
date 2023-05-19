@@ -2572,22 +2572,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "title" and "parent_id" set to Null', async () => {
+    test('Content with "title" and "parent_id" set to another "parent_id"', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const rootContent = await orchestrator.createContent({
+      const rootContent1 = await orchestrator.createContent({
         owner_id: defaultUser.id,
-        title: 'Root content title',
-        body: 'Root content body',
+        title: 'Root content title #1',
+        body: 'Root content body #1',
+      });
+
+      const rootContent2 = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content title #2',
+        body: 'Root content body #2',
       });
 
       const childContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Child content title',
         body: 'Child content body',
-        parent_id: rootContent.id,
+        parent_id: rootContent1.id,
       });
 
       const response = await fetch(
@@ -2599,53 +2605,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            parent_id: null,
-          }),
-        }
-      );
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content without "title" and "parent_id" set to Null', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Root content title',
-        body: 'Root content body',
-      });
-
-      const childContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Child content title',
-        body: 'Child content body',
-        parent_id: rootContent.id,
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: null,
-            parent_id: null,
+            title: 'Updated title, but not "parent_id"',
+            parent_id: rootContent2.id,
           }),
         }
       );
@@ -2656,9 +2617,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         owner_id: defaultUser.id,
-        parent_id: rootContent.id,
+        parent_id: rootContent1.id,
         slug: 'child-content-title',
-        title: null,
+        title: 'Updated title, but not "parent_id"',
         body: 'Child content body',
         status: 'draft',
         source_url: null,
@@ -2674,190 +2635,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
-    });
-
-    test('Content with "parent_id" set to itself', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Root content title',
-        body: 'Root content body',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: rootContent.id,
-          }),
-        }
-      );
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" containing a Number', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: 123456,
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" containing a blank string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: '',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" containing a malformatted UUIDV4', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: 'isso não é um UUID válido',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" deve possuir um token UUID na versão 4.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" that does not exists', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content from another user', async () => {

@@ -660,15 +660,14 @@ async function update(contentId, postedContent, options = {}) {
       WITH
         updated_content as (
           UPDATE contents SET
-            parent_id = $2,
-            slug = $3,
-            title = $4,
-            body = $5,
-            status = $6,
-            source_url = $7,
-            published_at = $8,
+            slug = $2,
+            title = $3,
+            body = $4,
+            status = $5,
+            source_url = $6,
+            published_at = $7,
             updated_at = (now() at time zone 'utc'),
-            deleted_at = $9
+            deleted_at = $8
           WHERE
             id = $1
           RETURNING *
@@ -694,7 +693,6 @@ async function update(contentId, postedContent, options = {}) {
       ;`,
       values: [
         content.id,
-        content.parent_id,
         content.slug,
         content.title,
         content.body,
