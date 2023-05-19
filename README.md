@@ -1,4 +1,4 @@
-# [tabnews.com.br](https://www.tabnews.com.br/)
+# [tabnews.com.br](https://www.tabnews.com.br/) - ![ci workflow](https://github.com/filipedeschamps/tabnews.com.br/actions/workflows/ci.yml/badge.svg)
 
 ## Instalar e rodar o projeto
 
