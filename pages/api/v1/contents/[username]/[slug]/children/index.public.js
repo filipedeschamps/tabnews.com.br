@@ -18,6 +18,7 @@ export default nextConnect({
   .get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
+  const validatorStartTime = performance.now();
   const cleanValues = validator(request.query, {
     username: 'required',
     slug: 'required',
@@ -25,10 +26,13 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
+  console.log({ getChildrenValidationDuration: performance.now() - validatorStartTime, query: request.query });
+
   next();
 }
 
 async function getHandler(request, response) {
+  const getChildrenStartTime = performance.now();
   const userTryingToGet = user.createAnonymous();
 
   const contentFound = await content.findOne({
@@ -55,7 +59,15 @@ async function getHandler(request, response) {
     },
   });
 
+  const filterOutputStartTime = performance.now();
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+
+  const getChildrenEndTime = performance.now();
+  console.log({
+    getChildrenDuration: getChildrenEndTime - getChildrenStartTime,
+    filterOutputDuration: getChildrenEndTime - filterOutputStartTime,
+    query: request.query,
+  });
 
   return response.status(200).json(secureOutputValues);
 }

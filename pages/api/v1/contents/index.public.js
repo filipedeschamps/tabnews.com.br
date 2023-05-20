@@ -30,6 +30,7 @@ export default nextConnect({
   );
 
 function getValidationHandler(request, response, next) {
+  const validatorStartTime = performance.now();
   const cleanValues = validator(request.query, {
     page: 'optional',
     per_page: 'optional',
@@ -38,10 +39,13 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
+  console.log({ getChildrenValidationDuration: performance.now() - validatorStartTime, query: request.query });
+
   next();
 }
 
 async function getHandler(request, response) {
+  const getContentStartTime = performance.now();
   const userTryingToList = user.createAnonymous();
 
   const results = await content.findWithStrategy({
@@ -59,9 +63,18 @@ async function getHandler(request, response) {
 
   const contentList = results.rows;
 
+  const filterOutputStartTime = performance.now();
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+
+  const getContentsEndTime = performance.now();
+
+  console.log({
+    getContentTotalTime: getContentsEndTime - getContentStartTime,
+    filterOutputTotalTime: getContentsEndTime - filterOutputStartTime,
+    query: request.query,
+  });
 
   return response.status(200).json(secureOutputValues);
 }

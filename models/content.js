@@ -213,13 +213,28 @@ async function findOne(values, options = {}) {
 }
 
 async function findWithStrategy(options = {}) {
+  const findAllInitTime = performance.now();
+  let rankStartTime, rankEndTime;
+  let strategy = options.strategy;
+
   const strategies = {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
   };
 
-  return await strategies[options.strategy](options);
+  const queryReturn = await strategies[options.strategy](options);
+
+  const findAllEndTime = performance.now();
+
+  console.log({
+    findWithStrategyTime: findAllEndTime - findAllInitTime,
+    rankTime: rankEndTime - rankStartTime,
+    ...options,
+    strategy,
+  });
+
+  return queryReturn;
 
   async function getNew(options = {}) {
     const results = {};
@@ -257,7 +272,9 @@ async function findWithStrategy(options = {}) {
     if (options.strategy === 'relevant_global') {
       results.rows = contentList;
     } else {
+      rankStartTime = performance.now();
       results.rows = rankContentListByRelevance(contentList);
+      rankEndTime = performance.now();
     }
 
     values.totalRows = results.rows[0]?.total_rows;
@@ -660,15 +677,14 @@ async function update(contentId, postedContent, options = {}) {
       WITH
         updated_content as (
           UPDATE contents SET
-            parent_id = $2,
-            slug = $3,
-            title = $4,
-            body = $5,
-            status = $6,
-            source_url = $7,
-            published_at = $8,
+            slug = $2,
+            title = $3,
+            body = $4,
+            status = $5,
+            source_url = $6,
+            published_at = $7,
             updated_at = (now() at time zone 'utc'),
-            deleted_at = $9
+            deleted_at = $8
           WHERE
             id = $1
           RETURNING *
@@ -694,7 +710,6 @@ async function update(contentId, postedContent, options = {}) {
       ;`,
       values: [
         content.id,
-        content.parent_id,
         content.slug,
         content.title,
         content.body,
@@ -769,6 +784,7 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
 }
 
 async function findTree(options) {
+  const findTreeStartTime = performance.now();
   options.where = validateWhereSchema(options?.where);
   let values;
   if (options.where.parent_id) {
@@ -779,8 +795,19 @@ async function findTree(options) {
     values = [options.where.owner_username, options.where.slug];
   }
 
+  const queryStartTime = performance.now();
   const flatList = await recursiveDatabaseLookup(options);
-  return flatListToTree(flatList);
+  const queryEndTime = performance.now();
+  const tree = flatListToTree(flatList);
+  const findTreeEndTime = performance.now();
+  console.log({
+    findTreeTime: findTreeEndTime - findTreeStartTime,
+    validateTime: queryStartTime - findTreeStartTime,
+    queryTime: queryEndTime - queryStartTime,
+    flatListToTreeTime: findTreeEndTime - queryEndTime,
+    ...options,
+  });
+  return tree;
 
   async function recursiveDatabaseLookup(options) {
     const query = {
