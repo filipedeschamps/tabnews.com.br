@@ -35,15 +35,14 @@ async function getHandler(request, response) {
   const getChildrenStartTime = performance.now();
   const userTryingToGet = user.createAnonymous();
 
-  const contentFound = await content.findOne({
+  const contentTreeFound = await content.findTree({
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      status: 'published',
     },
   });
 
-  if (!contentFound) {
+  if (!contentTreeFound?.length) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
@@ -53,11 +52,7 @@ async function getHandler(request, response) {
     });
   }
 
-  const childrenFound = await content.findTree({
-    where: {
-      parent_id: contentFound.id,
-    },
-  });
+  const childrenFound = contentTreeFound[0].children;
 
   const filterOutputStartTime = performance.now();
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);

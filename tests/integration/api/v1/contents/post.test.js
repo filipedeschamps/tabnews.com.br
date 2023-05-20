@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
+import database from 'infra/database';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -1913,6 +1914,13 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+      const contentInDatabase = await database.query({
+        text: 'SELECT * FROM contents WHERE id = $1',
+        values: [responseBody.id],
+      });
+
+      expect(contentInDatabase.rows[0].path).toEqual([]);
     });
 
     test('"root" content with "title" containing custom slug special characters', async () => {
@@ -2063,6 +2071,13 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.slug)).toEqual(4);
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+      const contentInDatabase = await database.query({
+        text: 'SELECT * FROM contents WHERE id = $1',
+        values: [responseBody.id],
+      });
+
+      expect(contentInDatabase.rows[0].path).toEqual([rootContent.id]);
     });
 
     test('"child" content with "title" containing Null value', async () => {

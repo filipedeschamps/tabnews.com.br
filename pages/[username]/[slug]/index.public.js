@@ -162,7 +162,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
                 aria-label={`Este conteúdo está atualmente com status "${rootContent.status}"`}
                 direction="s"
                 noDelay={true}>
-                <strong>{rootContent.body}</strong>{' '}
+                <strong>{rootContent.title}</strong>{' '}
               </Tooltip>
             )}
           </Box>
@@ -364,11 +364,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   let secureRootContentFound = null;
   let secureParentContentFound = null;
 
-  if (secureContentFound.parent_id) {
-    const rootContentFound = await content.findRootContent({
+  if (contentTreeFound[0].path.length > 1) {
+    const rootContentFound = await content.findOne({
       where: {
-        id: secureContentFound.parent_id,
+        id: contentTreeFound[0].path[0],
       },
+      attributes: { exclude: ['body'] },
     });
 
     secureRootContentFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
@@ -381,6 +382,21 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
     parentContentFound.body = removeMarkdown(parentContentFound.body, { maxLength: 50 });
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
+  }
+
+  if (contentTreeFound[0].path.length === 1) {
+    const parentContentFound = await content.findOne({
+      where: {
+        id: secureContentFound.parent_id,
+      },
+    });
+
+    secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
+
+    secureRootContentFound = secureParentContentFound;
+
+    delete secureRootContentFound.body;
+    secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
   }
 
   return {
