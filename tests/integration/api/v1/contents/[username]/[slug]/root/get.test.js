@@ -349,7 +349,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         slug: 'root-content-title',
         title: 'Root content title',
         body: 'Root content body',
-        children_deep_count: 1,
+        children_deep_count: 2,
         status: 'published',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
