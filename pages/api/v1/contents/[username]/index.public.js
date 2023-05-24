@@ -1,10 +1,11 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
@@ -12,8 +13,8 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(10))
   .get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
@@ -30,7 +31,7 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const userTryingToGet = user.createAnonymous();
 
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
@@ -47,21 +48,13 @@ async function getHandler(request, response) {
 
   for (const content of secureOutputValues) {
     if (content.parent_id) {
-      content.body = shortenAndCleanBody(content.body);
+      content.body = removeMarkdown(content.body, { maxLength: 255 });
     } else {
       delete content.body;
     }
   }
 
   controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
+
   return response.status(200).json(secureOutputValues);
-}
-
-function shortenAndCleanBody(body) {
-  const titleLength = 256;
-  const bodyLength = titleLength - '...'.length;
-  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
-
-  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
-  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
 }

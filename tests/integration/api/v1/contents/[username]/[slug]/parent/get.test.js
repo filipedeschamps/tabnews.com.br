@@ -1,4 +1,3 @@
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
@@ -320,7 +319,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         parent_id: childContentLevel1.id,
         title: 'Child content title Level 2',
         body: 'Child content body Level 2',
-        status: 'published',
       });
 
       const childContentLevel2Drafted = await orchestrator.updateContent(childContentLevel2.id, {
@@ -353,12 +351,12 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         children_deep_count: 0,
         status: 'draft',
         source_url: null,
-        published_at: childContentLevel2.published_at.toISOString(),
+        published_at: null,
         created_at: childContentLevel2.created_at.toISOString(),
         updated_at: childContentLevel2Drafted.updated_at.toISOString(),
         deleted_at: null,
         owner_username: firstUser.username,
-        tabcoins: 1,
+        tabcoins: 0,
       });
     });
 

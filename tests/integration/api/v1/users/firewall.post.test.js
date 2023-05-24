@@ -80,7 +80,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       expect(uuidVersion(events[2].id)).toEqual(4);
       expect(events[2].type).toEqual('firewall:block_users');
       expect(events[2].originator_user_id).toEqual(null);
-      expect(events[2].originator_ip).toEqual('127.0.0.0');
+      expect(events[2].originator_ip).toEqual('127.0.0.1');
       expect(events[2].metadata).toEqual({
         from_rule: 'create:user',
         users: [user1.id, user2.id],

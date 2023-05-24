@@ -1,13 +1,13 @@
-import useSWR from 'swr';
+import { Box, Content, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { DefaultLayout, Content, useUser } from 'pages/interface/index.js';
-import { Box, Heading, Flash, Link } from '@primer/react';
+import { useUser } from 'pages/interface';
 import { useEffect } from 'react';
+import useSWR from 'swr';
 
 export default function Post() {
   const router = useRouter();
   const { user, isLoading } = useUser();
-  const { data: contents } = useSWR(user ? `/api/v1/contents/${user.username}?strategy=new` : null, {
+  const { data: contents } = useSWR(user ? `/api/v1/contents/${user.username}?strategy=new&per_page=1` : null, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });

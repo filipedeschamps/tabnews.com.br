@@ -3,14 +3,18 @@ import cookie from 'cookie';
 import database from 'infra/database.js';
 import { UnauthorizedError } from 'errors/index.js';
 import validator from 'models/validator.js';
+import cacheControl from 'models/cache-control';
+
+const SESSION_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 async function create(userId) {
   const sessionToken = crypto.randomBytes(48).toString('hex');
+  const expiresAt = new Date(Date.now() + 1000 * SESSION_EXPIRATION_IN_SECONDS);
 
   const query = {
     text: `INSERT INTO sessions (token, user_id, expires_at)
-               VALUES($1, $2, now() + interval '30 days') RETURNING *;`,
-    values: [sessionToken, userId],
+               VALUES($1, $2, $3) RETURNING *;`,
+    values: [sessionToken, userId, expiresAt],
   };
 
   const results = await database.query(query);
@@ -18,12 +22,13 @@ async function create(userId) {
 }
 
 function setSessionIdCookieInResponse(sessionToken, response) {
+  cacheControl.noCache(undefined, response);
   response.setHeader('Set-Cookie', [
     cookie.serialize('session_id', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: SESSION_EXPIRATION_IN_SECONDS,
     }),
   ]);
 }
@@ -71,6 +76,7 @@ async function expireAllFromUserId(userId, options = {}) {
 
 // TODO: mark session as invalid also in Database.
 function clearSessionIdCookie(response) {
+  cacheControl.noCache(undefined, response);
   response.setHeader('Set-Cookie', [
     cookie.serialize('session_id', 'invalid', {
       httpOnly: true,
@@ -142,13 +148,15 @@ async function renew(sessionId, response) {
   return sessionObjectRenewed;
 
   async function renewObjectInDatabase(sessionId) {
+    const expiresAt = new Date(Date.now() + 1000 * SESSION_EXPIRATION_IN_SECONDS);
+
     const query = {
       text: `UPDATE sessions SET
-              expires_at = now() + interval '30 days',
+              expires_at = $2,
               updated_at = now()
             WHERE id = $1
             RETURNING *;`,
-      values: [sessionId],
+      values: [sessionId, expiresAt],
     };
 
     const results = await database.query(query);

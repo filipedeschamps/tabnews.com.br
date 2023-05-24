@@ -9,6 +9,13 @@
   "plugins": ["jsx-a11y"],
   "rules": {
     "react/no-unescaped-entities": "off",
-    "import/no-anonymous-default-export": "off"
+    "import/no-anonymous-default-export": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "vars": "all",
+        "args": "after-used"
+      }
+    ]
   }
 }

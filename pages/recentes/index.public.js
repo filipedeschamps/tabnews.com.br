@@ -1,8 +1,9 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 
 export default function Home({ contentListFound, pagination }) {
   return (
@@ -12,18 +13,13 @@ export default function Home({ contentListFound, pagination }) {
           title: 'Recentes',
           description: 'Publicações no TabNews ordenadas pelas mais recentes.',
         }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/recentes/pagina"
-          revalidatePath="/api/v1/contents?strategy=new"
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
       </DefaultLayout>
     </>
   );
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   context.params = context.params ? context.params : {};
@@ -62,6 +58,6 @@ export async function getStaticProps(context) {
       contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
       pagination: results.pagination,
     },
-    revalidate: 1,
+    revalidate: 10,
   };
-}
+});

@@ -1,7 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import {
+  Box,
+  Button,
+  Checkbox,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  Link,
+  TextInput,
+  useConfirm,
+} from '@/TabNewsUI';
+import { useUser } from 'pages/interface';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser, Link } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Checkbox, Flash, useConfirm } from '@primer/react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function EditProfile() {
   return (
@@ -79,6 +90,8 @@ function EditProfileForm() {
       const confirmChangeUsername = await confirm({
         title: `Você realmente deseja alterar seu nome de usuário?`,
         content: `Isto irá quebrar todas as URLs das suas publicações.`,
+        cancelButtonContent: 'Cancelar',
+        confirmButtonContent: 'Sim',
       });
 
       if (!confirmChangeUsername) {
@@ -166,6 +179,8 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
+            contrast
+            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -188,6 +203,8 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
+            contrast
+            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'email' && !errorObject?.type && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -219,10 +236,11 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="notifications">
+        <FormControl id="notifications" sx={{ gap: 2, alignItems: 'center' }}>
           <FormControl.Label>Receber notificações por email</FormControl.Label>
 
           <Checkbox
+            sx={{ display: 'flex' }}
             ref={notificationsRef}
             onChange={clearErrors}
             name="notifications"

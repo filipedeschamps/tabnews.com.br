@@ -1,5 +1,7 @@
 import Joi from 'joi';
 import { ValidationError } from 'errors/index.js';
+import removeMarkdown from 'models/remove-markdown';
+import webserver from 'infra/webserver';
 
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON
@@ -74,6 +76,7 @@ const schemas = {
         .max(30)
         .trim()
         .invalid(null)
+        .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"username" é um campo obrigatório.`,
@@ -83,6 +86,7 @@ const schemas = {
           'string.min': `"username" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"username" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"username" possui o valor inválido "null".`,
+          'username.reserved': `Este nome de usuário não está disponível para uso.`,
         }),
     });
   },
@@ -95,6 +99,7 @@ const schemas = {
         .max(30)
         .trim()
         .invalid(null)
+        .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.owner_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"owner_username" é um campo obrigatório.`,
@@ -104,6 +109,7 @@ const schemas = {
           'string.min': `"owner_username" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"owner_username" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"owner_username" possui o valor inválido "null".`,
+          'username.reserved': `Este nome de usuário não está disponível para uso.`,
         }),
     });
   },
@@ -209,36 +215,21 @@ const schemas = {
     });
   },
 
-  owner_id: function () {
-    return Joi.object({
-      owner_id: Joi.string()
-        .trim()
-        .guid({ version: 'uuidv4' })
-        .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `"owner_id" é um campo obrigatório.`,
-          'string.empty': `"owner_id" não pode estar em branco.`,
-          'string.base': `"owner_id" deve ser do tipo String.`,
-          'string.guid': `"owner_id" deve possuir um token UUID na versão 4.`,
-        }),
-    });
-  },
-
   slug: function () {
     return Joi.object({
       slug: Joi.string()
         .min(1)
-        .max(256)
+        .max(255, 'utf8')
         .trim()
+        .truncate()
         .invalid(null)
-        .pattern(/^[a-z0-9](-?[a-z0-9])*$/m)
+        .pattern(/^[a-z0-9](-?[a-z0-9])*$/)
         .when('$required.slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"slug" é um campo obrigatório.`,
           'string.empty': `"slug" não pode estar em branco.`,
           'string.base': `"slug" deve ser do tipo String.`,
-          'string.min': `"slug" deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `"slug" deve conter no máximo {#limit} caracteres.`,
+          'string.min': `"slug" deve conter no mínimo {#limit} caractere.`,
           'string.pattern.base': `"slug" está no formato errado.`,
           'any.invalid': `"slug" possui o valor inválido "null".`,
         }),
@@ -248,11 +239,13 @@ const schemas = {
   title: function () {
     return Joi.object({
       title: Joi.string()
-        .replace(/^\u200e|\u200e$|^\u200f|\u200f$|\u0000/g, '')
+        .replace(
+          /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
+          ''
+        )
         .allow(null)
         .min(1)
-        .max(256)
-        .trim()
+        .max(255)
         .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"title" é um campo obrigatório.`,
@@ -267,11 +260,12 @@ const schemas = {
   body: function () {
     return Joi.object({
       body: Joi.string()
-        .replace(/^\u200e|\u200e$|^\u200f|\u200f$|\u0000/g, '')
+        .pattern(/^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0).*$/su, { invert: true })
+        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
         .min(1)
         .max(20000)
-        .trim()
         .invalid(null)
+        .custom(withoutMarkdown, 'check if is empty without markdown')
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"body" é um campo obrigatório.`,
@@ -280,6 +274,8 @@ const schemas = {
           'string.min': `"body" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"body" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"body" possui o valor inválido "null".`,
+          'string.pattern.invert.base': `"body" deve começar com caracteres visíveis.`,
+          'markdown.empty': `Markdown deve conter algum texto`,
         }),
     });
   },
@@ -786,3 +782,190 @@ const schemas = {
     });
   },
 };
+
+const withoutMarkdown = (value, helpers) => {
+  return removeMarkdown(value, { trim: true }).length > 0 ? value : helpers.error('markdown.empty');
+};
+
+function checkReservedUsernames(username, helpers) {
+  if (
+    (webserver.isServerlessRuntime && reservedDevUsernames.includes(username.toLowerCase())) ||
+    reservedUsernames.includes(username.toLowerCase()) ||
+    reservedUsernamesStartingWith.find((reserved) => username.toLowerCase().startsWith(reserved))
+  ) {
+    return helpers.error('username.reserved');
+  }
+  return username;
+}
+
+const reservedDevUsernames = ['admin', 'user'];
+const reservedUsernamesStartingWith = ['favicon', 'manifest'];
+const reservedUsernames = [
+  'account',
+  'administracao',
+  'administrador',
+  'administradora',
+  'administradores',
+  'administrator',
+  'afiliado',
+  'afiliados',
+  'ajuda',
+  'alerta',
+  'alertas',
+  'analytics',
+  'anonymous',
+  'anunciar',
+  'anuncie',
+  'anuncio',
+  'anuncios',
+  'api',
+  'app',
+  'apps',
+  'autenticacao',
+  'auth',
+  'authentication',
+  'autorizacao',
+  'avatar',
+  'backup',
+  'banner',
+  'banners',
+  'beta',
+  'blog',
+  'cadastrar',
+  'cadastro',
+  'carrinho',
+  'categoria',
+  'categorias',
+  'categories',
+  'category',
+  'ceo',
+  'cfo',
+  'checkout',
+  'comentario',
+  'comentarios',
+  'comunidade',
+  'comunidades',
+  'config',
+  'configuracao',
+  'configuracoes',
+  'configurar',
+  'configure',
+  'conta',
+  'contas',
+  'contato',
+  'contatos',
+  'contrato',
+  'convite',
+  'convites',
+  'create',
+  'criar',
+  'css',
+  'cto',
+  'cultura',
+  'curso',
+  'cursos',
+  'dados',
+  'dashboard',
+  'desconectar',
+  'deslogar',
+  'diretrizes',
+  'discussao',
+  'docs',
+  'documentacao',
+  'download',
+  'downloads',
+  'draft',
+  'edit',
+  'editar',
+  'editor',
+  'email',
+  'estatisticas',
+  'eu',
+  'faq',
+  'features',
+  'gerente',
+  'grupo',
+  'grupos',
+  'guest',
+  'guidelines',
+  'hoje',
+  'imagem',
+  'imagens',
+  'init',
+  'interface',
+  'licenca',
+  'log',
+  'login',
+  'logout',
+  'loja',
+  'me',
+  'membership',
+  'moderacao',
+  'moderador',
+  'moderadora',
+  'moderadoras',
+  'moderadores',
+  'museu',
+  'news',
+  'newsletter',
+  'newsletters',
+  'notificacoes',
+  'notification',
+  'notifications',
+  'ontem',
+  'pagina',
+  'password',
+  'perfil',
+  'pesquisa',
+  'popular',
+  'post',
+  'postar',
+  'posts',
+  'preferencias',
+  'public',
+  'publicar',
+  'publish',
+  'rascunho',
+  'recentes',
+  'register',
+  'registration',
+  'regras',
+  'relatorio',
+  'relatorios',
+  'replies',
+  'reply',
+  'resetar-senha',
+  'resetar',
+  'resposta',
+  'respostas',
+  'root',
+  'rootuser',
+  'rss',
+  'sair',
+  'senha',
+  'sobre',
+  'status',
+  'sudo',
+  'superuser',
+  'suporte',
+  'support',
+  'swr',
+  'sysadmin',
+  'tabnew',
+  'tabnews',
+  'tag',
+  'tags',
+  'termos-de-uso',
+  'termos',
+  'terms',
+  'toc',
+  'trending',
+  'upgrade',
+  'username',
+  'users',
+  'usuario',
+  'usuarios',
+  'va',
+  'vagas',
+  'videos',
+];

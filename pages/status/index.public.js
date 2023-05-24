@@ -1,20 +1,17 @@
+import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import analytics from 'models/analytics.js';
+import { getStaticPropsRevalidate } from 'next-swr';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
-import { Box, Heading, Label, LabelGroup, Truncate } from '@primer/react';
-import { ResponsiveContainer, BarChart, Bar, Tooltip, XAxis } from 'recharts';
 
-import { DefaultLayout } from 'pages/interface/index.js';
-
-export default function Page() {
-  const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', { refreshInterval: 1000 });
-  const { data: usersCreated } = useSWR('/api/v1/analytics/users-created', { refreshInterval: 30000 });
-  const { data: rootContentPublished } = useSWR('/api/v1/analytics/root-content-published', { refreshInterval: 30000 });
-  const { data: childContentPublished } = useSWR('/api/v1/analytics/child-content-published', {
-    refreshInterval: 30000,
+export default function Page({ usersCreated, rootContentPublished, childContentPublished }) {
+  const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
+    refreshInterval: 1000 * 10,
   });
 
   return (
     <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site' }}>
-      <Box sx={{ display: 'grid', width: '100%' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
         <Box>
@@ -24,7 +21,7 @@ export default function Page() {
             <BarChart height={400} data={usersCreated}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar type="monotone" dataKey="cadastros" fill="#2da44e" />
+              <Bar type="monotone" dataKey="cadastros" name="cadastros" fill="#2da44e" />
             </BarChart>
           </ResponsiveContainer>
         </Box>
@@ -35,7 +32,7 @@ export default function Page() {
             <BarChart height={400} data={rootContentPublished}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar type="monotone" dataKey="conteudos" fill="#2da44e" />
+              <Bar type="monotone" dataKey="conteudos" name="conteúdos" fill="#2da44e" />
             </BarChart>
           </ResponsiveContainer>
         </Box>
@@ -46,7 +43,7 @@ export default function Page() {
             <BarChart height={400} data={childContentPublished}>
               <XAxis dataKey="date" tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar type="monotone" dataKey="respostas" fill="#2da44e" />
+              <Bar type="monotone" dataKey="respostas" name="respostas" fill="#2da44e" />
             </BarChart>
           </ResponsiveContainer>
         </Box>
@@ -70,7 +67,13 @@ export default function Page() {
               </Box>
               <Box>
                 Conexões abertas:{' '}
-                <Label variant={statusObject?.dependencies.database.opened_connections < 40 ? 'success' : 'danger'}>
+                <Label
+                  variant={
+                    statusObject?.dependencies.database.opened_connections <
+                    statusObject?.dependencies.database.max_connections * 0.7
+                      ? 'success'
+                      : 'danger'
+                  }>
                   {statusObject?.dependencies.database.opened_connections}
                 </Label>
               </Box>
@@ -165,7 +168,37 @@ export default function Page() {
             </Box>
           )}
         </Box>
+
+        <Box>
+          <h2>Contribuidores</h2>
+
+          <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
+            <picture>
+              <img
+                src="https://contributors-img.web.app/image?repo=filipedeschamps/tabnews.com.br&max=500"
+                alt="Lista de contribuidores"
+                width="100%"
+              />
+            </picture>
+          </a>
+        </Box>
       </Box>
     </DefaultLayout>
   );
 }
+
+export const getStaticProps = getStaticPropsRevalidate(async () => {
+  const childContentPublished = await analytics.getChildContentsPublished();
+  const rootContentPublished = await analytics.getRootContentsPublished();
+  const usersCreated = await analytics.getUsersCreated();
+
+  return {
+    props: {
+      usersCreated,
+      rootContentPublished,
+      childContentPublished,
+    },
+    revalidate: 30,
+    swr: { refreshInterval: 1000 * 60 * 5 },
+  };
+});

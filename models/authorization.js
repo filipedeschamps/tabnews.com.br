@@ -19,6 +19,7 @@ const availableFeatures = new Set([
 
   // RECOVERY_TOKEN
   'read:recovery_token',
+  'create:recovery_token:username',
 
   // EMAIL_CONFIRMATION_TOKEN
   'read:email_confirmation_token',
@@ -52,7 +53,7 @@ function can(user, feature, resource) {
   if (feature === 'update:user' && resource) {
     authorized = false;
 
-    if (user.id === resource.id) {
+    if (user.id === resource.id && user.features.includes('update:user')) {
       authorized = true;
     }
   }
@@ -60,7 +61,7 @@ function can(user, feature, resource) {
   if (feature === 'update:content' && resource) {
     authorized = false;
 
-    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
+    if (user.id === resource.owner_id || user.features.includes('update:content:others')) {
       authorized = true;
     }
   }
@@ -234,6 +235,7 @@ function filterOutput(user, feature, output) {
       clonedOutput.body = '[Não disponível]';
       clonedOutput.slug = 'nao-disponivel';
       clonedOutput.source_url = null;
+      clonedOutput.children_deep_count = 0;
     }
 
     filteredOutputValues = validator(clonedOutput, {
@@ -257,7 +259,6 @@ function filterOutput(user, feature, output) {
 
   if (feature === 'read:recovery_token') {
     filteredOutputValues = validator(output, {
-      id: 'required',
       used: 'required',
       expires_at: 'required',
       created_at: 'required',

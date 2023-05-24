@@ -1,10 +1,11 @@
 import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
-import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import { NotFoundError } from 'errors/index.js';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
@@ -12,11 +13,12 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(10))
   .get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
+  const validatorStartTime = performance.now();
   const cleanValues = validator(request.query, {
     username: 'required',
     slug: 'required',
@@ -24,22 +26,23 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
+  console.log({ getChildrenValidationDuration: performance.now() - validatorStartTime, query: request.query });
+
   next();
 }
 
-// TODO: cache the response
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const getChildrenStartTime = performance.now();
+  const userTryingToGet = user.createAnonymous();
 
-  const contentFound = await content.findOne({
+  const contentTreeFound = await content.findTree({
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      status: 'published',
     },
   });
 
-  if (!contentFound) {
+  if (!contentTreeFound?.length) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
@@ -49,13 +52,17 @@ async function getHandler(request, response) {
     });
   }
 
-  const childrenFound = await content.findChildrenTree({
-    where: {
-      parent_id: contentFound.id,
-    },
-  });
+  const childrenFound = contentTreeFound[0].children;
 
+  const filterOutputStartTime = performance.now();
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+
+  const getChildrenEndTime = performance.now();
+  console.log({
+    getChildrenDuration: getChildrenEndTime - getChildrenStartTime,
+    filterOutputDuration: getChildrenEndTime - filterOutputStartTime,
+    query: request.query,
+  });
 
   return response.status(200).json(secureOutputValues);
 }

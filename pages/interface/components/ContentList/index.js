@@ -1,13 +1,8 @@
-import useSWR from 'swr';
-import { Box, Text } from '@primer/react';
+import { Box, EmptyState, Link, PublishedSince, Text } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
 
-import { Link, PublishedSince, EmptyState } from 'pages/interface';
-
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
+export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
-
-  const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
@@ -39,7 +34,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             mb: 2,
           }}>
           {pagination.previousPage ? (
-            <Link href={previousPageUrl}>
+            <Link href={previousPageUrl} scroll={false}>
               <ChevronLeftIcon size={16} />
               Anterior
             </Link>
@@ -100,7 +95,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             }}>
             {contentObject.parent_id ? (
               <Link
-                sx={{ wordWrap: 'break-word', fontStyle: 'italic' }}
+                sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
                 href={`/${contentObject.owner_username}/${contentObject.slug}`}>
                 <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
               </Link>
@@ -124,7 +119,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Link>
             {' · '}
             <Text>
-              <PublishedSince date={contentObject.published_at} />
+              <PublishedSince direction="nw" date={contentObject.published_at} />
             </Text>
           </Box>
         </Box>,

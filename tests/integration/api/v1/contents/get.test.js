@@ -35,6 +35,7 @@ describe('GET /api/v1/contents', () => {
         'referrer-policy': ['origin-when-cross-origin'],
         'access-control-allow-credentials': ['true'],
         'access-control-allow-origin': ['*'],
+        'cache-control': ['public, s-maxage=10, stale-while-revalidate'],
         'access-control-allow-methods': ['GET,OPTIONS,PATCH,DELETE,POST,PUT'],
         'access-control-allow-headers': [
           'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
@@ -95,7 +96,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
@@ -104,7 +106,8 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const NotRootContentPublished = await orchestrator.createContent({
+      // NotRootContentPublished
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
@@ -114,7 +117,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const NotRootContentDraft = await orchestrator.createContent({
+      // NotRootContentDraft
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quinto conteúdo criado',
@@ -185,7 +189,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents,
@@ -194,7 +199,8 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const NotRootContentPublished = await orchestrator.createContent({
+      // NotRootContentPublished
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
@@ -204,7 +210,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const NotRootContentDraft = await orchestrator.createContent({
+      // NotRootContentDraft
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: firstRootContent.id,
         title: 'Quinto conteúdo criado',
@@ -283,7 +290,8 @@ describe('GET /api/v1/contents', () => {
         status: 'published',
       });
 
-      const level3Content = await orchestrator.createContent({
+      // level3Content
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         parent_id: level2Content.id,
         body: 'Nível 3',
@@ -415,8 +423,8 @@ describe('GET /api/v1/contents', () => {
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
-        recipientId: contentList[59].id, // Conteúdo #60
-        amount: -1,
+        recipientId: contentList[5].id, // Conteúdo #6
+        amount: +3,
       });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
@@ -454,12 +462,13 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody.length).toEqual(30);
       expect(responseBody[0].title).toEqual('Conteúdo #31');
       expect(responseBody[1].title).toEqual('Conteúdo #36');
-      expect(responseBody[2].title).toEqual('Conteúdo #59');
-      expect(responseBody[3].title).toEqual('Conteúdo #58');
-      expect(responseBody[6].title).toEqual('Conteúdo #60');
-      expect(responseBody[27].title).toEqual('Conteúdo #32');
-      expect(responseBody[28].title).toEqual('Conteúdo #30');
-      expect(responseBody[29].title).toEqual('Conteúdo #29');
+      expect(responseBody[2].title).toEqual('Conteúdo #60');
+      expect(responseBody[3].title).toEqual('Conteúdo #6');
+      expect(responseBody[4].title).toEqual('Conteúdo #59');
+      expect(responseBody[7].title).toEqual('Conteúdo #56');
+      expect(responseBody[27].title).toEqual('Conteúdo #33');
+      expect(responseBody[28].title).toEqual('Conteúdo #32');
+      expect(responseBody[29].title).toEqual('Conteúdo #30');
 
       const page2Response = await fetch(responseLinkHeader.next.url);
       const page2ResponseBody = await page2Response.json();
@@ -494,8 +503,8 @@ describe('GET /api/v1/contents', () => {
       });
 
       expect(page2ResponseBody.length).toEqual(28);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #28');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #27');
+      expect(page2ResponseBody[0].title).toEqual('Conteúdo #29');
+      expect(page2ResponseBody[1].title).toEqual('Conteúdo #28');
       expect(page2ResponseBody[25].title).toEqual('Conteúdo #3');
       expect(page2ResponseBody[26].title).toEqual('Conteúdo #2');
       expect(page2ResponseBody[27].title).toEqual('Conteúdo #1');

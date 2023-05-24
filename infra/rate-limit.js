@@ -2,10 +2,11 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { ServiceError } from 'errors/index.js';
 import webserver from 'infra/webserver.js';
+import ip from 'models/ip.js';
 
 async function check(request) {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    if (!webserver.isLambdaServer()) {
+    if (!webserver.isServerlessRuntime) {
       return { success: true };
     }
 
@@ -21,10 +22,13 @@ async function check(request) {
     });
   }
 
-  const ip = getIP(request);
+  const realIp = ip.extractFromRequest(request);
   const method = request.method;
   const path = request.nextUrl.pathname;
-  const limit = getLimit(method, path, ip);
+  const limit = getLimit(method, path, realIp);
+  if (!limit) return { success: true };
+
+  let timeout;
 
   try {
     const generalRateLimit = new Ratelimit({
@@ -32,7 +36,13 @@ async function check(request) {
       limiter: Ratelimit.slidingWindow(limit.requests, limit.window),
     });
 
-    return await generalRateLimit.limit(limit.identifier);
+    const timeoutPromise = new Promise((_, reject) => {
+      timeout = setTimeout(() => {
+        reject({ message: 'Upstash não respondeu dentro de 4s.' });
+      }, 4000);
+    });
+
+    return await Promise.race([generalRateLimit.limit(limit.identifier), timeoutPromise]);
   } catch (error) {
     throw new ServiceError({
       message: error.message,
@@ -45,17 +55,14 @@ async function check(request) {
       },
       errorLocationCode: 'MIDDLEWARE:RATE_LIMIT:CHECK',
     });
+  } finally {
+    clearTimeout(timeout);
   }
-}
-
-function getIP(request) {
-  const xff = request instanceof Request ? request.headers.get('x-forwarded-for') : request.headers['x-forwarded-for'];
-
-  return xff ? (Array.isArray(xff) ? xff[0] : xff.split(',')[0]) : '127.0.0.1';
 }
 
 function getLimit(method, path, ip) {
   const defaultLimits = {
+    rateLimitPaths: [],
     general: {
       requests: 1000,
       window: '5 m',
@@ -92,6 +99,11 @@ function getLimit(method, path, ip) {
 
   const configurationFromEnvironment = process.env.RATE_LIMITS ? JSON.parse(process.env.RATE_LIMITS) : {};
   const configuration = { ...defaultLimits, ...configurationFromEnvironment };
+
+  if (!configuration.rateLimitPaths.find((rateLimitPath) => path?.startsWith(rateLimitPath))) {
+    return;
+  }
+
   const limitKey = configuration[`${method} ${path}`] ? `${method} ${path}` : 'general';
 
   const limit = {

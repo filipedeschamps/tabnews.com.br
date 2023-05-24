@@ -1,22 +1,18 @@
-function isLambdaServer() {
-  return !!process.env.VERCEL_ENV;
-}
+const isServerlessRuntime = !!process.env.NEXT_PUBLIC_VERCEL_ENV;
 
-function getHost() {
-  let webserverHost = 'https://www.tabnews.com.br';
+const isBuildTime = !!process.env.CI;
 
-  if (!isLambdaServer()) {
-    webserverHost = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
-  }
+const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 
-  if (['preview'].includes(process.env.VERCEL_ENV)) {
-    webserverHost = `https://${process.env.VERCEL_URL}`;
-  }
-
-  return webserverHost;
-}
+const host = isProduction
+  ? `https://${process.env.NEXT_PUBLIC_WEBSERVER_HOST}`
+  : isServerlessRuntime
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  : `http://${process.env.NEXT_PUBLIC_WEBSERVER_HOST}:${process.env.NEXT_PUBLIC_WEBSERVER_PORT}`;
 
 export default Object.freeze({
-  getHost,
-  isLambdaServer,
+  host,
+  isBuildTime,
+  isProduction,
+  isServerlessRuntime,
 });

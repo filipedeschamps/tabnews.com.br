@@ -56,7 +56,7 @@ async function sendEmailToUser(user, tokenId) {
     },
     to: user.email,
     subject: 'Recuperação de Senha',
-    text: `${user.username}, uma solicitação de recuperação de senha foi solicitada. Caso você não tenha feito esta solicitação, ignore esse email.
+    text: `${user.username}, foi solicitada uma recuperação de senha. Caso você não tenha feito a solicitação, ignore esse email.
 
 Caso você tenha feito essa solicitação, clique no link abaixo para definir uma nova senha:
 
@@ -69,8 +69,7 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
 }
 
 function getRecoverPageEndpoint(tokenId) {
-  const webserverHost = webserver.getHost();
-  return `${webserverHost}/cadastro/recuperar/${tokenId}`;
+  return `${webserver.host}/cadastro/recuperar/${tokenId}`;
 }
 
 async function resetUserPassword(secureInputValues) {

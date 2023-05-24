@@ -1,21 +1,34 @@
-import useSWR from 'swr';
-import { useState } from 'react';
-import { DefaultLayout, ContentList, useUser } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
-import removeMarkdown from 'models/remove-markdown.js';
-import { NotFoundError } from 'errors/index.js';
-import { FaUser } from 'react-icons/fa';
-import { useRouter } from 'next/router';
-import { Box, Pagehead, ActionMenu, ActionList, Flash, IconButton, useConfirm, LabelGroup, Label } from '@primer/react';
+import {
+  ActionList,
+  ActionMenu,
+  Box,
+  ContentList,
+  DefaultLayout,
+  Flash,
+  IconButton,
+  Label,
+  LabelGroup,
+  Pagehead,
+  useConfirm,
+} from '@/TabNewsUI';
 import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
+import { NotFoundError } from 'errors/index.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
+import { useRouter } from 'next/router';
+import { useUser } from 'pages/interface';
+import { useState } from 'react';
+import { FaUser } from 'react-icons/fa';
+import useSWR from 'swr';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
     fallbackData: userFoundFallback,
-    revalidateOnMount: true,
+    revalidateOnMount: false,
   });
 
   const { user, isLoading } = useUser();
@@ -31,6 +44,8 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     const confirmDelete1 = await confirm({
       title: `Atenção: Você está realizando um Nuke!`,
       content: `Deseja banir o usuário "${userFound.username}" e desfazer todas as suas ações?`,
+      confirmButtonContent: 'Sim',
+      cancelButtonContent: 'Cancelar',
     });
 
     if (!confirmDelete1) return;
@@ -125,7 +140,6 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${userFound.username}/pagina`}
-          revalidatePath={`/api/v1/contents/${userFound.username}?strategy=new`}
           emptyStateProps={{
             isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',
@@ -170,7 +184,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   try {
@@ -182,24 +196,28 @@ export async function getStaticProps(context) {
   } catch (error) {
     return {
       notFound: true,
-      revalidate: 1,
     };
   }
 
   let results;
+  let secureUserFound;
 
   try {
+    const userFound = await user.findOneByUsername(context.params.username);
+
+    secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
+
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        owner_username: context.params.username,
+        owner_id: secureUserFound.id,
         status: 'published',
       },
       page: context.params.page,
       per_page: context.params.per_page,
     });
   } catch (error) {
-    // `content` model will throw a `NotFoundError` if the user is not found.
+    // `user` model will throw a `NotFoundError` if the user is not found.
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
@@ -214,12 +232,9 @@ export async function getStaticProps(context) {
 
   const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
-  const userFound = await user.findOneByUsername(context.params.username);
-  const secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
-
   for (const content of secureContentListFound) {
     if (content.parent_id) {
-      content.body = shortenAndCleanBody(content.body);
+      content.body = removeMarkdown(content.body, { maxLength: 255 });
     } else {
       delete content.body;
     }
@@ -232,15 +247,6 @@ export async function getStaticProps(context) {
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
     },
 
-    revalidate: 1,
+    revalidate: 10,
   };
-}
-
-function shortenAndCleanBody(body) {
-  const titleLength = 256;
-  const bodyLength = titleLength - '...'.length;
-  const cleanBody = removeMarkdown(body).replace(/\s+/g, ' ');
-
-  const shortenedBody = cleanBody.substring(0, bodyLength).trim();
-  return cleanBody.length < bodyLength ? shortenedBody : shortenedBody + '...';
-}
+});

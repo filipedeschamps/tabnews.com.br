@@ -11,7 +11,7 @@ const configurations = {
   database: process.env.POSTGRES_DB,
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
-  connectionTimeoutMillis: 1000,
+  connectionTimeoutMillis: 2000,
   idleTimeoutMillis: 30000,
   max: 1,
   ssl: {
@@ -20,7 +20,7 @@ const configurations = {
   allowExitOnIdle: true,
 };
 
-if (!webserver.isLambdaServer()) {
+if (!webserver.isServerlessRuntime) {
   configurations.max = 30;
 
   // https://github.com/filipedeschamps/tabnews.com.br/issues/84
@@ -48,7 +48,7 @@ async function query(query, options = {}) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
       client.release();
-      if (tooManyConnections && webserver.isLambdaServer()) {
+      if (tooManyConnections && webserver.isServerlessRuntime) {
         await cache.pool.end();
         cache.pool = null;
       }
@@ -58,7 +58,7 @@ async function query(query, options = {}) {
 
 async function tryToGetNewClientFromPool() {
   const clientFromPool = await retry(newClientFromPool, {
-    retries: 12,
+    retries: webserver.isBuildTime ? 12 : 1,
     minTimeout: 150,
     maxTimeout: 5000,
     factor: 2,
@@ -76,9 +76,11 @@ async function tryToGetNewClientFromPool() {
 }
 
 async function checkForTooManyConnections(client) {
+  if (webserver.isBuildTime) return false;
+
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 5000;
-  const maxConnectionsTolerance = 0.7;
+  const maxConnectionsTolerance = 0.8;
 
   if (cache.maxConnections === null || cache.reservedConnections === null) {
     const [maxConnections, reservedConnections] = await getConnectionLimits();
@@ -86,11 +88,7 @@ async function checkForTooManyConnections(client) {
     cache.reservedConnections = reservedConnections;
   }
 
-  if (
-    !cache.openedConnections === null ||
-    !cache.openedConnectionsLastUpdate === null ||
-    currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge
-  ) {
+  if (cache.openedConnections === null || currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge) {
     const openedConnections = await getOpenedConnections();
     cache.openedConnections = openedConnections;
     cache.openedConnectionsLastUpdate = currentTime;
@@ -154,14 +152,15 @@ async function tryToGetNewClient() {
   }
 }
 
-function parseQueryErrorAndLog(error, query) {
-  const expectedErrorsCode = [
-    '23505', // unique constraint violation
-    '40001', // serialization_failure
-  ];
+const UNIQUE_CONSTRAINT_VIOLATION = '23505';
+const SERIALIZATION_FAILURE = '40001';
+const UNDEFINED_FUNCTION = '42883';
 
-  if (!webserver.isLambdaServer()) {
-    expectedErrorsCode.push('42883'); // undefined_function
+function parseQueryErrorAndLog(error, query) {
+  const expectedErrorsCode = [UNIQUE_CONSTRAINT_VIOLATION, SERIALIZATION_FAILURE];
+
+  if (!webserver.isServerlessRuntime) {
+    expectedErrorsCode.push(UNDEFINED_FUNCTION);
   }
 
   const errorToReturn = new ServiceError({
@@ -188,4 +187,9 @@ export default Object.freeze({
   query,
   getNewClient,
   transaction,
+  errorCodes: {
+    UNIQUE_CONSTRAINT_VIOLATION,
+    SERIALIZATION_FAILURE,
+    UNDEFINED_FUNCTION,
+  },
 });

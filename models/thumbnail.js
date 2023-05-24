@@ -53,7 +53,7 @@ export function parseContent(content, parentContent) {
   let title = content.title;
 
   if (!title) {
-    title = removeMarkdown(content.body).substring(0, 120).replace(/\s+/g, ' ');
+    title = removeMarkdown(content.body, { maxLength: 120 });
   }
 
   let parent_title = parentContent?.title.substring(0, 60);

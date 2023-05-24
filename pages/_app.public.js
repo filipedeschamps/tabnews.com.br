@@ -1,9 +1,8 @@
-import { ThemeProvider, BaseStyles, SSRProvider } from '@primer/react';
+import { ThemeProvider } from '@/TabNewsUI';
 import { Analytics } from '@vercel/analytics/react';
+import { RevalidateProvider } from 'next-swr';
+import { DefaultHead, UserProvider } from 'pages/interface';
 import { SWRConfig } from 'swr';
-import { UserProvider } from 'pages/interface/hooks/useUser/index.js';
-import NextNProgress from 'pages/interface/components/Progressbar/index.js';
-import { DefaultHead } from 'pages/interface/components/Head/index.js';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -14,25 +13,17 @@ async function SWRFetcher(resource, init) {
 
 function MyApp({ Component, pageProps }) {
   return (
-    <>
+    <ThemeProvider>
       <UserProvider>
         <DefaultHead />
-        <SWRConfig
-          value={{
-            fetcher: SWRFetcher,
-          }}>
-          <SSRProvider>
-            <ThemeProvider preventSSRMismatch colorMode="day">
-              <BaseStyles>
-                <NextNProgress options={{ showSpinner: false }} />
-                <Component {...pageProps} />
-              </BaseStyles>
-            </ThemeProvider>
-          </SSRProvider>
+        <SWRConfig value={{ fetcher: SWRFetcher }}>
+          <RevalidateProvider swr={{ swrPath: '/api/v1/swr', ...pageProps.swr }}>
+            <Component {...pageProps} />
+          </RevalidateProvider>
         </SWRConfig>
+        <Analytics />
       </UserProvider>
-      <Analytics />
-    </>
+    </ThemeProvider>
   );
 }
 

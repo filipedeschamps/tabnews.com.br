@@ -1,4 +1,4 @@
-# tabnews.com.br
+# [tabnews.com.br](https://www.tabnews.com.br/)
 
 ## Instalar e rodar o projeto
 
@@ -134,3 +134,9 @@ npm run commit
 ## Diário de Desenvolvimento
 
 - [Acessar o diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)
+
+## Contribuidores
+
+<a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=filipedeschamps/tabnews.com.br&max=500" alt="Lista de contribuidores" width="100%"/>
+</a>

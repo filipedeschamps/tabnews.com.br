@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import user from 'models/user.js';
 import ban from 'models/ban.js';
@@ -15,11 +16,22 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
-  .patch(patchValidationHandler, authorization.canRequest('update:user'), patchHandler)
-  .delete(deleteValidationHandler, authorization.canRequest('ban:user'), deleteHandler);
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
+  .patch(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    patchValidationHandler,
+    authorization.canRequest('update:user'),
+    patchHandler
+  )
+  .delete(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    deleteValidationHandler,
+    authorization.canRequest('ban:user'),
+    deleteHandler
+  );
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -32,8 +44,10 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
-  const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
+  const userTryingToGet = user.createAnonymous();
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username, {
+    withBalance: true,
+  });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 

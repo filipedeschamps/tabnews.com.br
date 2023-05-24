@@ -25,9 +25,8 @@ async function findAll() {
   return results.rows;
 }
 
-async function findOneByUsername(username) {
-  const query = {
-    text: `
+async function findOneByUsername(username, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -37,18 +36,25 @@ async function findOneByUsername(username) {
           LOWER(username) = LOWER($1)
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [username],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -63,9 +69,8 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
-async function findOneByEmail(email) {
-  const query = {
-    text: `
+async function findOneByEmail(email, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -75,18 +80,25 @@ async function findOneByEmail(email) {
           LOWER(email) = LOWER($1)
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [email],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -102,9 +114,8 @@ async function findOneByEmail(email) {
 }
 
 // TODO: validate userId
-async function findOneById(userId) {
-  const query = {
-    text: `
+async function findOneById(userId, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -114,14 +125,21 @@ async function findOneById(userId) {
           id = $1
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [userId],
   };
 
@@ -142,7 +160,6 @@ async function findOneById(userId) {
 
 async function create(postedUserData) {
   const validUserData = validatePostSchema(postedUserData);
-  checkBlockedUsernames(validUserData.username);
   await validateUniqueUsername(validUserData.username);
   await validateUniqueEmail(validUserData.email);
   await hashPasswordInObject(validUserData);
@@ -191,188 +208,6 @@ function validatePostSchema(postedUserData) {
   return cleanValues;
 }
 
-function checkBlockedUsernames(username) {
-  const blockedUsernames = [
-    'tabnew',
-    'tabnews',
-    'contato',
-    'contatos',
-    'moderador',
-    'moderadores',
-    'moderadora',
-    'moderadoras',
-    'moderadores',
-    'moderacao',
-    'alerta',
-    'alertas',
-    'dados',
-    'status',
-    'estatisticas',
-    'analytics',
-    'auth',
-    'authentication',
-    'autenticacao',
-    'autorizacao',
-    'loja',
-    'log',
-    'login',
-    'logout',
-    'avatar',
-    'backup',
-    'banner',
-    'banners',
-    'beta',
-    'blog',
-    'posts',
-    'category',
-    'categories',
-    'categoria',
-    'categorias',
-    'tags',
-    'grupo',
-    'grupos',
-    'checkout',
-    'carrinho',
-    'comentario',
-    'comentarios',
-    'comunidade',
-    'comunidades',
-    'vagas',
-    'curso',
-    'cursos',
-    'sobre',
-    'conta',
-    'contas',
-    'anuncio',
-    'anuncios',
-    'anuncie',
-    'anunciar',
-    'afiliado',
-    'afiliados',
-    'criar',
-    'create',
-    'postar',
-    'post',
-    'publicar',
-    'publish',
-    'editar',
-    'editor',
-    'edit',
-    'configuracao',
-    'configuracoes',
-    'configurar',
-    'configure',
-    'config',
-    'preferencias',
-    'conta',
-    'account',
-    'dashboard',
-    'sair',
-    'deslogar',
-    'desconectar',
-    'discussao',
-    'documentacao',
-    'download',
-    'downloads',
-    'draft',
-    'rascunho',
-    'app',
-    'apps',
-    'admin',
-    'administrator',
-    'administrador',
-    'administradora',
-    'administradores',
-    'administracao',
-    'suporte',
-    'support',
-    'pesquisa',
-    'sysadmin',
-    'superuser',
-    'sudo',
-    'root',
-    'user',
-    'users',
-    'rootuser',
-    'guest',
-    'anonymous',
-    'faq',
-    'tag',
-    'tags',
-    'hoje',
-    'ontem',
-    'pagina',
-    'trending',
-    'username',
-    'usuario',
-    'usuarios',
-    'email',
-    'password',
-    'senha',
-    'docs',
-    'documentacao',
-    'guidelines',
-    'diretrizes',
-    'ajuda',
-    'imagem',
-    'imagens',
-    'convite',
-    'convites',
-    'toc',
-    'terms',
-    'termos',
-    'regras',
-    'contrato',
-    'cultura',
-    'licenca',
-    'rss',
-    'newsletter',
-    'newsletters',
-    'notification',
-    'notifications',
-    'notificacoes',
-    'popular',
-    'cadastro',
-    'cadastrar',
-    'register',
-    'registration',
-    'resposta',
-    'respostas',
-    'replies',
-    'reply',
-    'relatorio',
-    'relatorios',
-    'resetar',
-    'resetar-senha',
-    'ceo',
-    'cfo',
-    'cto',
-    'gerente',
-    'membership',
-    'news',
-    'api',
-    'css',
-    'init',
-    'museu',
-    'upgrade',
-    'features',
-    'me',
-    'perfil',
-    'eu',
-    'videos',
-  ];
-
-  if (blockedUsernames.includes(username.toLowerCase())) {
-    throw new ValidationError({
-      message: `Este nome de usuário não está disponível para uso.`,
-      action: 'Escolha outro nome de usuário e tente novamente.',
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME',
-      key: 'username',
-    });
-  }
-}
-
 // TODO: Refactor the interface of this function
 // and the code inside to make it more future proof
 // and to accept update using "userId".
@@ -380,8 +215,10 @@ async function update(username, postedUserData, options = {}) {
   const validPostedUserData = await validatePatchSchema(postedUserData);
   const currentUser = await findOneByUsername(username);
 
-  if ('username' in validPostedUserData) {
-    checkBlockedUsernames(validPostedUserData.username);
+  if (
+    'username' in validPostedUserData &&
+    currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()
+  ) {
     await validateUniqueUsername(validPostedUserData.username);
   }
 

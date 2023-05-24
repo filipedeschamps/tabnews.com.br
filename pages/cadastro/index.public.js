@@ -1,7 +1,6 @@
-import { useState, useRef } from 'react';
+import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { DefaultLayout } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { useRef, useState } from 'react';
 
 export default function Register() {
   return (
@@ -25,16 +24,6 @@ function SignUpForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
-
-  function detectCapsLock(event) {
-    if (event.getModifierState('CapsLock')) {
-      setCapsLockWarningMessage('Atenção: Caps Lock está ativado.');
-      return;
-    }
-
-    setCapsLockWarningMessage(false);
-  }
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -121,6 +110,8 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
+            contrast
+            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -142,6 +133,8 @@ function SignUpForm() {
             spellCheck={false}
             block={true}
             aria-label="Seu email"
+            contrast
+            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'email' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -169,29 +162,14 @@ function SignUpForm() {
           )}
         </FormControl>
 
-        <FormControl id="password">
-          <FormControl.Label>Senha</FormControl.Label>
-          <TextInput
-            ref={passwordRef}
-            onChange={clearErrors}
-            onKeyDown={detectCapsLock}
-            onKeyUp={detectCapsLock}
-            name="password"
-            type="password"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            size="large"
-            block={true}
-            aria-label="Sua senha"
-          />
-          {capsLockWarningMessage && (
-            <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
-          )}
-          {errorObject?.key === 'password' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
+        <PasswordInput
+          inputRef={passwordRef}
+          id="password"
+          name="password"
+          label="Senha"
+          errorObject={errorObject}
+          setErrorObject={setErrorObject}
+        />
 
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>

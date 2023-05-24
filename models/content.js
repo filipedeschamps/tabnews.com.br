@@ -4,8 +4,9 @@ import database from 'infra/database.js';
 import validator from 'models/validator.js';
 import user from 'models/user.js';
 import balance from 'models/balance.js';
-import { ValidationError } from 'errors/index.js';
+import { ForbiddenError, ValidationError } from 'errors/index.js';
 import queries from 'models/queries';
+import prestige from 'models/prestige';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -33,14 +34,21 @@ async function findAll(values = {}, options = {}) {
 
   const selectClause = buildSelectClause(values);
   const whereClause = buildWhereClause(values?.where);
-  const orderByClause = buildOrderByClause(values?.order);
+  const orderByClause = buildOrderByClause(values);
 
   query.text = `
-      ${selectClause}
+      WITH content_window AS (
+      SELECT
+        COUNT(*) OVER()::INTEGER as total_rows,
+        id
+      FROM contents
       ${whereClause}
       ${orderByClause}
 
       ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
+      )
+      ${selectClause}
+      ${orderByClause}
       ;`;
 
   if (values.where) {
@@ -85,9 +93,9 @@ async function findAll(values = {}, options = {}) {
     if (values.count) {
       return `
         SELECT
-          COUNT(*) OVER()::INTEGER as total_rows
+          total_rows
         FROM
-          contents
+          content_window
         `;
     }
 
@@ -105,45 +113,20 @@ async function findAll(values = {}, options = {}) {
         contents.updated_at,
         contents.published_at,
         contents.deleted_at,
+        contents.path,
         users.username as owner_username,
-        COUNT(*) OVER()::INTEGER as total_rows,
+        content_window.total_rows,
         get_current_balance('content:tabcoin', contents.id) as tabcoins,
-
-        -- Originally this query returned a list of contents to the server and
-        -- afterward made an additional roundtrip to the database for every item using
-        -- the findChildrenCount() method to get the children count. Now we perform a
-        -- subquery that is not performant but everything is embedded in one travel.
-        -- https://github.com/filipedeschamps/tabnews.com.br/blob/de65be914f0fd7b5eed8905718e4ab286b10557e/models/content.js#L51
         (
-          WITH RECURSIVE children AS (
-            SELECT
-                id,
-                parent_id
-            FROM
-              contents as all_contents
-            WHERE
-              all_contents.id = contents.id AND
-              all_contents.status = 'published'
-            UNION ALL
-              SELECT
-                all_contents.id,
-                all_contents.parent_id
-              FROM
-                contents as all_contents
-              INNER JOIN
-                children ON all_contents.parent_id = children.id
-              WHERE
-                all_contents.status = 'published'
-          )
-          SELECT
-            count(children.id)::integer
-          FROM
-            children
-          WHERE
-            children.id NOT IN (contents.id)
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[contents.id]
+           AND children.status = 'published'
         ) as children_deep_count
       FROM
         contents
+      INNER JOIN
+        content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
     `;
@@ -189,12 +172,12 @@ async function findAll(values = {}, options = {}) {
     }, '');
   }
 
-  function buildOrderByClause(orderBy) {
-    if (!orderBy) {
+  function buildOrderByClause({ order, count }) {
+    if (!order || count) {
       return '';
     }
 
-    return `ORDER BY contents.${orderBy}`;
+    return `ORDER BY contents.${order}`;
   }
 }
 
@@ -205,13 +188,28 @@ async function findOne(values, options = {}) {
 }
 
 async function findWithStrategy(options = {}) {
+  const findAllInitTime = performance.now();
+  let rankStartTime, rankEndTime;
+  let strategy = options.strategy;
+
   const strategies = {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
   };
 
-  return await strategies[options.strategy](options);
+  const queryReturn = await strategies[options.strategy](options);
+
+  const findAllEndTime = performance.now();
+
+  console.log({
+    findWithStrategyTime: findAllEndTime - findAllInitTime,
+    rankTime: rankEndTime - rankStartTime,
+    ...options,
+    strategy,
+  });
+
+  return queryReturn;
 
   async function getNew(options = {}) {
     const results = {};
@@ -249,7 +247,9 @@ async function findWithStrategy(options = {}) {
     if (options.strategy === 'relevant_global') {
       results.rows = contentList;
     } else {
+      rankStartTime = performance.now();
       results.rows = rankContentListByRelevance(contentList);
+      rankEndTime = performance.now();
     }
 
     values.totalRows = results.rows[0]?.total_rows;
@@ -289,11 +289,13 @@ async function create(postedContent, options = {}) {
 
   checkRootContentTitle(validContent);
 
-  if (validContent.parent_id) {
-    await checkIfParentIdExists(validContent, {
-      transaction: options.transaction,
-    });
-  }
+  const parentContent = validContent.parent_id
+    ? await checkIfParentIdExists(validContent, {
+        transaction: options.transaction,
+      })
+    : null;
+
+  injectIdAndPath(validContent, parentContent);
 
   populatePublishedAtValue(null, validContent);
 
@@ -324,8 +326,8 @@ async function create(postedContent, options = {}) {
       WITH
         inserted_content as (
           INSERT INTO
-            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
         )
       SELECT
@@ -341,6 +343,7 @@ async function create(postedContent, options = {}) {
         inserted_content.updated_at,
         inserted_content.published_at,
         inserted_content.deleted_at,
+        inserted_content.path,
         users.username as owner_username
       FROM
         inserted_content
@@ -348,6 +351,7 @@ async function create(postedContent, options = {}) {
         users ON inserted_content.owner_id = users.id
       ;`,
       values: [
+        content.id,
         content.parent_id,
         content.owner_id,
         content.slug,
@@ -356,6 +360,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
+        content.path,
       ],
     };
 
@@ -365,6 +370,18 @@ async function create(postedContent, options = {}) {
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
     }
+  }
+}
+
+function injectIdAndPath(validContent, parentContent) {
+  validContent.id = uuidV4();
+
+  if (parentContent) {
+    validContent.path = [...parentContent.path, parentContent.id];
+  }
+
+  if (!parentContent) {
+    validContent.path = [];
   }
 }
 
@@ -395,7 +412,7 @@ function getSlug(title) {
     trim: true,
   });
 
-  const truncatedSlug = generatedSlug.substring(0, 256);
+  const truncatedSlug = generatedSlug.substring(0, 255);
 
   return truncatedSlug;
 }
@@ -424,10 +441,12 @@ async function checkIfParentIdExists(content, options) {
       key: 'parent_id',
     });
   }
+
+  return existingContent;
 }
 
 function parseQueryErrorToCustomError(error) {
-  if (error.databaseErrorCode === '23505') {
+  if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
       action: `Utilize um "title" ou "slug" diferente.`,
@@ -494,7 +513,6 @@ function populatePublishedAtValue(oldContent, newContent) {
 }
 
 async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
-  const userDefaultEarnings = 2;
   const contentDefaultEarnings = 1;
 
   // We should not credit or debit if the parent content is from the same user.
@@ -521,23 +539,25 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
   // We should debit if the content was once "published", but now is being "deleted".
   // 1) If content `tabcoins` is positive, we need to extract the `contentDefaultEarnings`
-  // from it and then debit all additional tabcoins from the user, including `userDefaultEarnings`.
+  // from it and then debit all additional tabcoins from the user, including `userEarnings`.
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
-  // creation of the content represented in `userDefaultEarnings`.
+  // creation of the content represented in `userEarnings`.
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
     let amountToDebit;
 
+    const userEarnings = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
+
     if (oldContent.tabcoins > 0) {
-      amountToDebit = oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings;
+      amountToDebit = contentDefaultEarnings - oldContent.tabcoins - userEarnings;
     } else {
-      amountToDebit = userDefaultEarnings;
+      amountToDebit = -userEarnings;
     }
 
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: amountToDebit * -1,
+        amount: amountToDebit,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -548,43 +568,30 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     return;
   }
 
-  // We should credit if the content already existed and is now being published for the first time.
-  if (oldContent && !oldContent.published_at && newContent.status === 'published') {
+  if (
+    // We should credit if the content is being created directly with "published" status.
+    (!oldContent && newContent.published_at) ||
+    // We should credit if the content already existed and is now being published for the first time.
+    (oldContent && !oldContent.published_at && newContent.status === 'published')
+  ) {
+    const userEarnings = await prestige.getByUserId(newContent.owner_id, {
+      isRoot: !newContent.parent_id,
+      transaction: options.transaction,
+    });
+
+    if (userEarnings < 0) {
+      throw new ForbiddenError({
+        message: 'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
+        action: 'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
+        errorLocationCode: 'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
+      });
+    }
+
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: userDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
-
-    await balance.create(
-      {
-        balanceType: 'content:tabcoin',
-        recipientId: newContent.id,
-        amount: contentDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
-    return;
-  }
-
-  // We should credit if the content is being created directly with "published" status.
-  if (!oldContent && newContent.published_at) {
-    await balance.create(
-      {
-        balanceType: 'user:tabcoin',
-        recipientId: newContent.owner_id,
-        amount: userDefaultEarnings,
+        amount: userEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -624,6 +631,7 @@ async function update(contentId, postedContent, options = {}) {
   const newContent = { ...oldContent, ...validPostedContent };
 
   throwIfContentIsAlreadyDeleted(oldContent);
+  throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
   checkRootContentTitle(newContent);
   checkForParentIdRecursion(newContent);
 
@@ -663,15 +671,14 @@ async function update(contentId, postedContent, options = {}) {
       WITH
         updated_content as (
           UPDATE contents SET
-            parent_id = $2,
-            slug = $3,
-            title = $4,
-            body = $5,
-            status = $6,
-            source_url = $7,
-            published_at = $8,
+            slug = $2,
+            title = $3,
+            body = $4,
+            status = $5,
+            source_url = $6,
+            published_at = $7,
             updated_at = (now() at time zone 'utc'),
-            deleted_at = $9
+            deleted_at = $8
           WHERE
             id = $1
           RETURNING *
@@ -689,6 +696,7 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.updated_at,
         updated_content.published_at,
         updated_content.deleted_at,
+        updated_content.path,
         users.username as owner_username
       FROM
         updated_content
@@ -697,7 +705,6 @@ async function update(contentId, postedContent, options = {}) {
       ;`,
       values: [
         content.id,
-        content.parent_id,
         content.slug,
         content.title,
         content.body,
@@ -718,7 +725,6 @@ async function update(contentId, postedContent, options = {}) {
 
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
-    parent_id: 'optional',
     slug: 'optional',
     title: 'optional',
     body: 'optional',
@@ -760,95 +766,117 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
   }
 }
 
-async function findChildrenTree(options) {
+function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
+  if (oldContent.status === 'published' && newContent.status === 'draft') {
+    throw new ValidationError({
+      message: `Não é possível alterar para rascunho um conteúdo já publicado.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
+      statusCode: 400,
+      key: 'status',
+    });
+  }
+}
+
+async function findTree(options) {
+  const findTreeStartTime = performance.now();
   options.where = validateWhereSchema(options?.where);
-  const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenFlatListRanked = rankContentListByRelevance(childrenFlatList);
-  const childrenTree = flatListToTree(childrenFlatListRanked);
-  return childrenTree.children;
+  let values;
+  if (options.where.parent_id) {
+    values = [options.where.parent_id];
+  } else if (options.where.id) {
+    values = [options.where.id];
+  } else if (options.where.slug) {
+    values = [options.where.owner_username, options.where.slug];
+  }
 
-  async function recursiveDatabaseLookup(options) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            id,
-            owner_id,
-            parent_id,
-            slug,
-            title,
-            body,
-            status,
-            source_url,
-            created_at,
-            updated_at,
-            published_at,
-            deleted_at
-        FROM
-          contents
-        WHERE
-          contents.id = $1 AND
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.id,
-            contents.owner_id,
-            contents.parent_id,
-            contents.slug,
-            contents.title,
-            contents.body,
-            contents.status,
-            contents.source_url,
-            contents.created_at,
-            contents.updated_at,
-            contents.published_at,
-            contents.deleted_at
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
+  const queryStartTime = performance.now();
+  const flatList = await databaseLookup(options);
+  const queryEndTime = performance.now();
+  const tree = flatListToTree(flatList);
+  const findTreeEndTime = performance.now();
+  console.log({
+    findTreeTime: findTreeEndTime - findTreeStartTime,
+    validateTime: queryStartTime - findTreeStartTime,
+    queryTime: queryEndTime - queryStartTime,
+    flatListToTreeTime: findTreeEndTime - queryEndTime,
+    ...options,
+  });
+  return tree;
 
-      )
+  async function databaseLookup(options) {
+    const queryChildrenByParentId = `
       SELECT
-        children.id,
-        children.owner_id,
-        children.parent_id,
-        children.slug,
-        children.title,
-        children.body,
-        children.status,
-        children.source_url,
-        children.created_at,
-        children.updated_at,
-        children.published_at,
-        children.deleted_at,
+        *,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', children.id) as tabcoins
+        get_current_balance('content:tabcoin', contents.id) as tabcoins
       FROM
-        children
+        contents
       INNER JOIN
-        users ON children.owner_id = users.id
-      ORDER BY
-        children.published_at ASC;
-      ;`,
-      values: [options.where.parent_id],
+        users ON owner_id = users.id
+      WHERE
+        path @> ARRAY[$1]::uuid[] AND
+        status = 'published';`;
+
+    const queryTree = `
+      WITH parent AS (SELECT * FROM contents
+        WHERE
+          ${options.where.id ? 'contents.id = $1 AND' : ''}
+          ${options.where.owner_username ? `${whereOwnerUsername('$1')} AND` : ''}
+          ${options.where.slug ? 'contents.slug = $2 AND' : ''}
+          contents.status = 'published')
+
+      SELECT
+        parent.*,
+        users.username as owner_username,
+        get_current_balance('content:tabcoin', parent.id) as tabcoins
+      FROM
+        parent
+      INNER JOIN
+        users ON parent.owner_id = users.id
+
+      UNION ALL
+
+      SELECT
+        c.*,
+        users.username as owner_username,
+        get_current_balance('content:tabcoin', c.id) as tabcoins
+      FROM
+        contents c
+      INNER JOIN
+        parent ON c.path @> ARRAY[parent.id]::uuid[]
+      INNER JOIN
+        users ON c.owner_id = users.id
+      WHERE
+        c.status = 'published';`;
+
+    const query = {
+      text: options.where.parent_id ? queryChildrenByParentId : queryTree,
+      values: values,
     };
     const results = await database.query(query);
     return results.rows;
   }
 
   function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      parent_id: 'required',
-    });
+    let options = {};
+
+    if (where.parent_id) {
+      options.parent_id = 'required';
+    } else if (where.slug) {
+      options.owner_username = 'required';
+      options.slug = 'required';
+    } else {
+      options.id = 'required';
+    }
+
+    const cleanValues = validator(where, options);
 
     return cleanValues;
   }
 
   function flatListToTree(list) {
-    let tree;
+    const tree = { children: [] };
     const table = {};
 
     list.forEach((row) => {
@@ -860,16 +888,19 @@ async function findChildrenTree(options) {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
       } else {
-        tree = row;
+        tree.children.push(row);
       }
     });
 
     recursiveInjectChildrenDeepCount(tree);
 
+    return tree.children;
+
     function recursiveInjectChildrenDeepCount(node) {
       let count = node.children.length;
 
       if (node.children) {
+        node.children = rankContentListByRelevance(node.children);
         node.children.forEach((child) => {
           count += recursiveInjectChildrenDeepCount(child);
         });
@@ -878,9 +909,17 @@ async function findChildrenTree(options) {
       node.children_deep_count = count;
       return count;
     }
-
-    return tree;
   }
+}
+
+function whereOwnerUsername($n) {
+  return `
+  contents.owner_id = (
+    SELECT id FROM users
+    WHERE
+      LOWER(username) = LOWER(${$n})
+    LIMIT 1)
+  `;
 }
 
 function rankContentListByRelevance(contentList) {
@@ -898,172 +937,30 @@ function rankContentListByRelevance(contentList) {
   function sortByScore(first, second) {
     return second.score - first.score;
   }
-
-  // Inspired by:
-  // https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
-  // https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
-  function getContentScore(contentObject) {
-    const tabcoins = contentObject.tabcoins;
-    const secondsSinceEpoch = Math.floor(new Date() / 1000);
-    const publishedAtInSeconds = Math.floor(new Date(contentObject.published_at) / 1000);
-    const ageInSeconds = secondsSinceEpoch - publishedAtInSeconds;
-    const ageBase = 60 * 60 * 1; // 1 hour
-    const boostPeriodInSeconds = 60 * 10; // 10 minutes
-    const initialBoost = ageInSeconds < boostPeriodInSeconds ? 10 : 1;
-    const tabcoinsAntiGravity = 1.5;
-    const tabcoinsWithAntiGravity = Math.pow(Math.abs(tabcoins), tabcoinsAntiGravity);
-    const tabcoinsWithCorrectSign = tabcoins > 0 ? tabcoinsWithAntiGravity : tabcoinsWithAntiGravity * -1;
-    const gravity = 1.8;
-
-    const scoreDecimals = (tabcoinsWithCorrectSign + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
-    const finalScore = scoreDecimals * 10000;
-    return finalScore;
-  }
 }
 
-async function findChildrenCount(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const childrenCount = await recursiveDatabaseLookup(values, options);
-  return childrenCount;
+// Inspired by:
+// https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
+// https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
+const ageBaseInMilliseconds = 1000 * 60 * 60 * 6; // 6 hours
+const boostPeriodInMilliseconds = 1000 * 60 * 10; // 10 minutes
+const offset = 0.5;
 
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            id,
-            parent_id
-        FROM
-          contents
-        WHERE
-          contents.id = $1 AND
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.id,
-            contents.parent_id
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
-      )
-      SELECT
-        count(children.id)::integer
-      FROM
-        children
-      WHERE
-        children.id NOT IN ($1);`,
-      values: [values.where.id],
-    };
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0].count;
-  }
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
-}
-
-async function findRootContent(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const rootContentFound = await recursiveDatabaseLookup(values, options);
-  return rootContentFound;
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
-
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE child_to_root_tree AS (
-        SELECT
-          *
-        FROM
-          contents
-        WHERE
-          id = $1
-          AND parent_id IS NOT NULL
-      UNION ALL
-        SELECT
-          contents.*
-        FROM
-          contents
-        JOIN
-          child_to_root_tree
-        ON
-          contents.id = child_to_root_tree.parent_id
-      )
-      SELECT
-        child_to_root_tree.*,
-        users.username as owner_username,
-        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins,
-
-        -- Originally this query returned the root content object to the server and
-        -- afterward made an additional roundtrip to the database using the
-        -- findChildrenCount() method to get the children count. Now we perform a
-        -- subquery that is not performant but everything is embedded in one travel.
-        -- https://github.com/filipedeschamps/tabnews.com.br/blob/3ab1c65fdfc03d079791d17fde693010ab4caa60/models/content.js#L1013
-        (
-          WITH RECURSIVE children AS (
-            SELECT
-                id,
-                parent_id
-            FROM
-              contents
-            WHERE
-              contents.id = child_to_root_tree.id AND
-              contents.status = 'published'
-            UNION ALL
-              SELECT
-                contents.id,
-                contents.parent_id
-              FROM
-                contents
-              INNER JOIN
-                children ON contents.parent_id = children.id
-              WHERE
-                contents.status = 'published'
-          )
-          SELECT
-            count(children.id)::integer
-          FROM
-            children
-          WHERE
-            children.id NOT IN (child_to_root_tree.id)
-      ) as children_deep_count
-
-      FROM
-        child_to_root_tree
-      INNER JOIN
-        users ON child_to_root_tree.owner_id = users.id
-      WHERE
-        parent_id IS NULL;
-      ;`,
-      values: [values.where.id],
-    };
-
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0];
-  }
+function getContentScore(contentObject) {
+  const tabcoins = contentObject.tabcoins;
+  const ageInMilliseconds = Date.now() - new Date(contentObject.published_at);
+  const initialBoost = ageInMilliseconds < boostPeriodInMilliseconds ? 3 : 1;
+  const gravity = Math.exp(-ageInMilliseconds / ageBaseInMilliseconds);
+  const score = (tabcoins - offset) * initialBoost;
+  const finalScore = tabcoins > 0 ? score * (1 + gravity) : score * (1 - gravity);
+  return finalScore;
 }
 
 export default Object.freeze({
   findAll,
   findOne,
-  findChildrenTree,
+  findTree,
   findWithStrategy,
-  findRootContent,
   create,
   update,
 });

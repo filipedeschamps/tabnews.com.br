@@ -1,20 +1,38 @@
 import { NextResponse } from 'next/server';
+import logger from 'infra/logger.js';
 import rateLimit from 'infra/rate-limit.js';
 import snakeize from 'snakeize';
-
-// TODO: Next.js still didn't fix this bug:
-// https://github.com/vercel/next.js/issues/39262
-// But this bug doesn't affect Preview and Production environments.
-// So it's time enable the middleware on all routes, but then
-// we need to skip these two tests for now as a collateral effect:
-// https://github.com/filipedeschamps/tabnews.com.br/blob/35bd984db122f30ae3ed7a3b5d7baf830669a345/tests/integration/api/v1/contents/post.test.js#L268
-// https://github.com/filipedeschamps/tabnews.com.br/blob/35bd984db122f30ae3ed7a3b5d7baf830669a345/tests/integration/api/v1/contents/%5Busername%5D/%5Bslug%5D/patch.test.js#L500
+import { UnauthorizedError } from '/errors/index.js';
+import ip from 'models/ip.js';
+import webserver from 'infra/webserver.js';
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],
 };
 
 export async function middleware(request) {
+  if (webserver.isProduction && !ip.isRequestFromCloudflare(request)) {
+    const publicErrorObject = new UnauthorizedError({
+      message: 'Host não autorizado. Por favor, acesse https://www.tabnews.com.br.',
+      action: 'Não repita esta requisição.',
+    });
+
+    const privateErrorObject = {
+      ...publicErrorObject,
+      context: {
+        clientIp: ip.extractFromRequest(request),
+      },
+    };
+    logger.info(snakeize(privateErrorObject));
+
+    return new NextResponse(JSON.stringify(publicErrorObject), {
+      status: 401,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+  }
+
   const url = request.nextUrl;
 
   try {
@@ -28,6 +46,13 @@ export async function middleware(request) {
     if (!rateLimitResult.success) {
       url.pathname = '/api/v1/_responses/rate-limit-reached';
       return NextResponse.rewrite(url);
+    }
+
+    if (url.pathname === '/api/v1/swr') {
+      return new NextResponse(JSON.stringify({ timestamp: Date.now() }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     return NextResponse.next();

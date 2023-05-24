@@ -1,19 +1,15 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { getStaticPropsRevalidate } from 'next-swr';
 
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Melhores` }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/pagina"
-          revalidatePath={`/api/v1/contents?strategy=relevant&page=${pagination.currentPage}`}
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/pagina" />
       </DefaultLayout>
     </>
   );
@@ -26,7 +22,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   context.params = context.params ? context.params : {};
@@ -39,7 +35,6 @@ export async function getStaticProps(context) {
   } catch (error) {
     return {
       notFound: true,
-      revalidate: 1,
     };
   }
 
@@ -65,6 +60,6 @@ export async function getStaticProps(context) {
 
     // TODO: instead of `revalidate`, understand how to use this:
     // https://nextjs.org/docs/basic-features/data-fetching/incremental-static-regeneration#using-on-demand-revalidation
-    revalidate: 1,
+    revalidate: 10,
   };
-}
+});

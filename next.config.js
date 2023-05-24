@@ -1,4 +1,7 @@
 module.exports = {
+  experimental: {
+    scrollRestoration: true,
+  },
   pageExtensions: ['public.js'],
   eslint: {
     ignoreDuringBuilds: true,
@@ -6,7 +9,6 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
-  swcMinify: false,
   async redirects() {
     return [
       {

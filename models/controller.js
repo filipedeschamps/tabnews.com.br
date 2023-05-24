@@ -1,6 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
 
+import ip from 'models/ip.js';
 import session from 'models/session.js';
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
@@ -19,34 +20,22 @@ async function injectRequestMetadata(request, response, next) {
   request.context = {
     ...request.context,
     requestId: uuidV4(),
-    clientIp: extractAnonymousIpFromRequest(request),
+    clientIp: ip.extractFromRequest(request),
   };
 
-  function extractAnonymousIpFromRequest(request) {
-    let ip = request.headers['x-real-ip'] || request.socket.remoteAddress;
-
-    if (ip === '::1') {
-      ip = '127.0.0.1';
-    }
-
-    if (ip.substr(0, 7) == '::ffff:') {
-      ip = ip.substr(7);
-    }
-
-    const ipParts = ip.split('.');
-    ipParts[3] = '0';
-    const anonymizedIp = ipParts.join('.');
-
-    return anonymizedIp;
+  if (next) {
+    next();
   }
-
-  next();
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
-  logger.info(snakeize(errorObject));
-  return response.status(errorObject.statusCode).json(snakeize(errorObject));
+  injectRequestMetadata(request);
+  const publicErrorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
+
+  const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+  logger.info(snakeize(privateErrorObject));
+
+  return response.status(publicErrorObject.statusCode).json(snakeize(publicErrorObject));
 }
 
 function onErrorHandler(error, request, response) {
@@ -54,39 +43,46 @@ function onErrorHandler(error, request, response) {
     error instanceof ValidationError ||
     error instanceof NotFoundError ||
     error instanceof ForbiddenError ||
-    error instanceof UnprocessableEntityError
+    error instanceof UnprocessableEntityError ||
+    error instanceof TooManyRequestsError
   ) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
-    return response.status(error.statusCode).json(snakeize(errorObject));
+    const publicErrorObject = { ...error, requestId: request.context.requestId };
+
+    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+    logger.info(snakeize(privateErrorObject));
+
+    return response.status(error.statusCode).json(snakeize(publicErrorObject));
   }
 
   if (error instanceof UnauthorizedError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
+    const publicErrorObject = { ...error, requestId: request.context.requestId };
+
+    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+    logger.info(snakeize(privateErrorObject));
+
     session.clearSessionIdCookie(response);
-    return response.status(error.statusCode).json(snakeize(errorObject));
+
+    return response.status(error.statusCode).json(snakeize(publicErrorObject));
   }
 
-  if (error instanceof TooManyRequestsError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
-    return response.status(error.statusCode).json(snakeize(errorObject));
-  }
-
-  const errorObject = new InternalServerError({
-    requestId: request.context.requestId,
+  const publicErrorObject = new InternalServerError({
+    requestId: request.context?.requestId,
     errorId: error.errorId,
-    stack: error.stack,
     statusCode: error.statusCode,
     errorLocationCode: error.errorLocationCode,
   });
 
-  // TODO: Understand why `snakeize` is not logging the
-  // `stack` property of the error object.
-  logger.error(snakeize({ ...errorObject, stack: error.stack }));
+  const privateErrorObject = {
+    ...new InternalServerError({
+      ...error,
+      requestId: request.context?.requestId,
+    }),
+    context: { ...request.context },
+  };
 
-  return response.status(errorObject.statusCode).json(snakeize(errorObject));
+  logger.error(snakeize(privateErrorObject));
+
+  return response.status(publicErrorObject.statusCode).json(snakeize(publicErrorObject));
 }
 
 function logRequest(request, response, next) {
@@ -108,7 +104,7 @@ function logRequest(request, response, next) {
 
 function injectPaginationHeaders(pagination, endpoint, response) {
   const links = [];
-  const baseUrl = `${webserver.getHost()}${endpoint}?strategy=${pagination.strategy}`;
+  const baseUrl = `${webserver.host}${endpoint}?strategy=${pagination.strategy}`;
 
   if (pagination.firstPage) {
     links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);

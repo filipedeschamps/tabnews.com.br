@@ -2,11 +2,13 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import notification from 'models/notification.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
+import user from 'models/user.js';
 import database from 'infra/database.js';
 import { ForbiddenError } from 'errors/index.js';
 
@@ -16,12 +18,19 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
-  .post(postValidationHandler, authorization.canRequest('create:content'), firewallValidationHandler, postHandler);
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
+  .post(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    postValidationHandler,
+    authorization.canRequest('create:content'),
+    firewallValidationHandler,
+    postHandler
+  );
 
 function getValidationHandler(request, response, next) {
+  const validatorStartTime = performance.now();
   const cleanValues = validator(request.query, {
     page: 'optional',
     per_page: 'optional',
@@ -30,11 +39,14 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
+  console.log({ getChildrenValidationDuration: performance.now() - validatorStartTime, query: request.query });
+
   next();
 }
 
 async function getHandler(request, response) {
-  const userTryingToList = request.context.user;
+  const getContentStartTime = performance.now();
+  const userTryingToList = user.createAnonymous();
 
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
@@ -51,9 +63,19 @@ async function getHandler(request, response) {
 
   const contentList = results.rows;
 
+  const filterOutputStartTime = performance.now();
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+
+  const getContentsEndTime = performance.now();
+
+  console.log({
+    getContentTotalTime: getContentsEndTime - getContentStartTime,
+    filterOutputTotalTime: getContentsEndTime - filterOutputStartTime,
+    query: request.query,
+  });
+
   return response.status(200).json(secureOutputValues);
 }
 

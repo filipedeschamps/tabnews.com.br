@@ -15,17 +15,17 @@ const rankedContent = `
             contents.deleted_at,
             get_current_balance('content:tabcoin', contents.id) as tabcoins
         FROM contents
-        WHERE 
+        WHERE
             parent_id IS NULL
             AND status = 'published'
             AND published_at > NOW() - INTERVAL '1 week'
     ),
     ranked_published_root_contents AS (
-        SELECT 
+        SELECT
             *,
             COUNT(*) OVER()::INTEGER as total_rows
         FROM latest_published_root_contents
-        WHERE tabcoins >= 0
+        WHERE tabcoins > 0
         ORDER BY
             tabcoins DESC,
             published_at DESC
@@ -59,7 +59,8 @@ const rankedContent = `
         LIMIT 20
     ),
     group_3 AS (
-        (SELECT 
+        (SELECT
+            DISTINCT ON (owner_id)
             *,
             3 as rank_group
         FROM ranked_published_root_contents
@@ -67,13 +68,14 @@ const rankedContent = `
             published_at > NOW() - INTERVAL '12 hours'
             AND id NOT IN (SELECT id FROM group_2)
         ORDER BY
+            owner_id,
             published_at DESC
         LIMIT 5)
         UNION ALL
         SELECT * FROM group_2
     ),
     group_4 AS (
-        (SELECT 
+        (SELECT
             *,
             4 as rank_group
         FROM ranked_published_root_contents
@@ -88,17 +90,17 @@ const rankedContent = `
         SELECT * FROM group_3
     ),
     group_5 AS (
-        (SELECT 
+        (SELECT
             *,
             5 as rank_group
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '72 hours'
-            AND tabcoins > 1
+            AND tabcoins > 2
             AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
             published_at DESC
-        LIMIT 10)      
+        LIMIT 10)
         UNION ALL
         SELECT * FROM group_4
     ),
@@ -151,7 +153,7 @@ const rankedContent = `
             SELECT count(children.id)::integer
             FROM children
             WHERE children.id NOT IN (ranked.id)
-            ) as children_deep_count
+        ) as children_deep_count
         FROM ranked
         INNER JOIN users ON ranked.owner_id = users.id
         ORDER BY

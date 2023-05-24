@@ -2,6 +2,7 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import user from 'models/user.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
 import validator from 'models/validator.js';
 import content from 'models/content.js';
 import { NotFoundError } from 'errors/index.js';
@@ -13,6 +14,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(10))
   .get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
