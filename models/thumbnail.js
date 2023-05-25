@@ -8,11 +8,15 @@ import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown';
 
 async function asPng(contentObject) {
-  const parentContentObject = await content.findOne({
-    where: {
-      id: contentObject.parent_id,
-    },
-  });
+  let parentContentObject;
+  if (contentObject.parent_id) {
+    parentContentObject = await content.findOne({
+      where: {
+        id: contentObject.parent_id,
+      },
+    });
+  }
+
   const parsedContent = parseContent(contentObject, parentContentObject);
 
   const svg = await satori(renderTemplate(parsedContent), {
