@@ -43,30 +43,23 @@ function can(user, feature, resource) {
   validateUser(user);
   validateFeature(feature);
 
-  let authorized = false;
+  if (!user.features.includes(feature)) return false;
 
-  if (user.features.includes(feature)) {
-    authorized = true;
+  if (!resource) return true;
+
+  switch (feature) {
+    case 'update:user':
+      return user.id === resource.id;
+
+    case 'update:content':
+      return user.id === resource.owner_id || user.features.includes('update:content:others');
+
+    case 'create:content:text_root':
+    case 'create:content:text_child':
+      return true;
   }
 
-  // TODO: Double check if this is right and covered by tests
-  if (feature === 'update:user' && resource) {
-    authorized = false;
-
-    if (user.id === resource.id && user.features.includes('update:user')) {
-      authorized = true;
-    }
-  }
-
-  if (feature === 'update:content' && resource) {
-    authorized = false;
-
-    if (user.id === resource.owner_id || user.features.includes('update:content:others')) {
-      authorized = true;
-    }
-  }
-
-  return authorized;
+  return false;
 }
 
 function filterInput(user, feature, input) {
