@@ -1,10 +1,12 @@
-import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import { Box, DefaultLayout, Flash, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import { get } from '@vercel/edge-config';
+import webserver from 'infra/webserver';
 import analytics from 'models/analytics.js';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
 
-export default function Page({ usersCreated, rootContentPublished, childContentPublished }) {
+export default function Page({ announcements, usersCreated, rootContentPublished, childContentPublished }) {
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
     refreshInterval: 1000 * 10,
   });
@@ -13,6 +15,12 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
     <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site' }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
+
+        {announcements.map(({ type, text }, index) => (
+          <Flash key={index} variant={type} sx={{ mt: 3 }}>
+            {text}
+          </Flash>
+        ))}
 
         <Box>
           <h2>Novos cadastros</h2>
@@ -191,9 +199,11 @@ export const getStaticProps = getStaticPropsRevalidate(async () => {
   const childContentPublished = await analytics.getChildContentsPublished();
   const rootContentPublished = await analytics.getRootContentsPublished();
   const usersCreated = await analytics.getUsersCreated();
+  const announcements = await getAnnouncements();
 
   return {
     props: {
+      announcements,
       usersCreated,
       rootContentPublished,
       childContentPublished,
@@ -202,3 +212,31 @@ export const getStaticProps = getStaticPropsRevalidate(async () => {
     swr: { refreshInterval: 1000 * 60 * 5 },
   };
 });
+
+async function getAnnouncements() {
+  try {
+    const announcements = await get('announcements');
+
+    if (typeof announcements === 'string' || announcements instanceof String) {
+      return [{ text: announcements }];
+    }
+
+    if (Array.isArray(announcements)) {
+      return announcements;
+    }
+
+    return [announcements];
+  } catch (e) {
+    if (webserver.isServerlessRuntime) {
+      console.error(e);
+      return [];
+    }
+
+    return [
+      { text: 'Aviso do tipo padrão!' },
+      { type: 'success', text: 'Aviso do tipo sucesso!' },
+      { type: 'warning', text: 'Aviso do tipo alerta!' },
+      { type: 'danger', text: 'Aviso do tipo perigo!' },
+    ];
+  }
+}
