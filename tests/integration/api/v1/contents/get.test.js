@@ -382,31 +382,233 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With 60 entries, default "page", "per_page" and strategy "relevant" (default)', async () => {
-      const defaultUser = await orchestrator.createUser();
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+      const thirdUser = await orchestrator.createUser();
 
       const numberOfContents = 60;
       const contentList = [];
 
-      for (let item = 0; item < numberOfContents; item++) {
-        const contentCreated = await orchestrator.createContent({
-          owner_id: defaultUser.id,
-          title: `Conteúdo #${item + 1}`,
-          status: 'published',
-        });
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
+        advanceTimers: true,
+      });
 
-        contentList.push(contentCreated);
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: `Conteúdo #1`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[0].id, // Conteúdo #1
+        amount: 9, // -> score = 20, but more than 7 days ago
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: `Conteúdo #2`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[1].id, // Conteúdo #2
+        amount: 8, // -> score = 18 and 3 days ago -> group_6
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: thirdUser.id,
+          title: `Conteúdo #3`,
+          status: 'published',
+        })
+      );
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: `Conteúdo #4`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[2].id, // Conteúdo #3
+        amount: 7, // score = 16 and more than 36 hours -> group_4
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[3].id, // Conteúdo #4
+        amount: 4, // score = 10 and more than 36 hours -> group_5
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24), // 24 hours ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: `Conteúdo #5`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[4].id, // Conteúdo #5
+        amount: 4, // score = 10 and more than 24 hours -> group_5
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: thirdUser.id,
+          title: `Conteúdo #6`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[5].id, // Conteúdo #6
+        amount: 2, // score = 6 and more than 12 hours -> group_5
+      });
+
+      for (let item = 6; item < numberOfContents; item = item + 3) {
+        contentList.push(
+          await orchestrator.createContent({
+            owner_id: firstUser.id,
+            title: `Conteúdo #${item + 1}`,
+            status: 'published',
+          })
+        );
+
+        contentList.push(
+          await orchestrator.createContent({
+            owner_id: secondUser.id,
+            title: `Conteúdo #${item + 2}`,
+            status: 'published',
+          })
+        );
+
+        contentList.push(
+          await orchestrator.createContent({
+            owner_id: thirdUser.id,
+            title: `Conteúdo #${item + 3}`,
+            status: 'published',
+          })
+        );
       }
+
+      await orchestrator.createContent({
+        owner_id: firstUser.id,
+        body: 'Comment #1',
+        status: 'published',
+        parent_id: contentList[44].id, // Conteúdo #45 -> score = 3
+      });
+
+      await orchestrator.createContent({
+        owner_id: secondUser.id,
+        body: 'Comment #2',
+        status: 'published',
+        parent_id: contentList[44].id, // Conteúdo #45 -> score = 4
+      });
+
+      // Comment on own content should not count towards the score
+      await orchestrator.createContent({
+        owner_id: thirdUser.id,
+        body: 'Comment #3',
+        status: 'published',
+        parent_id: contentList[44].id, // Conteúdo #45 -> score = 4
+      });
+
+      await orchestrator.createContent({
+        owner_id: firstUser.id,
+        body: 'Comment #4',
+        status: 'published',
+        parent_id: contentList[47].id, // Conteúdo #48 -> score = 3
+      });
+
+      await orchestrator.createContent({
+        owner_id: secondUser.id,
+        body: 'Comment #5',
+        status: 'published',
+        parent_id: contentList[47].id, // Conteúdo #48 -> score = 4
+      });
+
+      await orchestrator.createContent({
+        owner_id: firstUser.id,
+        body: 'Comment #6',
+        status: 'published',
+        parent_id: contentList[52].id, // Conteúdo #53 -> score = 3
+      });
+
+      // More than one comment from the same user should not count towards the score
+      await orchestrator.createContent({
+        owner_id: firstUser.id,
+        body: 'Comment #7',
+        status: 'published',
+        parent_id: contentList[52].id, // Conteúdo #53 -> score = 3
+      });
+
+      await orchestrator.createContent({
+        owner_id: firstUser.id,
+        body: 'Comment #8',
+        status: 'published',
+        parent_id: contentList[52].id, // Conteúdo #53 -> score = 3
+      });
+
+      await orchestrator.createContent({
+        owner_id: thirdUser.id,
+        body: 'Comment #9',
+        status: 'published',
+        parent_id: contentList[51].id, // Conteúdo #52 -> score = 3
+      });
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[30].id, // Conteúdo #31
-        amount: 12,
+        amount: 6, // score = 14 -> group_1
       });
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[35].id, // Conteúdo #36
-        amount: 7,
+        amount: 3, // score = 8 -> group_2
       });
 
       await orchestrator.createBalance({
@@ -421,12 +623,6 @@ describe('GET /api/v1/contents', () => {
         amount: -3,
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[5].id, // Conteúdo #6
-        amount: +3,
-      });
-
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
       const responseBody = await response.json();
 
@@ -434,7 +630,7 @@ describe('GET /api/v1/contents', () => {
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
       expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('58');
+      expect(responseTotalRowsHeader).toEqual('57');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -460,15 +656,41 @@ describe('GET /api/v1/contents', () => {
       });
 
       expect(responseBody.length).toEqual(30);
+
+      // group_1 -> score > 11 and less than 36 hours ago
       expect(responseBody[0].title).toEqual('Conteúdo #31');
+
+      // group_2 -> score > 6 and less than 24 hours ago
       expect(responseBody[1].title).toEqual('Conteúdo #36');
+
+      // group_3 -> max one new content by user with less than 12 hours
       expect(responseBody[2].title).toEqual('Conteúdo #60');
-      expect(responseBody[3].title).toEqual('Conteúdo #6');
-      expect(responseBody[4].title).toEqual('Conteúdo #59');
-      expect(responseBody[7].title).toEqual('Conteúdo #56');
-      expect(responseBody[27].title).toEqual('Conteúdo #33');
-      expect(responseBody[28].title).toEqual('Conteúdo #32');
-      expect(responseBody[29].title).toEqual('Conteúdo #30');
+      expect(responseBody[3].title).toEqual('Conteúdo #59');
+      expect(responseBody[4].title).toEqual('Conteúdo #58');
+
+      // group_4 -> score > 11 and less than 3 days ago
+      expect(responseBody[5].title).toEqual('Conteúdo #3');
+
+      // group_5 -> score > 4 and less than 3 days ago
+      expect(responseBody[6].title).toEqual('Conteúdo #5');
+      expect(responseBody[7].title).toEqual('Conteúdo #4');
+      expect(responseBody[8].title).toEqual('Conteúdo #6');
+
+      // group_6 -> tabcoins > 0 and less than 7 days ago
+      expect(responseBody[9].title).toEqual('Conteúdo #2');
+      expect(responseBody[10].title).toEqual('Conteúdo #48');
+      expect(responseBody[11].title).toEqual('Conteúdo #45');
+      expect(responseBody[12].title).toEqual('Conteúdo #53');
+      expect(responseBody[13].title).toEqual('Conteúdo #52');
+      expect(responseBody[14].title).toEqual('Conteúdo #57');
+      expect(responseBody[17].title).toEqual('Conteúdo #54');
+      expect(responseBody[18].title).toEqual('Conteúdo #49');
+      expect(responseBody[19].title).toEqual('Conteúdo #47');
+      expect(responseBody[20].title).toEqual('Conteúdo #46');
+      expect(responseBody[21].title).toEqual('Conteúdo #44');
+      expect(responseBody[27].title).toEqual('Conteúdo #38');
+      expect(responseBody[28].title).toEqual('Conteúdo #37');
+      expect(responseBody[29].title).toEqual('Conteúdo #35');
 
       const page2Response = await fetch(responseLinkHeader.next.url);
       const page2ResponseBody = await page2Response.json();
@@ -477,7 +699,7 @@ describe('GET /api/v1/contents', () => {
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
       expect(page2Response.status).toEqual(200);
-      expect(page2ResponseTotalRowsHeader).toEqual('58');
+      expect(page2ResponseTotalRowsHeader).toEqual('57');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -502,12 +724,11 @@ describe('GET /api/v1/contents', () => {
         },
       });
 
-      expect(page2ResponseBody.length).toEqual(28);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #29');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #28');
-      expect(page2ResponseBody[25].title).toEqual('Conteúdo #3');
-      expect(page2ResponseBody[26].title).toEqual('Conteúdo #2');
-      expect(page2ResponseBody[27].title).toEqual('Conteúdo #1');
+      expect(page2ResponseBody.length).toEqual(27);
+      expect(page2ResponseBody[0].title).toEqual('Conteúdo #34');
+      expect(page2ResponseBody[1].title).toEqual('Conteúdo #33');
+      expect(page2ResponseBody[25].title).toEqual('Conteúdo #8');
+      expect(page2ResponseBody[26].title).toEqual('Conteúdo #7');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
