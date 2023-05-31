@@ -887,7 +887,7 @@ async function findTree(options) {
     list.forEach((row) => {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
-      } else {
+      } else if (!row.path.some((id) => table[id])) {
         tree.children.push(row);
       }
     });
