@@ -10,7 +10,7 @@ import {
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
-import { useUser } from 'pages/interface';
+import { useUser, suggestEmail } from 'pages/interface';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
@@ -222,7 +222,6 @@ function EditProfileForm() {
                       event.preventDefault();
                       clearErrors();
                       emailRef.current.value = errorObject.suggestion;
-                      passwordRef.current.focus();
                     }}>
                     {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
                   </Button>
@@ -274,170 +273,4 @@ function EditProfileForm() {
       </Box>
     </form>
   );
-}
-
-// TODO: move to a separate file to make it reusable
-// or to a separate module to share it with the open source community.
-function suggestEmail(typedEmail) {
-  const userName = typedEmail.split('@')[0];
-  const typedDomain = typedEmail.split('@')[1];
-  const domains = [
-    ['gmail', 'gmail.com'],
-    ['gmail.', 'gmail.com'],
-    ['gmail.c', 'gmail.com'],
-    ['gmail.co', 'gmail.com'],
-    ['gmail.coom', 'gmail.com'],
-    ['gmail.comm', 'gmail.com'],
-    ['gmail.com.', 'gmail.com'],
-    ['gmail.com.b', 'gmail.com'],
-    ['gmail.com.br', 'gmail.com'],
-    ['mail.com', 'gmail.com'],
-    ['dmail.com', 'gmail.com'],
-    ['gmad.com,', 'gmail.com'],
-    ['gimail.com', 'gmail.com'],
-    ['mgil.com', 'gmail.com'],
-    ['gil.com', 'gmail.com'],
-    ['gmaul.com', 'gmail.com'],
-    ['gnail.com', 'gmail.com'],
-    ['gail.com', 'gmail.com'],
-    ['gamail.com', 'gmail.com'],
-    ['gamial.com', 'gmail.com'],
-    ['gamil.com', 'gmail.com'],
-    ['gmail.cpm', 'gmail.com'],
-    ['ggmail.com', 'gmail.com'],
-    ['gmai.com', 'gmail.com'],
-    ['gmaiil.com', 'gmail.com'],
-    ['gmail.cm', 'gmail.com'],
-    ['gmaild.com', 'gmail.com'],
-    ['gmaile.com', 'gmail.com'],
-    ['gmaill.com', 'gmail.com'],
-    ['gmain.com', 'gmail.com'],
-    ['gmaio.com', 'gmail.com'],
-    ['gmail.cok', 'gmail.com'],
-    ['gmal.com', 'gmail.com'],
-    ['gmali.com', 'gmail.com'],
-    ['gmil.co', 'gmail.com'],
-    ['gmanil.com', 'gmail.com'],
-    ['gmaol.com', 'gmail.com'],
-    ['gmaqil.com', 'gmail.com'],
-    ['gmeil.com', 'gmail.com'],
-    ['gmial.com', 'gmail.com'],
-    ['gmil.com', 'gmail.com'],
-    ['gmmail.com', 'gmail.com'],
-    ['gmsil.com', 'gmail.com'],
-    ['hmail.com', 'gmail.com'],
-    ['ygmail.com', 'gmail.com'],
-    ['gmiail.com', 'gmail.com'],
-    ['gemail.com', 'gmail.com'],
-    ['gmail.con', 'gmail.com'],
-    ['gail.com.ar', 'gmail.com'],
-    ['gamail.com.ar', 'gmail.com'],
-    ['gamial.com.ar', 'gmail.com'],
-    ['gamil.com.ar', 'gmail.com'],
-    ['ggmail.com.ar', 'gmail.com'],
-    ['gmai.com.ar', 'gmail.com'],
-    ['gmaiil.com.ar', 'gmail.com'],
-    ['gmail.cm.br', 'gmail.com'],
-    ['gmail.cm.ar', 'gmail.com'],
-    ['gmaild.com.ar', 'gmail.com'],
-    ['gmaile.com.ar', 'gmail.com'],
-    ['gmaill.com.ar', 'gmail.com'],
-    ['gmain.com.ar', 'gmail.com'],
-    ['gmaio.com.ar', 'gmail.com'],
-    ['gmal.com.ar', 'gmail.com'],
-    ['gmali.com.ar', 'gmail.com'],
-    ['gmanil.com.ar', 'gmail.com'],
-    ['gmaol.com.ar', 'gmail.com'],
-    ['gmailee.com', 'gmail.com'],
-    ['gmaqil.com.ar', 'gmail.com'],
-    ['gmeil.com.ar', 'gmail.com'],
-    ['gmial.com.ar', 'gmail.com'],
-    ['gmil.com.ar', 'gmail.com'],
-    ['gmmail.com.ar', 'gmail.com'],
-    ['gmsil.com.ar', 'gmail.com'],
-    ['hmail.com.ar', 'gmail.com'],
-    ['ygmail.com.ar', 'gmail.com'],
-    ['gmail.cim', 'gmail.com'],
-    ['gmail.com.ar', 'gmail.com'],
-    ['gmailc.om', 'gmail.com'],
-    ['gmnail.com', 'gmail.com'],
-    ['gmakl.com', 'gmail.com'],
-    ['gmol.com', 'gmail.com'],
-    ['gmail.cin', 'gmail.com'],
-    ['gmail.cim', 'gmail.com'],
-    ['gmaiq.com', 'gmail.com'],
-    ['gmailc.mo', 'gmail.com'],
-    ['hitmail.com', 'hotmail.com'],
-    ['htmail.com', 'hotmail.com'],
-    ['hotmail.coom', 'hotmail.com'],
-    ['hotmail.comm', 'hotmail.com'],
-    ['hotnail.ckm', 'hotmail.com'],
-    ['hatmail.com', 'hotmail.com'],
-    ['hotomail.com', 'hotmail.com'],
-    ['otmail.com', 'hotmail.com'],
-    ['hoitmail.com', 'hotmail.com'],
-    ['hoimail.com', 'hotmail.com'],
-    ['hotnail.com', 'hotmail.com'],
-    ['homail.com', 'hotmail.com'],
-    ['homtail.com', 'hotmail.com'],
-    ['homtmail.com', 'hotmail.com'],
-    ['hormail.com', 'hotmail.com'],
-    ['hotail.com', 'hotmail.com'],
-    ['hotamail.com', 'hotmail.com'],
-    ['hotamil.com', 'hotmail.com'],
-    ['hotmaail.com', 'hotmail.com'],
-    ['hotmai.com', 'hotmail.com'],
-    ['hotmaiil.com', 'hotmail.com'],
-    ['hotmail.con', 'hotmail.com'],
-    ['hotmail.co', 'hotmail.com'],
-    ['hotmail.cm', 'hotmail.com'],
-    ['hotmaill.com', 'hotmail.com'],
-    ['hotmail.net', 'hotmail.com'],
-    ['hotmail.ocm', 'hotmail.com'],
-    ['hotmailt.com', 'hotmail.com'],
-    ['hotmal.com', 'hotmail.com'],
-    ['hotmial.com', 'hotmail.com'],
-    ['hotmiail.com', 'hotmail.com'],
-    ['hotmil.co', 'hotmail.com'],
-    ['hotmil.com', 'hotmail.com'],
-    ['hotmmail.com', 'hotmail.com'],
-    ['hotmqil.com', 'hotmail.com'],
-    ['hotmsil.com', 'hotmail.com'],
-    ['htoamil.com', 'hotmail.com'],
-    ['htomail.com', 'hotmail.com'],
-    ['hoymail.com', 'hotmail.com'],
-    ['hootmail.com', 'hotmail.com'],
-    ['hotmi.com', 'hotmail.com'],
-    ['hotmail.com.com', 'hotmail.com'],
-    ['hotma.com', 'hotmail.com'],
-    ['hotmali.com', 'hotmail.com'],
-    ['hotrmail.com', 'hotmail.com'],
-    ['hotmail.cim', 'hotmail.com'],
-    ['hotmail.cin', 'hotmail.com'],
-    ['bol.com', 'bol.com.br'],
-    ['yahoo.coom', 'yahoo.com'],
-    ['yahoo.comm', 'yahoo.com'],
-    ['yahoo.con', 'yahoo.com'],
-    ['yaho.com', 'yahoo.com'],
-    ['protonmil.com', 'protonmail.com'],
-    ['outlok.com', 'outlook.com'],
-    ['outlook.con', 'outlook.com'],
-    ['outloo.com', 'outlook.com'],
-    ['outlook.cm', 'outlook.com'],
-    ['outlook.comm', 'outlook.com'],
-    ['outlook.co', 'outlook.com'],
-    ['prontomail.com', 'protonmail.com'],
-    ['zipmail.combr', 'zipmail.com.br'],
-  ];
-
-  for (const domain of domains) {
-    const wrongDomain = domain[0];
-    const rightDomain = domain[1];
-
-    if (typedDomain === wrongDomain) {
-      return `${userName}@${rightDomain}`;
-    }
-  }
-
-  return false;
 }
