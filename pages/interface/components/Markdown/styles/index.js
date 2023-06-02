@@ -1803,6 +1803,9 @@ export function ViewerStyles() {
           line-height: 1.45;
           background-color: ${colors.canvas.subtle};
           border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
         .markdown-body .math {
           overflow: auto;
@@ -1912,6 +1915,24 @@ export function ViewerStyles() {
 
         .markdown-body ::-webkit-calendar-picker-indicator {
           filter: invert(50%);
+        }
+
+        .markdown-copy-to-clipboard-button {
+          border: 1px solid ${colors.border.default};
+          background: transparent;
+          padding: 2.5px 5px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-left: 15px;
+          transition: border-color 0.2s ease-in-out;
+        }
+
+        .markdown-copy-to-clipboard-button:hover {
+          border-color: ${colors.accent.fg};
+        }
+
+        .markdown-copy-to-clipboard-button.copied {
+          border: none;
         }
       `}
     </style>
