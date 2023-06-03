@@ -13,6 +13,7 @@ import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
+import copyToClipboardPlugin from './copyToClipboardPlugin';
 import 'katex/dist/katex.css';
 
 const bytemdPluginBaseList = [
@@ -24,6 +25,7 @@ const bytemdPluginBaseList = [
   }),
   breaksPlugin(),
   gemojiPlugin(),
+  copyToClipboardPlugin(),
 ];
 
 function usePlugins() {
@@ -36,38 +38,6 @@ function usePlugins() {
   }, [colorScheme]);
 
   return plugins;
-}
-
-function copyToClipboard(text, buttonElement) {
-  navigator.clipboard.writeText(text).then(() => {
-    buttonElement.innerHTML = '✅';
-    buttonElement.title = 'Copiado!';
-    buttonElement.classList.add('copied');
-
-    setTimeout(() => {
-      buttonElement.innerHTML = '📋';
-      buttonElement.title = 'Copiar';
-      buttonElement.classList.remove('copied');
-    }, 2500);
-  });
-}
-
-function createCopyToClipboardButtonElement(codeBlockElement) {
-  const copyToClipboardButton = document.createElement('button');
-  copyToClipboardButton.innerHTML = '📋';
-  copyToClipboardButton.title = 'Copiar';
-  copyToClipboardButton.setAttribute('aria-label', 'Copiar código para a área de transferência');
-  copyToClipboardButton.classList.add('markdown-copy-to-clipboard-button');
-  copyToClipboardButton.onclick = () =>
-    copyToClipboard(codeBlockElement.querySelector('code').innerText, copyToClipboardButton);
-  return copyToClipboardButton;
-}
-
-function addCopyToClipboardButton() {
-  document.querySelectorAll('pre').forEach((pre) => {
-    const copyToClipboardButtonElement = createCopyToClipboardButtonElement(pre);
-    pre.appendChild(copyToClipboardButtonElement);
-  });
 }
 
 export default function Viewer({ value: _value, ...props }) {
@@ -86,8 +56,6 @@ export default function Viewer({ value: _value, ...props }) {
   }, [bytemdPluginList]);
 
   useEffect(() => setValue(_value), [_value]);
-
-  useEffect(() => addCopyToClipboardButton(), [value]);
 
   return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} value={value} {...props} />;
 }

@@ -1918,7 +1918,7 @@ export function ViewerStyles() {
         }
 
         .markdown-copy-to-clipboard-button {
-          border: 1px solid ${colors.border.default};
+          border: 1px solid ${colors.btn.border};
           background: transparent;
           padding: 2.5px 5px;
           border-radius: 4px;
@@ -1929,10 +1929,15 @@ export function ViewerStyles() {
 
         .markdown-copy-to-clipboard-button:hover {
           border-color: ${colors.accent.fg};
+          background: ${colors.btn.hoverBg};
         }
 
         .markdown-copy-to-clipboard-button.copied {
-          border: none;
+          border-color: transparent;
+        }
+
+        .markdown-copy-to-clipboard-button.copied svg {
+          fill: ${colors.success.fg};
         }
       `}
     </style>
