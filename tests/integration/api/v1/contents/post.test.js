@@ -2897,11 +2897,11 @@ describe('POST /api/v1/contents', () => {
     });
 
     describe('Prestige', () => {
-      test('should not be able to create "root" content with negative prestige by more than 40%', async () => {
+      test('should not be able to create "root" content with negative prestige by more than threshold', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -4, rootPrestigeDenominator: 9 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -6, rootPrestigeDenominator: 9 });
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -2934,13 +2934,13 @@ describe('POST /api/v1/contents', () => {
         );
       });
 
-      test('should not be able to create "child" content with negative prestige by more than 40%', async () => {
+      test('should not be able to create "child" content with negative prestige by more than threshold', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -4, childPrestigeDenominator: 9 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -9, childPrestigeDenominator: 10 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -2979,11 +2979,11 @@ describe('POST /api/v1/contents', () => {
         );
       });
 
-      test('Should be able to create "root" content with negative prestige by 40%', async () => {
+      test('Should be able to create "root" content with negative prestige at the threshold', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -4, rootPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -6, rootPrestigeDenominator: 10 });
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -3036,13 +3036,13 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('Should be able to create "child" content with negative prestige by 40%', async () => {
+      test('Should be able to create "child" content with negative prestige at the threshold', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -4, childPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -8, childPrestigeDenominator: 10 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -3101,11 +3101,11 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('Should not be able to earn tabcoins if it has less than 60% prestige in "root" content', async () => {
+      test('Should not be able to earn tabcoins if it has less than threshold prestige in "root" content', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1, rootPrestigeDenominator: 2 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1, rootPrestigeDenominator: 3 });
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -3158,13 +3158,13 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('Should not be able to earn tabcoins if it has less than 60% prestige in "child" content', async () => {
+      test('Should not be able to earn tabcoins if it has less than threshold prestige in "child" content', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 1, childPrestigeDenominator: 2 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 1, childPrestigeDenominator: 6 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -3223,11 +3223,11 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('Should be able to earn tabcoins if it has 60% prestige in "root" content', async () => {
+      test('Should be able to earn tabcoins if it has minimum prestige in "root" content', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 6, rootPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 4, rootPrestigeDenominator: 10 });
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -3280,13 +3280,13 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('Should be able to earn tabcoins if it has 60% prestige in "child" content', async () => {
+      test('Should be able to earn tabcoins if it has minimum prestige in "child" content', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 6, childPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 2, childPrestigeDenominator: 10 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
