@@ -1,5 +1,8 @@
 import database from 'infra/database';
 
+const THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_ROOT_CONTENT = 0.39;
+const THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_CHILD_CONTENT = 0.19;
+
 async function getByContentId(contentId, { transaction } = {}) {
   const result = await database.query(
     {
@@ -43,8 +46,9 @@ async function getByUserId(
     transaction,
   } = {}
 ) {
-  // Minimum percentage of content classified as relevant to earn tabcoins by publishing
-  const thresholdPercentage = 0.6;
+  const thresholdPercentage = isRoot
+    ? THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_ROOT_CONTENT
+    : THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_CHILD_CONTENT;
 
   const result = await database.query(
     {
@@ -66,22 +70,50 @@ async function getByUserId(
 }
 
 const queryByUserId = `
+WITH content_window AS ((
+  SELECT
+    id,
+    published_at
+  FROM contents
+  WHERE
+    owner_id = $1
+    AND status = 'published'
+    AND (CASE
+      WHEN $3 IS TRUE THEN parent_id IS NULL
+      WHEN $3 IS FALSE THEN parent_id IS NOT NULL
+      ELSE TRUE
+      END)
+  ORDER BY
+    published_at DESC
+  LIMIT $4 OFFSET $4
+)
+UNION
+  SELECT
+    id,
+    published_at
+  FROM
+    contents
+  WHERE
+    owner_id = $1
+    AND status = 'published'
+    AND published_at < $2
+    AND (CASE
+      WHEN $3 IS TRUE THEN parent_id IS NULL
+      WHEN $3 IS FALSE THEN parent_id IS NOT NULL
+      ELSE TRUE
+      END)
+  ORDER BY
+    published_at DESC
+  LIMIT $4
+)
 SELECT
-  get_current_balance('content:tabcoin', contents.id) as tabcoins
+  get_current_balance('content:tabcoin', content_window.id) as tabcoins
 FROM
-  contents
-WHERE
-  owner_id = $1
-  AND status = 'published'
-  AND published_at < $2
-  AND (CASE
-    WHEN $3 IS TRUE THEN parent_id IS NULL
-    WHEN $3 IS FALSE THEN parent_id IS NOT NULL
-    ELSE TRUE
-    END)
+  content_window
 ORDER BY
   published_at DESC
 LIMIT $4
+;
 `;
 
 export default Object.freeze({
