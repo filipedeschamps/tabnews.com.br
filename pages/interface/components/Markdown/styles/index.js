@@ -1917,26 +1917,39 @@ export function ViewerStyles() {
           filter: invert(50%);
         }
 
-        .markdown-copy-to-clipboard-button {
+        .markdown-body pre .markdown-copy-to-clipboard-button {
+          transition: 0.5s opacity ease-in-out;
+          opacity: 0;
+        }
+
+        .markdown-body pre:hover .markdown-copy-to-clipboard-button,
+        .markdown-body pre:focus .markdown-copy-to-clipboard-button {
+          opacity: 1;
+        }
+
+        .markdown-body pre .markdown-copy-to-clipboard-button {
           border: 1px solid ${colors.btn.border};
           background: transparent;
           padding: 2.5px 5px;
           border-radius: 4px;
           cursor: pointer;
           margin-left: 15px;
-          transition: border-color 0.2s ease-in-out;
+          transition: all 0.3s ease-in-out;
         }
 
-        .markdown-copy-to-clipboard-button:hover {
+        .markdown-body pre .markdown-copy-to-clipboard-button:hover {
           border-color: ${colors.accent.fg};
           background: ${colors.btn.hoverBg};
         }
 
-        .markdown-copy-to-clipboard-button.copied {
+        .markdown-body pre:hover .markdown-copy-to-clipboard-button.copied,
+        .markdown-body pre:focus .markdown-copy-to-clipboard-button.copied {
           border-color: transparent;
+          transition: none;
+          opacity: 1;
         }
 
-        .markdown-copy-to-clipboard-button.copied svg {
+        .markdown-body pre .markdown-copy-to-clipboard-button.copied svg {
           fill: ${colors.success.fg};
         }
       `}
