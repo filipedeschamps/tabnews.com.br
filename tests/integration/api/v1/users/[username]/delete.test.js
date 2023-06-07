@@ -87,7 +87,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
 
       const secondUser = await orchestrator.createUser();
 
@@ -125,7 +125,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
 
       const secondUser = await orchestrator.createUser();
 
@@ -166,13 +166,13 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
-      orchestrator.createPrestige(firstUser.id);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.createPrestige(firstUser.id);
 
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
       const secondUserSession = await orchestrator.createSession(secondUser);
-      orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
+      await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
 
       // 2) CREATE CONTENTS FOR FIRST USER
       const firstUserRootContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
@@ -525,7 +525,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
 
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);

@@ -124,8 +124,8 @@ describe('GET /api/v1/user', () => {
         email: defaultUser.email,
         notifications: defaultUser.notifications,
         features: defaultUser.features,
-        tabcoins: defaultUser.tabcoins,
-        tabcash: defaultUser.tabcash,
+        tabcoins: 0,
+        tabcash: 0,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       });
@@ -241,8 +241,8 @@ describe('GET /api/v1/user', () => {
           email: defaultUser.email,
           notifications: defaultUser.notifications,
           features: defaultUser.features,
-          tabcoins: defaultUser.tabcoins,
-          tabcash: defaultUser.tabcash,
+          tabcoins: 0,
+          tabcash: 0,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -294,8 +294,8 @@ describe('GET /api/v1/user', () => {
           email: defaultUser.email,
           notifications: defaultUser.notifications,
           features: defaultUser.features,
-          tabcoins: defaultUser.tabcoins,
-          tabcash: defaultUser.tabcash,
+          tabcoins: 0,
+          tabcash: 0,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -346,8 +346,8 @@ describe('GET /api/v1/user', () => {
           email: defaultUser.email,
           notifications: defaultUser.notifications,
           features: defaultUser.features,
-          tabcoins: defaultUser.tabcoins,
-          tabcash: defaultUser.tabcash,
+          tabcoins: 0,
+          tabcash: 0,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });

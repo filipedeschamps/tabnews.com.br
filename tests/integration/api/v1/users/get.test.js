@@ -75,8 +75,8 @@ describe('GET /api/v1/users', () => {
         id: defaultUser.id,
         username: defaultUser.username,
         features: defaultUser.features,
-        tabcoins: defaultUser.tabcoins,
-        tabcash: defaultUser.tabcash,
+        tabcoins: 0,
+        tabcash: 0,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       };
@@ -84,8 +84,8 @@ describe('GET /api/v1/users', () => {
         id: privilegedUser.id,
         username: privilegedUser.username,
         features: privilegedUser.features,
-        tabcoins: privilegedUser.tabcoins,
-        tabcash: privilegedUser.tabcash,
+        tabcoins: 0,
+        tabcash: 0,
         created_at: privilegedUser.created_at.toISOString(),
         updated_at: privilegedUser.updated_at.toISOString(),
       };

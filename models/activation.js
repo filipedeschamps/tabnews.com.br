@@ -73,15 +73,29 @@ async function findOneTokenByUserId(userId) {
 async function activateUserUsingTokenId(tokenId) {
   let tokenObject = await findOneTokenById(tokenId);
   if (!tokenObject.used) {
-    tokenObject = await findOneValidTokenById(tokenId);
-    await activateUserByUserId(tokenObject.user_id);
-    return await markTokenAsUsed(tokenObject.id);
+    const transaction = await database.transaction();
+
+    try {
+      await transaction.query('BEGIN');
+
+      tokenObject = await findOneValidTokenById(tokenId, { transaction });
+
+      await activateUserByUserId(tokenObject.user_id, { transaction });
+      tokenObject = await markTokenAsUsed(tokenObject.id, { transaction });
+
+      await transaction.query('COMMIT');
+      await transaction.release();
+    } catch (error) {
+      await transaction.query('ROLLBACK');
+      await transaction.release();
+      throw error;
+    }
   }
   return tokenObject;
 }
 
-async function activateUserByUserId(userId) {
-  const userToActivate = await user.findOneById(userId);
+async function activateUserByUserId(userId, options = {}) {
+  const userToActivate = await user.findOneById(userId, options);
 
   if (!authorization.can(userToActivate, 'read:activation_token')) {
     throw new ForbiddenError({
@@ -92,19 +106,20 @@ async function activateUserByUserId(userId) {
     });
   }
 
-  // TODO: in the future, understand how to run
-  // this inside a transaction, or at least
-  // reduce how many queries are run.
-  await user.removeFeatures(userToActivate.id, ['read:activation_token']);
-  return await user.addFeatures(userToActivate.id, [
-    'create:session',
-    'read:session',
-    'create:content',
-    'create:content:text_root',
-    'create:content:text_child',
-    'update:content',
-    'update:user',
-  ]);
+  await user.removeFeatures(userToActivate.id, ['read:activation_token'], options);
+  return await user.addFeatures(
+    userToActivate.id,
+    [
+      'create:session',
+      'read:session',
+      'create:content',
+      'create:content:text_root',
+      'create:content:text_child',
+      'update:content',
+      'update:user',
+    ],
+    options
+  );
 }
 
 async function findOneTokenById(tokenId) {
@@ -128,7 +143,7 @@ async function findOneTokenById(tokenId) {
   return results.rows[0];
 }
 
-async function findOneValidTokenById(tokenId) {
+async function findOneValidTokenById(tokenId, options = {}) {
   const query = {
     text: `SELECT * FROM activate_account_tokens
         WHERE id = $1
@@ -138,7 +153,7 @@ async function findOneValidTokenById(tokenId) {
     values: [tokenId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -153,7 +168,7 @@ async function findOneValidTokenById(tokenId) {
   return results.rows[0];
 }
 
-async function markTokenAsUsed(tokenId) {
+async function markTokenAsUsed(tokenId, options = {}) {
   const query = {
     text: `UPDATE activate_account_tokens
             SET used = true,
@@ -163,7 +178,7 @@ async function markTokenAsUsed(tokenId) {
     values: [tokenId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   return results.rows[0];
 }
