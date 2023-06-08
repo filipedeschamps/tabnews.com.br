@@ -2815,7 +2815,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 5 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 4 });
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
@@ -3172,7 +3172,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(1);
+        expect(userResponse2Body.tabcoins).toEqual(2);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3377,7 +3377,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
-        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
+        await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,

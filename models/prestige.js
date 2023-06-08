@@ -1,8 +1,5 @@
 import database from 'infra/database';
 
-const THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_ROOT_CONTENT = 0.39;
-const THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_CHILD_CONTENT = 0.19;
-
 async function getByContentId(contentId, { transaction } = {}) {
   const result = await database.query(
     {
@@ -46,10 +43,6 @@ async function getByUserId(
     transaction,
   } = {}
 ) {
-  const thresholdPercentage = isRoot
-    ? THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_ROOT_CONTENT
-    : THRESHOLD_PERCENTAGE_TO_EARN_TABCOINS_WITH_CHILD_CONTENT;
-
   const result = await database.query(
     {
       text: queryByUserId,
@@ -65,8 +58,19 @@ async function getByUserId(
   }
 
   const tabcoins = result.rows.reduce((acc, { tabcoins }) => acc + tabcoins, 0);
+  const mean = tabcoins / length;
 
-  return Math.floor(tabcoins / length - thresholdPercentage);
+  if (isRoot) {
+    if (0.4 >= mean) return -1;
+    if (1.2 >= mean) return 0;
+    if (1.7 >= mean) return 1;
+  } else {
+    if (0.2 >= mean) return -1;
+    if (1.0 >= mean) return 0;
+    if (1.5 >= mean) return 1;
+  }
+
+  return Math.ceil(mean);
 }
 
 const queryByUserId = `
