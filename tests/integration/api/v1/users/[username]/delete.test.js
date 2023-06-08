@@ -172,7 +172,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
       const secondUserSession = await orchestrator.createSession(secondUser);
-      await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
+      await orchestrator.createPrestige(secondUser.id);
 
       // 2) CREATE CONTENTS FOR FIRST USER
       const firstUserRootContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
