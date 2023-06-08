@@ -170,7 +170,7 @@ async function canIpUpdateContentTabCoins(clientIp, contentId) {
     values: [clientIp, contentId],
   });
 
-  const pass = results.rows[0].count > 0 ? false : true;
+  const pass = results.rows[0].count > 2 ? false : true;
 
   if (!pass) {
     throw new ValidationError({
