@@ -406,7 +406,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
-    revalidate: 10,
+    revalidate: 1,
     swr: { revalidateOnFocus: false },
   };
 });
