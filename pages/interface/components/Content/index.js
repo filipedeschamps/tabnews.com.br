@@ -11,6 +11,7 @@ import {
   IconButton,
   Link,
   PublishedSince,
+  ReadTime,
   Text,
   TextInput,
   useConfirm,
@@ -180,6 +181,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <BranchName as={Link} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </BranchName>
+            <ReadTime text={contentObject.body} />
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
