@@ -2,7 +2,7 @@ import { Text } from '@/TabNewsUI';
 
 function getReadTime(text, wpm = 260) {
   const wordsQuantity = text.split(' ').length;
-  return Math.ceil((wordsQuantity * 60) / wpm / 60);
+  return Math.ceil(wordsQuantity / wpm);
 }
 
 export default function ReadTime({ text, ...props }) {
