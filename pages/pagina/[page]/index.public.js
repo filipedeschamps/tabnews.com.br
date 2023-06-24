@@ -9,12 +9,7 @@ export default function Home({ contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Melhores` }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/pagina"
-          revalidatePath={`/api/v1/contents?strategy=relevant&page=${pagination.currentPage}`}
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/pagina" />
       </DefaultLayout>
     </>
   );
@@ -40,7 +35,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   } catch (error) {
     return {
       notFound: true,
-      revalidate: 1,
     };
   }
 

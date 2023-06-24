@@ -7,7 +7,13 @@ const sessionEndpoint = '/api/v1/sessions';
 const protectedRoutes = ['/login', '/cadastro', '/cadastro/recuperar'];
 const refreshInterval = 600000; // 10 minutes
 
-const UserContext = createContext();
+const UserContext = createContext({
+  user: null,
+  isLoading: true,
+  error: undefined,
+  fetchUser: () => {},
+  logout: () => {},
+});
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);

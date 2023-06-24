@@ -1,8 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import password from 'models/password.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -89,7 +87,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
 
       const secondUser = await orchestrator.createUser();
 
@@ -127,7 +125,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
 
       const secondUser = await orchestrator.createUser();
 
@@ -168,13 +166,13 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
-      orchestrator.createPrestige(firstUser.id);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.createPrestige(firstUser.id);
 
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
       const secondUserSession = await orchestrator.createSession(secondUser);
-      orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
+      await orchestrator.createPrestige(secondUser.id);
 
       // 2) CREATE CONTENTS FOR FIRST USER
       const firstUserRootContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
@@ -527,11 +525,11 @@ describe('DELETE /api/v1/users/[username]', () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
-      orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
 
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
+      await orchestrator.createSession(secondUser);
 
       const nuke1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
         method: 'DELETE',

@@ -43,9 +43,6 @@ async function getByUserId(
     transaction,
   } = {}
 ) {
-  // Minimum percentage of content classified as relevant to earn tabcoins by publishing
-  const thresholdPercentage = 0.6;
-
   const result = await database.query(
     {
       text: queryByUserId,
@@ -61,27 +58,70 @@ async function getByUserId(
   }
 
   const tabcoins = result.rows.reduce((acc, { tabcoins }) => acc + tabcoins, 0);
+  const mean = tabcoins / length;
 
-  return Math.floor(tabcoins / length - thresholdPercentage);
+  if (isRoot) {
+    if (0.4 >= mean) return -1;
+    if (1.1 >= mean) return 0;
+    if (1.4 >= mean) return 1;
+    if (1.6 >= mean) return 2;
+    if (1.8 >= mean) return 3;
+  } else {
+    if (0.2 >= mean) return -1;
+    if (1.0 >= mean) return 0;
+    if (1.2 >= mean) return 1;
+    if (1.5 >= mean) return 2;
+    if (1.7 >= mean) return 3;
+  }
+
+  return Math.ceil(mean + 2);
 }
 
 const queryByUserId = `
+WITH content_window AS ((
+  SELECT
+    id,
+    published_at
+  FROM contents
+  WHERE
+    owner_id = $1
+    AND status = 'published'
+    AND (CASE
+      WHEN $3 IS TRUE THEN parent_id IS NULL
+      WHEN $3 IS FALSE THEN parent_id IS NOT NULL
+      ELSE TRUE
+      END)
+  ORDER BY
+    published_at DESC
+  LIMIT $4 OFFSET $4
+)
+UNION
+  SELECT
+    id,
+    published_at
+  FROM
+    contents
+  WHERE
+    owner_id = $1
+    AND status = 'published'
+    AND published_at < $2
+    AND (CASE
+      WHEN $3 IS TRUE THEN parent_id IS NULL
+      WHEN $3 IS FALSE THEN parent_id IS NOT NULL
+      ELSE TRUE
+      END)
+  ORDER BY
+    published_at DESC
+  LIMIT $4
+)
 SELECT
-  get_current_balance('content:tabcoin', contents.id) as tabcoins
+  get_current_balance('content:tabcoin', content_window.id) as tabcoins
 FROM
-  contents
-WHERE
-  owner_id = $1
-  AND status = 'published'
-  AND published_at < $2
-  AND (CASE
-    WHEN $3 IS TRUE THEN parent_id IS NULL
-    WHEN $3 IS FALSE THEN parent_id IS NOT NULL
-    ELSE TRUE
-    END)
+  content_window
 ORDER BY
   published_at DESC
 LIMIT $4
+;
 `;
 
 export default Object.freeze({

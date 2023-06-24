@@ -113,40 +113,15 @@ async function findAll(values = {}, options = {}) {
         contents.updated_at,
         contents.published_at,
         contents.deleted_at,
+        contents.path,
         users.username as owner_username,
         content_window.total_rows,
         get_current_balance('content:tabcoin', contents.id) as tabcoins,
-
-        -- Originally this query returned a list of contents to the server and
-        -- afterward made an additional roundtrip to the database for every item using
-        -- the findChildrenCount() method to get the children count. Now we perform a
-        -- subquery that is not performant but everything is embedded in one travel.
-        -- https://github.com/filipedeschamps/tabnews.com.br/blob/de65be914f0fd7b5eed8905718e4ab286b10557e/models/content.js#L51
         (
-          WITH RECURSIVE children AS (
-            SELECT
-                id,
-                parent_id
-            FROM
-              contents as all_contents
-            WHERE
-              all_contents.parent_id = contents.id AND
-              all_contents.status = 'published'
-            UNION ALL
-              SELECT
-                all_contents.id,
-                all_contents.parent_id
-              FROM
-                contents as all_contents
-              INNER JOIN
-                children ON all_contents.parent_id = children.id
-              WHERE
-                all_contents.status = 'published'
-          )
-          SELECT
-            count(children.id)::integer
-          FROM
-            children
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[contents.id]
+           AND children.status = 'published'
         ) as children_deep_count
       FROM
         contents
@@ -213,13 +188,28 @@ async function findOne(values, options = {}) {
 }
 
 async function findWithStrategy(options = {}) {
+  const findAllInitTime = performance.now();
+  let rankStartTime, rankEndTime;
+  let strategy = options.strategy;
+
   const strategies = {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
   };
 
-  return await strategies[options.strategy](options);
+  const queryReturn = await strategies[options.strategy](options);
+
+  const findAllEndTime = performance.now();
+
+  console.log({
+    findWithStrategyTime: findAllEndTime - findAllInitTime,
+    rankTime: rankEndTime - rankStartTime,
+    ...options,
+    strategy,
+  });
+
+  return queryReturn;
 
   async function getNew(options = {}) {
     const results = {};
@@ -257,7 +247,9 @@ async function findWithStrategy(options = {}) {
     if (options.strategy === 'relevant_global') {
       results.rows = contentList;
     } else {
+      rankStartTime = performance.now();
       results.rows = rankContentListByRelevance(contentList);
+      rankEndTime = performance.now();
     }
 
     values.totalRows = results.rows[0]?.total_rows;
@@ -297,11 +289,13 @@ async function create(postedContent, options = {}) {
 
   checkRootContentTitle(validContent);
 
-  if (validContent.parent_id) {
-    await checkIfParentIdExists(validContent, {
-      transaction: options.transaction,
-    });
-  }
+  const parentContent = validContent.parent_id
+    ? await checkIfParentIdExists(validContent, {
+        transaction: options.transaction,
+      })
+    : null;
+
+  injectIdAndPath(validContent, parentContent);
 
   populatePublishedAtValue(null, validContent);
 
@@ -332,8 +326,8 @@ async function create(postedContent, options = {}) {
       WITH
         inserted_content as (
           INSERT INTO
-            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
         )
       SELECT
@@ -349,6 +343,7 @@ async function create(postedContent, options = {}) {
         inserted_content.updated_at,
         inserted_content.published_at,
         inserted_content.deleted_at,
+        inserted_content.path,
         users.username as owner_username
       FROM
         inserted_content
@@ -356,6 +351,7 @@ async function create(postedContent, options = {}) {
         users ON inserted_content.owner_id = users.id
       ;`,
       values: [
+        content.id,
         content.parent_id,
         content.owner_id,
         content.slug,
@@ -364,6 +360,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
+        content.path,
       ],
     };
 
@@ -373,6 +370,18 @@ async function create(postedContent, options = {}) {
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
     }
+  }
+}
+
+function injectIdAndPath(validContent, parentContent) {
+  validContent.id = uuidV4();
+
+  if (parentContent) {
+    validContent.path = [...parentContent.path, parentContent.id];
+  }
+
+  if (!parentContent) {
+    validContent.path = [];
   }
 }
 
@@ -432,6 +441,8 @@ async function checkIfParentIdExists(content, options) {
       key: 'parent_id',
     });
   }
+
+  return existingContent;
 }
 
 function parseQueryErrorToCustomError(error) {
@@ -660,15 +671,14 @@ async function update(contentId, postedContent, options = {}) {
       WITH
         updated_content as (
           UPDATE contents SET
-            parent_id = $2,
-            slug = $3,
-            title = $4,
-            body = $5,
-            status = $6,
-            source_url = $7,
-            published_at = $8,
+            slug = $2,
+            title = $3,
+            body = $4,
+            status = $5,
+            source_url = $6,
+            published_at = $7,
             updated_at = (now() at time zone 'utc'),
-            deleted_at = $9
+            deleted_at = $8
           WHERE
             id = $1
           RETURNING *
@@ -686,6 +696,7 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.updated_at,
         updated_content.published_at,
         updated_content.deleted_at,
+        updated_content.path,
         users.username as owner_username
       FROM
         updated_content
@@ -694,7 +705,6 @@ async function update(contentId, postedContent, options = {}) {
       ;`,
       values: [
         content.id,
-        content.parent_id,
         content.slug,
         content.title,
         content.body,
@@ -769,6 +779,7 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
 }
 
 async function findTree(options) {
+  const findTreeStartTime = performance.now();
   options.where = validateWhereSchema(options?.where);
   let values;
   if (options.where.parent_id) {
@@ -779,41 +790,68 @@ async function findTree(options) {
     values = [options.where.owner_username, options.where.slug];
   }
 
-  const flatList = await recursiveDatabaseLookup(options);
-  return flatListToTree(flatList);
+  const queryStartTime = performance.now();
+  const flatList = await databaseLookup(options);
+  const queryEndTime = performance.now();
+  const tree = flatListToTree(flatList);
+  const findTreeEndTime = performance.now();
+  console.log({
+    findTreeTime: findTreeEndTime - findTreeStartTime,
+    validateTime: queryStartTime - findTreeStartTime,
+    queryTime: queryEndTime - queryStartTime,
+    flatListToTreeTime: findTreeEndTime - queryEndTime,
+    ...options,
+  });
+  return tree;
 
-  async function recursiveDatabaseLookup(options) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            *
-        FROM
-          contents
-        WHERE
-          ${options.where.parent_id ? 'contents.parent_id = $1 AND' : ''}
-          ${options.where.id ? 'contents.id = $1 AND' : ''}
-          ${options.where.slug ? whereOwnerAndSlug('$1', '$2') : ''}
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.*
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
-      )
+  async function databaseLookup(options) {
+    const queryChildrenByParentId = `
       SELECT
-        children.*,
+        *,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', children.id) as tabcoins
+        get_current_balance('content:tabcoin', contents.id) as tabcoins
       FROM
-        children
+        contents
       INNER JOIN
-        users ON children.owner_id = users.id
-      ;`,
+        users ON owner_id = users.id
+      WHERE
+        path @> ARRAY[$1]::uuid[] AND
+        status = 'published';`;
+
+    const queryTree = `
+      WITH parent AS (SELECT * FROM contents
+        WHERE
+          ${options.where.id ? 'contents.id = $1 AND' : ''}
+          ${options.where.owner_username ? `${whereOwnerUsername('$1')} AND` : ''}
+          ${options.where.slug ? 'contents.slug = $2 AND' : ''}
+          contents.status = 'published')
+
+      SELECT
+        parent.*,
+        users.username as owner_username,
+        get_current_balance('content:tabcoin', parent.id) as tabcoins
+      FROM
+        parent
+      INNER JOIN
+        users ON parent.owner_id = users.id
+
+      UNION ALL
+
+      SELECT
+        c.*,
+        users.username as owner_username,
+        get_current_balance('content:tabcoin', c.id) as tabcoins
+      FROM
+        contents c
+      INNER JOIN
+        parent ON c.path @> ARRAY[parent.id]::uuid[]
+      INNER JOIN
+        users ON c.owner_id = users.id
+      WHERE
+        c.status = 'published';`;
+
+    const query = {
+      text: options.where.parent_id ? queryChildrenByParentId : queryTree,
       values: values,
     };
     const results = await database.query(query);
@@ -838,7 +876,7 @@ async function findTree(options) {
   }
 
   function flatListToTree(list) {
-    const childrenTree = [];
+    const tree = { children: [] };
     const table = {};
 
     list.forEach((row) => {
@@ -849,16 +887,14 @@ async function findTree(options) {
     list.forEach((row) => {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
-      } else {
-        childrenTree.push(row);
+      } else if (!row.path.some((id) => table[id])) {
+        tree.children.push(row);
       }
     });
 
-    const childrenTreeRanked = rankContentListByRelevance(childrenTree);
+    recursiveInjectChildrenDeepCount(tree);
 
-    childrenTreeRanked.forEach((child) => {
-      recursiveInjectChildrenDeepCount(child);
-    });
+    return tree.children;
 
     function recursiveInjectChildrenDeepCount(node) {
       let count = node.children.length;
@@ -873,24 +909,16 @@ async function findTree(options) {
       node.children_deep_count = count;
       return count;
     }
-
-    return childrenTreeRanked;
   }
 }
 
-function whereOwnerAndSlug($1, $2) {
+function whereOwnerUsername($n) {
   return `
-    contents.owner_id = (
-        SELECT
-          id
-        FROM
-          users
-        WHERE
-          LOWER(username) = LOWER(${$1})
-        LIMIT
-          1
-    ) AND
-    contents.slug = ${$2} AND
+  contents.owner_id = (
+    SELECT id FROM users
+    WHERE
+      LOWER(username) = LOWER(${$n})
+    LIMIT 1)
   `;
 }
 
@@ -928,96 +956,11 @@ function getContentScore(contentObject) {
   return finalScore;
 }
 
-async function findRootContent(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const rootContentFound = await recursiveDatabaseLookup(values, options);
-  return rootContentFound;
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
-
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE child_to_root_tree AS (
-        SELECT
-          *
-        FROM
-          contents
-        WHERE
-          id = $1
-      UNION ALL
-        SELECT
-          contents.*
-        FROM
-          contents
-        JOIN
-          child_to_root_tree
-        ON
-          contents.id = child_to_root_tree.parent_id
-      )
-      SELECT
-        child_to_root_tree.*,
-        users.username as owner_username,
-        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins,
-
-        -- Originally this query returned the root content object to the server and
-        -- afterward made an additional roundtrip to the database using the
-        -- findChildrenCount() method to get the children count. Now we perform a
-        -- subquery that is not performant but everything is embedded in one travel.
-        -- https://github.com/filipedeschamps/tabnews.com.br/blob/3ab1c65fdfc03d079791d17fde693010ab4caa60/models/content.js#L1013
-        (
-          WITH RECURSIVE children AS (
-            SELECT
-                id,
-                parent_id
-            FROM
-              contents
-            WHERE
-              contents.parent_id = child_to_root_tree.id AND
-              contents.status = 'published'
-            UNION ALL
-              SELECT
-                contents.id,
-                contents.parent_id
-              FROM
-                contents
-              INNER JOIN
-                children ON contents.parent_id = children.id
-              WHERE
-                contents.status = 'published'
-          )
-          SELECT
-            count(children.id)::integer
-          FROM
-            children
-        ) as children_deep_count
-      FROM
-        child_to_root_tree
-      INNER JOIN
-        users ON child_to_root_tree.owner_id = users.id
-      WHERE
-        parent_id IS NULL;
-      ;`,
-      values: [values.where.id],
-    };
-
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0];
-  }
-}
-
 export default Object.freeze({
   findAll,
   findOne,
   findTree,
   findWithStrategy,
-  findRootContent,
   create,
   update,
 });

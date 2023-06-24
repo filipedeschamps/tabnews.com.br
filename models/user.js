@@ -143,7 +143,7 @@ async function findOneById(userId, options = {}) {
     values: [userId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -376,21 +376,6 @@ async function removeFeatures(userId, features, options = {}) {
     lastUpdatedUser = results.rows[0];
   }
 
-  lastUpdatedUser.tabcoins = await balance.getTotal(
-    {
-      balanceType: 'user:tabcoin',
-      recipientId: lastUpdatedUser.id,
-    },
-    options
-  );
-  lastUpdatedUser.tabcash = await balance.getTotal(
-    {
-      balanceType: 'user:tabcash',
-      recipientId: lastUpdatedUser.id,
-    },
-    options
-  );
-
   return lastUpdatedUser;
 }
 
@@ -411,22 +396,6 @@ async function addFeatures(userId, features, options) {
   };
 
   const results = await database.query(query, options);
-
-  const updatedUser = results.rows[0];
-  updatedUser.tabcoins = await balance.getTotal(
-    {
-      balanceType: 'user:tabcoin',
-      recipientId: updatedUser.id,
-    },
-    options
-  );
-  updatedUser.tabcash = await balance.getTotal(
-    {
-      balanceType: 'user:tabcash',
-      recipientId: updatedUser.id,
-    },
-    options
-  );
 
   return results.rows[0];
 }

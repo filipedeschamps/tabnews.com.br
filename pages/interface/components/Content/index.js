@@ -66,7 +66,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         setComponentMode={setComponentMode}
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
-        mode={mode}
       />
     );
   } else if (componentMode === 'deleted') {
@@ -213,7 +212,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);

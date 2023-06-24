@@ -60,9 +60,9 @@ async function getHandler(request, response) {
     });
   }
 
-  const rootContentFound = await content.findRootContent({
+  const rootContentFound = await content.findOne({
     where: {
-      id: contentFound.parent_id,
+      id: contentFound.path[0],
     },
   });
 

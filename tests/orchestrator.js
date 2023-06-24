@@ -187,10 +187,10 @@ async function createFirewallTestFunctions() {
 async function createPrestige(
   userId,
   {
-    rootPrestigeNumerator = 2,
-    rootPrestigeDenominator = 1,
+    rootPrestigeNumerator = 1,
+    rootPrestigeDenominator = 2,
     childPrestigeNumerator = 1,
-    childPrestigeDenominator = 1,
+    childPrestigeDenominator = 2,
   } = {}
 ) {
   if (

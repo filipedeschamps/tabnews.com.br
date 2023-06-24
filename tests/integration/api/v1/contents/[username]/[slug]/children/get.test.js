@@ -1,4 +1,3 @@
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 import orchestrator from 'tests/orchestrator.js';
@@ -107,8 +106,6 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
-      await setTimeout(1000);
-
       const childBranchBLevel1 = await orchestrator.createContent({
         parent_id: rootBranchLevel0.id,
         owner_id: firstUser.id,
@@ -130,7 +127,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
-      const childBranchBLevel2Content3 = await orchestrator.createContent({
+      // childBranchBLevel2Content3
+      await orchestrator.createContent({
         parent_id: childBranchBLevel1.id,
         owner_id: firstUser.id,
         title: 'Child branch B [Level 2] #3 [Draft]',
@@ -286,7 +284,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
-      const childBranchALevel3 = await orchestrator.createContent({
+      // childBranchALevel3
+      await orchestrator.createContent({
         parent_id: childBranchALevel2.id,
         owner_id: firstUser.id,
         title: 'Child branch A [Level 3]',
@@ -314,7 +313,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         status: 'published',
       });
 
-      const childBranchBLevel2Content3 = await orchestrator.createContent({
+      // childBranchBLevel2Content3
+      await orchestrator.createContent({
         parent_id: childBranchBLevel1.id,
         owner_id: firstUser.id,
         title: 'Child branch B [Level 2] #3 [Draft]',

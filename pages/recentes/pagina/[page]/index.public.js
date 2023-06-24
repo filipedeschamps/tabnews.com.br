@@ -9,12 +9,7 @@ export default function Home({ contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Recentes` }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/recentes/pagina"
-          revalidatePath={`/api/v1/contents?strategy=new&page=${pagination.currentPage}`}
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
       </DefaultLayout>
     </>
   );

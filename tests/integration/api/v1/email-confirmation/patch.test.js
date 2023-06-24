@@ -285,7 +285,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
 
-      const secondUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         email: 'other.user.email@before.com',
       });
 
@@ -327,7 +327,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const emailConfirmationToken = await emailConfirmation.create(firstUser.id, 'other.user.email@after.com');
 
-      const secondUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         email: 'other.user.email@after.com',
       });
 

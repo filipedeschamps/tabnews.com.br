@@ -22,9 +22,16 @@ const rankedContent = `
     ),
     ranked_published_root_contents AS (
         SELECT
-            *,
+            latest.*,
+            (2 * tabcoins + (
+                SELECT COUNT(DISTINCT all_contents.owner_id)
+                FROM contents as all_contents
+                WHERE all_contents.path @> ARRAY[latest.id]
+                    AND all_contents.owner_id != latest.owner_id
+                    AND all_contents.status = 'published'
+            )) as score,
             COUNT(*) OVER()::INTEGER as total_rows
-        FROM latest_published_root_contents
+        FROM latest_published_root_contents AS latest
         WHERE tabcoins > 0
         ORDER BY
             tabcoins DESC,
@@ -37,7 +44,7 @@ const rankedContent = `
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '36 hours'
-            AND tabcoins > 11
+            AND score > 11
         ORDER BY
             published_at DESC
         LIMIT 10
@@ -51,7 +58,7 @@ const rankedContent = `
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '24 hours'
-            AND tabcoins > 6
+            AND score > 6
             AND id NOT IN (SELECT id FROM group_1)
         ORDER BY
             rank_group,
@@ -59,18 +66,23 @@ const rankedContent = `
         LIMIT 20
     ),
     group_3 AS (
-        (SELECT
-            DISTINCT ON (owner_id)
-            *,
-            3 as rank_group
-        FROM ranked_published_root_contents
-        WHERE
-            published_at > NOW() - INTERVAL '12 hours'
-            AND id NOT IN (SELECT id FROM group_2)
-        ORDER BY
-            owner_id,
-            published_at DESC
-        LIMIT 5)
+        WITH new_contents_by_owner AS (
+            SELECT DISTINCT ON (owner_id) *
+            FROM ranked_published_root_contents
+            WHERE
+                published_at > NOW() - INTERVAL '12 hours'
+                AND id NOT IN (SELECT id FROM group_2)
+            ORDER BY
+                owner_id,
+                published_at DESC
+        )(
+            SELECT
+                *,
+                3 as rank_group
+            FROM new_contents_by_owner
+            ORDER BY published_at DESC
+            LIMIT 5
+        )
         UNION ALL
         SELECT * FROM group_2
     ),
@@ -81,7 +93,7 @@ const rankedContent = `
         FROM ranked_published_root_contents
         WHERE
             published_at > NOW() - INTERVAL '3 days'
-            AND tabcoins > 11
+            AND score > 11
             AND id NOT IN (SELECT id FROM group_3)
         ORDER BY
             published_at DESC
@@ -95,8 +107,8 @@ const rankedContent = `
             5 as rank_group
         FROM ranked_published_root_contents
         WHERE
-            published_at > NOW() - INTERVAL '72 hours'
-            AND tabcoins > 2
+            published_at > NOW() - INTERVAL '3 days'
+            AND score > 4
             AND id NOT IN (SELECT id FROM group_4)
         ORDER BY
             published_at DESC
@@ -114,7 +126,7 @@ const rankedContent = `
         WHERE id NOT IN (SELECT id FROM group_5)
         ORDER BY
             rank_group,
-            tabcoins DESC,
+            score DESC,
             published_at DESC
         LIMIT $1
         OFFSET $2
@@ -135,30 +147,18 @@ const rankedContent = `
         ranked.rank_group,
         ranked.total_rows,
         users.username as owner_username,
-        (WITH RECURSIVE children AS
-            (SELECT id,
-                 parent_id
+        ranked.tabcoins,
+        (
+            SELECT COUNT(*)
             FROM contents as all_contents
-            WHERE
-                all_contents.id = ranked.id
+            WHERE all_contents.path @> ARRAY[ranked.id]
                 AND all_contents.status = 'published'
-            UNION ALL
-            SELECT
-                all_contents.id,
-                all_contents.parent_id
-            FROM contents as all_contents
-            INNER JOIN children ON all_contents.parent_id = children.id
-            WHERE all_contents.status = 'published'
-            )
-            SELECT count(children.id)::integer
-            FROM children
-            WHERE children.id NOT IN (ranked.id)
         ) as children_deep_count
         FROM ranked
         INNER JOIN users ON ranked.owner_id = users.id
         ORDER BY
             rank_group,
-            tabcoins DESC,
+            score DESC,
             published_at DESC;
 `;
 
