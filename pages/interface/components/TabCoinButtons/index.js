@@ -86,6 +86,10 @@ export default function TabCoinButtons({ content }) {
     <Box
       sx={{
         display: 'flex',
+        position: 'sticky',
+        top: '0px',
+        backgroundColor: 'canvas.default',
+        zIndex: 1,
         flexDirection: 'column',
         alignItems: 'center',
         mt: contentObject.title ? '9px' : '0px',
