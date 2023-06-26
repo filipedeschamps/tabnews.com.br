@@ -33,7 +33,7 @@ export default function PublishedSince({ date, ...props }) {
   }, [date]);
 
   return (
-    <Tooltip sx={{ position: 'absolute', ml: 1 }} aria-label={tooltipLabel} suppressHydrationWarning {...props}>
+    <Tooltip sx={{ position: 'absolute' }} aria-label={tooltipLabel} suppressHydrationWarning {...props}>
       <span style={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
         {formatPublishedSince(date)}
       </span>

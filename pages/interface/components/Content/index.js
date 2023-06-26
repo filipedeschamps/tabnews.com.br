@@ -177,7 +177,15 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 2, mt: '2px' }}>
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              whiteSpace: 'nowrap',
+              gap: 1,
+              mt: '2px',
+              color: 'fg.muted',
+            }}>
             <BranchName as={Link} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </BranchName>
@@ -190,7 +198,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '2px', height: '22px' }}>
               <PublishedSince direction="n" date={contentObject.published_at} />
             </Link>
           </Box>
