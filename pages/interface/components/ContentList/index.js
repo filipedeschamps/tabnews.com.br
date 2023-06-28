@@ -119,7 +119,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
             </Link>
             {' · '}
             <Text>
-              <PublishedSince direction="nw" date={contentObject.published_at} />
+              <PublishedSince direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
             </Text>
           </Box>
         </Box>,

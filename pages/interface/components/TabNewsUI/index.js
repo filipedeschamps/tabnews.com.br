@@ -12,6 +12,7 @@ export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles/inde
 export { default as PasswordInput } from '@/PasswordInput/index.js';
 export { default as NextNProgress } from '@/Progressbar/index.js';
 export { default as PublishedSince } from '@/PublishedSince/index.js';
+export { default as ReadTime } from '@/ReadTime/index.js';
 export { default as TabCoinButtons } from '@/TabCoinButtons/index.js';
 export { default as ThemeProvider } from '@/ThemeProvider/index.js';
 export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector/index.js';
