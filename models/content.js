@@ -188,28 +188,13 @@ async function findOne(values, options = {}) {
 }
 
 async function findWithStrategy(options = {}) {
-  const findAllInitTime = performance.now();
-  let rankStartTime, rankEndTime;
-  let strategy = options.strategy;
-
   const strategies = {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
   };
 
-  const queryReturn = await strategies[options.strategy](options);
-
-  const findAllEndTime = performance.now();
-
-  console.log({
-    findWithStrategyTime: findAllEndTime - findAllInitTime,
-    rankTime: rankEndTime - rankStartTime,
-    ...options,
-    strategy,
-  });
-
-  return queryReturn;
+  return await strategies[options.strategy](options);
 
   async function getNew(options = {}) {
     const results = {};
@@ -247,9 +232,7 @@ async function findWithStrategy(options = {}) {
     if (options.strategy === 'relevant_global') {
       results.rows = contentList;
     } else {
-      rankStartTime = performance.now();
       results.rows = rankContentListByRelevance(contentList);
-      rankEndTime = performance.now();
     }
 
     values.totalRows = results.rows[0]?.total_rows;
@@ -779,7 +762,6 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
 }
 
 async function findTree(options) {
-  const findTreeStartTime = performance.now();
   options.where = validateWhereSchema(options?.where);
   let values;
   if (options.where.parent_id) {
@@ -790,19 +772,8 @@ async function findTree(options) {
     values = [options.where.owner_username, options.where.slug];
   }
 
-  const queryStartTime = performance.now();
   const flatList = await databaseLookup(options);
-  const queryEndTime = performance.now();
-  const tree = flatListToTree(flatList);
-  const findTreeEndTime = performance.now();
-  console.log({
-    findTreeTime: findTreeEndTime - findTreeStartTime,
-    validateTime: queryStartTime - findTreeStartTime,
-    queryTime: queryEndTime - queryStartTime,
-    flatListToTreeTime: findTreeEndTime - queryEndTime,
-    ...options,
-  });
-  return tree;
+  return flatListToTree(flatList);
 
   async function databaseLookup(options) {
     const queryChildrenByParentId = `
