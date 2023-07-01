@@ -8,29 +8,42 @@ async function getByContentId(contentId, { transaction } = {}) {
     },
     { transaction }
   );
-  return result.rows[0].amount;
+
+  let initialTabcoins = 0;
+
+  const totalTabcoins = result.rows.reduce((acc, row) => {
+    if (row.type === 'create:content:text_root' || row.type === 'create:content:text_child') {
+      initialTabcoins = row.amount;
+    }
+    return acc + row.amount;
+  }, 0);
+
+  return {
+    initialTabcoins,
+    totalTabcoins,
+  };
 }
 
 const queryByContentId = `
+WITH content_events AS (
+  SELECT
+    id,
+    type
+  FROM
+    events
+  WHERE
+    metadata ->> 'id' = $1
+    OR metadata ->> 'content_id' = $1
+)
 SELECT
-  amount
+  amount,
+  content_events.type
 FROM
   balance_operations
-WHERE
-  originator_id IN (
-    SELECT
-      originator_id
-    FROM
-      balance_operations
-    WHERE 
-      recipient_id = $1
-      AND balance_type = 'content:tabcoin'
-    ORDER BY
-      created_at ASC
-    LIMIT 1
-  )
-  AND balance_type = 'user:tabcoin'
-LIMIT 1
+INNER JOIN
+  content_events
+ON balance_operations.originator_id = content_events.id
+WHERE balance_type = 'user:tabcoin'
 ;
 `;
 

@@ -10,6 +10,7 @@ import session from 'models/session.js';
 import content from 'models/content.js';
 import recovery from 'models/recovery.js';
 import balance from 'models/balance.js';
+import event from 'models/event.js';
 import webserver from 'infra/webserver.js';
 
 const webserverUrl = webserver.host;
@@ -136,15 +137,33 @@ async function findSessionByToken(token) {
 }
 
 async function createContent(contentObject) {
-  return await content.create({
-    parent_id: contentObject?.parent_id || undefined,
-    owner_id: contentObject?.owner_id || undefined,
-    title: contentObject?.title || undefined,
-    slug: contentObject?.slug || undefined,
-    body: contentObject?.body || faker.lorem.paragraphs(5),
-    status: contentObject?.status || 'draft',
-    source_url: contentObject?.source_url || undefined,
+  const currentEvent = await event.create({
+    type: contentObject?.parent_id ? 'create:content:text_child' : 'create:content:text_root',
+    originatorUserId: contentObject?.owner_id,
   });
+
+  const createdContent = await content.create(
+    {
+      parent_id: contentObject?.parent_id || undefined,
+      owner_id: contentObject?.owner_id || undefined,
+      title: contentObject?.title || undefined,
+      slug: contentObject?.slug || undefined,
+      body: contentObject?.body || faker.lorem.paragraphs(5),
+      status: contentObject?.status || 'draft',
+      source_url: contentObject?.source_url || undefined,
+    },
+    {
+      eventId: currentEvent.id,
+    }
+  );
+
+  await event.updateMetadata(currentEvent.id, {
+    metadata: {
+      id: createdContent.id,
+    },
+  });
+
+  return createdContent;
 }
 
 async function updateContent(contentId, contentObject) {
@@ -167,6 +186,36 @@ async function createBalance(balanceObject) {
     originatorType: balanceObject.originatorType || 'orchestrator',
     originatorId: balanceObject.originatorId || balanceObject.recipientId,
   });
+}
+
+async function createRate(contentObject, amount) {
+  const currentEvent = await event.create({
+    type: 'update:content:tabcoins',
+    metadata: {
+      transaction_type: amount < 0 ? 'debit' : 'credit',
+      content_owner_id: contentObject.owner_id,
+      content_id: contentObject.id,
+      amount: amount,
+    },
+  });
+
+  await balance.create({
+    balanceType: 'content:tabcoin',
+    recipientId: contentObject.id,
+    amount: amount,
+    originatorType: 'event',
+    originatorId: currentEvent.id,
+  });
+
+  await balance.create({
+    balanceType: 'user:tabcoin',
+    recipientId: contentObject.owner_id,
+    amount: amount,
+    originatorType: 'event',
+    originatorId: currentEvent.id,
+  });
+
+  return currentEvent;
 }
 
 async function createRecoveryToken(userObject) {
@@ -289,4 +338,5 @@ export default {
   createFirewallTestFunctions,
   createBalance,
   createPrestige,
+  createRate,
 };
