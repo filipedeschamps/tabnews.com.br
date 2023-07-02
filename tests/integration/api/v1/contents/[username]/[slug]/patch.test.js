@@ -397,7 +397,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         owner_username: firstUser.username,
       });
 
@@ -1002,7 +1002,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Segundo conteúdo',
         body: 'Segundo conteúdo',
         status: 'published',
-        tabcoins: 1,
+        tabcoins: 0,
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1613,7 +1613,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Título velho',
-        body: 'Body velho',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'draft',
       });
 
@@ -1641,7 +1641,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'titulo-velho',
         title: 'Título velho',
-        body: 'Body velho',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
         source_url: null,
         created_at: responseBody.created_at,
@@ -1711,7 +1711,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Title',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -1739,7 +1739,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'title',
         title: 'Title',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'deleted',
         tabcoins: 1,
         source_url: null,
@@ -2732,7 +2732,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -2820,7 +2820,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -2877,7 +2877,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -2926,6 +2926,64 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
+      test('Deletion of "root" content that was first published without the minimum amount of relevant words', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 4 });
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBodyBefore = await userResponseBefore.json();
+
+        expect(userResponseBodyBefore.tabcoins).toEqual(0);
+        expect(userResponseBodyBefore.tabcash).toEqual(0);
+
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1 });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
       test('"root" content with positive tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
@@ -2935,7 +2993,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -2992,7 +3050,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3050,7 +3108,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3107,7 +3165,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3166,7 +3224,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3174,7 +3232,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
         });
 
         const contentResponse = await fetch(
@@ -3218,7 +3276,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3226,7 +3284,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3272,7 +3330,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3280,7 +3338,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3337,7 +3395,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3345,7 +3403,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3403,7 +3461,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3411,7 +3469,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3468,7 +3526,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3476,7 +3534,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3532,7 +3590,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3540,7 +3598,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3597,7 +3655,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3605,7 +3663,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3661,7 +3719,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3669,7 +3727,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3715,6 +3773,209 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(secondUserResponse2Body.tabcoins).toEqual(0);
         expect(secondUserResponse2Body.tabcash).toEqual(0);
       });
+
+      test('Deletion of "child" content that was first published without the minimum amount of relevant words (without votes)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(0);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('Deletion of "child" content that was first published without the minimum amount of relevant words (with positive votes)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        await orchestrator.createPrestige(secondUser.id, { rootPrestigeNumerator: 10 });
+
+        await orchestrator.createRate(childContent, 10);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(10);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(10);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('Deletion of "child" content that was first published without the minimum amount of relevant words (with negative votes)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        await orchestrator.createPrestige(secondUser.id, { rootPrestigeNumerator: 10 });
+
+        await orchestrator.createRate(childContent, -10);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(-10);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(-10);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(-10);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
     });
   });
 
@@ -3729,7 +3990,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const secondUserContent = await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo do Segundo Usuário antes do patch!',
-        body: 'Body antes do patch!',
+        body: 'Body antes do patch! - Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 

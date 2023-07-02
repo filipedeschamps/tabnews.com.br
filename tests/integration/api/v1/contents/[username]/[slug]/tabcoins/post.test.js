@@ -143,7 +143,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -209,7 +209,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -519,7 +519,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 

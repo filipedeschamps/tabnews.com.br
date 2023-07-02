@@ -76,7 +76,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo publicamente disponível',
-        body: 'Deveria estar disponível para todos.',
+        body: 'Conteúdo relevante deveria estar disponível para todos.',
         status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
@@ -94,7 +94,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'conteudo-publicamente-disponivel',
         title: 'Conteúdo publicamente disponível',
-        body: 'Deveria estar disponível para todos.',
+        body: 'Conteúdo relevante deveria estar disponível para todos.',
         status: 'published',
         tabcoins: 1,
         source_url: 'https://www.tabnews.com.br/',
@@ -152,7 +152,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo root',
-        body: 'Conteúdo root',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -199,7 +199,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: responseBody.slug,
         title: 'Conteúdo root',
-        body: 'Conteúdo root',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
         tabcoins: 1,
         source_url: null,

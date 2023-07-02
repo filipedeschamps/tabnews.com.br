@@ -864,7 +864,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Conteúdo existente',
         body: 'Outro body',
         status: 'published',
-        tabcoins: 1,
+        tabcoins: 0,
         source_url: null,
         created_at: secondContentBody.created_at,
         updated_at: secondContentBody.updated_at,
@@ -1233,7 +1233,7 @@ describe('POST /api/v1/contents', () => {
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2705,7 +2705,7 @@ describe('POST /api/v1/contents', () => {
           },
           body: JSON.stringify({
             title: 'Title',
-            body: 'Body',
+            body: 'Body with relevant text needs to contain a good amount of words.',
           }),
         });
 
@@ -2740,7 +2740,7 @@ describe('POST /api/v1/contents', () => {
           },
           body: JSON.stringify({
             title: 'Title',
-            body: 'Body',
+            body: 'Body with relevant text needs to contain a good amount of words.',
             status: 'published',
           }),
         });
@@ -2771,7 +2771,7 @@ describe('POST /api/v1/contents', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Root - Body with relevant text needs to contain a good amount of words.',
           status: 'published',
         });
 
@@ -2782,7 +2782,7 @@ describe('POST /api/v1/contents', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'Body',
+            body: 'Child - Body with relevant text needs to contain a good amount of words.',
             parent_id: rootContent.id,
             status: 'draft',
           }),
@@ -2815,7 +2815,7 @@ describe('POST /api/v1/contents', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Root - Body with relevant text needs to contain a good amount of words.',
           status: 'published',
         });
 
@@ -2828,7 +2828,7 @@ describe('POST /api/v1/contents', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'Body',
+            body: 'Child - Body with relevant text needs to contain a good amount of words.',
             parent_id: rootContent.id,
             status: 'published',
           }),
@@ -2861,7 +2861,7 @@ describe('POST /api/v1/contents', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Root - Body with relevant text needs to contain a good amount of words.',
           status: 'published',
         });
 
@@ -2872,7 +2872,7 @@ describe('POST /api/v1/contents', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'Body',
+            body: 'Child - Body with relevant text needs to contain a good amount of words.',
             parent_id: rootContent.id,
             status: 'published',
           }),
@@ -2911,7 +2911,7 @@ describe('POST /api/v1/contents', () => {
           },
           body: JSON.stringify({
             title: 'Title',
-            body: 'Body',
+            body: 'Body with relevant text needs to contain a good amount of words.',
             status: 'published',
           }),
         });
@@ -2993,7 +2993,7 @@ describe('POST /api/v1/contents', () => {
           },
           body: JSON.stringify({
             title: 'Title',
-            body: 'Body',
+            body: 'Body with relevant texts needs to contain a good amount of words',
             status: 'published',
           }),
         });
@@ -3008,7 +3008,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
           source_url: null,
           created_at: responseBody.created_at,
@@ -3115,7 +3115,7 @@ describe('POST /api/v1/contents', () => {
           },
           body: JSON.stringify({
             title: 'Title',
-            body: 'Body',
+            body: 'Body with relevant texts needs to contain a good amount of words',
             status: 'published',
           }),
         });
@@ -3130,7 +3130,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
           source_url: null,
           created_at: responseBody.created_at,
@@ -3179,7 +3179,7 @@ describe('POST /api/v1/contents', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'Deve conseguir publicar, mas não deve ganhar TabCoins',
+            body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
             parent_id: rootContent.id,
             status: 'published',
           }),
@@ -3195,7 +3195,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
-          body: 'Deve conseguir publicar, mas não deve ganhar TabCoins',
+          body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
           status: 'published',
           source_url: null,
           created_at: responseBody.created_at,
@@ -3237,7 +3237,7 @@ describe('POST /api/v1/contents', () => {
           },
           body: JSON.stringify({
             title: 'Title',
-            body: 'Body',
+            body: 'Body with relevant texts needs to contain a good amount of words',
             status: 'published',
           }),
         });
@@ -3252,7 +3252,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
           source_url: null,
           created_at: responseBody.created_at,
@@ -3301,7 +3301,7 @@ describe('POST /api/v1/contents', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            body: 'Deve conseguir publicar e ganhar TabCoins.',
+            body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
             parent_id: rootContent.id,
             status: 'published',
           }),
@@ -3317,7 +3317,292 @@ describe('POST /api/v1/contents', () => {
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
-          body: 'Deve conseguir publicar e ganhar TabCoins.',
+          body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+    });
+
+    describe('No minimum amount of relevant words', () => {
+      test('should not be able to create "root" content without prestige', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -6, rootPrestigeDenominator: 10 });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(403);
+        expect(responseBody.status_code).toEqual(403);
+        expect(responseBody.name).toEqual('ForbiddenError');
+        expect(responseBody.message).toEqual(
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+        );
+        expect(responseBody.action).toEqual(
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+        );
+        expect(uuidVersion(responseBody.error_id)).toEqual(4);
+        expect(uuidVersion(responseBody.request_id)).toEqual(4);
+        expect(responseBody.error_location_code).toEqual(
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+        );
+      });
+
+      test('Should not be able to earn tabcoins in "root" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Body with no minimum amount of relevant words',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'title',
+          title: 'Title',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should not be able to earn tabcoins in "child" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Body with no minimum amount of relevant words',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await childResponse.json();
+
+        expect(childResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+    });
+
+    describe('With minimal amount of relevant words', () => {
+      test('Should be able to earn tabcoins in "root" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
+
+        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            title: 'Title',
+            body: 'Relevant text needs to contain a good amount of words',
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await contentResponse.json();
+
+        expect(contentResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'title',
+          title: 'Title',
+          body: 'Relevant text needs to contain a good amount of words',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should be able to earn tabcoins in "child" content', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 1, childPrestigeDenominator: 10 });
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Conteúdo raiz',
+          status: 'published',
+        });
+
+        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'Relevant text needs to contain a good amount of words',
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        const responseBody = await childResponse.json();
+
+        expect(childResponse.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Relevant text needs to contain a good amount of words',
           status: 'published',
           source_url: null,
           created_at: responseBody.created_at,

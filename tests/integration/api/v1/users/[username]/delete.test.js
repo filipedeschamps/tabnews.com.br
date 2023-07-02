@@ -183,7 +183,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'firstUserRootContent',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         }),
       });
@@ -198,7 +198,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'firstUserChildContent',
+          body: 'firstUserChildContent - Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         }),
       });
@@ -214,7 +214,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'secondUserRootContent',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         }),
       });
@@ -229,7 +229,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'secondUserChildContent #1',
+          body: 'secondUserChildContent #1 - Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         }),
       });
@@ -244,7 +244,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'secondUserChildContent #2',
+          body: 'secondUserChildContent #2 - Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         }),
       });
@@ -259,7 +259,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'Draft Content',
-          body: 'Draft Content',
+          body: 'Draft Content - Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         }),
       });
@@ -272,7 +272,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'Deleted Content',
-          body: 'Deleted Content',
+          body: 'Deleted Content - Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         }),
       });
