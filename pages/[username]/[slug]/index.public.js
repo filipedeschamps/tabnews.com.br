@@ -73,7 +73,11 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
               p: 4,
               wordWrap: 'break-word',
             }}>
-            <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
+            <Content
+              key={contentFound.id}
+              content={{ owner_id: contentFound.owner_id, parent_id: contentFound.id }}
+              mode="compact"
+            />
           </Box>
 
           <RenderChildrenTree
@@ -176,7 +180,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
   const { filteredTree, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
 
   return filteredTree.map((child) => {
-    const { children = [], groupedCount, id, renderIntent, renderShowMore } = child;
+    const { children = [], groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
     const labelShowMore = Math.min(renderIncrement, groupedCount);
     const plural = labelShowMore > 1 ? 's' : '';
 
@@ -253,7 +257,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
               <Content content={child} mode="view" />
 
               <Box sx={{ mt: 4 }}>
-                <Content content={{ parent_id: id }} mode="compact" viewFrame={true} />
+                <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
               </Box>
 
               {children.length > 0 && (
