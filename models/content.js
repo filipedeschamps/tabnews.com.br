@@ -496,23 +496,8 @@ function populatePublishedAtValue(oldContent, newContent) {
 }
 
 async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
-  const contentDefaultEarnings = 1;
-
-  // We should not credit or debit if the parent content is from the same user.
-  if (newContent.parent_id) {
-    const parentContent = await findOne(
-      {
-        where: {
-          id: newContent.parent_id,
-        },
-      },
-      options
-    );
-
-    if (parentContent.owner_id === newContent.owner_id) {
-      return;
-    }
-  }
+  let contentEarnings = 0;
+  let userEarnings = 0;
 
   // We should not credit or debit if the content has never been published before
   // and is being directly deleted, example: "draft" -> "deleted".
@@ -521,20 +506,21 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   }
 
   // We should debit if the content was once "published", but now is being "deleted".
-  // 1) If content `tabcoins` is positive, we need to extract the `contentDefaultEarnings`
-  // from it and then debit all additional tabcoins from the user, including `userEarnings`.
+  // 1) If content `tabcoins` is positive, we need to debit all tabcoins earning by the user.
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
-  // creation of the content represented in `userEarnings`.
+  // creation of the content represented by `initialTabcoins`.
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
     let amountToDebit;
 
-    const userEarnings = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
+    const userEarningsByContent = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
 
     if (oldContent.tabcoins > 0) {
-      amountToDebit = contentDefaultEarnings - oldContent.tabcoins - userEarnings;
+      amountToDebit = -userEarningsByContent.totalTabcoins;
     } else {
-      amountToDebit = -userEarnings;
+      amountToDebit = -userEarningsByContent.initialTabcoins;
     }
+
+    if (!amountToDebit) return;
 
     await balance.create(
       {
@@ -557,7 +543,8 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     // We should credit if the content already existed and is now being published for the first time.
     (oldContent && !oldContent.published_at && newContent.status === 'published')
   ) {
-    const userEarnings = await prestige.getByUserId(newContent.owner_id, {
+    contentEarnings = 1;
+    userEarnings = await prestige.getByUserId(newContent.owner_id, {
       isRoot: !newContent.parent_id,
       transaction: options.transaction,
     });
@@ -570,6 +557,26 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       });
     }
 
+    if (newContent.parent_id) {
+      const parentContent = await findOne(
+        {
+          where: {
+            id: newContent.parent_id,
+          },
+        },
+        options
+      );
+
+      // We should not credit if the parent content is from the same user.
+      if (parentContent.owner_id === newContent.owner_id) return;
+    }
+
+    // We should not credit if the content has little or no value.
+    // Expected 5 or more words with 5 or more characters.
+    if (newContent.body.split(/[a-z]{5,}/i).length < 6) return;
+  }
+
+  if (userEarnings > 0) {
     await balance.create(
       {
         balanceType: 'user:tabcoin',
@@ -582,12 +589,14 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
         transaction: options.transaction,
       }
     );
+  }
 
+  if (contentEarnings > 0) {
     await balance.create(
       {
         balanceType: 'content:tabcoin',
         recipientId: newContent.id,
-        amount: contentDefaultEarnings,
+        amount: contentEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
@@ -595,7 +604,6 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
         transaction: options.transaction,
       }
     );
-    return;
   }
 }
 
