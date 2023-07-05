@@ -21,7 +21,15 @@ function MyApp({ Component, pageProps }) {
             <Component {...pageProps} />
           </RevalidateProvider>
         </SWRConfig>
-        <Analytics />
+        <Analytics
+          beforeSend={(event) => {
+            const { pathname } = new URL(event.url);
+            if (['/', '/publicar'].includes(pathname)) {
+              return null;
+            }
+            return event;
+          }}
+        />
       </UserProvider>
     </ThemeProvider>
   );
