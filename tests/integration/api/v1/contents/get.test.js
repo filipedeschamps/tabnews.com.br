@@ -390,7 +390,7 @@ describe('GET /api/v1/contents', () => {
       const contentList = [];
 
       jest.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
         advanceTimers: true,
       });
 
@@ -404,20 +404,27 @@ describe('GET /api/v1/contents', () => {
 
       jest.useRealTimers();
 
+      await orchestrator.createContent({
+        owner_id: firstUser.id,
+        body: 'Comment #10',
+        status: 'published',
+        parent_id: contentList[0].id,
+      });
+
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[0].id, // Conteúdo #1
-        amount: 9, // -> score = 20, but more than 7 days ago
+        amount: 10, // -> with recent comment, but same user
       });
 
       jest.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), // 9 days ago
         advanceTimers: true,
       });
 
       contentList.push(
         await orchestrator.createContent({
-          owner_id: secondUser.id,
+          owner_id: firstUser.id,
           title: `Conteúdo #2`,
           status: 'published',
         })
@@ -425,24 +432,51 @@ describe('GET /api/v1/contents', () => {
 
       jest.useRealTimers();
 
+      await orchestrator.createContent({
+        owner_id: secondUser.id,
+        body: 'Comment #11',
+        status: 'published',
+        parent_id: contentList[1].id,
+      });
+
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[1].id, // Conteúdo #2
-        amount: 8, // -> score = 18 and 3 days ago -> group_6
+        amount: 10, // -> score = 33, more than 7 days ago, but with recent comment
       });
 
       jest.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8), // 8 days ago
         advanceTimers: true,
       });
 
       contentList.push(
         await orchestrator.createContent({
-          owner_id: thirdUser.id,
+          owner_id: firstUser.id,
           title: `Conteúdo #3`,
           status: 'published',
         })
       );
+
+      jest.useRealTimers();
+
+      await orchestrator.createContent({
+        owner_id: secondUser.id,
+        body: 'Comment #12',
+        status: 'published',
+        parent_id: contentList[2].id,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[2].id, // Conteúdo #3
+        amount: 9, // -> score = 30, more than 7 days ago, but with recent comment
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
+        advanceTimers: true,
+      });
 
       contentList.push(
         await orchestrator.createContent({
@@ -456,18 +490,12 @@ describe('GET /api/v1/contents', () => {
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
-        recipientId: contentList[2].id, // Conteúdo #3
-        amount: 7, // score = 16 and more than 36 hours -> group_4
-      });
-
-      await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
         recipientId: contentList[3].id, // Conteúdo #4
-        amount: 4, // score = 10 and more than 36 hours -> group_5
+        amount: 9, // -> score = 30, but more than 7 days ago
       });
 
       jest.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 24), // 24 hours ago
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
         advanceTimers: true,
       });
 
@@ -484,11 +512,11 @@ describe('GET /api/v1/contents', () => {
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[4].id, // Conteúdo #5
-        amount: 4, // score = 10 and more than 24 hours -> group_5
+        amount: 8, // -> score = 27 and 3 days ago -> group_6
       });
 
       jest.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
+        now: new Date(Date.now() - 1000 * 60 * 60 * 35), // 35 hours ago
         advanceTimers: true,
       });
 
@@ -505,10 +533,73 @@ describe('GET /api/v1/contents', () => {
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[5].id, // Conteúdo #6
-        amount: 2, // score = 6 and more than 12 hours -> group_5
+        amount: 3, // score = 12 and less than 36 hours -> group_4
       });
 
-      for (let item = 6; item < numberOfContents; item = item + 3) {
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 37), // 37 hours ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: `Conteúdo #7`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[6].id, // Conteúdo #7
+        amount: 4, // score = 15 and more than 37 hours -> group_5
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: `Conteúdo #8`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[7].id, // Conteúdo #8
+        amount: 4, // score = 15 and more than 36 hours -> group_5
+      });
+
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24), // 24 hours ago
+        advanceTimers: true,
+      });
+
+      contentList.push(
+        await orchestrator.createContent({
+          owner_id: thirdUser.id,
+          title: `Conteúdo #9`,
+          status: 'published',
+        })
+      );
+
+      jest.useRealTimers();
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin',
+        recipientId: contentList[8].id, // Conteúdo #9
+        amount: 2, // score = 9 and more than 24 hours -> group_5
+      });
+
+      for (let item = 9; item < numberOfContents; item = item + 3) {
         contentList.push(
           await orchestrator.createContent({
             owner_id: firstUser.id,
@@ -602,13 +693,13 @@ describe('GET /api/v1/contents', () => {
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[30].id, // Conteúdo #31
-        amount: 6, // score = 14 -> group_1
+        amount: 5, // score = 18 -> group_1
       });
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
         recipientId: contentList[35].id, // Conteúdo #36
-        amount: 3, // score = 8 -> group_2
+        amount: 2, // score = 9 -> group_2
       });
 
       await orchestrator.createBalance({
@@ -630,7 +721,7 @@ describe('GET /api/v1/contents', () => {
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
       expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('57');
+      expect(responseTotalRowsHeader).toEqual('56');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -657,10 +748,10 @@ describe('GET /api/v1/contents', () => {
 
       expect(responseBody.length).toEqual(30);
 
-      // group_1 -> score > 11 and less than 36 hours ago
+      // group_1 -> score > 16 and less than 36 hours ago
       expect(responseBody[0].title).toEqual('Conteúdo #31');
 
-      // group_2 -> score > 6 and less than 24 hours ago
+      // group_2 -> score > 8 and less than 24 hours ago
       expect(responseBody[1].title).toEqual('Conteúdo #36');
 
       // group_3 -> max one new content by user with less than 12 hours
@@ -668,29 +759,30 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[3].title).toEqual('Conteúdo #59');
       expect(responseBody[4].title).toEqual('Conteúdo #58');
 
-      // group_4 -> score > 11 and less than 3 days ago
-      expect(responseBody[5].title).toEqual('Conteúdo #3');
+      // group_4 -> score > 11 and less than 36 hours ago
+      expect(responseBody[5].title).toEqual('Conteúdo #6');
 
-      // group_5 -> score > 4 and less than 3 days ago
-      expect(responseBody[6].title).toEqual('Conteúdo #5');
-      expect(responseBody[7].title).toEqual('Conteúdo #4');
-      expect(responseBody[8].title).toEqual('Conteúdo #6');
+      // group_5 -> score > 8 and less than 3 days ago
+      expect(responseBody[6].title).toEqual('Conteúdo #8');
+      expect(responseBody[7].title).toEqual('Conteúdo #7');
+      expect(responseBody[8].title).toEqual('Conteúdo #9');
 
       // group_6 -> tabcoins > 0 and less than 7 days ago
+      // or commented less than 24 hours
       expect(responseBody[9].title).toEqual('Conteúdo #2');
-      expect(responseBody[10].title).toEqual('Conteúdo #48');
-      expect(responseBody[11].title).toEqual('Conteúdo #45');
-      expect(responseBody[12].title).toEqual('Conteúdo #53');
-      expect(responseBody[13].title).toEqual('Conteúdo #52');
-      expect(responseBody[14].title).toEqual('Conteúdo #57');
-      expect(responseBody[17].title).toEqual('Conteúdo #54');
-      expect(responseBody[18].title).toEqual('Conteúdo #49');
-      expect(responseBody[19].title).toEqual('Conteúdo #47');
-      expect(responseBody[20].title).toEqual('Conteúdo #46');
-      expect(responseBody[21].title).toEqual('Conteúdo #44');
-      expect(responseBody[27].title).toEqual('Conteúdo #38');
-      expect(responseBody[28].title).toEqual('Conteúdo #37');
-      expect(responseBody[29].title).toEqual('Conteúdo #35');
+      expect(responseBody[10].title).toEqual('Conteúdo #3');
+      expect(responseBody[11].title).toEqual('Conteúdo #5');
+      expect(responseBody[12].title).toEqual('Conteúdo #48');
+      expect(responseBody[13].title).toEqual('Conteúdo #45');
+      expect(responseBody[14].title).toEqual('Conteúdo #53');
+      expect(responseBody[15].title).toEqual('Conteúdo #52');
+      expect(responseBody[16].title).toEqual('Conteúdo #57');
+      expect(responseBody[19].title).toEqual('Conteúdo #54');
+      expect(responseBody[20].title).toEqual('Conteúdo #49');
+      expect(responseBody[21].title).toEqual('Conteúdo #47');
+      expect(responseBody[22].title).toEqual('Conteúdo #46');
+      expect(responseBody[23].title).toEqual('Conteúdo #44');
+      expect(responseBody[29].title).toEqual('Conteúdo #38');
 
       const page2Response = await fetch(responseLinkHeader.next.url);
       const page2ResponseBody = await page2Response.json();
@@ -699,7 +791,7 @@ describe('GET /api/v1/contents', () => {
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
       expect(page2Response.status).toEqual(200);
-      expect(page2ResponseTotalRowsHeader).toEqual('57');
+      expect(page2ResponseTotalRowsHeader).toEqual('56');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -724,11 +816,13 @@ describe('GET /api/v1/contents', () => {
         },
       });
 
-      expect(page2ResponseBody.length).toEqual(27);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #34');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #33');
-      expect(page2ResponseBody[25].title).toEqual('Conteúdo #8');
-      expect(page2ResponseBody[26].title).toEqual('Conteúdo #7');
+      expect(page2ResponseBody.length).toEqual(26);
+      expect(page2ResponseBody[0].title).toEqual('Conteúdo #37');
+      expect(page2ResponseBody[1].title).toEqual('Conteúdo #35');
+      expect(page2ResponseBody[2].title).toEqual('Conteúdo #34');
+      expect(page2ResponseBody[3].title).toEqual('Conteúdo #33');
+      expect(page2ResponseBody[24].title).toEqual('Conteúdo #11');
+      expect(page2ResponseBody[25].title).toEqual('Conteúdo #10');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
