@@ -8,6 +8,7 @@ import {
   Heading,
   Link,
   TextInput,
+  Textarea,
   useConfirm,
 } from '@/TabNewsUI';
 import { useUser, suggestEmail } from 'pages/interface';
@@ -35,6 +36,7 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
+  const descriptionRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -45,6 +47,7 @@ function EditProfileForm() {
       usernameRef.current.value = user.username;
       emailRef.current.value = user.email;
       notificationsRef.current.checked = user.notifications;
+      descriptionRef.current.value = user.description;
     }
   }, [user, router, userIsLoading]);
 
@@ -66,6 +69,7 @@ function EditProfileForm() {
 
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
+    const description = descriptionRef.current.value;
     const notifications = notificationsRef.current.checked;
 
     setIsLoading(true);
@@ -104,6 +108,10 @@ function EditProfileForm() {
 
     if (user.email !== email) {
       payload.email = email;
+    }
+
+    if (user.description !== description) {
+      payload.description = description;
     }
 
     if (user.notifications !== notifications) {
@@ -232,6 +240,29 @@ function EditProfileForm() {
 
           {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
             <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
+          )}
+        </FormControl>
+
+        <FormControl id="description">
+          <FormControl.Label>Descrição</FormControl.Label>
+          <Textarea
+            ref={descriptionRef}
+            name="description"
+            autoCorrect="off"
+            autoCapitalize="off"
+            resize="none"
+            spellCheck={false}
+            block={true}
+            aria-label="Sua descrição"
+            sx={{
+              px: 2,
+              backgroundColor: 'canvas.inset',
+              '&:focus-within': { backgroundColor: 'canvas.default' },
+            }}
+          />
+
+          {errorObject?.key === 'description' && errorObject?.type === 'string.max' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 

@@ -154,6 +154,19 @@ const schemas = {
     });
   },
 
+  description: function () {
+    return Joi.object({
+      description: Joi.string()
+        .allow(null, '')
+        .max(160)
+        .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'string.max': `"description" deve conter no máximo {#limit} caracteres.`,
+          'string.base': `"description" deve ser do tipo String.`,
+        }),
+    });
+  },
+
   notifications: function () {
     return Joi.object({
       notifications: Joi.boolean()

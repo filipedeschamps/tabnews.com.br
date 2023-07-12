@@ -89,6 +89,7 @@ function filterInput(user, feature, input) {
       username: input.username,
       email: input.email,
       password: input.password,
+      description: input.description,
       notifications: input.notifications,
     };
   }
@@ -175,6 +176,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
+      description: output.description,
       features: output.features,
       tabcoins: output.tabcoins,
       tabcash: output.tabcash,
@@ -189,6 +191,7 @@ function filterOutput(user, feature, output) {
         id: output.id,
         username: output.username,
         email: output.email,
+        description: output.description,
         notifications: output.notifications,
         features: output.features,
         tabcoins: output.tabcoins,
@@ -203,6 +206,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = output.map((user) => ({
       id: user.id,
       username: user.username,
+      description: user.description,
       features: user.features,
       tabcoins: user.tabcoins,
       tabcash: user.tabcash,

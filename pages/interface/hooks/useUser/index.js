@@ -33,6 +33,7 @@ export function UserProvider({ children }) {
         const cachedUserProperties = {
           id: responseBody.id,
           username: responseBody.username,
+          description: responseBody.description,
           features: responseBody.features,
           tabcoins: responseBody.tabcoins,
           tabcash: responseBody.tabcash,
