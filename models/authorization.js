@@ -88,6 +88,7 @@ function filterInput(user, feature, input) {
     filteredInputValues = {
       username: input.username,
       email: input.email,
+      description: input.description,
       password: input.password,
       notifications: input.notifications,
     };
@@ -175,6 +176,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
+      description: output.description,
       features: output.features,
       tabcoins: output.tabcoins,
       tabcash: output.tabcash,
@@ -189,6 +191,7 @@ function filterOutput(user, feature, output) {
         id: output.id,
         username: output.username,
         email: output.email,
+        description: output.description,
         notifications: output.notifications,
         features: output.features,
         tabcoins: output.tabcoins,

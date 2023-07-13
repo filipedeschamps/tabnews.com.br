@@ -3,6 +3,7 @@ import {
   Button,
   Checkbox,
   DefaultLayout,
+  Editor,
   Flash,
   FormControl,
   Heading,
@@ -16,7 +17,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function EditProfile() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Editar Perfil' }}>
+    <DefaultLayout containerWidth="medium" metadata={{ title: 'Editar Perfil' }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Editar Perfil
       </Heading>
@@ -31,6 +32,7 @@ function EditProfileForm() {
   const confirm = useConfirm();
 
   const { user, fetchUser, isLoading: userIsLoading } = useUser();
+  const [description, setDescription] = useState();
 
   const usernameRef = useRef('');
   const emailRef = useRef('');
@@ -106,6 +108,10 @@ function EditProfileForm() {
       payload.email = email;
     }
 
+    if (user.description !== description) {
+      payload.description = description;
+    }
+
     if (user.notifications !== notifications) {
       payload.notifications = notifications;
     }
@@ -141,6 +147,7 @@ function EditProfileForm() {
           setEmailDisabled(true);
         }
 
+        alert('Perfil atualizado com sucesso!');
         setIsLoading(false);
         return;
       }
@@ -232,6 +239,23 @@ function EditProfileForm() {
 
           {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
             <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
+          )}
+        </FormControl>
+
+        <FormControl id="body">
+          <FormControl.Label>Descrição</FormControl.Label>
+          <Editor
+            isValid={errorObject?.key === 'body'}
+            name="description"
+            value={user?.description || ''}
+            onChange={(event) => {
+              setDescription(event.target?.value ?? event);
+            }}
+            compact={true}
+          />
+
+          {errorObject?.key === 'body' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 

@@ -64,6 +64,7 @@ function patchValidationHandler(request, response, next) {
   const cleanBodyValues = validator(request.body, {
     username: 'optional',
     email: 'optional',
+    description: 'optional',
     password: 'optional',
     notifications: 'optional',
   });

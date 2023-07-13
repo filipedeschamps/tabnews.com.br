@@ -9,6 +9,7 @@ import {
   Label,
   LabelGroup,
   Pagehead,
+  Viewer,
   useConfirm,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
@@ -129,11 +130,24 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           </Flash>
         )}
 
-        <Box sx={{ width: '100%', display: 'flex', alignItems: 'flex-start' }}>
-          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, display: 'flex', alignItems: 'center' }}>
-            {userFound.username} <UserFeatures />
-          </Pagehead>
-          {user?.features?.includes('ban:user') && OptionsMenu()}
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'flex-start',
+            flexDirection: 'column',
+            pb: 3,
+            mb: 4,
+            borderBottom: '1px solid rgb(208, 215, 222)',
+          }}>
+          <Box sx={{ width: '100%', display: 'flex', alignItems: 'flex-start' }}>
+            <Pagehead as="h1" sx={{ width: '100%', m: 0, p: 0, display: 'flex', alignItems: 'center', border: 'none' }}>
+              {userFound.username} <UserFeatures />
+            </Pagehead>
+            {user?.features?.includes('ban:user') && OptionsMenu()}
+          </Box>
+
+          <Viewer value={userFound?.description} />
         </Box>
 
         <ContentList

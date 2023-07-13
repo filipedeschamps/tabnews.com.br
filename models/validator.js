@@ -134,6 +134,29 @@ const schemas = {
     });
   },
 
+  description: function () {
+    return Joi.object({
+      description: Joi.string()
+        .pattern(/^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0).*$/su, { invert: true })
+        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
+        .min(1)
+        .max(20000)
+        .invalid(null)
+        .custom(withoutMarkdown, 'check if is empty without markdown')
+        .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"description" é um campo obrigatório.`,
+          'string.empty': `"description" não pode estar em branco.`,
+          'string.base': `"description" deve ser do tipo String.`,
+          'string.min': `"description" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"description" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"description" possui o valor inválido "null".`,
+          'string.pattern.invert.base': `"description" deve começar com caracteres visíveis.`,
+          'markdown.empty': `Markdown deve conter algum texto`,
+        }),
+    });
+  },
+
   password: function () {
     return Joi.object({
       // Why 72 in max length? https://security.stackexchange.com/a/39851
@@ -968,4 +991,5 @@ const reservedUsernames = [
   'va',
   'vagas',
   'videos',
+  'description',
 ];
