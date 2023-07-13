@@ -55,7 +55,7 @@ function calcTabcoinsAverage(tabcoinsObjectArray) {
     return 1; // TabCoins default balance
   }
 
-  const tabcoins = tabcoinsObjectArray.reduce((acc, { tabcoins }) => acc + tabcoins, 0);
+  const tabcoins = tabcoinsObjectArray.reduce((acc, { tabcoins }) => acc + (tabcoins || 0), 0);
 
   return tabcoins / length;
 }
@@ -66,16 +66,24 @@ function calcPrestigeLevel(mean, isRoot) {
     if (1.1 >= mean) return 0;
     if (1.4 >= mean) return 1;
     if (1.6 >= mean) return 2;
-    if (1.8 >= mean) return 3;
+    if (1.7 >= mean) return 3;
+    if (1.8 >= mean) return 4;
+    if (2.0 >= mean) return 5;
+    if (2.3 >= mean) return 6;
+    if (2.6 >= mean) return 7;
   } else {
     if (0.2 >= mean) return -1;
     if (1.0 >= mean) return 0;
     if (1.2 >= mean) return 1;
-    if (1.5 >= mean) return 2;
-    if (1.7 >= mean) return 3;
+    if (1.4 >= mean) return 2;
+    if (1.5 >= mean) return 3;
+    if (1.6 >= mean) return 4;
+    if (1.8 >= mean) return 5;
+    if (2.0 >= mean) return 6;
+    if (2.3 >= mean) return 7;
   }
 
-  return Math.ceil(mean + 2);
+  return Math.ceil(mean + 5);
 }
 
 export default Object.freeze({

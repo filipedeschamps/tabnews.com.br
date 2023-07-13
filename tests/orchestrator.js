@@ -238,8 +238,8 @@ async function createPrestige(
   {
     rootPrestigeNumerator = 1,
     rootPrestigeDenominator = 2,
-    childPrestigeNumerator = 1,
-    childPrestigeDenominator = 2,
+    childPrestigeNumerator = 2,
+    childPrestigeDenominator = 5,
   } = {}
 ) {
   if (
