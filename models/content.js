@@ -1,12 +1,12 @@
-import { v4 as uuidV4 } from 'uuid';
-import slug from 'slug';
-import database from 'infra/database.js';
-import validator from 'models/validator.js';
-import user from 'models/user.js';
-import balance from 'models/balance.js';
 import { ForbiddenError, ValidationError } from 'errors/index.js';
-import queries from 'models/queries';
+import database from 'infra/database.js';
+import balance from 'models/balance.js';
 import prestige from 'models/prestige';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import queries from 'queries/rankingQueries';
+import slug from 'slug';
+import { v4 as uuidV4 } from 'uuid';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);

@@ -2833,7 +2833,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponseBodyBefore = await userResponseBefore.json();
 
-        expect(userResponseBodyBefore.tabcoins).toEqual(5);
+        expect(userResponseBodyBefore.tabcoins).toEqual(8);
         expect(userResponseBodyBefore.tabcash).toEqual(0);
 
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1 });
