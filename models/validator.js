@@ -159,6 +159,7 @@ const schemas = {
       description: Joi.string()
         .allow(null, '')
         .max(160)
+        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
         .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'string.max': `"description" deve conter no máximo {#limit} caracteres.`,
