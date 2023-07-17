@@ -37,7 +37,6 @@ export default function validator(object, keys) {
       required: keys,
     },
   });
-
   if (error) {
     throw new ValidationError({
       message: error.details[0].message,
@@ -778,6 +777,65 @@ const schemas = {
           'string.base': `"ban_type" deve ser do tipo String.`,
           'any.invalid': `"ban_type" possui o valor inválido "null".`,
           'any.only': `"ban_type" deve possuir um dos seguintes valores: "nuke".`,
+        }),
+    });
+  },
+
+  content_with_rating: function () {
+    let contentSchema = Joi.object({
+      children: Joi.array().optional().items(Joi.link('#content')).messages({
+        'array.base': `"children" deve ser do tipo Array.`,
+      }),
+    })
+      .required()
+      .min(1)
+      .messages({
+        'object.base': `Body deve ser do tipo Object.`,
+      })
+      .id('content');
+
+    for (const key of [
+      'id',
+      'owner_id',
+      'parent_id',
+      'slug',
+      'title',
+      'body',
+      'status',
+      'source_url',
+      'created_at',
+      'updated_at',
+      'published_at',
+      'deleted_at',
+      'owner_username',
+      'children_deep_count',
+      'tabcoins',
+      'credit',
+      'debit',
+    ]) {
+      const keyValidationFunction = schemas[key];
+      contentSchema = contentSchema.concat(keyValidationFunction());
+    }
+
+    return contentSchema;
+  },
+
+  credit: function () {
+    return Joi.object({
+      credit: Joi.number()
+        .when('$required.credit', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"credit" é um campo obrigatório.`,
+        }),
+    });
+  },
+
+  debit: function () {
+    return Joi.object({
+      debit: Joi.number()
+        .when('$required.debit', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"debit" é um campo obrigatório.`,
         }),
     });
   },

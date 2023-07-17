@@ -935,11 +935,77 @@ function getContentScore(contentObject) {
   return finalScore;
 }
 
+async function findUserVotes(values = {}, options = {}) {
+  const offset = (values.page - 1) * values.per_page;
+  const query = {
+    text: `
+    SELECT 
+      COUNT(CASE WHEN events.metadata ->> 'transaction_type' = 'credit' THEN 1 END) AS credit,
+      COUNT(CASE WHEN events.metadata ->> 'transaction_type' = 'debit' THEN 1 END) AS debit,
+      contents.id,
+      contents.parent_id,
+      contents.owner_id,
+      contents.slug,
+      contents.title,
+      contents.status,
+      contents.source_url,
+      contents.created_at,
+      contents.published_at,
+      contents.updated_at,
+      contents.deleted_at,
+      get_current_balance('content:tabcoin', contents.id) as tabcoins,
+      users.username as owner_username,
+      (
+        SELECT COUNT(*)
+        FROM contents as children
+        WHERE children.path @> ARRAY[contents.id]
+        AND children.status = 'published'
+            ) as children_deep_count
+    FROM 
+      events
+    LEFT JOIN 
+      contents ON contents.id = uuid(events.metadata ->> 'content_id')
+    INNER JOIN
+            users ON contents.owner_id = users.id
+    WHERE 
+      events.type = 'update:content:tabcoins'
+      AND events.originator_user_id = (
+        SELECT id
+        FROM users
+        WHERE username = $1
+      )
+    GROUP BY 
+      events.metadata ->> 'content_id',
+      users.id,
+      users.username,
+      contents.id,
+      contents.parent_id,
+      contents.owner_id,
+      contents.slug,
+      contents.title,
+      contents.status,
+      contents.source_url,
+      contents.created_at,
+      contents.published_at,
+      contents.updated_at,
+      contents.deleted_at
+    ORDER BY contents.created_at desc
+    LIMIT $2
+    OFFSET $3;`,
+    values: [values.user_id, values.per_page, offset],
+  };
+
+  const results = await database.query(query, { transaction: options.transaction });
+  results.pagination = await getPagination(options);
+  return results;
+}
+
 export default Object.freeze({
   findAll,
   findOne,
   findTree,
   findWithStrategy,
+  findUserVotes,
   create,
   update,
 });

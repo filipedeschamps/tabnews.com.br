@@ -37,6 +37,7 @@ const availableFeatures = new Set([
   'create:content:text_child',
   'read:content:list',
   'read:content:tabcoins',
+  'read:content:votes',
 ]);
 
 function can(user, feature, resource) {
@@ -246,6 +247,14 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = output.map((content) => {
       return validator(content, {
         content: 'required',
+      });
+    });
+  }
+
+  if (feature === 'read:content:votes') {
+    filteredOutputValues = output.map((content) => {
+      return validator(content, {
+        content_with_rating: 'required',
       });
     });
   }
