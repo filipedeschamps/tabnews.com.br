@@ -6,6 +6,7 @@ import {
   IconButton,
   Link,
   PrimerHeader,
+  SearchBox,
   Text,
   ThemeSelector,
   ThemeSwitcher,
@@ -58,6 +59,10 @@ export default function HeaderComponent() {
         </HeaderLink>
       </PrimerHeader.Item>
 
+      <PrimerHeader.Item sx={{ mr: 1 }}>
+        <SearchBox />
+      </PrimerHeader.Item>
+
       {!isLoading && !user && (
         <>
           <PrimerHeader.Item sx={{ mr: 2 }}>
@@ -80,7 +85,7 @@ export default function HeaderComponent() {
           <PrimerHeader.Item
             sx={{
               display: ['none', 'flex'],
-              mr: 2,
+              m: 2,
             }}>
             <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
               <HeaderLink href="/publicar">
@@ -120,7 +125,12 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ mr: 0 }}>
             <ActionMenu>
               <ActionMenu.Anchor>
-                <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
+                <IconButton
+                  aria-label="Abrir opções do Perfil"
+                  icon={PersonFillIcon}
+                  size="small"
+                  sx={{ '&:focus-visible': { outline: '2px solid #FFF' } }}
+                />
               </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>
