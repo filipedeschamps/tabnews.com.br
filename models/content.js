@@ -969,6 +969,7 @@ async function findUserVotes(values = {}, options = {}) {
             users ON contents.owner_id = users.id
     WHERE 
       events.type = 'update:content:tabcoins'
+      AND contents.status = 'published'
       AND events.originator_user_id = (
         SELECT id
         FROM users

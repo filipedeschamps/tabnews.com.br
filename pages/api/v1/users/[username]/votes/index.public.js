@@ -31,6 +31,12 @@ function getValidationHandler(request, response, next) {
 async function getHandler(request, response) {
   const userTryingToGet = user.createAnonymous();
 
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username, {
+    withBalance: true,
+  });
+
+  authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
+
   const results = await content.findUserVotes({
     username: request.query.username,
     page: request.query.page,
