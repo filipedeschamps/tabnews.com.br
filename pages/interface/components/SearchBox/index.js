@@ -9,11 +9,16 @@ export default function SearchBox({ ...props }) {
   const [isLoading, setIsLoading] = useState(true);
   const buttonRef = useRef(null);
   const inputRef = useRef(null);
+  const suggestionsRef = useRef(null);
 
   const onInputRender = (input) => {
     setIsLoading(false);
     input.focus();
     inputRef.current = input;
+  };
+
+  const onSuggestionsRender = (suggestionsBox) => {
+    suggestionsRef.current = suggestionsBox;
   };
 
   const handleClose = () => {
@@ -66,7 +71,7 @@ export default function SearchBox({ ...props }) {
       {isOpen && (
         <Overlay
           returnFocusRef={buttonRef}
-          ignoreClickRefs={[buttonRef]}
+          ignoreClickRefs={[buttonRef, suggestionsRef]}
           onEscape={handleClose}
           onClickOutside={handleClose}
           aria-labelledby="Pesquisar com o Google"
@@ -96,7 +101,7 @@ export default function SearchBox({ ...props }) {
               <IconButton icon={XCircleFillIcon} variant="invisible" onClick={handleClose} />
             </Box>
 
-            <GoogleBox onInputRender={onInputRender} />
+            <GoogleBox onInputRender={onInputRender} onSuggestionsRender={onSuggestionsRender} />
 
             <Box sx={{ display: 'flex', justifyContent: 'center', height: '26px', pt: '20px' }}>
               {isLoading && <Spinner size="medium" />}
@@ -127,20 +132,31 @@ export default function SearchBox({ ...props }) {
   );
 }
 
-function GoogleBox({ onInputRender = () => {} } = {}) {
+function GoogleBox({ onInputRender = () => {}, onSuggestionsRender = () => {} } = {}) {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = searchURL;
     document.head.append(script);
 
+    const waitInputBox = waitForElm('.gsc-input-box');
+    const waitSuggestionBox = waitForElm('.gssb_c');
+
     (async () => {
-      const inputBox = await waitForElm('.gsc-input-box');
+      const inputBox = await waitInputBox.start();
       const input = inputBox.querySelector('input');
       onInputRender(input);
-    })();
-  }, [onInputRender]);
 
-  return <div className="gcse-search"></div>;
+      const suggestionBox = await waitSuggestionBox.start();
+      onSuggestionsRender(suggestionBox);
+    })();
+
+    return () => {
+      waitInputBox.cancel();
+      waitSuggestionBox.cancel();
+    };
+  }, [onInputRender, onSuggestionsRender]);
+
+  return <div className="gcse-search" data-linktarget="_self"></div>;
 }
 
 function clearGoogleBox() {
@@ -176,23 +192,37 @@ function clearGoogleBox() {
   }
 }
 
-// https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
 function waitForElm(selector) {
-  return new Promise((resolve) => {
-    if (document.querySelector(selector)) {
-      return resolve(document.querySelector(selector));
-    }
+  let observer;
 
-    const observer = new MutationObserver(() => {
+  const start = () => {
+    return new Promise((resolve) => {
       if (document.querySelector(selector)) {
-        resolve(document.querySelector(selector));
-        observer.disconnect();
+        return resolve(document.querySelector(selector));
       }
-    });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
+      observer = new MutationObserver(() => {
+        if (document.querySelector(selector)) {
+          resolve(document.querySelector(selector));
+          observer.disconnect();
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
     });
-  });
+  };
+
+  const cancel = () => {
+    if (observer) {
+      observer.disconnect();
+    }
+  };
+
+  return {
+    cancel,
+    start,
+  };
 }
