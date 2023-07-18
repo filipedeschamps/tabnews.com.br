@@ -97,6 +97,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'regularUserPatchingHisUsername',
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
@@ -141,6 +142,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'REGULARUser',
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
@@ -183,6 +185,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'untrimmedUsername',
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,

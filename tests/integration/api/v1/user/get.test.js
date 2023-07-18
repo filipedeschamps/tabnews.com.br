@@ -121,6 +121,7 @@ describe('GET /api/v1/user', () => {
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
+        description: defaultUser.description,
         email: defaultUser.email,
         notifications: defaultUser.notifications,
         features: defaultUser.features,
@@ -238,6 +239,7 @@ describe('GET /api/v1/user', () => {
         expect(responseBody).toStrictEqual({
           id: defaultUser.id,
           username: defaultUser.username,
+          description: defaultUser.description,
           email: defaultUser.email,
           notifications: defaultUser.notifications,
           features: defaultUser.features,
@@ -291,6 +293,7 @@ describe('GET /api/v1/user', () => {
         expect(responseBody).toStrictEqual({
           id: defaultUser.id,
           username: defaultUser.username,
+          description: defaultUser.description,
           email: defaultUser.email,
           notifications: defaultUser.notifications,
           features: defaultUser.features,
@@ -343,6 +346,7 @@ describe('GET /api/v1/user', () => {
         expect(responseBody).toStrictEqual({
           id: defaultUser.id,
           username: defaultUser.username,
+          description: defaultUser.description,
           email: defaultUser.email,
           notifications: defaultUser.notifications,
           features: defaultUser.features,
