@@ -2398,7 +2398,7 @@ describe('POST /api/v1/contents', () => {
 
         const getLastEmail = await orchestrator.getLastEmail();
 
-        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
+        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${rootContent.slug}#${responseBody.id}`;
 
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
@@ -2443,7 +2443,7 @@ describe('POST /api/v1/contents', () => {
 
         const getLastEmail = await orchestrator.getLastEmail();
 
-        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
+        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${rootContent.slug}#${responseBody.id}`;
 
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
@@ -2496,7 +2496,7 @@ describe('POST /api/v1/contents', () => {
 
         const getLastEmail = await orchestrator.getLastEmail();
 
-        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${childContentFromSecondUser.slug}#${responseBody.id}`;
 
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
@@ -2553,7 +2553,7 @@ describe('POST /api/v1/contents', () => {
 
         const getLastEmail = await orchestrator.getLastEmail();
 
-        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${childContentFromSecondUser.slug}#${responseBody.id}`;
 
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
@@ -2678,7 +2678,7 @@ describe('POST /api/v1/contents', () => {
         // 8) CHECK IF FIRST USER RECEIVED ANY EMAIL
         const getLastEmail2 = await orchestrator.getLastEmail();
 
-        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${contentResponse2Body.slug}`;
+        const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${rootContent.slug}#${contentResponse2Body.id}`;
 
         expect(getLastEmail2.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail2.subject).toBe(`"${secondUser.username}" comentou em "Testando sistema de notificação"`);

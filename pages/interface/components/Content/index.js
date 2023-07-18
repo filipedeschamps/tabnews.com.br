@@ -156,6 +156,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
   return (
     <Box
+      id={contentObject.id}
       sx={{
         display: 'flex',
         flexDirection: 'column',

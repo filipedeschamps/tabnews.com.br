@@ -21,7 +21,7 @@ async function sendReplyEmailToParentUser(createdContent) {
       return;
     }
 
-    const childContendUrl = getChildContendUrl(secureCreatedContent);
+    const childContendUrl = getChildContendUrl(parentContent, secureCreatedContent);
     const rootContent = parentContent.parent_id
       ? await content.findOne({
           where: {
@@ -78,8 +78,8 @@ function getBodyReplyLine({ createdContent, rootContent }) {
   return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
 }
 
-function getChildContendUrl({ owner_username, slug }) {
-  return `${webserver.host}/${owner_username}/${slug}`;
+function getChildContendUrl({ owner_username, slug }, { id }) {
+  return `${webserver.host}/${owner_username}/${slug}#${id}`;
 }
 
 export default Object.freeze({
