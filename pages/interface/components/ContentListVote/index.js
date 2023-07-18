@@ -1,0 +1,190 @@
+import { Box, EmptyState, Link, PublishedSince, Text } from '@/TabNewsUI';
+import { ChevronLeftIcon, ChevronRightIcon, CommentIcon, SquareFillIcon } from '@primer/octicons-react';
+
+export default function ContentListVote({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
+  const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
+
+  const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
+  const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
+
+  return (
+    <>
+      {list.length > 0 ? (
+        <Box
+          sx={{
+            display: 'grid',
+            gap: '0.5rem',
+            gridTemplateColumns: 'auto 1fr',
+            width: '100%',
+          }}>
+          <RenderItems />
+          <EndOfRelevant />
+        </Box>
+      ) : (
+        <RenderEmptyMessage {...emptyStateProps} />
+      )}
+
+      {list.length > 0 ? (
+        <Box
+          sx={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
+            gap: 4,
+            m: 4,
+            mb: 2,
+          }}>
+          {pagination.previousPage ? (
+            <Link href={previousPageUrl} scroll={false}>
+              <ChevronLeftIcon size={16} />
+              Anterior
+            </Link>
+          ) : (
+            <Text color="fg.muted">
+              <ChevronLeftIcon size={16} />
+              Anterior
+            </Text>
+          )}
+
+          {pagination.nextPage ? (
+            <Link href={nextPageUrl}>
+              Próximo
+              <ChevronRightIcon size={16} />
+            </Link>
+          ) : (
+            <Text color="fg.muted">
+              Próximo
+              <ChevronRightIcon size={16} />
+            </Text>
+          )}
+        </Box>
+      ) : null}
+    </>
+  );
+
+  function RenderItems() {
+    function ChildrenDeepCountText({ count }) {
+      return count > 1 ? `${count} comentários` : `${count} comentário`;
+    }
+
+    function TabCoinsText({ count }) {
+      return count > 1 || count < -1 ? `${count} tabcoins` : `${count} tabcoin`;
+    }
+
+    return list.map((contentObject, index) => {
+      const itemCount = index + 1 + listNumberOffset;
+      return [
+        <Box key={itemCount} sx={{ textAlign: 'right' }}>
+          <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
+            {itemCount}.
+          </Text>
+        </Box>,
+        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}>
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+                '> a': {
+                  ':link': {
+                    color: 'fg.default',
+                  },
+                  ':visited': {
+                    color: 'fg.subtle',
+                  },
+                },
+              }}>
+              {contentObject.parent_id ? (
+                <Link
+                  sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
+                  href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
+                </Link>
+              ) : (
+                <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  {contentObject.title}
+                </Link>
+              )}
+            </Box>
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                display: 'flex',
+                fontSize: 2,
+                '> a': {
+                  ':link': {
+                    color: 'fg.default',
+                  },
+                  ':visited': {
+                    color: 'fg.subtle',
+                  },
+                },
+              }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#2da44e', mr: 1 }}>
+                <SquareFillIcon size={16} />
+                <Text sx={{ color: 'fg.subtle' }}>{contentObject.credit?.toLocaleString('pt-BR')}</Text>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#ff1717', mr: 2 }}>
+                <SquareFillIcon size={16} />
+                <Text sx={{ color: 'fg.subtle' }}>{contentObject.debit?.toLocaleString('pt-BR')}</Text>
+              </Box>
+            </Box>
+          </Box>
+          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+            <Text>
+              <TabCoinsText count={contentObject.tabcoins} />
+            </Text>
+            {' · '}
+            <Text>
+              <ChildrenDeepCountText count={contentObject.children_deep_count} />
+            </Text>
+            {' · '}
+            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+              {contentObject.owner_username}
+            </Link>
+            {' · '}
+            <Text>
+              <PublishedSince direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
+            </Text>
+          </Box>
+        </Box>,
+      ];
+    });
+  }
+
+  function EndOfRelevant() {
+    if (paginationBasePath == '/pagina' && !pagination.nextPage)
+      return [
+        <Box key={0} sx={{ textAlign: 'right' }}>
+          <Text
+            sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right', visibility: 'hidden' }}>
+            0.
+          </Text>
+        </Box>,
+        <Box key={-1}>
+          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+              }}>
+              Fim dos conteúdos relevantes mais atuais
+            </Box>
+            <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
+          </Link>
+        </Box>,
+      ];
+    return null;
+  }
+
+  function RenderEmptyMessage(props) {
+    return <EmptyState title="Nenhum conteúdo encontrado" {...props} />;
+  }
+}

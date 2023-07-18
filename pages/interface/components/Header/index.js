@@ -148,6 +148,9 @@ export default function HeaderComponent() {
                   <ActionList.LinkItem as={Link} href={`/${user.username}`}>
                     Meus conteúdos
                   </ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href={`/${user.username}/votos`}>
+                    Meus votos
+                  </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href="/perfil">
                     Editar perfil
                   </ActionList.LinkItem>
