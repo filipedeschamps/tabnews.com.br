@@ -992,11 +992,12 @@ async function findUserVotes(values = {}, options = {}) {
     ORDER BY contents.created_at desc
     LIMIT $2
     OFFSET $3;`,
-    values: [values.user_id, values.per_page, offset],
+    values: [values.username, values.per_page, offset],
   };
 
   const results = await database.query(query, { transaction: options.transaction });
-  results.pagination = await getPagination(options);
+  values.strategy = 'votes';
+  results.pagination = await getPagination(values);
   return results;
 }
 

@@ -32,7 +32,7 @@ async function getHandler(request, response) {
   const userTryingToGet = user.createAnonymous();
 
   const results = await content.findUserVotes({
-    user_id: request.query.username,
+    username: request.query.username,
     page: request.query.page,
     per_page: request.query.per_page,
   });
