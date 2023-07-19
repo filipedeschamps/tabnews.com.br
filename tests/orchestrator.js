@@ -237,8 +237,8 @@ async function createPrestige(
   userId,
   {
     rootPrestigeNumerator = 1,
-    rootPrestigeDenominator = 2,
-    childPrestigeNumerator = 2,
+    rootPrestigeDenominator = 4,
+    childPrestigeNumerator = 1,
     childPrestigeDenominator = 5,
   } = {}
 ) {
