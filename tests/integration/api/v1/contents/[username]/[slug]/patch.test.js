@@ -2815,7 +2815,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 4 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 8 });
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
