@@ -1,10 +1,13 @@
 import { SearchIcon, XCircleFillIcon } from '@primer/octicons-react';
-import { Box, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
+import { Box, Button, Heading, IconButton, Overlay, Spinner, useTheme } from '@/TabNewsUI';
 import { useEffect, useRef, useState } from 'react';
 
 const searchURL = process.env.NEXT_PUBLIC_SEARCH_URL + process.env.NEXT_PUBLIC_SEARCH_ID;
 
 export default function SearchBox({ ...props }) {
+  const {
+    theme: { colors },
+  } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const buttonRef = useRef(null);
@@ -90,12 +93,12 @@ export default function SearchBox({ ...props }) {
             borderStyle: 'solid',
             borderWidth: '1px',
             borderColor: 'border.default',
-            backgroundColor: '#FFF',
+            backgroundColor: 'canvas.default',
             transform: 'translateX(-50%)',
           }}>
           <Box sx={isLoading ? { height: '138px' } : { overflowY: 'auto', minHeight: '138px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', p: '13px', pb: '0' }}>
-              <Heading sx={{ flex: 1, textAlign: 'center', fontSize: 3, color: '#444444' }}>
+              <Heading sx={{ flex: 1, textAlign: 'center', fontSize: 3, color: 'fg.default' }}>
                 Pesquisar com o Google
               </Heading>
               <IconButton icon={XCircleFillIcon} variant="invisible" onClick={handleClose} />
@@ -109,8 +112,74 @@ export default function SearchBox({ ...props }) {
           </Box>
 
           <style jsx global>{`
+            .gsq_a {
+              background-color: ${colors.canvas.default} !important;
+              color: ${colors.fg.default} !important;
+            }
+            .gs-no-results-result .gs-snippet {
+              border: none !important;
+              background-color: ${colors.canvas.default} !important;
+              color: ${colors.fg.default} !important;
+            }
+            .gsc-completion-container {
+              background-color: ${colors.canvas.default} !important;
+            }
+            .gsq_a:hover {
+              background-color: ${colors.canvas.subtle} !important;
+            }
+            .gsc-completion-selected {
+              background-color: ${colors.canvas.subtle} !important;
+            }
+
+            .gsc-control-cse,
+            .gsc-result {
+              background-color: ${colors.canvas.default} !important;
+              border-color: ${colors.canvas.default} !important;
+            }
+            .gsc-results {
+              background-color: ${colors.canvas.default} !important;
+            }
+            .gs-title {
+              color: ${colors.fg.default} !important;
+            }
+            .gsc-adBlock {
+              display: none !important;
+            }
+            .gsc-refinementsArea,
+            .gsc-above-wrapper-area {
+              border-bottom: 1px solid ${colors.canvas.subtle} !important;
+            }
+            .gsc-cursor-page {
+              background-color: ${colors.canvas.default} !important;
+              border-color: ${colors.canvas.default} !important;
+            }
+            .gsc-refinementHeader {
+              background-color: ${colors.canvas.default} !important;
+              color: ${colors.fg.default} !important;
+            }
+            .gsc-refinementhActive {
+              font-weight: 'bold';
+            }
+            a.gs-title:visited b,
+            b {
+              color: ${colors.fg.default} !important;
+            }
+            .gs-visibleUrl {
+              color: ${colors.fg.muted} !important;
+            }
+            .gs-snippet {
+              color: ${colors.fg.subtle} !important;
+            }
+            .gs-label {
+              color: ${colors.fg.default} !important;
+            }
+            .gs-result .gs-image {
+              border: none !important;
+            }
             .gsc-input-box {
               border-radius: 6px !important;
+              background-color: ${colors.canvas.default} !important;
+              border-color: ${colors.fg.subtle} !important;
             }
             .gsc-search-button-v2 {
               border-radius: 6px !important;
@@ -120,6 +189,8 @@ export default function SearchBox({ ...props }) {
             }
             .gsc-input {
               color-scheme: light;
+              color: ${colors.fg.default} !important;
+              background-color: ${colors.canvas.default} !important;
             }
             .gssb_c {
               color: #444444;
