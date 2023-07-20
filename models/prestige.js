@@ -64,23 +64,23 @@ function calcPrestigeLevel(mean, isRoot) {
   if (isRoot) {
     if (0.4 >= mean) return -1;
     if (1.1 >= mean) return 0;
-    if (1.4 >= mean) return 1;
-    if (1.6 >= mean) return 2;
-    if (1.7 >= mean) return 3;
-    if (1.8 >= mean) return 4;
-    if (2.0 >= mean) return 5;
-    if (2.3 >= mean) return 6;
-    if (2.6 >= mean) return 7;
+    if (1.2 >= mean) return 1;
+    if (1.3 >= mean) return 2;
+    if (1.4 >= mean) return 3;
+    if (1.6 >= mean) return 4;
+    if (1.8 >= mean) return 5;
+    if (2.1 >= mean) return 6;
+    if (2.4 >= mean) return 7;
   } else {
     if (0.2 >= mean) return -1;
     if (1.0 >= mean) return 0;
-    if (1.2 >= mean) return 1;
-    if (1.4 >= mean) return 2;
-    if (1.5 >= mean) return 3;
-    if (1.6 >= mean) return 4;
-    if (1.8 >= mean) return 5;
-    if (2.0 >= mean) return 6;
-    if (2.3 >= mean) return 7;
+    if (1.1 >= mean) return 1;
+    if (1.2 >= mean) return 2;
+    if (1.25 >= mean) return 3;
+    if (1.3 >= mean) return 4;
+    if (1.5 >= mean) return 5;
+    if (1.7 >= mean) return 6;
+    if (2.0 >= mean) return 7;
   }
 
   return Math.ceil(mean + 5);
