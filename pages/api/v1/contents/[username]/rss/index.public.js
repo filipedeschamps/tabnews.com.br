@@ -2,11 +2,11 @@ import nextConnect from 'next-connect';
 import controller from 'models/controller.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
-import user from 'models/user.js';
-import rss from 'models/rss';
-import content from 'models/content.js';
-import webserver from 'infra/webserver.js';
 import validator from 'models/validator.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
+import rss from 'models/rss.js';
+import webserver from 'infra/webserver.js';
 
 export default nextConnect({
   attachParams: true,
@@ -15,11 +15,12 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
-  .use(cacheControl.swrMaxAge(60))
+  .use(cacheControl.swrMaxAge(10))
   .get(getValidationHandler, getHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
+    username: 'required',
     page: 'optional',
     per_page: 'optional',
     strategy: 'optional',
@@ -31,12 +32,12 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToList = user.createAnonymous();
+  const userTryingToGet = user.createAnonymous();
 
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
     where: {
-      parent_id: null,
+      owner_username: request.query.username,
       status: 'published',
     },
     page: request.query.page,
@@ -44,13 +45,10 @@ async function getHandler(request, response) {
   });
 
   const contentListFound = results.rows;
-  const secureContentListFound = authorization.filterOutput(userTryingToList, 'read:content:list', contentListFound);
 
-  const rss2 = rss.generateRss2(
-    secureContentListFound,
-    `${webserver.host}/${request.query.strategy == 'new' ? 'recentes' : 'relevantes'}/rss`
-  );
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
+  const rss2 = rss.generateRss2(secureOutputValues, `${webserver.host}/${request.query.username}/rss`);
 
   response.setHeader('Content-Type', 'text/xml; charset=utf-8');
-  response.status(200).send(rss2);
+  return response.status(200).send(rss2);
 }

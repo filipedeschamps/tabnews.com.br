@@ -5,12 +5,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Feed } from 'feed';
 import webserver from 'infra/webserver.js';
 
-function generateRss2(contentList) {
+function generateRss2(contentList, feedURL) {
   const webserverHost = webserver.host;
-
-  // TODO: make this property flexible in the future to
-  // support things like: `/[username]/rss`
-  const feedURL = `${webserverHost}/recentes/rss`;
 
   const feed = new Feed({
     title: 'TabNews',

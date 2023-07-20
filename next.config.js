@@ -25,9 +25,39 @@ module.exports = {
   },
   async rewrites() {
     return [
+      //direct rss
       {
         source: '/recentes/rss',
-        destination: '/api/v1/contents/rss',
+        destination: '/api/v1/contents/rss?strategy=new',
+      },
+      {
+        source: '/relevantes/rss',
+        destination: '/api/v1/contents/rss?strategy=relevant',
+      },
+      {
+        source: '/:user/rss',
+        destination: '/api/v1/contents/:user/rss',
+      },
+      {
+        source: '/:user/:slug/rss',
+        destination: '/api/v1/contents/:user/:slug/rss',
+      },
+      //.xml rss
+      {
+        source: '/recentes/rss.xml',
+        destination: '/api/v1/contents/rss?strategy=new',
+      },
+      {
+        source: '/relevantes/rss.xml',
+        destination: '/api/v1/contents/rss?strategy=relevant',
+      },
+      {
+        source: '/:user/rss.xml',
+        destination: '/api/v1/contents/:user/rss',
+      },
+      {
+        source: '/:user/:slug/rss.xml',
+        destination: '/api/v1/contents/:user/:slug/rss',
       },
     ];
   },
