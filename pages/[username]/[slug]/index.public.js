@@ -82,6 +82,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
 
           <RenderChildrenTree
             key={contentFound.id}
+            childrenDeepCount={contentFound.children_deep_count}
             childrenList={contentFound.children}
             renderIntent={childrenToShow}
             renderIncrement={Math.ceil(childrenToShow / 2)}
@@ -177,12 +178,13 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
 }
 
 function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
-  const { filteredTree, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
+  const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
 
-  return filteredTree.map((child) => {
-    const { children = [], groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
-    const labelShowMore = Math.min(renderIncrement, groupedCount);
-    const plural = labelShowMore > 1 ? 's' : '';
+  return childrenState.map((child) => {
+    const { children, children_deep_count, groupedCount, hiddenAvailable, id, owner_id, renderIntent, renderShowMore } =
+      child;
+    const labelShowMore = Math.min(groupedCount, hiddenAvailable, renderIncrement) || '';
+    const plural = labelShowMore != 1 ? 's' : '';
 
     return !renderIntent && !renderShowMore ? null : (
       <Box
@@ -260,8 +262,9 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                 <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
               </Box>
 
-              {children.length > 0 && (
+              {children_deep_count > 0 && (
                 <RenderChildrenTree
+                  childrenDeepCount={children_deep_count}
                   childrenList={children}
                   renderIntent={renderIntent - 1}
                   renderIncrement={renderIncrement}
