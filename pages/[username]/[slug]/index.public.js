@@ -181,9 +181,8 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
   const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
 
   return childrenState.map((child) => {
-    const { children, children_deep_count, groupedCount, hiddenAvailable, id, owner_id, renderIntent, renderShowMore } =
-      child;
-    const labelShowMore = Math.min(groupedCount, hiddenAvailable, renderIncrement) || '';
+    const { children, children_deep_count, groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
+    const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
     const plural = labelShowMore != 1 ? 's' : '';
 
     return !renderIntent && !renderShowMore ? null : (
