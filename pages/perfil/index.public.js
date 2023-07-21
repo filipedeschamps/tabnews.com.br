@@ -3,12 +3,12 @@ import {
   Button,
   Checkbox,
   DefaultLayout,
+  Editor,
   Flash,
   FormControl,
   Heading,
   Link,
   TextInput,
-  Textarea,
   useConfirm,
 } from '@/TabNewsUI';
 import { useUser, suggestEmail } from 'pages/interface';
@@ -17,11 +17,10 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function EditProfile() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Editar Perfil' }}>
+    <DefaultLayout containerWidth="medium" metadata={{ title: 'Editar Perfil' }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Editar Perfil
       </Heading>
-
       <EditProfileForm />
     </DefaultLayout>
   );
@@ -36,7 +35,6 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
-  const descriptionRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -47,7 +45,6 @@ function EditProfileForm() {
       usernameRef.current.value = user.username;
       emailRef.current.value = user.email;
       notificationsRef.current.checked = user.notifications;
-      descriptionRef.current.value = user.description;
     }
   }, [user, router, userIsLoading]);
 
@@ -59,6 +56,7 @@ function EditProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
+  const [description, setDescription] = useState('');
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -69,7 +67,6 @@ function EditProfileForm() {
 
     const username = usernameRef.current.value;
     const email = emailRef.current.value;
-    const description = descriptionRef.current.value;
     const notifications = notificationsRef.current.checked;
 
     setIsLoading(true);
@@ -245,20 +242,15 @@ function EditProfileForm() {
 
         <FormControl id="description">
           <FormControl.Label>Descrição</FormControl.Label>
-          <Textarea
-            ref={descriptionRef}
-            name="description"
-            autoCorrect="off"
-            autoCapitalize="off"
-            resize="none"
-            spellCheck={false}
-            block={true}
-            aria-label="Sua descrição"
-            sx={{
-              px: 2,
-              backgroundColor: 'canvas.inset',
-              '&:focus-within': { backgroundColor: 'canvas.default' },
+
+          <Editor
+            onChange={(value) => {
+              clearErrors();
+              setDescription(value);
             }}
+            value={user?.description || ''}
+            isValid={errorObject?.key === 'description'}
+            compact={true}
           />
 
           {errorObject?.key === 'description' && errorObject?.type === 'string.max' && (
