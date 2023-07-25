@@ -130,7 +130,7 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
         )}
 
         <Box sx={{ width: '100%', display: 'flex' }}>
-          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 0 }}>
+          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 3 }}>
             {userFound.username} <UserFeatures />
           </Pagehead>
           {user?.features?.includes('ban:user') && OptionsMenu()}
@@ -145,7 +145,7 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
               borderRadius: '6px',
               width: '100%',
               p: 3,
-              my: 3,
+              mb: 3,
             }}>
             <Viewer value={userFound.description} />
           </Box>

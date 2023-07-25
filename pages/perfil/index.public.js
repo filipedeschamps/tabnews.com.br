@@ -56,7 +56,7 @@ function EditProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(user?.description || '');
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -248,7 +248,7 @@ function EditProfileForm() {
               clearErrors();
               setDescription(value);
             }}
-            value={user?.description || ''}
+            value={description}
             isValid={errorObject?.key === 'description'}
             compact={true}
           />

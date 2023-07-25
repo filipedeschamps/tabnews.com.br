@@ -41,7 +41,6 @@ export {
   SSRProvider,
   Text,
   TextInput,
-  Textarea,
   ThemeProvider as PrimerThemeProvider,
   Tooltip,
   Truncate,
