@@ -249,7 +249,8 @@ async function update(username, postedUserData, options = {}) {
           username = $2,
           email = $3,
           password = $4,
-          notifications = $5,
+          description = $5,
+          notifications = $6,
           updated_at = (now() at time zone 'utc')
         WHERE
           id = $1
@@ -261,6 +262,7 @@ async function update(username, postedUserData, options = {}) {
         userWithUpdatedValues.username,
         userWithUpdatedValues.email,
         userWithUpdatedValues.password,
+        userWithUpdatedValues.description,
         userWithUpdatedValues.notifications,
       ],
     };
@@ -286,6 +288,7 @@ async function validatePatchSchema(postedUserData) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    description: 'optional',
     notifications: 'optional',
   });
 

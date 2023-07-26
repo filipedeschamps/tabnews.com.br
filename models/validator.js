@@ -154,6 +154,23 @@ const schemas = {
     });
   },
 
+  description: function () {
+    return Joi.object({
+      description: Joi.string()
+        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
+        .max(5000)
+        .invalid(null)
+        .allow('')
+        .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"description" é um campo obrigatório.`,
+          'string.base': `"description" deve ser do tipo String.`,
+          'string.max': `"description" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"description" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
   notifications: function () {
     return Joi.object({
       notifications: Joi.boolean()
@@ -867,6 +884,8 @@ const reservedUsernames = [
   'dados',
   'dashboard',
   'desconectar',
+  'descricao',
+  'description',
   'deslogar',
   'diretrizes',
   'discussao',

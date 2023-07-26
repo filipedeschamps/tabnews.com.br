@@ -74,6 +74,7 @@ describe('GET /api/v1/users', () => {
       const firstUser = {
         id: defaultUser.id,
         username: defaultUser.username,
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
@@ -83,6 +84,7 @@ describe('GET /api/v1/users', () => {
       const secondUser = {
         id: privilegedUser.id,
         username: privilegedUser.username,
+        description: privilegedUser.description,
         features: privilegedUser.features,
         tabcoins: 0,
         tabcash: 0,

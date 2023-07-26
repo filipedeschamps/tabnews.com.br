@@ -113,6 +113,7 @@ async function createUser(userObject) {
     username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
     email: userObject?.email || faker.internet.email(),
     password: userObject?.password || 'password',
+    description: userObject?.description || '',
   });
 }
 

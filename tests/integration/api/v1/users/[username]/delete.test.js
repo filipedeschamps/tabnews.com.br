@@ -423,6 +423,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       expect(nukeResponseBody).toStrictEqual({
         id: secondUser.id,
         username: secondUser.username,
+        description: secondUser.description,
         features: ['nuked'],
         tabcoins: 0,
         tabcash: 0,
@@ -550,6 +551,7 @@ describe('DELETE /api/v1/users/[username]', () => {
       expect(nuke1ResponseBody).toStrictEqual({
         id: secondUser.id,
         username: secondUser.username,
+        description: secondUser.description,
         features: ['nuked'],
         tabcoins: 0,
         tabcash: 0,

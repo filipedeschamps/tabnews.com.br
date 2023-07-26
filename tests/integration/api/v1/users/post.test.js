@@ -31,6 +31,7 @@ describe('POST /api/v1/users', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'uniqueUserName',
+        description: '',
         features: ['read:activation_token'],
         tabcoins: 0,
         tabcash: 0,
@@ -72,6 +73,7 @@ describe('POST /api/v1/users', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'postWithUnknownKey',
+        description: '',
         features: ['read:activation_token'],
         tabcoins: 0,
         tabcash: 0,
@@ -107,6 +109,7 @@ describe('POST /api/v1/users', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'extraSpaceInTheEnd',
+        description: '',
         features: ['read:activation_token'],
         tabcoins: 0,
         tabcash: 0,

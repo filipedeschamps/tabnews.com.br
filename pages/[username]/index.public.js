@@ -9,6 +9,7 @@ import {
   Label,
   LabelGroup,
   Pagehead,
+  Viewer,
   useConfirm,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
@@ -86,12 +87,11 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
   function OptionsMenu() {
     return (
       <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0 }}>
+        <Box sx={{ position: 'absolute', right: 0, top: 2 }}>
           <ActionMenu>
             <ActionMenu.Anchor>
               <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar usuário" />
             </ActionMenu.Anchor>
-
             <ActionMenu.Overlay>
               <ActionList>
                 {!userFound?.features?.includes('nuked') && (
@@ -129,12 +129,27 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           </Flash>
         )}
 
-        <Box sx={{ width: '100%', display: 'flex', alignItems: 'flex-start' }}>
-          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', display: 'flex' }}>
+          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 3 }}>
             {userFound.username} <UserFeatures />
           </Pagehead>
           {user?.features?.includes('ban:user') && OptionsMenu()}
         </Box>
+
+        {userFound.description && (
+          <Box
+            sx={{
+              borderWidth: 1,
+              borderStyle: 'solid',
+              borderColor: 'border.default',
+              borderRadius: '6px',
+              width: '100%',
+              p: 3,
+              mb: 3,
+            }}>
+            <Viewer value={userFound.description} />
+          </Box>
+        )}
 
         <ContentList
           contentList={contentListFound}
