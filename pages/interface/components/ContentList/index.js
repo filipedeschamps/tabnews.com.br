@@ -1,5 +1,5 @@
 import { Box, EmptyState, Link, PublishedSince, Text } from '@/TabNewsUI';
-import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
+import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
 
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);

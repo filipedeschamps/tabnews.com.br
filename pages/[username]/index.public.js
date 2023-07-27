@@ -11,7 +11,7 @@ import {
   Pagehead,
   useConfirm,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
+import { KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors/index.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
@@ -22,7 +22,7 @@ import { getStaticPropsRevalidate } from 'next-swr';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { useState } from 'react';
-import { FaUser } from 'react-icons/fa';
+import { FaUser } from '@/TabNewsUI/icons';
 import useSWR from 'swr';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {

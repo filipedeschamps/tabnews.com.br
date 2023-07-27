@@ -1,5 +1,5 @@
 import { FormControl, TextInput } from '@/TabNewsUI';
-import { EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
+import { EyeClosedIcon, EyeIcon } from '@/TabNewsUI/icons';
 import { useEffect, useState } from 'react';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {

@@ -1,5 +1,5 @@
 import { Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
-import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@primer/octicons-react';
+import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
 import { NotFoundError, ValidationError } from 'errors/index.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';

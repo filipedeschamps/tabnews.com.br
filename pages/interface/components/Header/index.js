@@ -13,10 +13,10 @@ import {
   Tooltip,
   Truncate,
 } from '@/TabNewsUI';
-import { HomeIcon, PersonFillIcon, SquareFillIcon, PlusIcon } from '@primer/octicons-react';
+import { HomeIcon, PersonFillIcon, SquareFillIcon, PlusIcon } from '@/TabNewsUI/icons';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { CgTab } from 'react-icons/cg';
+import { CgTab } from '@/TabNewsUI/icons';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();

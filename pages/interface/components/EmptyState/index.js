@@ -1,5 +1,5 @@
 import { Box, Button, Heading, Text } from '@/TabNewsUI';
-import { PlusIcon } from '@primer/octicons-react';
+import { PlusIcon } from '@/TabNewsUI/icons';
 
 export default function EmptyState(props) {
   const { title, description, action, icon: Icon, isLoading } = props;
