@@ -12,7 +12,7 @@ import {
   Viewer,
   useConfirm,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { FaUser, KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors/index.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
@@ -23,7 +23,6 @@ import { getStaticPropsRevalidate } from 'next-swr';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { useState } from 'react';
-import { FaUser } from '@/TabNewsUI/icons';
 import useSWR from 'swr';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {

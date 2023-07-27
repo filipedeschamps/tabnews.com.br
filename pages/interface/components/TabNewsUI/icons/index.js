@@ -6,6 +6,7 @@ export {
   ChevronRightIcon,
   ChevronUpIcon,
   CommentDiscussionIcon,
+  CommentIcon,
   EyeClosedIcon,
   EyeIcon,
   FoldIcon,

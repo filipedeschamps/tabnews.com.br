@@ -13,10 +13,9 @@ import {
   Tooltip,
   Truncate,
 } from '@/TabNewsUI';
-import { HomeIcon, PersonFillIcon, SquareFillIcon, PlusIcon } from '@/TabNewsUI/icons';
+import { CgTab, HomeIcon, PersonFillIcon, PlusIcon, SquareFillIcon } from '@/TabNewsUI/icons';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { CgTab } from '@/TabNewsUI/icons';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
