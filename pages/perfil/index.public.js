@@ -3,6 +3,7 @@ import {
   Button,
   Checkbox,
   DefaultLayout,
+  Editor,
   Flash,
   FormControl,
   Heading,
@@ -16,11 +17,10 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function EditProfile() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Editar Perfil' }}>
+    <DefaultLayout containerWidth="medium" metadata={{ title: 'Editar Perfil' }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Editar Perfil
       </Heading>
-
       <EditProfileForm />
     </DefaultLayout>
   );
@@ -56,6 +56,7 @@ function EditProfileForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
+  const [description, setDescription] = useState(user?.description || '');
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -104,6 +105,10 @@ function EditProfileForm() {
 
     if (user.email !== email) {
       payload.email = email;
+    }
+
+    if (user.description !== description) {
+      payload.description = description;
     }
 
     if (user.notifications !== notifications) {
@@ -232,6 +237,24 @@ function EditProfileForm() {
 
           {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
             <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
+          )}
+        </FormControl>
+
+        <FormControl id="description">
+          <FormControl.Label>Descrição</FormControl.Label>
+
+          <Editor
+            onChange={(value) => {
+              clearErrors();
+              setDescription(value);
+            }}
+            value={description}
+            isValid={errorObject?.key === 'description'}
+            compact={true}
+          />
+
+          {errorObject?.key === 'description' && errorObject?.type === 'string.max' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 
