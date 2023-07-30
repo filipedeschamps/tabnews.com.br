@@ -1,5 +1,5 @@
 import { Box, Link } from '@/TabNewsUI';
-import { CgTab } from 'react-icons/cg';
+import { CgTab } from '@/TabNewsUI/icons';
 
 export default function Footer(props) {
   return (

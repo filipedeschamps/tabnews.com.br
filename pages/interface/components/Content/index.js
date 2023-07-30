@@ -17,7 +17,7 @@ import {
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@primer/octicons-react';
+import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 import { useCallback, useEffect, useMemo, useState } from 'react';

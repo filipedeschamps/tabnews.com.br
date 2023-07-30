@@ -1,5 +1,5 @@
 import { Box, Button, SegmentedControl, useTheme } from '@/TabNewsUI';
-import { MoonIcon, SunIcon } from '@primer/octicons-react';
+import { MoonIcon, SunIcon } from '@/TabNewsUI/icons';
 
 export default function ThemeSelector({ ...props }) {
   const { colorMode, setColorMode } = useTheme();
