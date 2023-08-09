@@ -1,10 +1,11 @@
 import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { FaTree } from '@/TabNewsUI/icons';
+import { getStaticPropsRevalidate } from 'next-swr';
+
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { getStaticPropsRevalidate } from 'next-swr';
-import { FaTree } from '@/TabNewsUI/icons';
 
 export default function Home({ contentListFound, pagination }) {
   return (

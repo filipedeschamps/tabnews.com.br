@@ -1,5 +1,4 @@
 // Original code from: https://github.com/apal21/nextjs-progressbar
-
 import Router from 'next/router';
 import NProgress from 'nprogress';
 import { useEffect } from 'react';

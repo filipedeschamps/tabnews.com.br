@@ -1,4 +1,5 @@
 import { Box, Footer, GoToTopButton, Header } from '@/TabNewsUI';
+
 import { Head } from 'pages/interface';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {

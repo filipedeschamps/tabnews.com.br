@@ -1,7 +1,9 @@
-const nodemailer = require('nodemailer');
 import { ServiceError } from 'errors/index.js';
 import webserver from 'infra/webserver.js';
+
 import logger from './logger.js';
+
+const nodemailer = require('nodemailer');
 
 const transporterConfiguration = {
   host: process.env.EMAIL_SMTP_HOST,

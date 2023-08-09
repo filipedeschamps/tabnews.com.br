@@ -11,9 +11,10 @@ import {
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
-import { useUser, suggestEmail } from 'pages/interface';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
+
+import { suggestEmail, useUser } from 'pages/interface';
 
 export default function EditProfile() {
   return (

@@ -1,7 +1,4 @@
 import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
-import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-
 // ByteMD dependencies:
 import breaksPlugin from '@bytemd/plugin-breaks';
 import gemojiPlugin from '@bytemd/plugin-gemoji';
@@ -12,8 +9,10 @@ import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
+import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import 'katex/dist/katex.css';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),

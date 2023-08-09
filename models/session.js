@@ -1,9 +1,10 @@
-import crypto from 'crypto';
 import cookie from 'cookie';
-import database from 'infra/database.js';
+import crypto from 'crypto';
+
 import { UnauthorizedError } from 'errors/index.js';
-import validator from 'models/validator.js';
+import database from 'infra/database.js';
 import cacheControl from 'models/cache-control';
+import validator from 'models/validator.js';
 
 const SESSION_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 

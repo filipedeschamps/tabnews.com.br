@@ -14,13 +14,14 @@ import {
   ReadTime,
   Text,
   TextInput,
-  useConfirm,
   Viewer,
+  useConfirm,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { useRouter } from 'next/router';
-import { useUser } from 'pages/interface';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { useUser } from 'pages/interface';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);

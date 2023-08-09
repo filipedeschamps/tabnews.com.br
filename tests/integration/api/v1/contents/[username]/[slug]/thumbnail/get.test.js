@@ -1,8 +1,10 @@
-const { join, resolve } = require('path');
-import { readFileSync } from 'fs';
 import fetch from 'cross-fetch';
+import { readFileSync } from 'fs';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
+
+const { join, resolve } = require('path');
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

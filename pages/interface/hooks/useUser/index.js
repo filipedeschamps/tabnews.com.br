@@ -1,6 +1,7 @@
-import webserver from 'infra/webserver';
 import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+
+import webserver from 'infra/webserver';
 
 const userEndpoint = '/api/v1/user';
 const sessionEndpoint = '/api/v1/sessions';

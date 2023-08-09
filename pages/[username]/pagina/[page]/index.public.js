@@ -1,11 +1,12 @@
-import { DefaultLayout, ContentList } from '@/TabNewsUI';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
-import removeMarkdown from 'models/remove-markdown.js';
-import { NotFoundError } from 'errors/index.js';
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import { getStaticPropsRevalidate } from 'next-swr';
+
+import { NotFoundError } from 'errors/index.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default function Home({ contentListFound, pagination, username }) {
   return (
