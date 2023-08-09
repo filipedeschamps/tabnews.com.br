@@ -1,9 +1,8 @@
 import migrationRunner from 'node-pg-migrate';
+import { join, resolve } from 'node:path';
 
 import database from 'infra/database.js';
 import logger from 'infra/logger.js';
-
-const { join, resolve } = require('path');
 
 const defaultConfigurations = {
   dir: join(resolve('.'), 'infra', 'migrations'),
