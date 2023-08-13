@@ -148,6 +148,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
       id: postUserResponseBody.id,
       username: postUserResponseBody.username,
       email: 'regularregistrationflow@gmail.com',
+      description: '',
       notifications: true,
       features: [
         'create:session',

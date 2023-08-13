@@ -4,7 +4,7 @@ import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { getStaticPropsRevalidate } from 'next-swr';
-import { FaTree } from 'react-icons/fa';
+import { FaTree } from '@/TabNewsUI/icons';
 
 export default function Home({ contentListFound, pagination }) {
   return (

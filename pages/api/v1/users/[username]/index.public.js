@@ -65,6 +65,7 @@ function patchValidationHandler(request, response, next) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    description: 'optional',
     notifications: 'optional',
   });
 

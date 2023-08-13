@@ -1,5 +1,5 @@
 import { Box, IconButton, Text, Tooltip } from '@/TabNewsUI';
-import { ChevronDownIcon, ChevronUpIcon } from '@primer/octicons-react';
+import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { useRevalidate } from 'next-swr';
 import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';

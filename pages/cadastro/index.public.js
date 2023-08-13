@@ -1,4 +1,16 @@
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput, TextInput } from '@/TabNewsUI';
+import {
+  Box,
+  Button,
+  Checkbox,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  Link,
+  PasswordInput,
+  Text,
+  TextInput,
+} from '@/TabNewsUI';
 import { suggestEmail } from 'pages/interface';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
@@ -25,6 +37,7 @@ function SignUpForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -172,13 +185,21 @@ function SignUpForm() {
           setErrorObject={setErrorObject}
         />
 
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Checkbox checked={isTermsAccepted} onClick={() => setIsTermsAccepted(!isTermsAccepted)} />
+          <Text>
+            Li e estou de acordo com os
+            <Link href="/termos-de-uso"> Termos de Uso.</Link>
+          </Text>
+        </Box>
+
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
           <Button
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !isTermsAccepted}
             sx={{ width: '100%' }}
             aria-label="Criar cadastro">
             Criar cadastro

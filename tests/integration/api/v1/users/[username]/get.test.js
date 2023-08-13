@@ -89,6 +89,7 @@ describe('GET /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: userCreated.id,
         username: 'userNameToBeFound',
+        description: userCreated.description,
         features: userCreated.features,
         tabcoins: userCreated.tabcoins,
         tabcash: userCreated.tabcash,
@@ -117,6 +118,7 @@ describe('GET /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: userCreated.id,
         username: 'userNameToBeFoundCAPS',
+        description: userCreated.description,
         features: userCreated.features,
         tabcoins: userCreated.tabcoins,
         tabcash: userCreated.tabcash,

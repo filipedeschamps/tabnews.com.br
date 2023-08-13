@@ -1,4 +1,4 @@
-import { SearchIcon, XCircleFillIcon } from '@primer/octicons-react';
+import { SearchIcon, XCircleFillIcon } from '@/TabNewsUI/icons';
 import { Box, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
 import { useEffect, useRef, useState } from 'react';
 
