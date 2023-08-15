@@ -13,7 +13,7 @@ export function DefaultHead() {
   const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
 
   const defaultMetadata = {
-    title: 'TabNews: Conteúdos para quem trabalha com Programação e Tecnologia',
+    title: 'TabNews: Conteúdos de programação e tecnologia.',
     image: `${webserverHost}/default-image-share.png`,
     description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.',
     url: `${webserverHost}${router.asPath}`,

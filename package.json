@@ -98,7 +98,7 @@
     "node": "16"
   },
   "name": "tabnews.com.br",
-  "description": "Conteúdos para quem vive de programação e tecnologia.",
+  "description": "Conteúdos de programação e tecnologia.",
   "version": "1.0.0",
   "repository": {
     "type": "git",

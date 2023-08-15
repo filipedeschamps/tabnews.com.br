@@ -32,7 +32,7 @@ describe('GET /recentes/rss', () => {
     <channel>
         <title>TabNews</title>
         <link>http://localhost:3000/recentes/rss</link>
-        <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
+        <description>Conteúdos de programação e tecnologia.</description>
         <lastBuildDate>${lastBuildDateFromResponseBody}</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
@@ -84,7 +84,7 @@ describe('GET /recentes/rss', () => {
     <channel>
         <title>TabNews</title>
         <link>http://localhost:3000/recentes/rss</link>
-        <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
+        <description>Conteúdos de programação e tecnologia.</description>
         <lastBuildDate>${new Date(secondRootContent.published_at).toUTCString()}</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>

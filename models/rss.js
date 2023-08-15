@@ -14,7 +14,7 @@ function generateRss2(contentList) {
 
   const feed = new Feed({
     title: 'TabNews',
-    description: 'Conteúdos para quem trabalha com Programação e Tecnologia',
+    description: 'Conteúdos de programação e tecnologia.',
     id: feedURL,
     link: feedURL,
     image: `${webserverHost}/favicon-mobile.png`,
