@@ -7,9 +7,49 @@
     "plugin:jsx-a11y/recommended"
   ],
   "plugins": ["jsx-a11y"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["."]
+      }
+    }
+  },
   "rules": {
     "react/no-unescaped-entities": "off",
     "import/no-anonymous-default-export": "off",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+    "import/no-useless-path-segments": [
+      "error",
+      {
+        "noUselessIndex": true
+      }
+    ],
+    "import/order": [
+      "error",
+      {
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "groups": [["builtin", "external"], "internal", ["parent", "sibling", "index"]],
+        "newlines-between": "always",
+        "pathGroups": [
+          {
+            "pattern": "@/**",
+            "group": "internal"
+          }
+        ]
+      }
+    ],
+    "sort-imports": [
+      "error",
+      {
+        "allowSeparatedGroups": true,
+        "ignoreCase": true,
+        "ignoreDeclarationSort": true
+      }
+    ],
     "no-unused-vars": [
       "error",
       {

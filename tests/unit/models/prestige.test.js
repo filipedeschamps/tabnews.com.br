@@ -1,5 +1,6 @@
-import prestige from 'models/prestige';
 import { v4 as uuidV4 } from 'uuid';
+
+import prestige from 'models/prestige';
 
 describe('prestige model', () => {
   describe('getByContentId', () => {

@@ -1,7 +1,8 @@
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { useUser } from 'pages/interface';
 import { useEffect, useRef, useState } from 'react';
+
+import { Box, Button, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
   return (

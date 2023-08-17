@@ -1,7 +1,7 @@
 const fs = require('node:fs');
-const { join, resolve } = require('path');
-
+const { join, resolve } = require('node:path');
 const { Client } = require('pg');
+
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
   connectionTimeoutMillis: 5000,

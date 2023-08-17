@@ -1,5 +1,6 @@
-import { Text } from '@/TabNewsUI';
 import { useMemo } from 'react';
+
+import { Text } from '@/TabNewsUI';
 
 export default function ReadTime({ text, ...props }) {
   const readTimeInMinutes = useMemo(() => {

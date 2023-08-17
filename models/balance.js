@@ -1,5 +1,5 @@
+import { UnprocessableEntityError } from 'errors';
 import database from 'infra/database.js';
-import { UnprocessableEntityError } from 'errors/index.js';
 
 async function findOne(operationId, options = {}) {
   const query = {

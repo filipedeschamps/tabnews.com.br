@@ -1,17 +1,18 @@
-import fs from 'node:fs';
-import fetch from 'cross-fetch';
-import retry from 'async-retry';
 import { faker } from '@faker-js/faker';
+import retry from 'async-retry';
+import fetch from 'cross-fetch';
+import fs from 'node:fs';
+
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
-import user from 'models/user.js';
-import activation from 'models/activation.js';
-import session from 'models/session.js';
-import content from 'models/content.js';
-import recovery from 'models/recovery.js';
-import balance from 'models/balance.js';
-import event from 'models/event.js';
 import webserver from 'infra/webserver.js';
+import activation from 'models/activation.js';
+import balance from 'models/balance.js';
+import content from 'models/content.js';
+import event from 'models/event.js';
+import recovery from 'models/recovery.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
 
 const webserverUrl = webserver.host;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;

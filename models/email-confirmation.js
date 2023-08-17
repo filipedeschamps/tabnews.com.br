@@ -1,8 +1,8 @@
-import email from 'infra/email.js';
+import { NotFoundError } from 'errors';
 import database from 'infra/database.js';
+import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
-import { NotFoundError } from 'errors/index.js';
 
 async function createAndSendEmail(userId, newEmail) {
   const userFound = await user.findOneById(userId);

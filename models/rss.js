@@ -1,9 +1,9 @@
-import { Viewer } from '@/TabNewsUI';
-import removeMarkdown from 'models/remove-markdown';
+import { Feed } from 'feed';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { Feed } from 'feed';
+import { Viewer } from '@/TabNewsUI';
 import webserver from 'infra/webserver.js';
+import removeMarkdown from 'models/remove-markdown';
 
 function generateRss2(contentList) {
   const webserverHost = webserver.host;

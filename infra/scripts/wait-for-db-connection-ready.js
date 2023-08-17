@@ -1,5 +1,5 @@
-const { exec } = require('node:child_process');
 const retry = require('async-retry');
+const { exec } = require('node:child_process');
 
 /**
  * Check Postgres database connection status

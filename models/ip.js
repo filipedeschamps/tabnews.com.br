@@ -1,5 +1,6 @@
-import webserver from 'infra/webserver';
 import { isInSubnet, isIP } from 'is-in-subnet';
+
+import webserver from 'infra/webserver';
 
 function extractFromRequest(request) {
   if (isRequestFromCloudflare(request)) {

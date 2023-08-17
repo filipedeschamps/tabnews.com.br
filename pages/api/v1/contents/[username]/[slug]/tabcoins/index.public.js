@@ -1,14 +1,15 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
+import { NotFoundError, UnprocessableEntityError, ValidationError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import cacheControl from 'models/cache-control';
-import validator from 'models/validator.js';
-import content from 'models/content.js';
-import event from 'models/event.js';
-import database from 'infra/database.js';
 import balance from 'models/balance.js';
-import { NotFoundError, UnprocessableEntityError, ValidationError } from 'errors/index.js';
+import cacheControl from 'models/cache-control';
+import content from 'models/content.js';
+import controller from 'models/controller.js';
+import event from 'models/event.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
