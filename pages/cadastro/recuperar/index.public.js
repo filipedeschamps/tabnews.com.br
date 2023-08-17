@@ -151,12 +151,12 @@ function RecoverPasswordForm() {
               block={true}
               aria-label="Seu e-mail"
             />
-            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+            {['userInput', 'email'].includes(errorObject?.key) && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
 
-            {errorObject?.type === 'string.alphanum' && (
-              <FormControl.Validation variant="error">"email" deve conter um endereço válido.</FormControl.Validation>
+            {errorObject?.key === 'username' && (
+              <FormControl.Validation variant="error">Insira um endereço de email válido.</FormControl.Validation>
             )}
           </FormControl>
         )}

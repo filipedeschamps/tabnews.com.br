@@ -146,7 +146,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             Respondendo a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
-                <strong>"{parentContent.body}..."</strong>{' '}
+                <strong>{`"${parentContent.body}"`}</strong>{' '}
               </Link>
             )}
             {parentContent.status !== 'published' && (

@@ -97,7 +97,8 @@ export default function ContentList({ contentList: list, pagination, paginationB
               <Link
                 sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
                 href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
+                <CommentIcon verticalAlign="middle" size="small" />
+                {` "${contentObject.body}"`}
               </Link>
             ) : (
               <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
