@@ -15,7 +15,6 @@
     }
   },
   "rules": {
-    "import/no-anonymous-default-export": "off",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
     "import/no-useless-path-segments": [

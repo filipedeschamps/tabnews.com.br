@@ -321,7 +321,7 @@ async function createPrestige(
   return [...rootContents, ...childContents];
 }
 
-export default {
+const orchestrator = {
   waitForAllServices,
   dropAllTables,
   runPendingMigrations,
@@ -342,3 +342,5 @@ export default {
   createPrestige,
   createRate,
 };
+
+export default orchestrator;
