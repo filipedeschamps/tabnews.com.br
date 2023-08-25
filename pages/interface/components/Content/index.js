@@ -11,6 +11,7 @@ import {
   IconButton,
   Link,
   PublishedSince,
+  Spinner,
   ReadTime,
   Text,
   TextInput,
@@ -517,7 +518,12 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+            <Button
+              leadingIcon={isPosting ? () => <Spinner size="small" /> : null}
+              variant="primary"
+              type="submit"
+              disabled={isPosting}
+              aria-label={isPosting ? 'Enviando publicação' : 'Publicar'}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
             </Button>
           </Box>
