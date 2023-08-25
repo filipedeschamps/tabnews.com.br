@@ -519,7 +519,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               </Button>
             )}
             <Button
-              leadingIcon={isPosting ? () => <Spinner size="small" /> : null}
+              leadingIcon={isPosting && (() => <Spinner size="small" />)}
               variant="primary"
               type="submit"
               disabled={isPosting}
