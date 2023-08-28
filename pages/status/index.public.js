@@ -1,8 +1,9 @@
-import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
-import analytics from 'models/analytics.js';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
+
+import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import analytics from 'models/analytics.js';
 
 export default function Page({ usersCreated, rootContentPublished, childContentPublished }) {
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {

@@ -1,7 +1,8 @@
 import Joi from 'joi';
-import { ValidationError } from 'errors/index.js';
-import removeMarkdown from 'models/remove-markdown';
+
+import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
+import removeMarkdown from 'models/remove-markdown';
 
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON

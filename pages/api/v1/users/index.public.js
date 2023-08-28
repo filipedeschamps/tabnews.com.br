@@ -1,14 +1,14 @@
 import nextConnect from 'next-connect';
 
-import controller from 'models/controller.js';
-import user from 'models/user.js';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
-import validator from 'models/validator.js';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,

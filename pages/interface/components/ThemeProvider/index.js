@@ -1,5 +1,6 @@
-import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider, ViewerStyles, useTheme } from '@/TabNewsUI';
 import { useEffect, useLayoutEffect, useState } from 'react';
+
+import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider, useTheme, ViewerStyles } from '@/TabNewsUI';
 
 // script to be called before interactive in _document.js
 // if (['auto','night'].includes(localStorage.getItem('colorMode')))

@@ -1,8 +1,9 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import session from 'models/session';
 
 export default nextConnect({

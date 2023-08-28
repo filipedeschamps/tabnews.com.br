@@ -1,8 +1,8 @@
-import user from 'models/user.js';
-import content from 'models/content.js';
-import authorization from 'models/authorization.js';
-import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
+import webserver from 'infra/webserver.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 
 async function sendReplyEmailToParentUser(createdContent) {
   const anonymousUser = user.createAnonymous();

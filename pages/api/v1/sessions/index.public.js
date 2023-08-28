@@ -1,13 +1,14 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
-import user from 'models/user';
+
+import { ForbiddenError, UnauthorizedError } from 'errors';
+import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
-import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
-import activation from 'models/activation.js';
-import validator from 'models/validator.js';
+import controller from 'models/controller.js';
 import session from 'models/session';
+import user from 'models/user';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,

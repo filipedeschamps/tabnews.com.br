@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
+import snakeize from 'snakeize';
+
+import { UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';
 import rateLimit from 'infra/rate-limit.js';
-import snakeize from 'snakeize';
-import { UnauthorizedError } from '/errors/index.js';
-import ip from 'models/ip.js';
 import webserver from 'infra/webserver.js';
+import ip from 'models/ip.js';
 
 export const config = {
   matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],

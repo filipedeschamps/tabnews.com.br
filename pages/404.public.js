@@ -1,5 +1,6 @@
-import { Box, DefaultLayout, Link } from '@/TabNewsUI';
 import Image from 'next/image';
+
+import { Box, DefaultLayout, Link } from '@/TabNewsUI';
 import botSleepyFaceDarkTransparent from 'public/brand/bot-sleepy-face-dark-transparent.svg';
 
 export default function Custom404() {

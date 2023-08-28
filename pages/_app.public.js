@@ -1,8 +1,9 @@
-import { ThemeProvider } from '@/TabNewsUI';
 import { Analytics } from '@vercel/analytics/react';
 import { RevalidateProvider } from 'next-swr';
-import { DefaultHead, UserProvider } from 'pages/interface';
 import { SWRConfig } from 'swr';
+
+import { ThemeProvider } from '@/TabNewsUI';
+import { DefaultHead, UserProvider } from 'pages/interface';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);

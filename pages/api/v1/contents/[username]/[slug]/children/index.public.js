@@ -1,11 +1,12 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
+import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
-import validator from 'models/validator.js';
 import content from 'models/content.js';
-import { NotFoundError } from 'errors/index.js';
+import controller from 'models/controller.js';
 import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,

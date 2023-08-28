@@ -1,5 +1,6 @@
-import database from 'infra/database';
 import { performance } from 'perf_hooks';
+
+import database from 'infra/database';
 import logger from 'infra/logger';
 
 async function getDependencies() {
