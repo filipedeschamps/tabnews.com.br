@@ -1,12 +1,21 @@
 import { getStaticPropsRevalidate } from 'next-swr';
 
-import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { Box, ContentList, Heading, Viewer, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default function Home({ contentListFound, pagination }) {
+  const body = `  
+
+ Aqui você vai encontrar, **notícias**, **artigos**, **tutoriais**, **indicações**, **curiosidades** e dúvidas respondidas ou que você pode responder ordenadas pelo conteúdo mais recente, veja também o nosso [FAQ](faq)
+
+ <br>
+ 
+  `;
+
+
   return (
     <>
       <DefaultLayout
@@ -14,7 +23,12 @@ export default function Home({ contentListFound, pagination }) {
           title: 'Recentes',
           description: 'Publicações no TabNews ordenadas pelas mais recentes.',
         }}>
+      <Box>
+        <Viewer value={body} />
+      </Box>
+
         <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
+
       </DefaultLayout>
     </>
   );
