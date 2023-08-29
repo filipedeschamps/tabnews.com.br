@@ -43,7 +43,7 @@ export default function HeaderComponent() {
       <PrimerHeader.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
-          <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
+          <Box sx={{ ml: 2, display: ['none', 'block'] }}></Box>
         </HeaderLink>
       </PrimerHeader.Item>
 
@@ -53,15 +53,23 @@ export default function HeaderComponent() {
         </HeaderLink>
       </PrimerHeader.Item>
 
-      <PrimerHeader.Item full>
+      <PrimerHeader.Item>
         <HeaderLink href="/recentes" sx={asPath.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
+        </HeaderLink>
+      </PrimerHeader.Item>
+
+      <PrimerHeader.Item full>
+        <HeaderLink href="/antigos" sx={asPath.startsWith('/antigos') ? activeLinkStyle : undefined}>
+          Antigos
         </HeaderLink>
       </PrimerHeader.Item>
 
       <PrimerHeader.Item sx={{ mr: 1 }}>
         <SearchBox />
       </PrimerHeader.Item>
+
+      
 
       {!isLoading && !user && (
         <>
@@ -146,6 +154,9 @@ export default function HeaderComponent() {
                     Publicar novo conteúdo
                   </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href={`/${user.username}`}>
+                    Meus posts
+                  </ActionList.LinkItem>
+                  <ActionList.LinkItem as={Link} href={`/conteudo-publicado-por/${user.username}`}>
                     Meus conteúdos
                   </ActionList.LinkItem>
                   <ActionList.LinkItem as={Link} href="/perfil">

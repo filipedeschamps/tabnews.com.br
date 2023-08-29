@@ -55,7 +55,7 @@ export default function SearchBox({ ...props }) {
         alignContent="flex-start"
         sx={{
           display: ['none', 'flex'],
-          width: [, '75px', '200px', '300px'],
+          width: [, '75px', ],
           px: [, '4px', '13px'],
           color: 'checks.inputPlaceholderText',
           backgroundColor: 'headerSearch.bg',
@@ -97,7 +97,7 @@ export default function SearchBox({ ...props }) {
           <Box sx={isLoading ? { height: '138px' } : { overflowY: 'auto', minHeight: '138px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', p: '13px', pb: '0' }}>
               <Heading sx={{ flex: 1, textAlign: 'center', fontSize: 3, color: '#444444' }}>
-                Pesquisar com o Google
+                Pesquisar no Google
               </Heading>
               <IconButton icon={XCircleFillIcon} variant="invisible" onClick={handleClose} />
             </Box>
