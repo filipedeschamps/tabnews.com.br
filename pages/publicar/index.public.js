@@ -21,20 +21,19 @@ export default function Post() {
 
   return (
     <DefaultLayout metadata={{ title: 'Publicar novo conteúdo' }}>
-      {contents?.length === 0 && (
-        <Box sx={{ width: '100%', mb: 3 }}>
-          <Flash variant="warning">
-            ⚠ Atenção: Pedimos encarecidamente que{' '}
-            <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
-              leia isso antes
-            </Link>{' '}
-            de fazer sua primeira publicação.
-          </Flash>
-        </Box>
-      )}
+      <Box sx={{ width: '100%', mb: 3 }}>
+        <Flash variant="warning">
+          {' '}
+          <Link href="tutorial-como-fazer-publicacoes">
+            Clique aqui
+          </Link>{' '}
+          para aprender como fazer boas publicações
+         </Flash>
+      </Box>
+
 
       <Heading as="h1" sx={{ mb: 3 }}>
-        Publicar novo conteúdo
+        Publicar
       </Heading>
       <Content mode="edit" />
     </DefaultLayout>
