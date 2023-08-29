@@ -120,8 +120,6 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     );
   }
 
-  const show_comments_message = `[Incluir comentários na listagem ](conteudo-publicado-por/${userFound.username}) também <br><br>`
-
   return (
     <>
       <DefaultLayout metadata={{ title: `${userFound.username}` }}>
@@ -133,7 +131,7 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
 
         <Box sx={{ width: '100%', display: 'flex' }}>
           <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 3 }}>
-          Publicações por "{userFound.username}" <UserFeatures />
+          Publicações e comentários por "{userFound.username}" <UserFeatures />
           </Pagehead>
           {user?.features?.includes('ban:user') && OptionsMenu()}
         </Box>
@@ -152,10 +150,6 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
             <Viewer value={userFound.description} />
           </Box>
         )}
-
-        <Box sx={{ width: '100%', display: 'flex' }}>
-          <Viewer value={show_comments_message} />
-        </Box>
 
         <ContentList
           contentList={contentListFound}
@@ -181,7 +175,6 @@ export async function getStaticPaths() {
   const relevantResults = await content.findWithStrategy({
     strategy: 'relevant',
     where: {
-      parent_id: null,
       status: 'published',
     },
     attributes: {
@@ -231,7 +224,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        parent_id: null,
         owner_id: secureUserFound.id,
         status: 'published',
       },

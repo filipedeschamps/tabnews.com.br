@@ -55,7 +55,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        parent_id: null,
         owner_id: secureUserFound.id,
         status: 'published',
       },
