@@ -14,6 +14,12 @@ import recovery from 'models/recovery.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
 
+if (process.env.NODE_ENV !== 'test') {
+  throw new Error({
+    message: 'Orchestrator should only be used in tests',
+  });
+}
+
 const webserverUrl = webserver.host;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -321,6 +327,24 @@ async function createPrestige(
   return [...rootContents, ...childContents];
 }
 
+async function updateRewardedAt(userId, rewardedAt) {
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        rewarded_at = $1
+      WHERE
+        id = $2
+      RETURNING
+        *
+    ;`,
+    values: [rewardedAt, userId],
+  };
+
+  return await database.query(query);
+}
+
 const orchestrator = {
   waitForAllServices,
   dropAllTables,
@@ -341,6 +365,7 @@ const orchestrator = {
   createBalance,
   createPrestige,
   createRate,
+  updateRewardedAt,
 };
 
 export default orchestrator;

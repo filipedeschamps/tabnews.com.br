@@ -364,5 +364,252 @@ describe('GET /api/v1/user', () => {
         expect(sessionObjectAfterRenew).toStrictEqual(sessionObjectBeforeRenew);
       });
     });
+
+    describe('Reward', () => {
+      const defaultTestRewardValue = 3;
+
+      test('Should be able to reward the user once a day', async () => {
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
+
+        const preRewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+          method: 'GET',
+          headers: {
+            cookie: `session_id=${defaultUserSession.token}`,
+          },
+        });
+
+        const preRewardUser = await preRewardUserResponse.json();
+
+        expect(preRewardUserResponse.status).toBe(200);
+        expect(preRewardUser.tabcoins).toStrictEqual(0);
+        expect(preRewardUser.tabcash).toStrictEqual(0);
+        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+        );
+
+        const rewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+          method: 'GET',
+          headers: {
+            cookie: `session_id=${defaultUserSession.token}`,
+          },
+        });
+
+        const rewardUser = await rewardUserResponse.json();
+
+        expect(rewardUserResponse.status).toBe(200);
+        expect(rewardUser.tabcoins).toStrictEqual(defaultTestRewardValue);
+        expect(rewardUser.tabcash).toStrictEqual(0);
+        expect(rewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+
+        const postRewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+          method: 'GET',
+          headers: {
+            cookie: `session_id=${defaultUserSession.token}`,
+          },
+        });
+
+        const postRewardUser = await postRewardUserResponse.json();
+
+        expect(postRewardUserResponse.status).toBe(200);
+        expect(postRewardUser.tabcoins).toStrictEqual(defaultTestRewardValue);
+        expect(postRewardUser.tabcash).toStrictEqual(0);
+        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+      });
+
+      test('Should deduplicate simultaneous rewards', async () => {
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
+
+        const fetchUser = async () =>
+          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+            method: 'GET',
+            headers: {
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+          });
+
+        const preRewardUserResponse = await fetchUser();
+        const preRewardUser = await preRewardUserResponse.json();
+
+        expect(preRewardUserResponse.status).toBe(200);
+        expect(preRewardUser.tabcoins).toStrictEqual(0);
+        expect(preRewardUser.tabcash).toStrictEqual(0);
+        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+        );
+
+        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+
+        const tabcoins = await Promise.all(
+          simultaneousResults.map(async (result) => {
+            expect(result.status).toBe(200);
+            const resultBody = await result.json();
+            return resultBody.tabcoins;
+          })
+        );
+
+        expect(tabcoins).toContain(defaultTestRewardValue);
+
+        const postRewardUserResponse = await fetchUser();
+
+        const postRewardUser = await postRewardUserResponse.json();
+
+        expect(postRewardUserResponse.status).toBe(200);
+        expect(postRewardUser.tabcoins).toStrictEqual(defaultTestRewardValue);
+        expect(postRewardUser.tabcash).toStrictEqual(0);
+        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+      });
+
+      test('Should not reward if user has no prestige', async () => {
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+        const fetchUser = async () =>
+          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+            method: 'GET',
+            headers: {
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+          });
+
+        const preRewardUserResponse = await fetchUser();
+        const preRewardUser = await preRewardUserResponse.json();
+
+        expect(preRewardUserResponse.status).toBe(200);
+        expect(preRewardUser.tabcoins).toStrictEqual(0);
+        expect(preRewardUser.tabcash).toStrictEqual(0);
+        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+        );
+
+        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+
+        simultaneousResults.forEach(async (result) => {
+          expect(result.status).toBe(200);
+          const resultBody = await result.json();
+          expect(resultBody.tabcoins).toBe(0);
+        });
+
+        const postRewardUserResponse = await fetchUser();
+
+        const postRewardUser = await postRewardUserResponse.json();
+
+        expect(postRewardUserResponse.status).toBe(200);
+        expect(postRewardUser.tabcoins).toStrictEqual(0);
+        expect(postRewardUser.tabcash).toStrictEqual(0);
+        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+      });
+
+      test('Should not reward if user has negative prestige', async () => {
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1, childPrestigeNumerator: -1 });
+
+        const fetchUser = async () =>
+          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+            method: 'GET',
+            headers: {
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+          });
+
+        const preRewardUserResponse = await fetchUser();
+        const preRewardUser = await preRewardUserResponse.json();
+
+        expect(preRewardUserResponse.status).toBe(200);
+        expect(preRewardUser.tabcoins).toStrictEqual(0);
+        expect(preRewardUser.tabcash).toStrictEqual(0);
+        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+        );
+
+        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+
+        simultaneousResults.forEach(async (result) => {
+          expect(result.status).toBe(200);
+          const resultBody = await result.json();
+          expect(resultBody.tabcoins).toBe(0);
+        });
+
+        const postRewardUserResponse = await fetchUser();
+
+        const postRewardUser = await postRewardUserResponse.json();
+
+        expect(postRewardUserResponse.status).toBe(200);
+        expect(postRewardUser.tabcoins).toStrictEqual(0);
+        expect(postRewardUser.tabcash).toStrictEqual(0);
+        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+      });
+
+      test('Should not reward if user has too many tabcoins', async () => {
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id);
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: defaultUser.id,
+          amount: 1000,
+        });
+
+        const fetchUser = async () =>
+          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+            method: 'GET',
+            headers: {
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+          });
+
+        const preRewardUserResponse = await fetchUser();
+        const preRewardUser = await preRewardUserResponse.json();
+
+        expect(preRewardUserResponse.status).toBe(200);
+        expect(preRewardUser.tabcoins).toStrictEqual(1000);
+        expect(preRewardUser.tabcash).toStrictEqual(0);
+        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+        );
+
+        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+
+        simultaneousResults.forEach(async (result) => {
+          expect(result.status).toBe(200);
+          const resultBody = await result.json();
+          expect(resultBody.tabcoins).toBe(1000);
+        });
+
+        const postRewardUserResponse = await fetchUser();
+
+        const postRewardUser = await postRewardUserResponse.json();
+
+        expect(postRewardUserResponse.status).toBe(200);
+        expect(postRewardUser.tabcoins).toStrictEqual(1000);
+        expect(postRewardUser.tabcash).toStrictEqual(0);
+        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+      });
+    });
   });
 });
