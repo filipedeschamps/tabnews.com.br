@@ -4,6 +4,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
+import reward from 'models/reward';
 import session from 'models/session';
 
 export default nextConnect({
@@ -19,6 +20,8 @@ export default nextConnect({
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
+
+  authenticatedUser.tabcoins += await reward(request);
 
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:user:self', authenticatedUser);
 

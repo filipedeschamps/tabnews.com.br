@@ -649,6 +649,7 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'reward:user:tabcoins',
           'system:update:tabcoins'
         )
         .messages({

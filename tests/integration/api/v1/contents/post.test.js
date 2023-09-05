@@ -2902,7 +2902,7 @@ describe('POST /api/v1/contents', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -6, rootPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1, rootPrestigeDenominator: 2 });
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -2941,7 +2941,7 @@ describe('POST /api/v1/contents', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -4, childPrestigeDenominator: 5 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -5, childPrestigeDenominator: 1 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -2984,7 +2984,7 @@ describe('POST /api/v1/contents', () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1, rootPrestigeDenominator: 2 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -9, rootPrestigeDenominator: 20 });
 
         const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
           method: 'post',
@@ -3043,7 +3043,7 @@ describe('POST /api/v1/contents', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -7, childPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -6, childPrestigeDenominator: 6 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -3165,7 +3165,7 @@ describe('POST /api/v1/contents', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -1 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -3287,7 +3287,7 @@ describe('POST /api/v1/contents', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 1, childPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -3572,7 +3572,7 @@ describe('POST /api/v1/contents', () => {
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 1, childPrestigeDenominator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
 
         const rootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
