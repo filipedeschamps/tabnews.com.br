@@ -519,7 +519,7 @@ describe('GET /api/v1/user', () => {
         let defaultUser = await orchestrator.createUser();
         defaultUser = await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1, childPrestigeNumerator: -1 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1 });
 
         const fetchUser = async () =>
           await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {

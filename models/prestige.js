@@ -29,8 +29,9 @@ async function getByUserId(
   userId,
   {
     timeOffset = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
+    offset = 3,
     isRoot,
-    limit = 10,
+    limit = 20,
     transaction,
     database = db,
   } = {}
@@ -38,7 +39,7 @@ async function getByUserId(
   const result = await database.query(
     {
       text: query.byUserId,
-      values: [userId, timeOffset, isRoot, limit],
+      values: [userId, timeOffset, isRoot, limit, offset],
     },
     { transaction }
   );
@@ -62,7 +63,7 @@ function calcTabcoinsAverage(tabcoinsObjectArray) {
 
 function calcPrestigeLevel(mean, isRoot) {
   if (isRoot) {
-    if (0.4 >= mean) return -1;
+    if (0.5 >= mean) return -1;
     if (1.1 >= mean) return 0;
     if (1.2 >= mean) return 1;
     if (1.3 >= mean) return 2;
@@ -72,7 +73,7 @@ function calcPrestigeLevel(mean, isRoot) {
     if (2.1 >= mean) return 6;
     if (2.4 >= mean) return 7;
   } else {
-    if (0.2 >= mean) return -1;
+    if (0.4 >= mean) return -1;
     if (1.0 >= mean) return 0;
     if (1.1 >= mean) return 1;
     if (1.2 >= mean) return 2;

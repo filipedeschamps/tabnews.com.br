@@ -94,6 +94,7 @@ describe('prestige model', () => {
       const timeOffset = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2);
       const isRoot = true;
       const limit = 10;
+      const offset = 3;
       const transaction = null;
       const database = {
         query: jest.fn().mockResolvedValue({ rows: [] }),
@@ -104,7 +105,7 @@ describe('prestige model', () => {
       expect(database.query).toHaveBeenCalledWith(
         {
           text: expect.any(String),
-          values: [userId, timeOffset, isRoot, limit],
+          values: [userId, timeOffset, isRoot, limit, offset],
         },
         { transaction }
       );
@@ -203,8 +204,8 @@ describe('prestige model', () => {
     const cases = [
       // isRoot, tabcoinsMean, prestigeLevel
       [true, -1, -1],
-      [true, 0.4, -1],
-      [true, 0.41, 0],
+      [true, 0.5, -1],
+      [true, 0.51, 0],
       [true, 1.1, 0],
       [true, 1.11, 1],
       [true, 1.2, 1],
@@ -227,8 +228,8 @@ describe('prestige model', () => {
       [true, 4.1, 10],
 
       [false, -1, -1],
-      [false, 0.2, -1],
-      [false, 0.21, 0],
+      [false, 0.4, -1],
+      [false, 0.41, 0],
       [false, 1.0, 0],
       [false, 1.01, 1],
       [false, 1.1, 1],
@@ -245,9 +246,9 @@ describe('prestige model', () => {
       [false, 1.71, 7],
       [false, 2.0, 7],
       [false, 2.01, 8],
-      [false, 3, 8],
-      [false, 3.1, 9],
-      [false, 4, 9],
+      [0, 3, 8],
+      [null, 3.1, 9],
+      [undefined, 4, 9],
       [false, 4.1, 10],
     ];
 

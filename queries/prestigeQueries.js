@@ -30,14 +30,10 @@ WITH content_window AS ((
   WHERE
     owner_id = $1
     AND status = 'published'
-    AND (CASE
-      WHEN $3 IS TRUE THEN parent_id IS NULL
-      WHEN $3 IS FALSE THEN parent_id IS NOT NULL
-      ELSE TRUE
-      END)
+    AND ($3 != TRUE OR parent_id IS NULL)
   ORDER BY
     published_at DESC
-  LIMIT $4 OFFSET $4
+  LIMIT $4 OFFSET $5
 )
 UNION
   SELECT
@@ -49,11 +45,7 @@ UNION
     owner_id = $1
     AND status = 'published'
     AND published_at < $2
-    AND (CASE
-      WHEN $3 IS TRUE THEN parent_id IS NULL
-      WHEN $3 IS FALSE THEN parent_id IS NOT NULL
-      ELSE TRUE
-      END)
+    AND ($3 != TRUE OR parent_id IS NULL)
   ORDER BY
     published_at DESC
   LIMIT $4
@@ -63,7 +55,7 @@ SELECT
 FROM
   content_window
 ORDER BY
-  published_at DESC
+  published_at ASC
 LIMIT $4
 ;
 `;

@@ -293,12 +293,13 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
     });
 
-    test('Content "child" with with "children"', async () => {
+    test('Content "child" with "children"', async () => {
       const defaultUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
 
       const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: secondUser.id,
         title: 'Conteúdo root',
         body: 'Conteúdo root',
         status: 'published',
@@ -313,7 +314,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
 
       const childContentLevel1 = await orchestrator.createContent({
         parent_id: childContent.id,
-        owner_id: defaultUser.id,
+        owner_id: secondUser.id,
         body: 'Conteúdo child nível 1',
         status: 'published',
       });
