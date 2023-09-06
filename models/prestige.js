@@ -30,7 +30,7 @@ async function getByUserId(
   {
     timeOffset = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
     offset = 3,
-    isRoot,
+    isRoot = false,
     limit = 20,
     transaction,
     database = db,

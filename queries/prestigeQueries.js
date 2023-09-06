@@ -30,7 +30,7 @@ WITH content_window AS ((
   WHERE
     owner_id = $1
     AND status = 'published'
-    AND ($3 != TRUE OR parent_id IS NULL)
+    AND ($3 = FALSE OR parent_id IS NULL)
   ORDER BY
     published_at DESC
   LIMIT $4 OFFSET $5
@@ -45,7 +45,7 @@ UNION
     owner_id = $1
     AND status = 'published'
     AND published_at < $2
-    AND ($3 != TRUE OR parent_id IS NULL)
+    AND ($3 = FALSE OR parent_id IS NULL)
   ORDER BY
     published_at DESC
   LIMIT $4
