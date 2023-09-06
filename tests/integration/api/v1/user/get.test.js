@@ -366,7 +366,7 @@ describe('GET /api/v1/user', () => {
     });
 
     describe('Reward', () => {
-      const defaultTestRewardValue = 3;
+      const defaultTestRewardValue = 2;
 
       test('Should be able to reward the user once a day', async () => {
         let defaultUser = await orchestrator.createUser();

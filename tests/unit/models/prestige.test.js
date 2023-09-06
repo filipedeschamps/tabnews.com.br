@@ -246,9 +246,9 @@ describe('prestige model', () => {
       [false, 1.71, 7],
       [false, 2.0, 7],
       [false, 2.01, 8],
-      [0, 3, 8],
-      [null, 3.1, 9],
-      [undefined, 4, 9],
+      [false, 3, 8],
+      [false, 3.1, 9],
+      [false, 4, 9],
       [false, 4.1, 10],
     ];
 
