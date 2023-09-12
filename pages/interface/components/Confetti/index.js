@@ -1,5 +1,5 @@
-import ReactConfetti from 'react-confetti';
 import { useEffect, useState } from 'react';
+import ReactConfetti from 'react-confetti';
 
 export default function Confetti({
   width = 0,

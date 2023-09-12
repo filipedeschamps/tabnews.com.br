@@ -1,14 +1,15 @@
 import nextConnect from 'next-connect';
-import cacheControl from 'models/cache-control';
-import controller from 'models/controller.js';
-import user from 'models/user.js';
-import ban from 'models/ban.js';
+
+import { ForbiddenError, UnprocessableEntityError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import ban from 'models/ban.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import database from 'infra/database.js';
-import { ForbiddenError, UnprocessableEntityError } from 'errors/index.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,

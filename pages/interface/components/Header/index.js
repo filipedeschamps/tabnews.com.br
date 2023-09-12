@@ -1,3 +1,5 @@
+import { useRouter } from 'next/router';
+
 import {
   ActionList,
   ActionMenu,
@@ -14,7 +16,6 @@ import {
   Truncate,
 } from '@/TabNewsUI';
 import { CgTab, HomeIcon, PersonFillIcon, PlusIcon, SquareFillIcon } from '@/TabNewsUI/icons';
-import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
 
 export default function HeaderComponent() {

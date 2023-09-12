@@ -1,7 +1,8 @@
 import snakeize from 'snakeize';
+
+import { TooManyRequestsError } from 'errors';
 import logger from 'infra/logger.js';
 import ip from 'models/ip.js';
-import { TooManyRequestsError } from 'errors/index.js';
 
 export default function handler(request, response) {
   const error = new TooManyRequestsError({

@@ -1,6 +1,10 @@
+import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
+
 import {
   Box,
   Button,
+  ButtonWithLoading,
   Checkbox,
   DefaultLayout,
   Editor,
@@ -8,13 +12,10 @@ import {
   FormControl,
   Heading,
   Link,
-  ButtonWithLoading,
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
-import { useUser, suggestEmail } from 'pages/interface';
-import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
+import { suggestEmail, useUser } from 'pages/interface';
 
 export default function EditProfile() {
   return (

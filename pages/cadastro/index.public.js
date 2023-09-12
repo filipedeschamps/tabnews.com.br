@@ -1,20 +1,21 @@
+import { useRouter } from 'next/router';
+import { useRef, useState } from 'react';
+
 import {
   Box,
   Button,
+  ButtonWithLoading,
   Checkbox,
   DefaultLayout,
   Flash,
   FormControl,
   Heading,
   Link,
-  ButtonWithLoading,
   PasswordInput,
   Text,
   TextInput,
 } from '@/TabNewsUI';
 import { suggestEmail } from 'pages/interface';
-import { useRouter } from 'next/router';
-import { useRef, useState } from 'react';
 
 export default function Register() {
   return (

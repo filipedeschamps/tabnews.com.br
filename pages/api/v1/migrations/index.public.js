@@ -1,9 +1,10 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import migrator from 'infra/migrator.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 
 export default nextConnect({
   attachParams: true,

@@ -1,6 +1,7 @@
-import { NavList, PrimerHeader, PrimerLink } from '@/TabNewsUI';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+
+import { NavList, PrimerHeader, PrimerLink } from '@/TabNewsUI';
 
 export function Link({ href, children, ...props }) {
   return (
