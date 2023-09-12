@@ -7,6 +7,7 @@ import {
   FormControl,
   Heading,
   Link,
+  ButtonWithLoading,
   PasswordInput,
   Text,
   TextInput,
@@ -195,15 +196,15 @@ function SignUpForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
-          <Button
+          <ButtonWithLoading
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading || !isTermsAccepted}
             sx={{ width: '100%' }}
-            aria-label="Criar cadastro">
+            aria-label="Criar cadastro"
+            isLoading={isLoading || !isTermsAccepted}>
             Criar cadastro
-          </Button>
+          </ButtonWithLoading>
         </FormControl>
       </Box>
     </form>

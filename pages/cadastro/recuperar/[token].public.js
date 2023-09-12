@@ -1,4 +1,4 @@
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput } from '@/TabNewsUI';
+import { Box, DefaultLayout, Flash, FormControl, Heading, ButtonWithLoading, PasswordInput } from '@/TabNewsUI';
 import fetch from 'cross-fetch';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
@@ -110,15 +110,15 @@ function RecoverPasswordForm() {
         />
         <FormControl>
           <FormControl.Label visuallyHidden>Alterar senha</FormControl.Label>
-          <Button
+          <ButtonWithLoading
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Alterar senha">
+            aria-label="Alterar senha"
+            isLoading={isLoading}>
             Alterar senha
-          </Button>
+          </ButtonWithLoading>
         </FormControl>
       </Box>
     </form>

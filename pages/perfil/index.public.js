@@ -8,6 +8,7 @@ import {
   FormControl,
   Heading,
   Link,
+  ButtonWithLoading,
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
@@ -283,15 +284,15 @@ function EditProfileForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
-          <Button
+          <ButtonWithLoading
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Salvar">
+            aria-label="Salvar"
+            isLoading={isLoading}>
             Salvar
-          </Button>
+          </ButtonWithLoading>
         </FormControl>
       </Box>
     </form>

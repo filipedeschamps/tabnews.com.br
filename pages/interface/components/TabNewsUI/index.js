@@ -1,3 +1,4 @@
+export { default as ButtonWithLoading } from '@/ButtonWithLoading/index.js';
 export { default as Confetti } from '@/Confetti/index.js';
 export { default as Content } from '@/Content/index.js';
 export { default as ContentList } from '@/ContentList/index.js';

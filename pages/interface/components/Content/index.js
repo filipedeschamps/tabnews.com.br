@@ -10,8 +10,8 @@ import {
   Heading,
   IconButton,
   Link,
+  ButtonWithLoading,
   PublishedSince,
-  Spinner,
   ReadTime,
   Text,
   TextInput,
@@ -518,14 +518,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button
-              leadingIcon={isPosting && (() => <Spinner size="small" />)}
+            <ButtonWithLoading
               variant="primary"
               type="submit"
-              disabled={isPosting}
-              aria-label={isPosting ? 'Enviando publicação' : 'Publicar'}>
+              aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
+              isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
-            </Button>
+            </ButtonWithLoading>
           </Box>
         </Box>
       </form>

@@ -1,11 +1,11 @@
 import {
   Box,
-  Button,
   DefaultLayout,
   Flash,
   FormControl,
   Heading,
   Link,
+  ButtonWithLoading,
   PasswordInput,
   Text,
   TextInput,
@@ -121,15 +121,15 @@ function LoginForm() {
           />
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
-            <Button
+            <ButtonWithLoading
               variant="primary"
               size="large"
               type="submit"
-              disabled={isLoading}
               sx={{ width: '100%' }}
-              aria-label="Login">
+              aria-label="Login"
+              isLoading={isLoading}>
               Login
-            </Button>
+            </ButtonWithLoading>
           </FormControl>
         </Box>
       </form>
