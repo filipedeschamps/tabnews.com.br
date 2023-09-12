@@ -1,8 +1,8 @@
 import database from 'infra/database.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
 import balance from 'models/balance.js';
+import content from 'models/content.js';
 import session from 'models/session.js';
+import user from 'models/user.js';
 
 async function nuke(userId, options = {}) {
   await user.removeFeatures(userId, null, options);

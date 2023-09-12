@@ -1,14 +1,15 @@
+import { getStaticPropsRevalidate } from 'next-swr';
+import { useEffect, useState } from 'react';
+
 import { Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
 import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
-import { NotFoundError, ValidationError } from 'errors/index.js';
+import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
-import { getStaticPropsRevalidate } from 'next-swr';
 import { useCollapse } from 'pages/interface';
-import { useEffect, useState } from 'react';
 
 export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
@@ -145,7 +146,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             Respondendo a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
-                <strong>"{parentContent.body}..."</strong>{' '}
+                <strong>{`"${parentContent.body}"`}</strong>{' '}
               </Link>
             )}
             {parentContent.status !== 'published' && (

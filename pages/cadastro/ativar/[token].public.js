@@ -1,7 +1,8 @@
-import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
 import fetch from 'cross-fetch';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+
+import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
 
 export default function ActiveUser() {
   const router = useRouter();

@@ -1,10 +1,11 @@
-import { Box, IconButton, Text, Tooltip } from '@/TabNewsUI';
-import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
-import { useRevalidate } from 'next-swr';
 import { useRouter } from 'next/router';
-import { useUser } from 'pages/interface';
+import { useRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
+
+import { Box, IconButton, Text, Tooltip } from '@/TabNewsUI';
+import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
+import { useUser } from 'pages/interface';
 
 export default function TabCoinButtons({ content }) {
   const router = useRouter();

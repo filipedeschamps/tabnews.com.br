@@ -1,22 +1,22 @@
-export { default as Confetti } from '@/Confetti/index.js';
-export { default as Content } from '@/Content/index.js';
-export { default as ContentList } from '@/ContentList/index.js';
-export { default as DefaultLayout } from '@/DefaultLayout/index.js';
-export { default as EmptyState } from '@/EmptyState/index.js';
-export { default as Footer } from '@/Footer/index.js';
-export { default as GoToTopButton } from '@/GoToTopButton/index.js';
-export { default as Header } from '@/Header/index.js';
-export { default as NextLink, HeaderLink, Link, NavItem } from '@/Link';
-export { default as Viewer, Editor } from '@/Markdown/index.js';
-export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles/index.js';
-export { default as PasswordInput } from '@/PasswordInput/index.js';
-export { default as NextNProgress } from '@/Progressbar/index.js';
-export { default as PublishedSince } from '@/PublishedSince/index.js';
-export { default as ReadTime } from '@/ReadTime/index.js';
-export { default as SearchBox } from '@/SearchBox/index.js';
-export { default as TabCoinButtons } from '@/TabCoinButtons/index.js';
-export { default as ThemeProvider } from '@/ThemeProvider/index.js';
-export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector/index.js';
+export { default as Confetti } from '@/Confetti';
+export { default as Content } from '@/Content';
+export { default as ContentList } from '@/ContentList';
+export { default as DefaultLayout } from '@/DefaultLayout';
+export { default as EmptyState } from '@/EmptyState';
+export { default as Footer } from '@/Footer';
+export { default as GoToTopButton } from '@/GoToTopButton';
+export { default as Header } from '@/Header';
+export { HeaderLink, Link, NavItem, default as NextLink } from '@/Link';
+export { Editor, default as Viewer } from '@/Markdown';
+export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
+export { default as PasswordInput } from '@/PasswordInput';
+export { default as NextNProgress } from '@/Progressbar';
+export { default as PublishedSince } from '@/PublishedSince';
+export { default as ReadTime } from '@/ReadTime';
+export { default as SearchBox } from '@/SearchBox';
+export { default as TabCoinButtons } from '@/TabCoinButtons';
+export { default as ThemeProvider } from '@/ThemeProvider';
+export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
 export {
   ActionList,
   ActionMenu,
@@ -27,21 +27,21 @@ export {
   Checkbox,
   Flash,
   FormControl,
-  Header as PrimerHeader,
   Heading,
   IconButton,
   Label,
   LabelGroup,
-  Link as PrimerLink,
   NavList,
   Overlay,
   Pagehead,
+  Header as PrimerHeader,
+  Link as PrimerLink,
+  ThemeProvider as PrimerThemeProvider,
+  SSRProvider,
   SegmentedControl,
   Spinner,
-  SSRProvider,
   Text,
   TextInput,
-  ThemeProvider as PrimerThemeProvider,
   Tooltip,
   Truncate,
   useConfirm,

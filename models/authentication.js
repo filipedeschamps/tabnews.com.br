@@ -1,9 +1,10 @@
 import setCookieParser from 'set-cookie-parser';
-import session from 'models/session.js';
-import user from 'models/user.js';
+
+import { ForbiddenError, UnauthorizedError } from 'errors';
 import authorization from 'models/authorization.js';
 import password from 'models/password.js';
-import { ForbiddenError, UnauthorizedError } from 'errors/index.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 async function hashPassword(unhashedPassword) {
