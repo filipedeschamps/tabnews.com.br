@@ -13,6 +13,7 @@ import {
   TextInput,
 } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
+import { useRouter } from 'next/router';
 
 export default function Login() {
   return (
@@ -23,8 +24,8 @@ export default function Login() {
 }
 
 function LoginForm() {
-  const { fetchUser } = useUser();
-
+  const { fetchUser, user } = useUser();
+  const router = useRouter();
   const emailRef = useRef('');
   const passwordRef = useRef('');
   const ref2fa = useRef('');
@@ -32,7 +33,6 @@ function LoginForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
   const [requires_2fa, setRequires2fa] = useState(false);
   useEffect(() => {
     if (user && router) {

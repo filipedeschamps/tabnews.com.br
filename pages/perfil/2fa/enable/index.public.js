@@ -1,12 +1,15 @@
-import { Button, Flash, FormControl, TextInput } from '@primer/react';
-import { Heading } from '@primer/react';
+import {
+  Button,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  TextInput,
+} from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser } from 'pages/interface';
 import { useEffect, useRef, useState } from 'react';
 import qrcode from 'qrcode';
-import Image from 'next/image';
-export default function Enable2FAPage() {
-  const { user, fetchUser, isLoading: userIsLoading } = useUser();
+export default function Enable2FA() {
   const router = useRouter();
   let [secret, setSecret] = useState();
   let qrcode_canvas_ref = useRef();
@@ -56,7 +59,7 @@ export default function Enable2FAPage() {
         <Flash sx={{ mb: 5 }} variant="danger">
           O código 2FA está incorreto. Verifique a hora do seu dispositivo e o código.
         </Flash>
-      ) : null}
+      ) : <></>}
 
       <Heading as="h1" sx={{}}>
         Ativar 2FA
@@ -102,7 +105,8 @@ export default function Enable2FAPage() {
             </Button>
           </FormControl>
         </form>
-      ) : null}
+      ) : <></>}
     </DefaultLayout>
   );
 }
+
