@@ -53,6 +53,11 @@ export default function validator(object, keys) {
 }
 
 const schemas = {
+  code_2fa: function () {
+    return Joi.object({
+      code_2fa: Joi.string().when({ is: "$required.code_2fa", then: Joi.required(), otherwise: Joi.optional() }).length(6).trim()
+    });
+  },
   id: function () {
     return Joi.object({
       id: Joi.string()

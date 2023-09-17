@@ -9,6 +9,7 @@ import controller from 'models/controller.js';
 import session from 'models/session';
 import user from 'models/user';
 import validator from 'models/validator.js';
+import speakeasy from "speakeasy"
 
 export default nextConnect({
   attachParams: true,
@@ -38,6 +39,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    code_2fa: "optional"
   });
 
   request.body = cleanValues;
@@ -56,12 +58,24 @@ async function postHandler(request, response) {
   try {
     storedUser = await user.findOneByEmail(secureInputValues.email);
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
+
   } catch (error) {
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
       action: `Verifique se os dados enviados estão corretos.`,
       errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
+  }
+  if (authorization.can(storedUser, "auth:2fa") && !speakeasy.totp.verify({
+    secret: storedUser.secret_2fa,
+    token: secureInputValues.code_2fa,
+    encoding: "base32"
+  })) {
+    throw new UnauthorizedError({
+      message: "O código 2FA não confere.",
+      action: `Verifique o código e tente novamente.`,
+      errorLocationCode: 'MODEL:AUTHENTICATION:VERIFY_2FA:CODE_MISMATCH'
+    })
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
@@ -82,7 +96,6 @@ async function postHandler(request, response) {
   }
 
   const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
-
   const secureOutputValues = authorization.filterOutput(storedUser, 'create:session', sessionObject);
 
   return response.status(201).json(secureOutputValues);

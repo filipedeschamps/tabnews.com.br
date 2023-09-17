@@ -4,6 +4,9 @@ import authentication from 'models/authentication.js';
 import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
 import validator from 'models/validator.js';
+import { ValidationError, NotFoundError } from 'errors/index.js';
+import authorization from './authorization';
+import speakeasy from "speakeasy"
 
 async function findAll() {
   const query = {
@@ -208,6 +211,257 @@ function validatePostSchema(postedUserData) {
   return cleanValues;
 }
 
+function checkBlockedUsernames(username) {
+  const blockedUsernames = [
+    'tabnew',
+    'tabnews',
+    'contato',
+    'contatos',
+    'moderador',
+    'moderadores',
+    'moderadora',
+    'moderadoras',
+    'moderadores',
+    'moderacao',
+    'alerta',
+    'alertas',
+    'dados',
+    'status',
+    'estatisticas',
+    'analytics',
+    'auth',
+    'authentication',
+    'autenticacao',
+    'autorizacao',
+    'loja',
+    'log',
+    'login',
+    'logout',
+    'avatar',
+    'backup',
+    'banner',
+    'banners',
+    'beta',
+    'blog',
+    'posts',
+    'category',
+    'categories',
+    'categoria',
+    'categorias',
+    'tags',
+    'grupo',
+    'grupos',
+    'checkout',
+    'carrinho',
+    'comentario',
+    'comentarios',
+    'comunidade',
+    'comunidades',
+    'vagas',
+    'curso',
+    'cursos',
+    'sobre',
+    'conta',
+    'contas',
+    'anuncio',
+    'anuncios',
+    'anuncie',
+    'anunciar',
+    'afiliado',
+    'afiliados',
+    'criar',
+    'create',
+    'postar',
+    'post',
+    'publicar',
+    'publish',
+    'editar',
+    'editor',
+    'edit',
+    'configuracao',
+    'configuracoes',
+    'configurar',
+    'configure',
+    'config',
+    'preferencias',
+    'conta',
+    'account',
+    'dashboard',
+    'sair',
+    'deslogar',
+    'desconectar',
+    'discussao',
+    'documentacao',
+    'download',
+    'downloads',
+    'draft',
+    'rascunho',
+    'app',
+    'apps',
+    'admin',
+    'administrator',
+    'administrador',
+    'administradora',
+    'administradores',
+    'administracao',
+    'suporte',
+    'support',
+    'pesquisa',
+    'sysadmin',
+    'superuser',
+    'sudo',
+    'root',
+    'user',
+    'users',
+    'rootuser',
+    'guest',
+    'anonymous',
+    'faq',
+    'tag',
+    'tags',
+    'hoje',
+    'ontem',
+    'pagina',
+    'trending',
+    'username',
+    'usuario',
+    'usuarios',
+    'email',
+    'password',
+    'senha',
+    'docs',
+    'documentacao',
+    'guidelines',
+    'diretrizes',
+    'ajuda',
+    'imagem',
+    'imagens',
+    'convite',
+    'convites',
+    'toc',
+    'terms',
+    'termos',
+    'regras',
+    'contrato',
+    'cultura',
+    'licenca',
+    'rss',
+    'newsletter',
+    'newsletters',
+    'notification',
+    'notifications',
+    'notificacoes',
+    'popular',
+    'cadastro',
+    'cadastrar',
+    'register',
+    'registration',
+    'resposta',
+    'respostas',
+    'replies',
+    'reply',
+    'relatorio',
+    'relatorios',
+    'resetar',
+    'resetar-senha',
+    'ceo',
+    'cfo',
+    'cto',
+    'gerente',
+    'membership',
+    'news',
+    'api',
+    'css',
+    'init',
+    'museu',
+    'upgrade',
+    'features',
+    'me',
+    'perfil',
+    'eu',
+    'videos',
+  ];
+
+  if (blockedUsernames.includes(username.toLowerCase())) {
+    throw new ValidationError({
+      message: `Este nome de usuário não está disponível para uso.`,
+      action: 'Escolha outro nome de usuário e tente novamente.',
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:USER:CHECK_BLOCKED_USERNAMES:BLOCKED_USERNAME',
+      key: 'username',
+    });
+  }
+}
+async function set_2fa_secret(user, secret) {
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        secret_2fa = $2,
+        updated_at = (now() at time zone 'utc')
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [
+      user.id,
+      secret
+    ],
+  };
+
+  await database.query(query);
+}
+import * as qrcode from "qrcode";
+async function enable_2fa(user) {
+  if (!authorization.can(user, "auth:2fa:confirm")) {
+    addFeatures(user.id, ["auth:2fa:confirm"])
+  }
+  let secret = speakeasy.generateSecret({
+    name: `TabNews (${user.email})`,
+  });
+  secret.qrcode = await qrcode.toDataURL(secret.otpauth_url);
+  await set_2fa_secret(user, secret.base32);
+  return secret;
+}
+async function confirm_2fa(user, code) {
+  if (!speakeasy.totp.verify({
+    secret: user.secret_2fa,
+    token: code,
+    encoding: "base32"
+  })) {
+    throw new ValidationError({
+      message: `Não foi possivel confirmar a ativação do 2º fator de autenticação porque o código recebido é diferente do esperado.`,
+      action: `Verifique a hora do dispositivo, o código copiado para o aplicativo de 2FA e o numero enviado`,
+      stack: new Error({}).stack,
+      errorLocationCode: "MODEL:USER:CONFIRM_2FA:CODE_MISMATCH",
+    })
+  }
+  if (!authorization.can(user, "auth:2fa:confirm")) {
+    throw new ValidationError({
+      message: `O 2º fator de autenticação já está ativado.`,
+      action: `Tente desativar e voltar a ativar o 2FA de novo.`,
+      stack: new Error({}).stack,
+      errorLocationCode: "MODEL:USER:CONFIRM_2FA:ALREADY_ACTIVATED",
+    })
+  }
+  await addFeatures(user.id, ["auth:2fa"]);
+  await removeFeatures(user.id, ["auth:2fa:confirm"]);
+}
+async function disable_2fa(user) {
+  if (authorization.can(user, "auth:2fa")) {
+    removeFeatures(user.id, ["auth:2fa"]);
+    set_2fa_secret(user.id, null);
+  } else {
+    throw new ValidationError({
+      message: `O 2FA já está desligado.`,
+      action: `Seria melhor ligá-lo antes, não é?`,
+      stack: new Error().stack,
+      errorLocationCode: "MODEL:USER:DISABLE_2FA:ALREADY_DISABLED"
+    })
+  }
+}
 // TODO: Refactor the interface of this function
 // and the code inside to make it more future proof
 // and to accept update using "userId".
@@ -443,4 +697,7 @@ export default Object.freeze({
   addFeatures,
   createAnonymous,
   updateRewardedAt,
+  enable_2fa,
+  confirm_2fa,
+  disable_2fa
 });

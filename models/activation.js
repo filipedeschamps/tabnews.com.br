@@ -106,20 +106,21 @@ async function activateUserByUserId(userId, options = {}) {
     });
   }
 
-  await user.removeFeatures(userToActivate.id, ['read:activation_token'], options);
-  return await user.addFeatures(
-    userToActivate.id,
-    [
-      'create:session',
-      'read:session',
-      'create:content',
-      'create:content:text_root',
-      'create:content:text_child',
-      'update:content',
-      'update:user',
-    ],
-    options
-  );
+  // TODO: in the future, understand how to run
+  // this inside a transaction, or at least
+  // reduce how many queries are run.
+  await user.removeFeatures(userToActivate.id, ['read:activation_token']);
+  return await user.addFeatures(userToActivate.id, [
+    'create:session',
+    'read:session',
+    'create:content',
+    'create:content:text_root',
+    'create:content:text_child',
+    'update:content',
+    'update:user',
+    'auth:2fa:enable',
+    'auth:2fa:disable'
+  ]);
 }
 
 async function findOneTokenById(tokenId) {
