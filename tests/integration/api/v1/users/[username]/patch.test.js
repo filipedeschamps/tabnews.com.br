@@ -627,6 +627,8 @@ describe('PATCH /api/v1/users/[username]', () => {
           'create:content:text_child',
           'update:content',
           'update:user',
+          "auth:2fa:enable",
+          "auth:2fa:disable"
         ],
         tabcoins: 0,
         tabcash: 0,

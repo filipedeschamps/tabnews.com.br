@@ -4,7 +4,6 @@ import authentication from 'models/authentication.js';
 import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
 import validator from 'models/validator.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
 import authorization from './authorization';
 import speakeasy from "speakeasy"
 
