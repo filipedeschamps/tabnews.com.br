@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
 import fetch from 'cross-fetch';
 import fs from 'node:fs';
+import speakeasy from 'speakeasy';
 
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
@@ -135,7 +136,6 @@ async function removeFeaturesFromUser(userObject, features) {
 async function activateUser(userObject) {
   return await activation.activateUserByUserId(userObject.id);
 }
-import speakeasy from 'speakeasy';
 async function enable2FA(userObj) {
   addFeaturesToUser(userObj, ['auth:2fa']);
   let secret = speakeasy.generateSecret({

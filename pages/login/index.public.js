@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
 import {
@@ -13,7 +14,6 @@ import {
   TextInput,
 } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
-import { useRouter } from 'next/router';
 
 export default function Login() {
   return (

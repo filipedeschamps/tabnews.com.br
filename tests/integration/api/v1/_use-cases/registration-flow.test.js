@@ -162,7 +162,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
         'update:content',
         'update:user',
         'auth:2fa:enable',
-        'auth:2fa:disable'
+        'auth:2fa:disable',
       ],
       tabcoins: 0,
       tabcash: 0,

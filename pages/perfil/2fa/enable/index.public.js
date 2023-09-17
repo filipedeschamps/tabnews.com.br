@@ -1,14 +1,9 @@
-import {
-  Button,
-  DefaultLayout,
-  Flash,
-  FormControl,
-  Heading,
-  TextInput,
-} from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
 import qrcode from 'qrcode';
+import { useEffect, useRef, useState } from 'react';
+
+import { Button, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+
 export default function Enable2FA() {
   const router = useRouter();
   let [secret, setSecret] = useState();
@@ -59,7 +54,9 @@ export default function Enable2FA() {
         <Flash sx={{ mb: 5 }} variant="danger">
           O código 2FA está incorreto. Verifique a hora do seu dispositivo e o código.
         </Flash>
-      ) : <></>}
+      ) : (
+        <></>
+      )}
 
       <Heading as="h1" sx={{}}>
         Ativar 2FA
@@ -105,8 +102,9 @@ export default function Enable2FA() {
             </Button>
           </FormControl>
         </form>
-      ) : <></>}
+      ) : (
+        <></>
+      )}
     </DefaultLayout>
   );
 }
-

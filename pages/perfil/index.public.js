@@ -36,7 +36,7 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
-  async function disable2FA(e) {
+  async function disable2FA() {
     if (
       await confirm({
         title: 'Desativar 2FA?',

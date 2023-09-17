@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+import speakeasy from 'speakeasy';
 
 import { ForbiddenError, UnauthorizedError } from 'errors';
 import activation from 'models/activation.js';
@@ -9,7 +10,6 @@ import controller from 'models/controller.js';
 import session from 'models/session';
 import user from 'models/user';
 import validator from 'models/validator.js';
-import speakeasy from "speakeasy"
 
 export default nextConnect({
   attachParams: true,

@@ -1,6 +1,8 @@
+import speakeasy from 'speakeasy';
+
 import user from 'models/user';
 import orchestrator from 'tests/orchestrator.js';
-import speakeasy from 'speakeasy';
+
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();

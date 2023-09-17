@@ -1,10 +1,10 @@
 import fetch from 'cross-fetch';
+import speakeasy from 'speakeasy';
 import { version as uuidVersion } from 'uuid';
 
 import authentication from 'models/authentication';
 import session from 'models/session';
 import orchestrator from 'tests/orchestrator.js';
-import speakeasy from 'speakeasy';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

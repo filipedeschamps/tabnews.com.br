@@ -1,9 +1,9 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import controller from 'models/controller.js';
 import user from 'models/user';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 export default nextConnect({
   attachParams: true,
