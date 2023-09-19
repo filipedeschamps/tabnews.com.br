@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import {
   Box,
   Button,
-  ButtonWithLoading,
+  ButtonWithLoader,
   Checkbox,
   DefaultLayout,
   Flash,
@@ -197,7 +197,7 @@ function SignUpForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
-          <ButtonWithLoading
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
@@ -205,7 +205,7 @@ function SignUpForm() {
             aria-label="Criar cadastro"
             isLoading={isLoading || !isTermsAccepted}>
             Criar cadastro
-          </ButtonWithLoading>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
-  ButtonWithLoading,
+  ButtonWithLoader,
   Checkbox,
   DefaultLayout,
   Editor,
@@ -285,7 +285,7 @@ function EditProfileForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
-          <ButtonWithLoading
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
@@ -293,7 +293,7 @@ function EditProfileForm() {
             aria-label="Salvar"
             isLoading={isLoading}>
             Salvar
-          </ButtonWithLoading>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

@@ -1,4 +1,4 @@
-export { default as ButtonWithLoading } from '@/ButtonWithLoading/index.js';
+export { default as ButtonWithLoader } from '@/ButtonWithLoader';
 export { default as Confetti } from '@/Confetti';
 export { default as Content } from '@/Content';
 export { default as ContentList } from '@/ContentList';
