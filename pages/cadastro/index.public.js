@@ -203,7 +203,8 @@ function SignUpForm() {
             type="submit"
             sx={{ width: '100%' }}
             aria-label="Criar cadastro"
-            isLoading={isLoading || !isTermsAccepted}>
+            disabled={!isTermsAccepted}
+            isLoading={isLoading}>
             Criar cadastro
           </ButtonWithLoader>
         </FormControl>

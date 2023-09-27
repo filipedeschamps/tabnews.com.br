@@ -20,9 +20,9 @@ function SpinnerWrapper({ children, isLoading }) {
   );
 }
 
-export default function ButtonWithLoader({ children, isLoading, ...props }) {
+export default function ButtonWithLoader({ children, disabled, isLoading, ...props }) {
   return (
-    <Button {...props} disabled={isLoading}>
+    <Button {...props} disabled={isLoading || disabled}>
       <SpinnerWrapper isLoading={isLoading}>{children}</SpinnerWrapper>
     </Button>
   );
