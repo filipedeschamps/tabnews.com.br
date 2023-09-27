@@ -1,7 +1,7 @@
 import { getStaticPropsRevalidate } from 'next-swr';
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
 
+import { BarChart } from '@/Charts';
 import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
 import analytics from 'models/analytics.js';
 
@@ -15,39 +15,11 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
-        <Box>
-          <h2>Novos cadastros</h2>
+        <BarChart title="Novos cadastros" data={usersCreated} yDataKey="cadastros" />
 
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={usersCreated}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="cadastros" name="cadastros" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <BarChart title="Novas publicações" data={rootContentPublished} yDataKey="conteudos" name="conteúdos" />
 
-        <Box>
-          <h2>Novas publicações</h2>
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={rootContentPublished}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="conteudos" name="conteúdos" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
-
-        <Box>
-          <h2>Novas respostas</h2>
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={childContentPublished}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="respostas" name="respostas" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <BarChart title="Novas respostas" data={childContentPublished} yDataKey="respostas" />
 
         <Box>
           <h2>Banco de Dados</h2>
