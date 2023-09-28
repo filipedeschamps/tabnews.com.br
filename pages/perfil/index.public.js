@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
+  ButtonWithLoader,
   Checkbox,
   DefaultLayout,
   Editor,
@@ -284,15 +285,15 @@ function EditProfileForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
-          <Button
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Salvar">
+            aria-label="Salvar"
+            isLoading={isLoading}>
             Salvar
-          </Button>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

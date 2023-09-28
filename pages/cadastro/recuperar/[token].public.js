@@ -2,7 +2,7 @@ import fetch from 'cross-fetch';
 import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
 
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, PasswordInput } from '@/TabNewsUI';
+import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, PasswordInput } from '@/TabNewsUI';
 
 export default function RecoverPassword() {
   return (
@@ -111,15 +111,15 @@ function RecoverPasswordForm() {
         />
         <FormControl>
           <FormControl.Label visuallyHidden>Alterar senha</FormControl.Label>
-          <Button
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Alterar senha">
+            aria-label="Alterar senha"
+            isLoading={isLoading}>
             Alterar senha
-          </Button>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

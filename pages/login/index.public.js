@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 
 import {
   Box,
-  Button,
+  ButtonWithLoader,
   DefaultLayout,
   Flash,
   FormControl,
@@ -122,15 +122,15 @@ function LoginForm() {
           />
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
-            <Button
+            <ButtonWithLoader
               variant="primary"
               size="large"
               type="submit"
-              disabled={isLoading}
               sx={{ width: '100%' }}
-              aria-label="Login">
+              aria-label="Login"
+              isLoading={isLoading}>
               Login
-            </Button>
+            </ButtonWithLoader>
           </FormControl>
         </Box>
       </form>

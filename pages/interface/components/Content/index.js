@@ -7,6 +7,7 @@ import {
   Box,
   BranchName,
   Button,
+  ButtonWithLoader,
   Editor,
   Flash,
   FormControl,
@@ -518,9 +519,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+            <ButtonWithLoader
+              variant="primary"
+              type="submit"
+              aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
+              isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
-            </Button>
+            </ButtonWithLoader>
           </Box>
         </Box>
       </form>

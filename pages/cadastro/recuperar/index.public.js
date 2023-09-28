@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
@@ -163,15 +163,15 @@ function RecoverPasswordForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <Button
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Recuperar">
+            aria-label="Recuperar"
+            isLoading={isLoading}>
             Recuperar
-          </Button>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>
