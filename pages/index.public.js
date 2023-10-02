@@ -1,10 +1,11 @@
+import { getStaticPropsRevalidate } from 'next-swr';
+
 import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { FaTree } from '@/TabNewsUI/icons';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { getStaticPropsRevalidate } from 'next-swr';
-import { FaTree } from 'react-icons/fa';
 
 export default function Home({ contentListFound, pagination }) {
   return (
@@ -14,7 +15,6 @@ export default function Home({ contentListFound, pagination }) {
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"
-          revalidatePath="/api/v1/contents?strategy=relevant"
           emptyStateProps={{
             title: 'Nenhum conteúdo encontrado',
             description: 'Quando eu cheguei era tudo mato...',

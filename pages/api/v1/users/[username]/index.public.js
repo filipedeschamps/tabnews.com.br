@@ -1,13 +1,15 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
-import user from 'models/user.js';
-import ban from 'models/ban.js';
+
+import { ForbiddenError, UnprocessableEntityError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import ban from 'models/ban.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import database from 'infra/database.js';
-import { ForbiddenError, UnprocessableEntityError } from 'errors/index.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -16,14 +18,16 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
   .patch(
+    cacheControl.noCache,
     authentication.injectAnonymousOrUser,
     patchValidationHandler,
     authorization.canRequest('update:user'),
     patchHandler
   )
   .delete(
+    cacheControl.noCache,
     authentication.injectAnonymousOrUser,
     deleteValidationHandler,
     authorization.canRequest('ban:user'),
@@ -42,11 +46,11 @@ function getValidationHandler(request, response, next) {
 
 async function getHandler(request, response) {
   const userTryingToGet = user.createAnonymous();
-  const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username, {
+    withBalance: true,
+  });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
-
-  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
   return response.status(200).json(secureOutputValues);
 }
@@ -62,6 +66,7 @@ function patchValidationHandler(request, response, next) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    description: 'optional',
     notifications: 'optional',
   });
 

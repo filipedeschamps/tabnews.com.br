@@ -1,10 +1,11 @@
-import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider, ViewerStyles } from '@/TabNewsUI';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { createGlobalStyle } from 'styled-components';
+
+import { BaseStyles, NextNProgress, PrimerThemeProvider, SSRProvider, useTheme, ViewerStyles } from '@/TabNewsUI';
 
 // script to be called before interactive in _document.js
+// if (['auto','night'].includes(localStorage.getItem('colorMode')))
 // document.documentElement.setAttribute('data-no-flash', true)
-const NoFleshGlobalStyle = createGlobalStyle`html[data-no-flash='true']:root {visibility: hidden}`;
+
 const removeNoFlashStyle = () => setTimeout(() => document.documentElement.removeAttribute('data-no-flash'));
 const useBrowserLayoutEffect = typeof document === 'undefined' ? useEffect : useLayoutEffect;
 
@@ -13,6 +14,7 @@ export default function ThemeProvider({ children, defaultColorMode, ...props }) 
 
   useBrowserLayoutEffect(() => {
     const cachedColorMode = localStorage.getItem('colorMode') || colorMode;
+    if (cachedColorMode == colorMode) return;
     setColorMode(cachedColorMode);
     removeNoFlashStyle();
   }, []);
@@ -28,5 +30,25 @@ export default function ThemeProvider({ children, defaultColorMode, ...props }) 
         </BaseStyles>
       </PrimerThemeProvider>
     </SSRProvider>
+  );
+}
+
+function NoFleshGlobalStyle() {
+  const {
+    resolvedColorScheme,
+    theme: { colors },
+  } = useTheme();
+  return (
+    <style jsx global>{`
+      html[data-no-flash='true']:root {
+        visibility: hidden;
+      }
+      html:root {
+        color-scheme: ${resolvedColorScheme};
+      }
+      body {
+        background: ${colors.canvas.default};
+      }
+    `}</style>
   );
 }

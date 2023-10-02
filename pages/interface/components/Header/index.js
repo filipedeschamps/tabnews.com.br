@@ -1,3 +1,5 @@
+import { useRouter } from 'next/router';
+
 import {
   ActionList,
   ActionMenu,
@@ -6,20 +8,26 @@ import {
   IconButton,
   Link,
   PrimerHeader,
+  SearchBox,
   Text,
   ThemeSelector,
   ThemeSwitcher,
   Tooltip,
   Truncate,
 } from '@/TabNewsUI';
-import { HomeIcon, PersonFillIcon, SquareFillIcon } from '@primer/octicons-react';
-import { useRouter } from 'next/router';
+import { CgTab, HomeIcon, PersonFillIcon, PlusIcon, SquareFillIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
-import { CgTab } from 'react-icons/cg';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { asPath } = useRouter();
+
+  const loginUrl =
+    !asPath || user || asPath.startsWith('/cadastro')
+      ? '/login'
+      : asPath.startsWith('/login')
+      ? asPath
+      : `/login?redirect=${asPath}`;
 
   const activeLinkStyle = {
     textDecoration: 'underline',
@@ -51,25 +59,41 @@ export default function HeaderComponent() {
         </HeaderLink>
       </PrimerHeader.Item>
 
+      <PrimerHeader.Item sx={{ mr: 1 }}>
+        <SearchBox />
+      </PrimerHeader.Item>
+
       {!isLoading && !user && (
         <>
           <PrimerHeader.Item sx={{ mr: 2 }}>
             <ThemeSwitcher />
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
-            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Login</HeaderLink>
+            <HeaderLink href={loginUrl}>Login</HeaderLink>
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['flex', 'none'] }}>
-            <HeaderLink href={{ pathname: '/login', query: { redirect: asPath } }}>Entrar</HeaderLink>
+            <HeaderLink href={loginUrl}>Entrar</HeaderLink>
           </PrimerHeader.Item>
         </>
       )}
 
       {user && (
         <>
+          <PrimerHeader.Item
+            sx={{
+              display: ['none', 'flex'],
+              m: 2,
+            }}>
+            <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
+              <HeaderLink href="/publicar">
+                <PlusIcon size={16} />
+              </HeaderLink>
+            </Tooltip>
+          </PrimerHeader.Item>
+
           <PrimerHeader.Item
             sx={{
               mr: 2,
@@ -101,7 +125,12 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ mr: 0 }}>
             <ActionMenu>
               <ActionMenu.Anchor>
-                <IconButton icon={PersonFillIcon} size="small" aria-label="Abrir opções do Perfil" />
+                <IconButton
+                  aria-label="Abrir opções do Perfil"
+                  icon={PersonFillIcon}
+                  size="small"
+                  sx={{ '&:focus-visible': { outline: '2px solid #FFF' } }}
+                />
               </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>

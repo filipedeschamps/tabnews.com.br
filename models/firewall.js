@@ -1,6 +1,6 @@
+import { TooManyRequestsError } from 'errors';
 import database from 'infra/database.js';
 import event from 'models/event.js';
-import { TooManyRequestsError } from 'errors/index.js';
 
 const rules = {
   'create:user': createUserRule,

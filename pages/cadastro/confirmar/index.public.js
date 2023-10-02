@@ -1,5 +1,6 @@
-import { Box, DefaultLayout, Heading, Text } from '@/TabNewsUI';
 import { useEffect, useState } from 'react';
+
+import { Box, DefaultLayout, Heading, Text } from '@/TabNewsUI';
 
 export default function ConfirmSignup() {
   const [email, setEmail] = useState('');

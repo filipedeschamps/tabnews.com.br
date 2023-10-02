@@ -1,8 +1,9 @@
-import { ThemeProvider } from '@/TabNewsUI';
 import { Analytics } from '@vercel/analytics/react';
-import { useRevalidate } from 'next-swr';
-import { DefaultHead, UserProvider } from 'pages/interface';
+import { RevalidateProvider } from 'next-swr';
 import { SWRConfig } from 'swr';
+
+import { ThemeProvider } from '@/TabNewsUI';
+import { DefaultHead, UserProvider } from 'pages/interface';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -12,17 +13,26 @@ async function SWRFetcher(resource, init) {
 }
 
 function MyApp({ Component, pageProps }) {
-  useRevalidate({ swr: { swrPath: '/api/v1/swr', ...pageProps.swr } });
   return (
-    <UserProvider>
-      <DefaultHead />
-      <SWRConfig value={{ fetcher: SWRFetcher }}>
-        <ThemeProvider>
-          <Component {...pageProps} />
-        </ThemeProvider>
-      </SWRConfig>
-      <Analytics />
-    </UserProvider>
+    <ThemeProvider>
+      <UserProvider>
+        <DefaultHead />
+        <SWRConfig value={{ fetcher: SWRFetcher }}>
+          <RevalidateProvider swr={{ swrPath: '/api/v1/swr', ...pageProps.swr }}>
+            <Component {...pageProps} />
+          </RevalidateProvider>
+        </SWRConfig>
+        <Analytics
+          beforeSend={(event) => {
+            const { pathname } = new URL(event.url);
+            if (['/', '/publicar'].includes(pathname)) {
+              return null;
+            }
+            return event;
+          }}
+        />
+      </UserProvider>
+    </ThemeProvider>
   );
 }
 

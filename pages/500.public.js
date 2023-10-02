@@ -1,5 +1,6 @@
-import { Box, DefaultLayout, Link } from '@/TabNewsUI';
 import Image from 'next/image';
+
+import { Box, DefaultLayout, Link } from '@/TabNewsUI';
 import botDeadFaceDarkTransparent from 'public/brand/bot-dead-face-dark-transparent.svg';
 
 export default function Custom500() {

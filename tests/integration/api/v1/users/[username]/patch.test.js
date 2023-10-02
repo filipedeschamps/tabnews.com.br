@@ -1,9 +1,10 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import password from 'models/password.js';
+
 import emailConfirmation from 'models/email-confirmation.js';
+import password from 'models/password.js';
+import user from 'models/user.js';
+import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -97,6 +98,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'regularUserPatchingHisUsername',
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
@@ -141,6 +143,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'REGULARUser',
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
@@ -183,6 +186,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         username: 'untrimmedUsername',
+        description: defaultUser.description,
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
@@ -590,6 +594,103 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(confirmationEmail.text.includes(defaultUser.username)).toBe(true);
       expect(confirmationEmail.text.includes('uma alteração de email foi solicitada')).toBe(true);
       expect(confirmationEmail.text.includes(emailConfirmationPageEndpoint)).toBe(true);
+    });
+
+    test('Patching itselt with a "description" containing a valid value', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: 'my description',
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(200);
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        username: responseBody.username,
+        description: 'my description',
+        features: [
+          'create:session',
+          'read:session',
+          'create:content',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content',
+          'update:user',
+        ],
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itselt with a "description" containing more than 5.000 characters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: 'a'.repeat(5001),
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('"description" deve conter no máximo 5000 caracteres.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.type).toEqual('string.max');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Patching itselt with a "description" containing value null', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: null,
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('"description" possui o valor inválido "null".');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.type).toEqual('any.invalid');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     describe('TEMPORARY BEHAVIOR', () => {

@@ -15,7 +15,7 @@ exports.up = async (pgm) => {
   });
 };
 
-exports.down = (pgm) => async (pgm) => {
+exports.down = async (pgm) => {
   await pgm.dropIndex('contents', ['id', 'username'], {
     name: 'contents_published_parent_and_children_idx',
     unique: true,

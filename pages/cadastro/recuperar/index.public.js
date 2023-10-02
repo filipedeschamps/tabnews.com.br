@@ -1,7 +1,8 @@
-import { Box, Button, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
 import { useRouter } from 'next/router';
-import { useUser } from 'pages/interface';
 import { useEffect, useRef, useState } from 'react';
+
+import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
   return (
@@ -150,27 +151,27 @@ function RecoverPasswordForm() {
               block={true}
               aria-label="Seu e-mail"
             />
-            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+            {['userInput', 'email'].includes(errorObject?.key) && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
 
-            {errorObject?.type === 'string.alphanum' && (
-              <FormControl.Validation variant="error">"email" deve conter um endereço válido.</FormControl.Validation>
+            {errorObject?.key === 'username' && (
+              <FormControl.Validation variant="error">Insira um endereço de email válido.</FormControl.Validation>
             )}
           </FormControl>
         )}
 
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <Button
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Recuperar">
+            aria-label="Recuperar"
+            isLoading={isLoading}>
             Recuperar
-          </Button>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

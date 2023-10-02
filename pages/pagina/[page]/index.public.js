@@ -1,20 +1,16 @@
+import { getStaticPropsRevalidate } from 'next-swr';
+
 import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { getStaticPropsRevalidate } from 'next-swr';
 
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Melhores` }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/pagina"
-          revalidatePath={`/api/v1/contents?strategy=relevant&page=${pagination.currentPage}`}
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/pagina" />
       </DefaultLayout>
     </>
   );
@@ -40,7 +36,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   } catch (error) {
     return {
       notFound: true,
-      revalidate: 1,
     };
   }
 

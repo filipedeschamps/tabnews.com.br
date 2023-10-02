@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+
 import orchestrator from 'tests/orchestrator.js';
 
 describe('GET /recentes/rss', () => {
@@ -65,7 +66,8 @@ describe('GET /recentes/rss', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo #3 (mais novo, mas no status "draft")',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo rss,

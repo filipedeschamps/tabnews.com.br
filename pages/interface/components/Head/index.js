@@ -1,7 +1,8 @@
-import { useMediaQuery } from 'pages/interface';
-import webserver from 'infra/webserver.js';
 import NextHead from 'next/head';
 import { useRouter } from 'next/router';
+
+import webserver from 'infra/webserver.js';
+import { useMediaQuery } from 'pages/interface';
 
 const webserverHost = webserver.host;
 

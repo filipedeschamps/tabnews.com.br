@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -12,10 +13,10 @@ describe('GET /api/v1/users', () => {
   describe('Anonymous user', () => {
     test('Anonymous user trying to retrieve user list', async () => {
       let defaultUser = await orchestrator.createUser();
-      defaultUser = await orchestrator.activateUser(defaultUser);
+      await orchestrator.activateUser(defaultUser);
       let privilegedUser = await orchestrator.createUser();
       privilegedUser = await orchestrator.activateUser(privilegedUser);
-      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
+      await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
       const responseBody = await response.json();
@@ -37,7 +38,7 @@ describe('GET /api/v1/users', () => {
       defaultUser = await orchestrator.activateUser(defaultUser);
       let privilegedUser = await orchestrator.createUser();
       privilegedUser = await orchestrator.activateUser(privilegedUser);
-      privilegedUser = await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
+      await orchestrator.addFeaturesToUser(privilegedUser, ['read:user:list']);
 
       let defaultUserSession = await orchestrator.createSession(defaultUser);
 
@@ -74,18 +75,20 @@ describe('GET /api/v1/users', () => {
       const firstUser = {
         id: defaultUser.id,
         username: defaultUser.username,
+        description: defaultUser.description,
         features: defaultUser.features,
-        tabcoins: defaultUser.tabcoins,
-        tabcash: defaultUser.tabcash,
+        tabcoins: 0,
+        tabcash: 0,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       };
       const secondUser = {
         id: privilegedUser.id,
         username: privilegedUser.username,
+        description: privilegedUser.description,
         features: privilegedUser.features,
-        tabcoins: privilegedUser.tabcoins,
-        tabcash: privilegedUser.tabcash,
+        tabcoins: 0,
+        tabcash: 0,
         created_at: privilegedUser.created_at.toISOString(),
         updated_at: privilegedUser.updated_at.toISOString(),
       };

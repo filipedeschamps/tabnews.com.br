@@ -1,6 +1,8 @@
+import { useRef, useState } from 'react';
+
 import {
   Box,
-  Button,
+  ButtonWithLoader,
   DefaultLayout,
   Flash,
   FormControl,
@@ -11,7 +13,6 @@ import {
   TextInput,
 } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
-import { useRef, useState } from 'react';
 
 export default function Login() {
   return (
@@ -121,15 +122,15 @@ function LoginForm() {
           />
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
-            <Button
+            <ButtonWithLoader
               variant="primary"
               size="large"
               type="submit"
-              disabled={isLoading}
               sx={{ width: '100%' }}
-              aria-label="Login">
+              aria-label="Login"
+              isLoading={isLoading}>
               Login
-            </Button>
+            </ButtonWithLoader>
           </FormControl>
         </Box>
       </form>

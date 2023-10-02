@@ -1,3 +1,8 @@
+import { useRouter } from 'next/router';
+import { getStaticPropsRevalidate } from 'next-swr';
+import { useState } from 'react';
+import useSWR from 'swr';
+
 import {
   ActionList,
   ActionMenu,
@@ -10,25 +15,21 @@ import {
   LabelGroup,
   Pagehead,
   useConfirm,
+  Viewer,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, TrashIcon } from '@primer/octicons-react';
-import { NotFoundError } from 'errors/index.js';
+import { FaUser, KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { getStaticPropsRevalidate } from 'next-swr';
-import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { useState } from 'react';
-import { FaUser } from 'react-icons/fa';
-import useSWR from 'swr';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
     fallbackData: userFoundFallback,
-    revalidateOnMount: true,
+    revalidateOnMount: false,
   });
 
   const { user, isLoading } = useUser();
@@ -86,12 +87,11 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
   function OptionsMenu() {
     return (
       <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0 }}>
+        <Box sx={{ position: 'absolute', right: 0, top: 2 }}>
           <ActionMenu>
             <ActionMenu.Anchor>
               <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar usuário" />
             </ActionMenu.Anchor>
-
             <ActionMenu.Overlay>
               <ActionList>
                 {!userFound?.features?.includes('nuked') && (
@@ -129,18 +129,32 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           </Flash>
         )}
 
-        <Box sx={{ width: '100%', display: 'flex', alignItems: 'flex-start' }}>
-          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', display: 'flex' }}>
+          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 3 }}>
             {userFound.username} <UserFeatures />
           </Pagehead>
           {user?.features?.includes('ban:user') && OptionsMenu()}
         </Box>
 
+        {userFound.description && (
+          <Box
+            sx={{
+              borderWidth: 1,
+              borderStyle: 'solid',
+              borderColor: 'border.default',
+              borderRadius: '6px',
+              width: '100%',
+              p: 3,
+              mb: 3,
+            }}>
+            <Viewer value={userFound.description} />
+          </Box>
+        )}
+
         <ContentList
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath={`/${userFound.username}/pagina`}
-          revalidatePath={`/api/v1/contents/${userFound.username}?strategy=new`}
           emptyStateProps={{
             isLoading: isLoading,
             title: 'Nenhum conteúdo encontrado',
@@ -201,19 +215,24 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   }
 
   let results;
+  let secureUserFound;
 
   try {
+    const userFound = await user.findOneByUsername(context.params.username);
+
+    secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
+
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        owner_username: context.params.username,
+        owner_id: secureUserFound.id,
         status: 'published',
       },
       page: context.params.page,
       per_page: context.params.per_page,
     });
   } catch (error) {
-    // `content` model will throw a `NotFoundError` if the user is not found.
+    // `user` model will throw a `NotFoundError` if the user is not found.
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
@@ -227,9 +246,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const contentListFound = results.rows;
 
   const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
-  const userFound = await user.findOneByUsername(context.params.username);
-  const secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
 
   for (const content of secureContentListFound) {
     if (content.parent_id) {

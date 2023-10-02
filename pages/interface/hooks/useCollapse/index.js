@@ -1,33 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 export default function useCollapse({
+  childrenDeepCount = 0,
   childrenList,
   renderIntent = 20,
   renderIncrement = 10,
-  flatten = false,
   minimalSubTree = 3,
 }) {
-  const flattenedTree = useMemo(flattenTree, [childrenList, flatten]);
   const [childrenState, setChildrenState] = useState(() =>
-    computeStates(flattenedTree, renderIntent, [], minimalSubTree)
+    computeStates({
+      children: childrenList,
+      renderIntent,
+      childrenDeepCount,
+      minimalSubTree,
+    })
   );
-
-  useEffect(() => {
-    setChildrenState((lastState) => computeStates(flattenedTree, renderIntent, lastState, minimalSubTree));
-  }, [flattenedTree, minimalSubTree, renderIntent]);
-
-  const filteredTree = useMemo(() => {
-    let merged = [];
-
-    flattenedTree.forEach((child, index) => {
-      if (!child.id) return;
-      if (child.id !== childrenState[index]?.id) return;
-      if (child.renderIntent < 1 && !child.renderShowMore) return;
-      merged.push({ ...childrenState[index], ...child });
-    });
-
-    return merged;
-  }, [childrenState, flattenedTree]);
 
   function handleExpand(id) {
     setChildrenState((lastState) => {
@@ -36,13 +23,17 @@ export default function useCollapse({
       let childrenToExpand = [];
 
       while (lastState[grouperIndex]?.renderIntent === 0) {
-        childrenToExpand.push(flattenedTree[grouperIndex]);
+        childrenToExpand.push(lastState[grouperIndex]);
         grouperIndex += 1;
       }
 
       return [
         ...lastState.slice(0, childIndex),
-        ...computeStates(childrenToExpand, renderIncrement),
+        ...computeStates({
+          children: childrenToExpand,
+          renderIntent: renderIncrement,
+          childrenDeepCount: lastState[childIndex].groupedCount,
+        }),
         ...lastState.slice(grouperIndex),
       ];
     });
@@ -78,52 +69,43 @@ export default function useCollapse({
     });
   }
 
-  function flattenTree() {
-    if (!childrenList?.length) return [];
-    if (!flatten) return childrenList;
-
-    let flattenTree = [...childrenList];
-
-    while (flattenTree.at(-1)?.children?.length === 1) {
-      flattenTree = [
-        ...flattenTree.slice(0, -1),
-        { ...flattenTree.at(-1), children: [], children_deep_count: 0 },
-        ...flattenTree.at(-1).children,
-      ];
-    }
-
-    return flattenTree;
-  }
-
   return {
-    filteredTree,
+    childrenState,
     handleCollapse,
     handleExpand,
   };
 }
 
-function computeStates(children, renderIntent, lastState = [], minimalSubTree) {
-  let newStates = [];
+function computeStates({ children, renderIntent, childrenDeepCount, lastState = [], minimalSubTree = 3 }) {
+  if (!children?.length && childrenDeepCount === 0) return [];
+
   let remaining = renderIntent;
   let treeIntent = minimalSubTree;
   let grouperIndex = null;
+  let groupedCount = 0;
   let deltaIndex = 0;
 
-  children.forEach((child, index) => {
+  const newStates = children.map((child, index) => {
     if (lastState.length > 0) {
       if (lastState[index + deltaIndex]?.id === child.id && child.id) {
-        newStates.push(lastState[index + deltaIndex]);
-        remaining -= lastState[index + deltaIndex].renderIntent;
-        return;
+        const childLastState = lastState[index + deltaIndex];
+        remaining -= childLastState.renderIntent;
+        if (childLastState.renderShowMore) grouperIndex = index;
+        if (childLastState.renderIntent) grouperIndex = null;
+
+        return { ...childLastState, ...child };
       }
 
+      // in case any child has changed order
       const childLastStateIndex = lastState.findIndex((childLastState) => childLastState.id === child.id && child.id);
 
       if (childLastStateIndex > -1) {
         deltaIndex = childLastStateIndex - index;
-        newStates.push(lastState[childLastStateIndex]);
         remaining -= lastState[childLastStateIndex].renderIntent;
-        return;
+        if (lastState[childLastStateIndex].renderShowMore) grouperIndex = index;
+        if (lastState[childLastStateIndex].renderIntent) grouperIndex = null;
+
+        return { ...lastState[childLastStateIndex], ...child };
       }
     }
 
@@ -134,34 +116,34 @@ function computeStates(children, renderIntent, lastState = [], minimalSubTree) {
       const renderIntent = treeIntent > child.children_deep_count ? 1 + child.children_deep_count : treeIntent;
       remaining -= renderIntent;
 
-      newStates.push({
-        id: child.id,
+      return {
+        ...child,
         renderIntent: renderIntent,
         groupedCount: 1 + child.children_deep_count,
         renderShowMore: false,
-      });
-    } else if (grouperIndex === null) {
+      };
+    }
+
+    if (grouperIndex === null) {
       grouperIndex = index;
       remaining -= 1;
 
-      newStates.push({
-        id: child.id,
+      return {
+        ...child,
         renderIntent: 0,
         groupedCount: 1 + child.children_deep_count,
         renderShowMore: true,
-      });
-    } else {
-      if (newStates[grouperIndex]) {
-        newStates[grouperIndex].groupedCount += 1 + child.children_deep_count;
-      }
-
-      newStates.push({
-        id: child.id,
-        renderIntent: 0,
-        groupedCount: 1 + child.children_deep_count,
-        renderShowMore: false,
-      });
+      };
     }
+
+    groupedCount += 1 + child.children_deep_count;
+
+    return {
+      ...child,
+      renderIntent: 0,
+      groupedCount: 1 + child.children_deep_count,
+      renderShowMore: false,
+    };
   });
 
   for (const child of newStates) {
@@ -174,6 +156,10 @@ function computeStates(children, renderIntent, lastState = [], minimalSubTree) {
       remaining -= child.groupedCount - child.renderIntent;
       child.renderIntent = child.groupedCount;
     }
+  }
+
+  if (grouperIndex !== null) {
+    newStates[grouperIndex].groupedCount += groupedCount;
   }
 
   return newStates;

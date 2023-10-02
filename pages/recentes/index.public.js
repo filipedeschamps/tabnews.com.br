@@ -1,9 +1,10 @@
+import { getStaticPropsRevalidate } from 'next-swr';
+
 import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { getStaticPropsRevalidate } from 'next-swr';
 
 export default function Home({ contentListFound, pagination }) {
   return (
@@ -13,12 +14,7 @@ export default function Home({ contentListFound, pagination }) {
           title: 'Recentes',
           description: 'Publicações no TabNews ordenadas pelas mais recentes.',
         }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/recentes/pagina"
-          revalidatePath="/api/v1/contents?strategy=new"
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
       </DefaultLayout>
     </>
   );

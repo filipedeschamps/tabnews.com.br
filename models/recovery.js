@@ -1,9 +1,9 @@
-import email from 'infra/email.js';
+import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
+import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
-import user from 'models/user.js';
 import session from 'models/session';
-import { NotFoundError, ValidationError } from 'errors/index.js';
+import user from 'models/user.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
   const userFound = await findUserByUsernameOrEmail(secureInputValues);

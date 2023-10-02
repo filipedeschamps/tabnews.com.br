@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -276,7 +277,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(firstUser);
       const firstUserSessionObject = await orchestrator.createSession(firstUser);
 
-      const firstUserContent = await orchestrator.createContent({
+      await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Conteúdo do primeiro usuário',
         status: 'published',
@@ -397,7 +398,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         updated_at: responseBody.updated_at,
         published_at: responseBody.published_at,
         deleted_at: null,
-        tabcoins: 1,
+        tabcoins: 0,
         owner_username: firstUser.username,
       });
 
@@ -848,7 +849,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const firstContent = await orchestrator.createContent({
+      // firstContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Primeiro conteúdo',
         body: 'Primeiro conteúdo',
@@ -901,7 +903,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const firstContent = await orchestrator.createContent({
+      // firstContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Primeiro conteúdo',
         body: 'Primeiro conteúdo',
@@ -1000,7 +1003,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Segundo conteúdo',
         body: 'Segundo conteúdo',
         status: 'published',
-        tabcoins: 1,
+        tabcoins: 0,
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1611,7 +1614,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Título velho',
-        body: 'Body velho',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'draft',
       });
 
@@ -1639,7 +1642,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'titulo-velho',
         title: 'Título velho',
-        body: 'Body velho',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
         source_url: null,
         created_at: responseBody.created_at,
@@ -1709,7 +1712,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Title',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -1737,7 +1740,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'title',
         title: 'Title',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'deleted',
         tabcoins: 1,
         source_url: null,
@@ -2570,22 +2573,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "title" and "parent_id" set to Null', async () => {
+    test('Content with "title" and "parent_id" set to another "parent_id"', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
 
-      const rootContent = await orchestrator.createContent({
+      const rootContent1 = await orchestrator.createContent({
         owner_id: defaultUser.id,
-        title: 'Root content title',
-        body: 'Root content body',
+        title: 'Root content title #1',
+        body: 'Root content body #1',
+      });
+
+      const rootContent2 = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content title #2',
+        body: 'Root content body #2',
       });
 
       const childContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Child content title',
         body: 'Child content body',
-        parent_id: rootContent.id,
+        parent_id: rootContent1.id,
       });
 
       const response = await fetch(
@@ -2597,53 +2606,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            parent_id: null,
-          }),
-        }
-      );
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content without "title" and "parent_id" set to Null', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Root content title',
-        body: 'Root content body',
-      });
-
-      const childContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Child content title',
-        body: 'Child content body',
-        parent_id: rootContent.id,
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: null,
-            parent_id: null,
+            title: 'Updated title, but not "parent_id"',
+            parent_id: rootContent2.id,
           }),
         }
       );
@@ -2654,9 +2618,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         owner_id: defaultUser.id,
-        parent_id: rootContent.id,
+        parent_id: rootContent1.id,
         slug: 'child-content-title',
-        title: null,
+        title: 'Updated title, but not "parent_id"',
         body: 'Child content body',
         status: 'draft',
         source_url: null,
@@ -2672,190 +2636,6 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
-    });
-
-    test('Content with "parent_id" set to itself', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Root content title',
-        body: 'Root content body',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: rootContent.id,
-          }),
-        }
-      );
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" containing a Number', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: 123456,
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" containing a blank string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: '',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" containing a malformatted UUIDV4', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: 'isso não é um UUID válido',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" deve possuir um token UUID na versão 4.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "parent_id" that does not exists', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const defaultUserContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
-        title: 'Título velho',
-        body: 'Body velho',
-      });
-
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
-          }),
-        }
-      );
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content from another user', async () => {
@@ -2953,7 +2733,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3032,16 +2812,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('"root" content updated from "published" to "deleted" status', async () => {
+      test('"root" content updated from "published" to "deleted" status (with prestige)', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 5 });
+        const prestigeContents = await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 8 });
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3054,7 +2834,70 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponseBodyBefore = await userResponseBefore.json();
 
-        expect(userResponseBodyBefore.tabcoins).toEqual(5);
+        expect(userResponseBodyBefore.tabcoins).toEqual(8);
+        expect(userResponseBodyBefore.tabcash).toEqual(0);
+
+        await orchestrator.createBalance({
+          balanceType: 'content:tabcoin',
+          recipientId: prestigeContents[0].id,
+          amount: 1,
+          originatorType: 'orchestrator',
+          originatorId: prestigeContents[0].id,
+        });
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content updated from "published" to "deleted" status (without prestige)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBodyBefore = await userResponseBefore.json();
+
+        expect(userResponseBodyBefore.tabcoins).toEqual(0);
         expect(userResponseBodyBefore.tabcash).toEqual(0);
 
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1 });
@@ -3090,32 +2933,84 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('"root" content with positive tabcoins updated from "published" to "deleted" status', async () => {
+      test('Deletion of "root" content that was first published without the minimum amount of relevant words', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 4 });
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with no minimum amount of relevant words',
           status: 'published',
         });
 
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 8 });
+        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBodyBefore = await userResponseBefore.json();
+
+        expect(userResponseBodyBefore.tabcoins).toEqual(0);
+        expect(userResponseBodyBefore.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content with positive tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const prestigeContents = await orchestrator.createPrestige(defaultUser.id);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
 
         await orchestrator.createBalance({
           balanceType: 'content:tabcoin',
-          recipientId: defaultUserContent.id,
-          amount: 10,
+          recipientId: prestigeContents[0].id,
+          amount: 8,
+          originatorType: 'orchestrator',
+          originatorId: prestigeContents[0].id,
         });
 
-        await orchestrator.createBalance({
-          balanceType: 'user:tabcoin',
-          recipientId: defaultUser.id,
-          amount: 10,
-        });
+        await orchestrator.createRate(defaultUserContent, 10);
 
         const contentFirstGetResponse = await fetch(
           `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
@@ -3158,32 +3053,85 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
-      test('"root" content with negative tabcoins updated from "published" to "deleted" status', async () => {
+      test('"root" content with positive tabcoins updated from "published" to "deleted" status (without prestige)', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
-        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 10 });
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 8 });
+
+        await orchestrator.createRate(defaultUserContent, 10);
+
+        const contentFirstGetResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        );
+        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
+        expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
+
+        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
+        const userFirstGetResponseBody = await userFirstGetResponse.json();
+        expect(userFirstGetResponseBody.tabcoins).toEqual(10);
+
+        const contentSecondResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentSecondResponseBody = await contentSecondResponse.json();
+
+        expect(contentSecondResponseBody.tabcoins).toEqual(11);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(0);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('"root" content with negative tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const prestigeContents = await orchestrator.createPrestige(defaultUser.id);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
 
         await orchestrator.createBalance({
           balanceType: 'content:tabcoin',
-          recipientId: defaultUserContent.id,
-          amount: -10,
+          recipientId: prestigeContents[0].id,
+          amount: 10,
+          originatorType: 'orchestrator',
+          originatorId: prestigeContents[0].id,
         });
 
-        await orchestrator.createBalance({
-          balanceType: 'user:tabcoin',
-          recipientId: defaultUser.id,
-          amount: -10,
-        });
+        await orchestrator.createRate(defaultUserContent, -10);
 
         const contentFirstGetResponse = await fetch(
           `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
@@ -3226,6 +3174,63 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
+      test('"root" content with negative tabcoins updated from "published" to "deleted" status (without prestige)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+        const defaultUserContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 10 });
+
+        await orchestrator.createRate(defaultUserContent, -10);
+
+        const contentFirstGetResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        );
+        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
+        expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
+
+        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
+        const userFirstGetResponseBody = await userFirstGetResponse.json();
+        expect(userFirstGetResponseBody.tabcoins).toEqual(-10);
+
+        const contentSecondResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${defaultUserSession.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentSecondResponseBody = await contentSecondResponse.json();
+
+        expect(contentSecondResponseBody.tabcoins).toEqual(-9);
+
+        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponseBody = await userResponse.json();
+
+        expect(userResponseBody.tabcoins).toEqual(-10);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+
       test('"child" content updated from "draft" to "draft" status', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
@@ -3236,7 +3241,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3244,7 +3249,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
         });
 
         const contentResponse = await fetch(
@@ -3288,7 +3293,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3296,7 +3301,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3342,7 +3347,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3350,7 +3355,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3393,7 +3398,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const userResponse2Body = await userResponse2.json();
 
-        expect(userResponse2Body.tabcoins).toEqual(1);
+        expect(userResponse2Body.tabcoins).toEqual(2);
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
@@ -3407,7 +3412,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3415,7 +3420,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3473,7 +3478,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3481,7 +3486,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'draft',
         });
 
@@ -3528,7 +3533,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
-      test('"child" content updated from "published" to "deleted" status (same user)', async () => {
+      test('"child" content updated from "published" to "deleted" status (same user - with prestige)', async () => {
         const defaultUser = await orchestrator.createUser();
         await orchestrator.activateUser(defaultUser);
         const sessionObject = await orchestrator.createSession(defaultUser);
@@ -3538,7 +3543,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3546,7 +3551,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3593,17 +3598,81 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponse2Body.tabcash).toEqual(0);
       });
 
-      test('"child" content updated from "published" to "deleted" status (different user)', async () => {
+      test('"child" content updated from "published" to "deleted" status (same user - without prestige)', async () => {
+        const defaultUser = await orchestrator.createUser();
+        await orchestrator.activateUser(defaultUser);
+        const sessionObject = await orchestrator.createSession(defaultUser);
+
+        // User will not receive tabcoins for publishing a root content.
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(0);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('"child" content updated from "published" to "deleted" status (different user - with prestige)', async () => {
         const firstUser = await orchestrator.createUser();
         const secondUser = await orchestrator.createUser();
         await orchestrator.activateUser(secondUser);
         const sessionObject = await orchestrator.createSession(secondUser);
-        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 2 });
+        await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3611,7 +3680,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body',
+          body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
         });
 
@@ -3657,6 +3726,269 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(secondUserResponse2Body.tabcoins).toEqual(0);
         expect(secondUserResponse2Body.tabcash).toEqual(0);
       });
+
+      test('"child" content updated from "published" to "deleted" status (different user - without prestige)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const secondUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const secondUserResponse1Body = await secondUserResponse1.json();
+
+        expect(secondUserResponse1Body.tabcoins).toEqual(0);
+        expect(secondUserResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(1);
+
+        const secondUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const secondUserResponse2Body = await secondUserResponse2.json();
+
+        expect(secondUserResponse2Body.tabcoins).toEqual(0);
+        expect(secondUserResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('Deletion of "child" content that was first published without the minimum amount of relevant words (without votes)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(0);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(0);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('Deletion of "child" content that was first published without the minimum amount of relevant words (with positive votes)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        await orchestrator.createRate(childContent, 10);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(10);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(10);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(0);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
+
+      test('Deletion of "child" content that was first published without the minimum amount of relevant words (with negative votes)', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(secondUser);
+        const sessionObject = await orchestrator.createSession(secondUser);
+        await orchestrator.createPrestige(secondUser.id);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Root',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
+        });
+
+        const childContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          title: 'Child',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
+        });
+
+        await orchestrator.createRate(childContent, -10);
+
+        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse1Body = await userResponse1.json();
+
+        expect(userResponse1Body.tabcoins).toEqual(-10);
+        expect(userResponse1Body.tabcash).toEqual(0);
+
+        const contentResponse = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              cookie: `session_id=${sessionObject.token}`,
+            },
+            body: JSON.stringify({
+              status: 'deleted',
+            }),
+          }
+        );
+
+        const contentResponseBody = await contentResponse.json();
+
+        expect(contentResponseBody.tabcoins).toEqual(-10);
+
+        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const userResponse2Body = await userResponse2.json();
+
+        expect(userResponse2Body.tabcoins).toEqual(-10);
+        expect(userResponse2Body.tabcash).toEqual(0);
+      });
     });
   });
 
@@ -3671,7 +4003,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const secondUserContent = await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo do Segundo Usuário antes do patch!',
-        body: 'Body antes do patch!',
+        body: 'Body antes do patch! - Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 

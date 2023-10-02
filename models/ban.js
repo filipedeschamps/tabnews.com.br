@@ -1,8 +1,8 @@
 import database from 'infra/database.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
 import balance from 'models/balance.js';
+import content from 'models/content.js';
 import session from 'models/session.js';
+import user from 'models/user.js';
 
 async function nuke(userId, options = {}) {
   await user.removeFeatures(userId, null, options);
@@ -10,6 +10,7 @@ async function nuke(userId, options = {}) {
   await unpublishAllContent(userId, options);
   await undoAllBalanceOperations(userId, options);
   const nukedUser = await user.addFeatures(userId, ['nuked'], options);
+  await injectBalanceIntoUserObject(nukedUser, options);
   return nukedUser;
 
   async function unpublishAllContent(userId, options = {}) {
@@ -89,6 +90,24 @@ async function nuke(userId, options = {}) {
       return results.rows;
     }
   }
+}
+
+async function injectBalanceIntoUserObject(user, options = {}) {
+  user.tabcoins = await balance.getTotal(
+    {
+      balanceType: 'user:tabcoin',
+      recipientId: user.id,
+    },
+    options
+  );
+
+  user.tabcash = await balance.getTotal(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: user.id,
+    },
+    options
+  );
 }
 
 export default Object.freeze({

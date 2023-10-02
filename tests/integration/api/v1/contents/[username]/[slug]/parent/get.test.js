@@ -1,6 +1,6 @@
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -197,7 +197,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Root - Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -205,7 +205,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: secondUser.id,
         parent_id: rootContent.id,
         title: 'Child content title Level 1',
-        body: 'Child content body Level 1',
+        body: 'Child content body Level 1 - relevant content',
         status: 'published',
       });
 
@@ -222,7 +222,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Root - Body with relevant texts needs to contain a good amount of words',
         children_deep_count: 1,
         status: 'published',
         source_url: null,
@@ -258,7 +258,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: firstUser.id,
         parent_id: childContentLevel1.id,
         title: 'Child content title Level 2',
-        body: 'Child content body Level 2',
+        body: 'Child content body Level 2 - relevant content',
         status: 'published',
       });
 
@@ -283,7 +283,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: firstUser.id,
         slug: 'child-content-title-level-2',
         title: 'Child content title Level 2',
-        body: 'Child content body Level 2',
+        body: 'Child content body Level 2 - relevant content',
         children_deep_count: 1,
         status: 'published',
         source_url: null,
@@ -384,7 +384,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: firstUser.id,
         parent_id: childContentLevel1.id,
         title: 'Child content title Level 2',
-        body: 'Child content body Level 2',
+        body: 'Child content body Level 2 - deleted parent',
         status: 'published',
       });
 

@@ -1,13 +1,20 @@
-import webserver from 'infra/webserver';
 import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+
+import webserver from 'infra/webserver';
 
 const userEndpoint = '/api/v1/user';
 const sessionEndpoint = '/api/v1/sessions';
 const protectedRoutes = ['/login', '/cadastro', '/cadastro/recuperar'];
 const refreshInterval = 600000; // 10 minutes
 
-const UserContext = createContext();
+const UserContext = createContext({
+  user: null,
+  isLoading: true,
+  error: undefined,
+  fetchUser: () => {},
+  logout: () => {},
+});
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -27,6 +34,7 @@ export function UserProvider({ children }) {
         const cachedUserProperties = {
           id: responseBody.id,
           username: responseBody.username,
+          description: responseBody.description,
           features: responseBody.features,
           tabcoins: responseBody.tabcoins,
           tabcash: responseBody.tabcash,
@@ -96,7 +104,11 @@ export function UserProvider({ children }) {
 
       if (!user?.id || router.pathname !== '/login') return;
 
-      if (router.query?.redirect?.startsWith('/')) {
+      if (
+        router.query?.redirect?.startsWith('/') &&
+        !router.query.redirect.startsWith('/login') &&
+        !router.query.redirect.startsWith('/cadastro')
+      ) {
         router.replace(router.query.redirect);
       } else {
         router.replace('/');

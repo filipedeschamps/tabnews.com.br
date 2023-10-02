@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch';
-import { version as uuidVersion } from 'uuid';
 import parseLinkHeader from 'parse-link-header';
+import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -29,7 +30,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const defaultUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
-      const secondUserRootContent = await orchestrator.createContent({
+      // secondUserRootContent
+      await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',
@@ -46,13 +48,15 @@ describe('GET /api/v1/contents/[username]', () => {
       const defaultUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
-      const secondUserRootContent = await orchestrator.createContent({
+      // secondUserRootContent
+      await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',
       });
 
-      const defaultUserContent = await orchestrator.createContent({
+      // defaultUserContent
+      await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Draft content',
         body: 'Draft content',
@@ -70,7 +74,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
-      const secondUserRootContent = await orchestrator.createContent({
+      // secondUserRootContent
+      await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',
@@ -90,7 +95,8 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const childContentDraft = await orchestrator.createContent({
+      // childContentDraft
+      await orchestrator.createContent({
         parent_id: rootContent.id,
         owner_id: firstUser.id,
         body: 'Child content with draft status',
@@ -126,7 +132,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
-      const secondUserRootContent = await orchestrator.createContent({
+      // secondUserRootContent
+      orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',
@@ -194,7 +201,8 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents/[username],
@@ -210,7 +218,8 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const secondUserRootContent = await orchestrator.createContent({
+      // secondUserRootContent
+      await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',
@@ -296,7 +305,8 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const thirdRootContent = await orchestrator.createContent({
+      // thirdRootContent
+      await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents/[username],
@@ -313,7 +323,8 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'published',
       });
 
-      const secondUserRootContent = await orchestrator.createContent({
+      // secondUserRootContent
+      await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',

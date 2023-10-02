@@ -1,9 +1,13 @@
+import { useRouter } from 'next/router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import {
   ActionList,
   ActionMenu,
   Box,
   BranchName,
   Button,
+  ButtonWithLoader,
   Editor,
   Flash,
   FormControl,
@@ -11,15 +15,14 @@ import {
   IconButton,
   Link,
   PublishedSince,
+  ReadTime,
   Text,
   TextInput,
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@primer/octicons-react';
-import { useRouter } from 'next/router';
+import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
@@ -58,7 +61,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   if (componentMode === 'view') {
     return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
   } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} />;
+    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
   } else if (componentMode === 'edit') {
     return (
       <EditMode
@@ -66,7 +69,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         setComponentMode={setComponentMode}
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
-        mode={mode}
       />
     );
   } else if (componentMode === 'deleted') {
@@ -177,14 +179,28 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 1, mt: '2px' }}>
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              whiteSpace: 'nowrap',
+              gap: 1,
+              mt: '2px',
+              color: 'fg.muted',
+            }}>
             <BranchName as={Link} href={`/${contentObject.owner_username}`}>
               {contentObject.owner_username}
             </BranchName>
+            {!contentObject.parent_id && (
+              <>
+                <ReadTime text={contentObject.body} />
+                {' · '}
+              </>
+            )}
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '2px', height: '22px' }}>
               <PublishedSince direction="n" date={contentObject.published_at} />
             </Link>
           </Box>
@@ -213,7 +229,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
@@ -256,6 +272,28 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         router.push(`/login?redirect=${router.asPath}`);
         return;
       }
+
+      const confirmBodyValue =
+        newData.body.split(/[a-z]{5,}/i, 6).length < 6
+          ? await confirm({
+              title: 'Tem certeza que deseja publicar essa mensagem curta?',
+              content: (
+                <Flash variant="warning">
+                  ⚠ Atenção: Pedimos encarecidamente que{' '}
+                  <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
+                    leia isso antes
+                  </Link>{' '}
+                  de fazer essa publicação.
+                </Flash>
+              ),
+              cancelButtonContent: 'Cancelar',
+              confirmButtonContent: 'Publicar',
+              confirmButtonType: 'danger',
+            })
+          : true;
+
+      if (!confirmBodyValue) return;
+
       setIsPosting(true);
       setErrorObject(undefined);
 
@@ -343,7 +381,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         setIsPosting(false);
       }
     },
-    [contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser]
+    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser]
   );
 
   const handleChange = useCallback(
@@ -481,9 +519,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+            <ButtonWithLoader
+              variant="primary"
+              type="submit"
+              aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
+              isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
-            </Button>
+            </ButtonWithLoader>
           </Box>
         </Box>
       </form>
@@ -491,17 +533,32 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CompactMode({ setComponentMode }) {
+function CompactMode({ contentObject, setComponentMode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
+  const confirm = useConfirm();
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     if (user && !isLoading) {
+      const confirmReply =
+        contentObject?.owner_id === user.id
+          ? await confirm({
+              title: 'Você deseja responder ao seu próprio conteúdo?',
+              content:
+                'Ao responder à sua própria publicação, você não acumulará TabCoins. É recomendado editar o conteúdo existente caso precise complementar informações.',
+              cancelButtonContent: 'Cancelar',
+              confirmButtonContent: 'Responder',
+              confirmButtonType: 'danger',
+            })
+          : true;
+
+      if (!confirmReply) return;
+
       setComponentMode('edit');
     } else if (router) {
       router.push(`/login?redirect=${router.asPath}`);
     }
-  }, [isLoading, router, setComponentMode, user]);
+  }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
   return (
     <Button

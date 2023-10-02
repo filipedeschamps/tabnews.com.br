@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -76,7 +77,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo publicamente disponível',
-        body: 'Deveria estar disponível para todos.',
+        body: 'Conteúdo relevante deveria estar disponível para todos.',
         status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
@@ -94,7 +95,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'conteudo-publicamente-disponivel',
         title: 'Conteúdo publicamente disponível',
-        body: 'Deveria estar disponível para todos.',
+        body: 'Conteúdo relevante deveria estar disponível para todos.',
         status: 'published',
         tabcoins: 1,
         source_url: 'https://www.tabnews.com.br/',
@@ -152,7 +153,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo root',
-        body: 'Conteúdo root',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -199,7 +200,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: responseBody.slug,
         title: 'Conteúdo root',
-        body: 'Conteúdo root',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
         tabcoins: 1,
         source_url: null,
@@ -292,12 +293,13 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
     });
 
-    test('Content "child" with with "children"', async () => {
+    test('Content "child" with "children"', async () => {
       const defaultUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
 
       const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+        owner_id: secondUser.id,
         title: 'Conteúdo root',
         body: 'Conteúdo root',
         status: 'published',
@@ -312,7 +314,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
 
       const childContentLevel1 = await orchestrator.createContent({
         parent_id: childContent.id,
-        owner_id: defaultUser.id,
+        owner_id: secondUser.id,
         body: 'Conteúdo child nível 1',
         status: 'published',
       });

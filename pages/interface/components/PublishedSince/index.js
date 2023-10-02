@@ -1,7 +1,8 @@
-import { Tooltip } from '@/TabNewsUI';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
+
+import { Tooltip } from '@/TabNewsUI';
 
 function formatPublishedSince(date) {
   try {
@@ -33,7 +34,7 @@ export default function PublishedSince({ date, ...props }) {
   }, [date]);
 
   return (
-    <Tooltip sx={{ position: 'absolute', ml: 1 }} aria-label={tooltipLabel} suppressHydrationWarning {...props}>
+    <Tooltip sx={{ position: 'absolute' }} aria-label={tooltipLabel} suppressHydrationWarning {...props}>
       <span style={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
         {formatPublishedSince(date)}
       </span>

@@ -1,8 +1,9 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
+
 import emailConfirmation from 'models/email-confirmation.js';
+import user from 'models/user.js';
+import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -285,7 +286,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
 
-      const secondUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         email: 'other.user.email@before.com',
       });
 
@@ -327,7 +328,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const emailConfirmationToken = await emailConfirmation.create(firstUser.id, 'other.user.email@after.com');
 
-      const secondUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         email: 'other.user.email@after.com',
       });
 

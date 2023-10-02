@@ -1,5 +1,5 @@
 import { Box, Button, SegmentedControl, useTheme } from '@/TabNewsUI';
-import { MoonIcon, SunIcon } from '@primer/octicons-react';
+import { MoonIcon, SunIcon } from '@/TabNewsUI/icons';
 
 export default function ThemeSelector({ ...props }) {
   const { colorMode, setColorMode } = useTheme();
@@ -58,6 +58,10 @@ export function ThemeSwitcher({ ...props }) {
           color: mode === 'day' ? '#e7dfc370' : '#ecdc0f',
           backgroundColor: 'transparent',
         },
+        '&:focus-visible': {
+          outline: '2px solid #FFF',
+        },
+        px: '7px',
       }}
       {...props}>
       {mode === 'day' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
