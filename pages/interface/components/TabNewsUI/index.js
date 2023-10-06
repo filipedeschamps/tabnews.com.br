@@ -7,6 +7,7 @@ export { default as EmptyState } from '@/EmptyState';
 export { default as Footer } from '@/Footer';
 export { default as GoToTopButton } from '@/GoToTopButton';
 export { default as Header } from '@/Header';
+export { default as HelpTooltip } from '@/HelpTooltip';
 export { HeaderLink, Link, NavItem, default as NextLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
