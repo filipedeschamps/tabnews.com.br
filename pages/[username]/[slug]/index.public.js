@@ -255,7 +255,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
               </Tooltip>
             </Box>
 
-            <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
+            <Box sx={{ width: '100%', pl: '1px' }}>
               <Content content={child} mode="view" />
 
               <Box sx={{ mt: 4 }}>

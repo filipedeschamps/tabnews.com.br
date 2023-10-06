@@ -98,6 +98,7 @@ function RecoverPasswordForm() {
           id="password"
           name="password"
           label="Senha"
+          helpTooltipText="Sua senha deve ter no mínimo 8 caracteres e pode conter letras, números e símbolos."
           errorObject={errorObject}
           setErrorObject={setErrorObject}
         />
@@ -106,6 +107,7 @@ function RecoverPasswordForm() {
           id="passwordConfirm"
           name="passwordConfirm"
           label="Repita a senha"
+          helpTooltipText="Confirme sua senha, para evitar erros de digitação."
           errorObject={errorObject}
           setErrorObject={setErrorObject}
         />

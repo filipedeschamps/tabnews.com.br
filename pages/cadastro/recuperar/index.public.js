@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
-import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, HelpTooltip, TextInput } from '@/TabNewsUI';
 import { useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
@@ -137,7 +137,15 @@ function RecoverPasswordForm() {
 
         {!user?.features.includes('create:recovery_token:username') && (
           <FormControl id="userInput">
-            <FormControl.Label>Digite seu e-mail</FormControl.Label>
+            <FormControl.Label
+              sx={{
+                alignItems: 'center',
+                display: 'flex',
+                gap: 1,
+              }}>
+              Email
+              <HelpTooltip helpText="Informe o email que você usou para se cadastrar no TabNews." />
+            </FormControl.Label>
             <TextInput
               contrast
               sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}

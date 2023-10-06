@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 
-import { FormControl, TextInput } from '@/TabNewsUI';
+import { FormControl, HelpTooltip, TextInput } from '@/TabNewsUI';
 import { EyeClosedIcon, EyeIcon } from '@/TabNewsUI/icons';
 
-export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
+export default function PasswordInput({
+  inputRef,
+  id,
+  name,
+  label,
+  errorObject,
+  helpTooltipText,
+  setErrorObject,
+  ...props
+}) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
 
@@ -43,7 +52,15 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
 
   return (
     <FormControl id={id}>
-      <FormControl.Label>{label}</FormControl.Label>
+      <FormControl.Label
+        sx={{
+          alignItems: 'center',
+          display: 'flex',
+          gap: 1,
+        }}>
+        {label}
+        {helpTooltipText && <HelpTooltip helpText={helpTooltipText} />}
+      </FormControl.Label>
       <TextInput
         trailingVisual={
           <TextInput.Action

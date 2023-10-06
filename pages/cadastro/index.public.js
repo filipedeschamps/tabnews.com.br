@@ -10,6 +10,7 @@ import {
   Flash,
   FormControl,
   Heading,
+  HelpTooltip,
   Link,
   PasswordInput,
   Text,
@@ -115,7 +116,15 @@ function SignUpForm() {
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
         <FormControl id="username">
-          <FormControl.Label>Nome de usuário</FormControl.Label>
+          <FormControl.Label
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              gap: 1,
+            }}>
+            Nome de usuário
+            <HelpTooltip helpText="Seu nome de usuário é como você será identificado no TabNews. Ele deve ter entre 3 e 30 caracteres e pode conter apenas letras e números." />
+          </FormControl.Label>
           <TextInput
             ref={usernameRef}
             onChange={clearErrors}
@@ -138,7 +147,15 @@ function SignUpForm() {
           )}
         </FormControl>
         <FormControl id="email">
-          <FormControl.Label>Email</FormControl.Label>
+          <FormControl.Label
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              gap: 1,
+            }}>
+            Email
+            <HelpTooltip helpText="Seu email será usado para fazer login no TabNews e para receber notificações sobre suas interações." />
+          </FormControl.Label>
           <TextInput
             ref={emailRef}
             onChange={clearErrors}
@@ -183,6 +200,7 @@ function SignUpForm() {
           id="password"
           name="password"
           label="Senha"
+          helpTooltipText="Sua senha deve ter no mínimo 8 caracteres e pode conter letras, números e símbolos."
           errorObject={errorObject}
           setErrorObject={setErrorObject}
         />
