@@ -42,7 +42,8 @@
     "snakeize": "0.1.0",
     "styled-components": "5.3.10",
     "swr": "2.1.4",
-    "uuid": "9.0.0"
+    "uuid": "9.0.0",
+    "vis-network": "9.1.7"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.1",
