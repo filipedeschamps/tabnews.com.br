@@ -2,10 +2,11 @@ import { getStaticPropsRevalidate } from 'next-swr';
 import useSWR from 'swr';
 
 import { BarChart } from '@/Charts';
+import Graph from '@/Graph';
 import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
 import analytics from 'models/analytics.js';
 
-export default function Page({ usersCreated, rootContentPublished, childContentPublished }) {
+export default function Page({ usersCreated, rootContentPublished, childContentPublished, votesGraph, votesTaken }) {
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
     refreshInterval: 1000 * 10,
   });
@@ -20,6 +21,10 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
         <BarChart title="Novas publicações" data={rootContentPublished} yDataKey="conteudos" name="conteúdos" />
 
         <BarChart title="Novas respostas" data={childContentPublished} yDataKey="respostas" />
+
+        <BarChart title="Novas qualificações" data={votesTaken} yDataKey="votos" />
+
+        <Graph title="Qualificações × Usuários × Origens" data={votesGraph} />
 
         <Box>
           <h2>Banco de Dados</h2>
@@ -164,12 +169,16 @@ export const getStaticProps = getStaticPropsRevalidate(async () => {
   const childContentPublished = await analytics.getChildContentsPublished();
   const rootContentPublished = await analytics.getRootContentsPublished();
   const usersCreated = await analytics.getUsersCreated();
+  const votesGraph = await analytics.getVotesGraph();
+  const votesTaken = await analytics.getVotesTaken();
 
   return {
     props: {
       usersCreated,
       rootContentPublished,
       childContentPublished,
+      votesGraph,
+      votesTaken,
     },
     revalidate: 30,
     swr: { refreshInterval: 1000 * 60 * 5 },
