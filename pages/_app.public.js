@@ -7,6 +7,11 @@ import { DefaultHead, UserProvider } from 'pages/interface';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
+
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+
   const responseBody = await response.json();
 
   return responseBody;
