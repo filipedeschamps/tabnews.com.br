@@ -101,19 +101,20 @@ async function getUsersCreated() {
   });
 }
 
-async function getVotesGraph({ limit = 300 } = {}) {
+async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
   const results = await database.query({
     text: `
       SELECT
-        events.originator_user_id as from,
-        events.metadata->>'content_owner_id' as to,
-        events.metadata->>'transaction_type' as transaction_type,
-        events.originator_ip as ip,
-        events.created_at
+        id,
+        originator_user_id as from,
+        metadata->>'content_owner_id' as to,
+        metadata->>'transaction_type' as transaction_type,
+        originator_ip as ip,
+        created_at
       FROM events
       WHERE
-        events.type = 'update:content:tabcoins'
-      ORDER BY events.created_at DESC
+        type = 'update:content:tabcoins'
+      ORDER BY created_at DESC
       LIMIT $1;
     `,
     values: [limit],
@@ -122,39 +123,86 @@ async function getVotesGraph({ limit = 300 } = {}) {
   const usersMap = new Map();
   const ipNodesMap = new Map();
   const votesMap = new Map();
-  const ipEdgesMap = new Map();
 
   results.rows.forEach((row) => {
-    const from = hashWithCache(row.from);
-    const to = hashWithCache(row.to);
-    const ip = hashWithCache(row.ip);
+    const from = usersMap.get(row.from)?.id || hash(row.from, row.id);
+    const to = usersMap.get(row.to)?.id || hash(row.to, row.id);
 
-    usersMap.set(from, { id: from, group: 'users' });
-    usersMap.set(to, { id: to, group: 'users' });
+    usersMap.set(row.from, {
+      id: from,
+      group: 'users',
+      votes: (usersMap.get(row.from)?.votes || 0) + 1,
+    });
 
-    if (ipNodesMap.has(ip)) {
-      ipNodesMap.get(ip).add(from);
+    usersMap.set(row.to, {
+      id: to,
+      group: 'users',
+      votes: (usersMap.get(row.to)?.votes || 0) + 1,
+    });
+
+    if (ipNodesMap.has(row.ip)) {
+      ipNodesMap.get(row.ip).add(row.from);
     } else {
-      ipNodesMap.set(ip, new Set([from]));
+      ipNodesMap.set(row.ip, new Set([row.from]));
     }
 
     const fromToKey = `${row.transaction_type}-${from}-${to}`;
     votesMap.set(fromToKey, {
       from,
       to,
-      arrows: 'to',
-      color: row.transaction_type === 'credit' ? 'green' : 'red',
-      value: votesMap.has(fromToKey) ? votesMap.get(fromToKey).value + 1 : 1,
+      type: row.transaction_type,
+      value: (votesMap.get(fromToKey)?.value || 0) + 1,
     });
-
-    ipEdgesMap.set(`${from}-${ip}`, { from, to: ip, color: 'cyan' });
   });
 
-  const sharedIps = [...ipNodesMap]
-    .map((ip) => ({ id: ip[0], group: ip[1].size > 1 ? 'IPs' : undefined }))
-    .filter((ip) => ip.group);
+  let ipId = 0;
+  const sharedIps = [];
+  const ipEdges = [];
 
-  const ipEdges = [...ipEdgesMap.values()].filter((edge) => sharedIps.some((ip) => ip.id === edge.to));
+  Array.from(ipNodesMap.values()).forEach((users) => {
+    if (users.size === 1) return;
+
+    ipId += 1;
+
+    users.forEach((user) => {
+      const from = usersMap.get(user).id;
+
+      usersMap.set(user, {
+        id: from,
+        group: 'users',
+        shared: true,
+        votes: usersMap.get(user).votes,
+      });
+
+      ipEdges.push({ from, to: ipId, type: 'network' });
+    });
+
+    sharedIps.push({ id: ipId, group: 'IPs' });
+  });
+
+  const usersData = await database.query({
+    text: `
+    SELECT${showUsernames ? ` username,` : ''}
+      'nuked' = ANY(features) as nuked,
+      id as key
+    FROM users
+    WHERE
+      id = ANY($1)
+      ${showUsernames ? '' : `AND 'nuked' = ANY(features)`}
+    ;`,
+    values: [[...usersMap.keys()]],
+  });
+
+  usersData.rows.forEach((row) => {
+    const user = usersMap.get(row.key);
+
+    usersMap.set(row.key, {
+      id: user.id,
+      group: row.nuked ? 'nuked' : 'users',
+      username: showUsernames && (user.votes > 2 || user.shared) ? row.username : null,
+      votes: user.votes,
+    });
+  });
 
   return {
     nodes: [...usersMap.values(), ...sharedIps],
@@ -166,8 +214,8 @@ async function getVotesTaken() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', NOW()) as maxval
-  ),
+           date_trunc('day', max(created_at)) as maxval
+    FROM events),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -204,15 +252,11 @@ export default Object.freeze({
   getVotesTaken,
 });
 
-const hashCache = {};
-
-function hashWithCache(input) {
-  if (hashCache[input]) return hashCache[input];
+function hash(key, salt) {
+  if (!salt) throw new Error('Necessário "salt" para gerar "hash"');
 
   const hash = crypto.createHash('md5');
-  const salt = crypto.randomBytes(16).toString('base64');
-  hash.update(salt + input);
-  const token = hash.digest('base64').slice(0, 7);
-  hashCache[input] = token;
-  return token;
+  hash.update(key + salt);
+
+  return hash.digest('base64').slice(0, 7);
 }

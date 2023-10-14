@@ -6,9 +6,7 @@ const availableFeatures = new Set([
   'create:user',
   'read:user',
   'read:user:self',
-  'read:user:list',
   'update:user',
-  'ban:user',
 
   // MIGRATION
   'read:migration',
@@ -19,7 +17,6 @@ const availableFeatures = new Set([
 
   // RECOVERY_TOKEN
   'read:recovery_token',
-  'create:recovery_token:username',
 
   // EMAIL_CONFIRMATION_TOKEN
   'read:email_confirmation_token',
@@ -31,12 +28,18 @@ const availableFeatures = new Set([
   // CONTENT
   'read:content',
   'update:content',
-  'update:content:others',
   'create:content',
   'create:content:text_root',
   'create:content:text_child',
   'read:content:list',
   'read:content:tabcoins',
+
+  // MODERATION
+  'read:user:list',
+  'read:votes:others',
+  'update:content:others',
+  'ban:user',
+  'create:recovery_token:username',
 ]);
 
 function can(user, feature, resource) {

@@ -5,8 +5,21 @@ import { BarChart } from '@/Charts';
 import Graph from '@/Graph';
 import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
 import analytics from 'models/analytics.js';
+import { useUser } from 'pages/interface';
 
 export default function Page({ usersCreated, rootContentPublished, childContentPublished, votesGraph, votesTaken }) {
+  const { user } = useUser();
+
+  const { data: votes } = useSWR(user?.features?.includes('update:content:others') ? '/api/v1/status/votes' : null, {
+    fallbackData: { votesGraph },
+    refreshInterval: 60_000,
+    shouldRetryOnError: false,
+    dedupingInterval: 30_000,
+    revalidateOnFocus: false,
+  });
+
+  const votesAmount = votes.votesGraph.edges.reduce((acc, curr) => acc + (curr.value || 0), 0);
+
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
     refreshInterval: 1000 * 10,
   });
@@ -24,7 +37,7 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
 
         <BarChart title="Novas qualificações" data={votesTaken} yDataKey="votos" />
 
-        <Graph title="Qualificações × Usuários × Origens" data={votesGraph} />
+        <Graph title={`Rede de qualificações (últimas ${votesAmount})`} data={votes.votesGraph} />
 
         <Box>
           <h2>Banco de Dados</h2>
