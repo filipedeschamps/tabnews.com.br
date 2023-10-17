@@ -81,7 +81,8 @@ export default function TabCoinButtons({ content }) {
     }
   }
 
-  const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit;
+  const isOwnerOfPost = user?.id === contentObject?.owner_id;
+  const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit || isOwnerOfPost;
 
   return (
     <Box
