@@ -426,8 +426,6 @@ describe('DELETE /api/v1/users/[username]', () => {
         username: secondUser.username,
         description: secondUser.description,
         features: ['nuked'],
-        tabcoins: 0,
-        tabcash: 0,
         created_at: secondUser.created_at.toISOString(),
         updated_at: nukeResponseBody.updated_at,
       });
@@ -593,8 +591,6 @@ describe('DELETE /api/v1/users/[username]', () => {
         username: secondUser.username,
         description: secondUser.description,
         features: ['nuked'],
-        tabcoins: 0,
-        tabcash: 0,
         created_at: secondUser.created_at.toISOString(),
         updated_at: nuke1ResponseBody.updated_at,
       });

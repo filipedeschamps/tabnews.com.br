@@ -7,9 +7,8 @@ async function nuke(userId, options = {}) {
   await user.removeFeatures(userId, null, options);
   await session.expireAllFromUserId(userId, options);
   await unpublishAllContent(userId, options);
-  await undoAllBalanceOperations(userId, options);
+  await undoAllRatingOperations(userId, options);
   const nukedUser = await user.addFeatures(userId, ['nuked'], options);
-  await injectBalanceIntoUserObject(nukedUser, options);
   return nukedUser;
 
   async function unpublishAllContent(userId, options = {}) {
@@ -30,18 +29,18 @@ async function nuke(userId, options = {}) {
     await database.query(query, options);
   }
 
-  async function undoAllBalanceOperations(userId, options = {}) {
-    const userEvents = await getAllEventsFromUser(userId, options);
+  async function undoAllRatingOperations(userId, options = {}) {
+    const userEvents = await getAllRatingEventsFromUser(userId, options);
 
     for (const userEvent of userEvents) {
-      const eventBalanceOperations = await getAllBalanceOperationsFromEvent(userEvent.id, options);
+      const eventBalanceOperations = await getRatingBalanceOperationsFromEvent(userEvent.id, options);
 
       for (const eventBalanceOperation of eventBalanceOperations) {
         await balance.undo(eventBalanceOperation.id, options);
       }
     }
 
-    async function getAllEventsFromUser(userId, options = {}) {
+    async function getAllRatingEventsFromUser(userId, options = {}) {
       const query = {
         text: `
           SELECT
@@ -50,6 +49,7 @@ async function nuke(userId, options = {}) {
             events
           WHERE
             originator_user_id = $1
+            AND type = 'update:content:tabcoins'
           ORDER BY
             created_at ASC
         ;`,
@@ -61,7 +61,7 @@ async function nuke(userId, options = {}) {
       return results.rows;
     }
 
-    async function getAllBalanceOperationsFromEvent(eventId, options = {}) {
+    async function getRatingBalanceOperationsFromEvent(eventId, options = {}) {
       const query = {
         text: `
           SELECT
@@ -81,24 +81,6 @@ async function nuke(userId, options = {}) {
       return results.rows;
     }
   }
-}
-
-async function injectBalanceIntoUserObject(user, options = {}) {
-  user.tabcoins = await balance.getTotal(
-    {
-      balanceType: 'user:tabcoin',
-      recipientId: user.id,
-    },
-    options
-  );
-
-  user.tabcash = await balance.getTotal(
-    {
-      balanceType: 'user:tabcash',
-      recipientId: user.id,
-    },
-    options
-  );
 }
 
 export default Object.freeze({
