@@ -34,6 +34,7 @@ async function findOneByUsername(username, options = {}) {
           users
         WHERE
           LOWER(username) = LOWER($1)
+          AND NOT 'nuked' = ANY(features)
         LIMIT
           1
       )`;
