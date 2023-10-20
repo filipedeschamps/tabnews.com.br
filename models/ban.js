@@ -1,6 +1,5 @@
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
-import content from 'models/content.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
 
@@ -14,29 +13,21 @@ async function nuke(userId, options = {}) {
   return nukedUser;
 
   async function unpublishAllContent(userId, options = {}) {
-    const userContents = await content.findAll(
-      {
-        where: {
-          owner_id: userId,
-        },
-      },
-      options
-    );
+    const query = {
+      text: `
+        UPDATE
+          contents
+        SET
+          status = 'deleted',
+          deleted_at = (NOW() AT TIME ZONE 'utc')
+        WHERE
+          owner_id = $1
+          AND status != 'deleted'
+      ;`,
+      values: [userId],
+    };
 
-    for (const userContent of userContents) {
-      if (userContent.status !== 'deleted') {
-        await content.update(
-          userContent.id,
-          {
-            status: 'deleted',
-          },
-          {
-            skipBalanceOperations: true,
-            transaction: options.transaction,
-          }
-        );
-      }
-    }
+    await database.query(query, options);
   }
 
   async function undoAllBalanceOperations(userId, options = {}) {
