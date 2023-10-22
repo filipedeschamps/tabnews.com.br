@@ -186,7 +186,7 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
         votes: usersMap.get(user).votes,
       });
 
-      ipEdges.push({ from, to: ipId, type: 'network' });
+      ipEdges.push({ id: `net-${from}-${ipId}`, from, to: ipId, type: 'network' });
     });
 
     sharedIps.push({ id: ipId, group: 'IPs' });
