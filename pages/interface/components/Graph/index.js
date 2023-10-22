@@ -252,7 +252,13 @@ function getStatusProps(event, network) {
     (event.node && network.body.nodes[event.node]?.edges) ||
     [];
 
-  const votesMap = new Set();
+  const userSelected =
+    (event.nodes && network.body.nodes[event.nodes[0]]?.options.username) ||
+    (event.node && network.body.nodes[event.node]?.options.username) ||
+    (event.edge && network.body.edges[event.edge].from.options.username);
+
+  const positiveVoteUsersMap = new Set();
+  const negativeVoteUsersMap = new Set();
   const sharedIpsMap = new Map();
   let positives = 0;
   let negatives = 0;
@@ -268,36 +274,45 @@ function getStatusProps(event, network) {
 
         to.edges.forEach(({ from }) => {
           const username = from.options.username;
-          username && sharedIpsMap.get(ip).add(username);
+          if (username && username !== userSelected) {
+            sharedIpsMap.get(ip).add(username);
+          }
         });
       }
     } else {
-      const fromUsername = from.options.username;
-      fromUsername && votesMap.add(fromUsername);
-
-      const toUsername = to.options.username;
-      toUsername && votesMap.add(toUsername);
-
+      const fromUsername = from.options.username !== userSelected && from.options.username;
+      const toUsername = to.options.username !== userSelected && to.options.username;
       const value = options.value;
       const isPositive = options.color.color === 'green';
 
       if (isPositive) {
         positives += value;
+        fromUsername && positiveVoteUsersMap.add(fromUsername);
+        toUsername && positiveVoteUsersMap.add(toUsername);
       } else {
         negatives += value;
+        fromUsername && negativeVoteUsersMap.add(fromUsername);
+        toUsername && negativeVoteUsersMap.add(toUsername);
       }
     }
   });
 
-  return { votes: [...votesMap], positives, negatives, shared: [...sharedIpsMap.values()] };
+  return {
+    userSelected,
+    positiveVoteUsers: [...positiveVoteUsersMap],
+    positives,
+    negativeVoteUsers: [...negativeVoteUsersMap],
+    negatives,
+    shared: [...sharedIpsMap.values()],
+  };
 }
 
 function StatusBar({ status }) {
   return (
     <Box display="flex" minHeight={30} justifyContent="center" borderBottom={border} flexWrap="wrap">
       <DefaultStatusMessage status={status} />
+      <UserSelected userSelected={status?.userSelected} />
       <JoinSharedNetworks {...status} />
-      <JoinLinksWithCommaOrAnd paths={status?.votes} />
       <JoinInteractions {...status} />
     </Box>
   );
@@ -309,16 +324,26 @@ function DefaultStatusMessage({ status }) {
   return <Text>Selecione um nó ou aresta</Text>;
 }
 
-function JoinSharedNetworks({ positives, negatives, shared }) {
+function UserSelected({ userSelected }) {
+  if (!userSelected) return null;
+
+  return (
+    <Fragment>
+      <Link href={`/${userSelected}`}>{userSelected}&nbsp;</Link>
+    </Fragment>
+  );
+}
+
+function JoinSharedNetworks({ userSelected, positives, negatives, shared }) {
   if (!shared) return null;
 
   return shared.map((sharedFrom, i) => {
     return (
       <Fragment key={i}>
+        {userSelected ? <Text>compartilha sua rede</Text> : <Text>Rede compartilhada</Text>}
+        {sharedFrom.size === 1 && <Text>&nbsp;com&nbsp;</Text>}
+        {sharedFrom.size > 1 && <Text>&nbsp;entre&nbsp;</Text>}
         <JoinLinksWithCommaOrAnd paths={[...sharedFrom]} />
-        {sharedFrom.size === 0 && <Text>Rede compartilhada</Text>}
-        {sharedFrom.size === 1 && <Text>&nbsp;compartilha sua rede&nbsp;</Text>}
-        {sharedFrom.size > 1 && <Text>&nbsp;compartilham a mesma rede&nbsp;</Text>}
         {i + 2 < shared.length && <Text>,&nbsp;</Text>}
         {i + 2 === shared.length && <Text>&nbsp;e&nbsp;</Text>}
         {i + 1 === shared.length && !!(positives || negatives) && <Text>&nbsp;|&nbsp;</Text>}
@@ -339,19 +364,25 @@ function JoinLinksWithCommaOrAnd({ paths }) {
   ]);
 }
 
-function JoinInteractions({ votes, positives, negatives }) {
+function JoinInteractions({ positives, positiveVoteUsers, negatives, negativeVoteUsers }) {
   if (!positives && !negatives) return null;
 
-  let content = '';
-
-  if (votes?.length) content += '➔';
-  if (positives) content += ` +${positives} TabCoin${positives > 1 ? 's' : ''}`;
-  if (positives && negatives) content += ' e';
-  if (negatives) content += ` -${negatives} TabCoin${negatives > 1 ? 's' : ''}`;
-
-  if (!content) return null;
-
-  return <Text>&nbsp;{content}</Text>;
+  return (
+    <>
+      {positives > 0 && (
+        <Text>{`➔ +${positives} TabCoin${positives > 1 ? 's' : ''}${
+          positiveVoteUsers.length > 0 ? ' com\xA0' : ''
+        }`}</Text>
+      )}
+      <JoinLinksWithCommaOrAnd paths={positiveVoteUsers} />
+      {negatives > 0 && (
+        <Text>{`${positives > 0 ? ' ' : ''}➔ -${negatives} TabCoin${negatives > 1 ? 's' : ''}${
+          negativeVoteUsers.length > 0 ? ' com\xA0' : ''
+        }`}</Text>
+      )}
+      <JoinLinksWithCommaOrAnd paths={negativeVoteUsers} />
+    </>
+  );
 }
 
 function Menu({ config, setConfig }) {

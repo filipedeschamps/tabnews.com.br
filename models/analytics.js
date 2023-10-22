@@ -211,7 +211,7 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
     usersMap.set(row.key, {
       id: user.id,
       group: row.nuked ? 'nuked' : 'users',
-      username: showUsernames && (user.votes > 2 || user.shared) ? row.username : null,
+      username: showUsernames && row.username,
       votes: user.votes,
     });
   });
