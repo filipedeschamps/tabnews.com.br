@@ -1,6 +1,5 @@
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
-import content from 'models/content.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
 
@@ -8,49 +7,40 @@ async function nuke(userId, options = {}) {
   await user.removeFeatures(userId, null, options);
   await session.expireAllFromUserId(userId, options);
   await unpublishAllContent(userId, options);
-  await undoAllBalanceOperations(userId, options);
+  await undoAllRatingOperations(userId, options);
   const nukedUser = await user.addFeatures(userId, ['nuked'], options);
-  await injectBalanceIntoUserObject(nukedUser, options);
   return nukedUser;
 
   async function unpublishAllContent(userId, options = {}) {
-    const userContents = await content.findAll(
-      {
-        where: {
-          owner_id: userId,
-        },
-      },
-      options
-    );
+    const query = {
+      text: `
+        UPDATE
+          contents
+        SET
+          status = 'deleted',
+          deleted_at = (NOW() AT TIME ZONE 'utc')
+        WHERE
+          owner_id = $1
+          AND status != 'deleted'
+      ;`,
+      values: [userId],
+    };
 
-    for (const userContent of userContents) {
-      if (userContent.status !== 'deleted') {
-        await content.update(
-          userContent.id,
-          {
-            status: 'deleted',
-          },
-          {
-            skipBalanceOperations: true,
-            transaction: options.transaction,
-          }
-        );
-      }
-    }
+    await database.query(query, options);
   }
 
-  async function undoAllBalanceOperations(userId, options = {}) {
-    const userEvents = await getAllEventsFromUser(userId, options);
+  async function undoAllRatingOperations(userId, options = {}) {
+    const userEvents = await getAllRatingEventsFromUser(userId, options);
 
     for (const userEvent of userEvents) {
-      const eventBalanceOperations = await getAllBalanceOperationsFromEvent(userEvent.id, options);
+      const eventBalanceOperations = await getRatingBalanceOperationsFromEvent(userEvent.id, options);
 
       for (const eventBalanceOperation of eventBalanceOperations) {
         await balance.undo(eventBalanceOperation.id, options);
       }
     }
 
-    async function getAllEventsFromUser(userId, options = {}) {
+    async function getAllRatingEventsFromUser(userId, options = {}) {
       const query = {
         text: `
           SELECT
@@ -59,6 +49,8 @@ async function nuke(userId, options = {}) {
             events
           WHERE
             originator_user_id = $1
+            AND created_at > NOW() - INTERVAL '2 weeks'
+            AND type = 'update:content:tabcoins'
           ORDER BY
             created_at ASC
         ;`,
@@ -70,7 +62,7 @@ async function nuke(userId, options = {}) {
       return results.rows;
     }
 
-    async function getAllBalanceOperationsFromEvent(eventId, options = {}) {
+    async function getRatingBalanceOperationsFromEvent(eventId, options = {}) {
       const query = {
         text: `
           SELECT
@@ -90,24 +82,6 @@ async function nuke(userId, options = {}) {
       return results.rows;
     }
   }
-}
-
-async function injectBalanceIntoUserObject(user, options = {}) {
-  user.tabcoins = await balance.getTotal(
-    {
-      balanceType: 'user:tabcoin',
-      recipientId: user.id,
-    },
-    options
-  );
-
-  user.tabcash = await balance.getTotal(
-    {
-      balanceType: 'user:tabcash',
-      recipientId: user.id,
-    },
-    options
-  );
 }
 
 export default Object.freeze({

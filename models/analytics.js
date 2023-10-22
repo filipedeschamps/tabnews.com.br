@@ -6,8 +6,8 @@ async function getChildContentsPublished() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(published_at)) as maxval
-    FROM contents),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -24,7 +24,8 @@ async function getChildContentsPublished() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as respostas
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
@@ -39,8 +40,8 @@ async function getRootContentsPublished() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(published_at)) as maxval
-    FROM contents),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -57,7 +58,8 @@ async function getRootContentsPublished() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as conteudos
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
@@ -72,8 +74,8 @@ async function getUsersCreated() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(created_at)) as maxval
-    FROM users),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -90,7 +92,8 @@ async function getUsersCreated() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as cadastros
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
@@ -124,6 +127,14 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
   const ipNodesMap = new Map();
   const votesMap = new Map();
 
+  // Since `votesMap` will maintain the insertion order, this allows moderators
+  // to filter by user nodes that participated in the most recent ratings.
+  // For public data, the result must be inverted to make it
+  // difficult to identify the users represented by each node.
+  if (!showUsernames) {
+    results.rows.reverse();
+  }
+
   results.rows.forEach((row) => {
     const from = usersMap.get(row.from)?.id || hash(row.from, row.id);
     const to = usersMap.get(row.to)?.id || hash(row.to, row.id);
@@ -148,6 +159,7 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
 
     const fromToKey = `${row.transaction_type}-${from}-${to}`;
     votesMap.set(fromToKey, {
+      id: fromToKey,
       from,
       to,
       type: row.transaction_type,
@@ -174,7 +186,7 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
         votes: usersMap.get(user).votes,
       });
 
-      ipEdges.push({ from, to: ipId, type: 'network' });
+      ipEdges.push({ id: `net-${from}-${ipId}`, from, to: ipId, type: 'network' });
     });
 
     sharedIps.push({ id: ipId, group: 'IPs' });
@@ -199,7 +211,7 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
     usersMap.set(row.key, {
       id: user.id,
       group: row.nuked ? 'nuked' : 'users',
-      username: showUsernames && (user.votes > 2 || user.shared) ? row.username : null,
+      username: showUsernames && row.username,
       votes: user.votes,
     });
   });
@@ -214,8 +226,8 @@ async function getVotesTaken() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(created_at)) as maxval
-    FROM events),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -233,7 +245,8 @@ async function getVotesTaken() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as votos
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {

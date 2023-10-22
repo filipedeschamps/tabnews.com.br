@@ -1,5 +1,5 @@
 export { CgTab } from 'react-icons/cg';
-export { FaUser, FaTree } from 'react-icons/fa';
+export { FaPause, FaPlay, FaTree, FaUser } from 'react-icons/fa';
 export {
   ChevronDownIcon,
   ChevronLeftIcon,

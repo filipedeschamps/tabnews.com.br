@@ -426,8 +426,6 @@ describe('DELETE /api/v1/users/[username]', () => {
         username: secondUser.username,
         description: secondUser.description,
         features: ['nuked'],
-        tabcoins: 0,
-        tabcash: 0,
         created_at: secondUser.created_at.toISOString(),
         updated_at: nukeResponseBody.updated_at,
       });
@@ -454,9 +452,16 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const secondUserCheck2Body = await secondUserCheck2.json();
 
-      expect(secondUserCheck2Body.tabcoins).toStrictEqual(0);
-      expect(secondUserCheck2Body.tabcash).toStrictEqual(0);
-      expect(secondUserCheck2Body.features).toStrictEqual(['nuked']);
+      expect(secondUserCheck2.status).toEqual(404);
+      expect(secondUserCheck2Body.status_code).toEqual(404);
+      expect(secondUserCheck2Body.name).toEqual('NotFoundError');
+      expect(secondUserCheck2Body.message).toEqual('O "username" informado não foi encontrado no sistema.');
+      expect(secondUserCheck2Body.action).toEqual('Verifique se o "username" está digitado corretamente.');
+      expect(secondUserCheck2Body.status_code).toEqual(404);
+      expect(secondUserCheck2Body.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(secondUserCheck2Body.error_id)).toEqual(4);
+      expect(uuidVersion(secondUserCheck2Body.request_id)).toEqual(4);
+      expect(secondUserCheck2Body.key).toEqual('username');
 
       // 14) CHECK FIRST USER ROOT CONTENT (POST-BAN)
       const firstUserRootContentCheck2 = await fetch(
@@ -523,6 +528,38 @@ describe('DELETE /api/v1/users/[username]', () => {
       });
     });
 
+    test('With "ban_type" on a non-existing user', async () => {
+      const firstUser = await orchestrator.createUser();
+      await orchestrator.activateUser(firstUser);
+      const firstUserSession = await orchestrator.createSession(firstUser);
+      await orchestrator.addFeaturesToUser(firstUser, ['ban:user']);
+
+      const nukeResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/donotexist`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${firstUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          ban_type: 'nuke',
+        }),
+      });
+
+      const nukeResponseBody = await nukeResponse.json();
+
+      expect(nukeResponse.status).toEqual(404);
+      expect(nukeResponseBody.status_code).toEqual(404);
+      expect(nukeResponseBody.name).toEqual('NotFoundError');
+      expect(nukeResponseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
+      expect(nukeResponseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
+      expect(nukeResponseBody.status_code).toEqual(404);
+      expect(nukeResponseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(nukeResponseBody.error_id)).toEqual(4);
+      expect(uuidVersion(nukeResponseBody.request_id)).toEqual(4);
+      expect(nukeResponseBody.key).toEqual('username');
+    });
+
     test('With "ban_type" on an user with "nuked" feature', async () => {
       const firstUser = await orchestrator.createUser();
       await orchestrator.activateUser(firstUser);
@@ -554,8 +591,6 @@ describe('DELETE /api/v1/users/[username]', () => {
         username: secondUser.username,
         description: secondUser.description,
         features: ['nuked'],
-        tabcoins: 0,
-        tabcash: 0,
         created_at: secondUser.created_at.toISOString(),
         updated_at: nuke1ResponseBody.updated_at,
       });
@@ -574,17 +609,16 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const nuke2ResponseBody = await nuke2Response.json();
 
-      expect(nuke2Response.status).toStrictEqual(422);
-
-      expect(nuke2ResponseBody).toStrictEqual({
-        name: 'UnprocessableEntityError',
-        message: 'Este usuário já está banido permanentemente.',
-        action: 'Verifique se você está tentando banir permanentemente o usuário correto.',
-        status_code: 422,
-        error_id: nuke2ResponseBody.error_id,
-        request_id: nuke2ResponseBody.request_id,
-        error_location_code: 'CONTROLLER:USERS:USERNAME:DELETE:USER_ALREADY_NUKED',
-      });
+      expect(nuke2Response.status).toEqual(404);
+      expect(nuke2ResponseBody.status_code).toEqual(404);
+      expect(nuke2ResponseBody.name).toEqual('NotFoundError');
+      expect(nuke2ResponseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
+      expect(nuke2ResponseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
+      expect(nuke2ResponseBody.status_code).toEqual(404);
+      expect(nuke2ResponseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(nuke2ResponseBody.error_id)).toEqual(4);
+      expect(uuidVersion(nuke2ResponseBody.request_id)).toEqual(4);
+      expect(nuke2ResponseBody.key).toEqual('username');
     });
   });
 });
