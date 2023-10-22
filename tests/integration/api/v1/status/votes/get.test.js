@@ -105,6 +105,7 @@ describe('GET /api/v1/status/votes', () => {
       expect(votesData.nodes[1].votes).toEqual(1);
       expect(votesData.edges[0].from).toEqual(votesData.nodes[0].id);
       expect(votesData.edges[0].to).toEqual(votesData.nodes[1].id);
+      expect(votesData.edges[0].id).toEqual(`credit-${votesData.nodes[0].id}-${votesData.nodes[1].id}`);
     });
 
     describe('Same user after losing "read:votes:others" feature', () => {

@@ -124,6 +124,14 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
   const ipNodesMap = new Map();
   const votesMap = new Map();
 
+  // Since `votesMap` will maintain the insertion order, this allows moderators
+  // to filter by user nodes that participated in the most recent ratings.
+  // For public data, the result must be inverted to make it
+  // difficult to identify the users represented by each node.
+  if (!showUsernames) {
+    results.rows.reverse();
+  }
+
   results.rows.forEach((row) => {
     const from = usersMap.get(row.from)?.id || hash(row.from, row.id);
     const to = usersMap.get(row.to)?.id || hash(row.to, row.id);
@@ -148,6 +156,7 @@ async function getVotesGraph({ limit = 300, showUsernames = false } = {}) {
 
     const fromToKey = `${row.transaction_type}-${from}-${to}`;
     votesMap.set(fromToKey, {
+      id: fromToKey,
       from,
       to,
       type: row.transaction_type,

@@ -21,6 +21,7 @@ export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
 export {
   ActionList,
   ActionMenu,
+  AnchoredOverlay,
   BaseStyles,
   Box,
   BranchName,
