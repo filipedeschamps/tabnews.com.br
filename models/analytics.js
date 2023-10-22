@@ -6,8 +6,8 @@ async function getChildContentsPublished() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(published_at)) as maxval
-    FROM contents),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -24,7 +24,8 @@ async function getChildContentsPublished() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as respostas
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
@@ -39,8 +40,8 @@ async function getRootContentsPublished() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(published_at)) as maxval
-    FROM contents),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -57,7 +58,8 @@ async function getRootContentsPublished() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as conteudos
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
@@ -72,8 +74,8 @@ async function getUsersCreated() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(created_at)) as maxval
-    FROM users),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -90,7 +92,8 @@ async function getUsersCreated() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as cadastros
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
@@ -223,8 +226,8 @@ async function getVotesTaken() {
   const results = await database.query(`
   WITH range_values AS (
     SELECT date_trunc('day', NOW() - INTERVAL '2 MONTHS') as minval,
-           date_trunc('day', max(created_at)) as maxval
-    FROM events),
+           date_trunc('day', NOW()) as maxval
+  ),
 
   day_range AS (
     SELECT generate_series(minval, maxval, '1 day'::interval) as date
@@ -242,7 +245,8 @@ async function getVotesTaken() {
   SELECT TO_CHAR(day_range.date :: DATE, 'dd/mm') as date,
          daily_counts.ct::INTEGER as votos
   FROM day_range
-  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date;
+  LEFT OUTER JOIN daily_counts on day_range.date = daily_counts.date
+  ORDER BY day_range.date;
   `);
 
   return results.rows.map((row) => {
