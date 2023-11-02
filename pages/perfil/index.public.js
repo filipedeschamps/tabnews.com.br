@@ -37,6 +37,7 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
+  const successTimeoutRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -55,6 +56,7 @@ function EditProfileForm() {
   }, [fetchUser]);
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
+  const [globalSuccessMessage, setGlobalSuccessMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
@@ -146,6 +148,14 @@ function EditProfileForm() {
             type: 'confirmation',
           });
           setEmailDisabled(true);
+        } else {
+          clearTimeout(successTimeoutRef.current);
+
+          setGlobalSuccessMessage('Salvo com sucesso!');
+
+          successTimeoutRef.current = setTimeout(() => {
+            setGlobalSuccessMessage(null);
+          }, 5000);
         }
 
         setIsLoading(false);
@@ -173,6 +183,8 @@ function EditProfileForm() {
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+
+        {globalSuccessMessage && <Flash variant="success">{globalSuccessMessage}</Flash>}
 
         <FormControl id="username">
           <FormControl.Label>Nome de usuário</FormControl.Label>
