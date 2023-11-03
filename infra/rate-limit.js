@@ -92,6 +92,10 @@ function getLimit(method, path, ip) {
       requests: 50,
       window: '30 m',
     },
+    'POST /api/v1/sessions/captcha': {
+      requests: 50,
+      window: '30 m',
+    },
     'POST /api/v1/users': {
       requests: 50,
       window: '30 m',
