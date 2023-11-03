@@ -100,16 +100,12 @@ async function validate(captchaToken, captchaId, options = {}) {
             id = $1
             AND token = $2
             AND used = false
-            AND expires_at <= now()
-          RETURNING
-            *
           ;`,
     values: [captchaId, captchaToken],
   };
 
   const results = await database.query(query, options);
-  const isAnValidCaptcha = Boolean(results.rows.length);
-
+  const isAnValidCaptcha = Boolean(results.rows.length && new Date(results.rows[0].expiresAt < new Date()));
   if (!isAnValidCaptcha) return false;
 
   const updateCaptchaQuery = {
