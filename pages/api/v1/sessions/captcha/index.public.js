@@ -20,6 +20,6 @@ async function postHandler(request, response) {
 
   return response.status(200).json({
     id: captchaData.id,
-    image: captchaPng.toString('base64'),
+    image: `data:image/png;base64,${captchaPng.toString('base64')}`,
   });
 }
