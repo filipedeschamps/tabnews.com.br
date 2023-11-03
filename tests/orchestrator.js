@@ -8,6 +8,7 @@ import migrator from 'infra/migrator.js';
 import webserver from 'infra/webserver.js';
 import activation from 'models/activation.js';
 import balance from 'models/balance.js';
+import captcha from 'models/captcha.js';
 import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
@@ -345,6 +346,11 @@ async function updateRewardedAt(userId, rewardedAt) {
   return await database.query(query);
 }
 
+async function createCaptcha() {
+  const captchaData = await captcha.create();
+  return captchaData;
+}
+
 const orchestrator = {
   waitForAllServices,
   dropAllTables,
@@ -366,6 +372,7 @@ const orchestrator = {
   createPrestige,
   createRate,
   updateRewardedAt,
+  createCaptcha,
 };
 
 export default orchestrator;

@@ -13,7 +13,7 @@ beforeAll(async () => {
 
 describe('POST /api/v1/sessions', () => {
   describe('Anonymous User', () => {
-    test('Using a valid email and password', async () => {
+    test('Using a valid email and password, and a invalid captcha', async () => {
       const defaultUser = await orchestrator.createUser({
         email: 'emailToBeFoundAndAccepted@gmail.com',
         password: 'ValidPassword',
@@ -29,6 +29,91 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'emailToBeFoundAndAccepted@gmail.com',
           password: 'ValidPassword',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(responseBody.name).toEqual('UnauthorizedError');
+      expect(responseBody.message).toEqual('Captcha inválido.');
+      expect(responseBody.action).toEqual('Verifique se o captcha está correto.');
+      expect(responseBody.status_code).toEqual(401);
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:CAPTCHA_NOT_VALID');
+    });
+
+    test('Using a valid email and password, and a used captcha', async () => {
+      const validCaptcha = await orchestrator.createCaptcha();
+
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailToBeFoundAndAccepted2@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+
+      await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'emailToBeFoundAndAccepted2@gmail.com',
+          password: 'ValidPassword',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
+        }),
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'emailToBeFoundAndAccepted2@gmail.com',
+          password: 'ValidPassword',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(responseBody.name).toEqual('UnauthorizedError');
+      expect(responseBody.message).toEqual('Captcha inválido.');
+      expect(responseBody.action).toEqual('Verifique se o captcha está correto.');
+      expect(responseBody.status_code).toEqual(401);
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual('CONTROLLER:SESSIONS:POST_HANDLER:CAPTCHA_NOT_VALID');
+    });
+
+    test('Using a valid email and password, and a valid captcha', async () => {
+      const validCaptcha = await orchestrator.createCaptcha();
+
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailToBeFoundAndAccepted3@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'emailToBeFoundAndAccepted3@gmail.com',
+          password: 'ValidPassword',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
         }),
       });
 
@@ -53,6 +138,8 @@ describe('POST /api/v1/sessions', () => {
     });
 
     test('Using a valid email and password, but user lost the feature "create:session"', async () => {
+      const validCaptcha = await orchestrator.createCaptcha();
+
       const defaultUser = await orchestrator.createUser({
         email: 'emailToBeFoundAndLostFeature@gmail.com',
         password: 'ValidPassword',
@@ -69,6 +156,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'emailToBeFoundAndLostFeature@gmail.com',
           password: 'ValidPassword',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
         }),
       });
 
@@ -85,6 +174,8 @@ describe('POST /api/v1/sessions', () => {
     });
 
     test('Using a valid email and password, but not activated user', async () => {
+      const validCaptcha = await orchestrator.createCaptcha();
+
       await orchestrator.createUser({
         email: 'emailToBeFoundAndRejected@gmail.com',
         password: 'ValidPassword',
@@ -98,6 +189,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'emailToBeFoundAndRejected@gmail.com',
           password: 'ValidPassword',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
         }),
       });
 
@@ -114,6 +207,8 @@ describe('POST /api/v1/sessions', () => {
     });
 
     test('Using a valid email and password, but wrong password', async () => {
+      const validCaptcha = await orchestrator.createCaptcha();
+
       const defaultUser = await orchestrator.createUser({
         email: 'wrongpassword@gmail.com',
         password: 'wrongpassword',
@@ -129,6 +224,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'wrongpassword@gmail.com',
           password: 'IFORGOTMYPASSWORD',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
         }),
       });
 
@@ -145,6 +242,8 @@ describe('POST /api/v1/sessions', () => {
     });
 
     test('Using a valid email and password, but wrong email', async () => {
+      const validCaptcha = await orchestrator.createCaptcha();
+
       const defaultUser = await orchestrator.createUser({
         email: 'wrongemail@gmail.com',
         password: 'wrongemail',
@@ -160,6 +259,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'IFORGOTMYEMAIL@gmail.com',
           password: 'wrongemail',
+          captcha_id: validCaptcha.id,
+          captcha: validCaptcha.token,
         }),
       });
 
@@ -183,6 +284,8 @@ describe('POST /api/v1/sessions', () => {
         },
         body: JSON.stringify({
           password: 'validPassword',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -208,6 +311,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: '',
           password: 'validPassword',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -233,6 +338,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 12345,
           password: 'validPassword',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -258,6 +365,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'invalidemail',
           password: 'validPassword',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -282,6 +391,8 @@ describe('POST /api/v1/sessions', () => {
         },
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -307,6 +418,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
           password: '',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -332,6 +445,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
           password: 'small',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -357,6 +472,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
           password: '73characterssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
@@ -382,6 +499,8 @@ describe('POST /api/v1/sessions', () => {
         body: JSON.stringify({
           email: 'ValidEmail@gmail.com',
           password: 12345678,
+          captcha_id: '24097f99-fec0-4b4b-9a6e-f360debbb9a1',
+          captcha: '123',
         }),
       });
 
