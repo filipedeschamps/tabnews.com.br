@@ -800,6 +800,40 @@ const schemas = {
         }),
     });
   },
+
+  captcha_id: function () {
+    return Joi.object({
+      captcha_id: Joi.string()
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.captcha_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"captcha_id" é um campo obrigatório.`,
+          'string.empty': `"captcha_id" não pode estar em branco.`,
+          'string.base': `"captcha_id" deve ser do tipo String.`,
+          'string.guid': `"captcha_id" deve possuir um token UUID na versão 4.`,
+        }),
+    });
+  },
+
+  captcha: function () {
+    return Joi.object({
+      captcha: Joi.string()
+        .min(0)
+        .max(60)
+        .trim()
+        .invalid(null)
+        .when('$required.captcha', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"captcha" é um campo obrigatório.`,
+          'string.empty': `"captcha" não pode estar em branco.`,
+          'string.base': `"captcha" deve ser do tipo String.`,
+          'string.min': `"captcha" deve conter no mínimo {#limit} caracteres.`,
+          'string.max': `"captcha" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"captcha" possui o valor inválido "null".`,
+        }),
+    });
+  },
 };
 
 const withoutMarkdown = (value, helpers) => {

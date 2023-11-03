@@ -76,6 +76,8 @@ function filterInput(user, feature, input) {
     filteredInputValues = {
       email: input.email,
       password: input.password,
+      captcha_id: input.captcha_id,
+      captcha: input.captcha,
     };
   }
 

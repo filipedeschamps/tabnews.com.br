@@ -5,6 +5,7 @@ import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
+import captcha from 'models/captcha';
 import controller from 'models/controller.js';
 import session from 'models/session';
 import user from 'models/user';
@@ -38,6 +39,8 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    captcha_id: 'required',
+    captcha: 'required',
   });
 
   request.body = cleanValues;
@@ -50,6 +53,15 @@ async function postHandler(request, response) {
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
+
+  const isValidCaptcha = await captcha.validate(secureInputValues.captcha, secureInputValues.captcha_id);
+  if (!isValidCaptcha) {
+    throw new UnauthorizedError({
+      message: `Captcha inválido.`,
+      action: `Verifique se o captcha está correto.`,
+      errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:CAPTCHA_NOT_VALID`,
+    });
+  }
 
   // Compress all mismatch errors (email and password) into one single error.
   let storedUser;
