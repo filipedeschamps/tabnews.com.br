@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useRef, useState } from 'react';
 
 import {
@@ -12,21 +13,23 @@ import {
   Text,
   TextInput,
 } from '@/TabNewsUI';
+import captcha from 'models/captcha.js';
 import { useUser } from 'pages/interface';
 
-export default function Login() {
+export default function Login({ captcha }) {
   return (
     <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
-      <LoginForm />
+      <LoginForm captchaId={captcha.id} captchaImage={captcha.image} />
     </DefaultLayout>
   );
 }
 
-function LoginForm() {
+function LoginForm({ captchaId, captchaImage }) {
   const { fetchUser } = useUser();
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
+  const captchaRef = useRef('');
 
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +44,7 @@ function LoginForm() {
 
     const email = emailRef.current.value;
     const password = passwordRef.current.value;
+    const captcha = captchaRef.current.value.toLowerCase();
 
     setIsLoading(true);
     setErrorObject(undefined);
@@ -55,6 +59,8 @@ function LoginForm() {
         body: JSON.stringify({
           email: email,
           password: password,
+          captcha_id: captchaId,
+          captcha: captcha,
         }),
       });
 
@@ -120,6 +126,28 @@ function LoginForm() {
             errorObject={errorObject}
             setErrorObject={setErrorObject}
           />
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Image width="200" height="100" alt="captcha" src={captchaImage} />
+          </Box>
+          <FormControl id="captcha">
+            <FormControl.Label>Captcha</FormControl.Label>
+            <TextInput
+              ref={captchaRef}
+              onChange={clearErrors}
+              name="captcha"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Digite o captcha acima"
+              contrast
+              sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            />
+            {errorObject?.key === 'captcha' && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+          </FormControl>
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
             <ButtonWithLoader
@@ -145,3 +173,11 @@ function LoginForm() {
     </>
   );
 }
+
+export const getServerSideProps = async () => {
+  const loginCaptcha = await captcha.create();
+  const captchaPng = await captcha.asPng(loginCaptcha.token);
+  return {
+    props: { captcha: { id: loginCaptcha.id, image: `data:image/png;base64,${captchaPng.toString('base64')}` } },
+  };
+};
