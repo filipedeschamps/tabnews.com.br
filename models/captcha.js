@@ -1,6 +1,9 @@
-//import { UnauthorizedError } from 'errors';
+import { renderAsync } from '@resvg/resvg-js';
+import fs from 'node:fs';
+import { join, resolve } from 'node:path';
+import satori from 'satori';
+
 import database from 'infra/database.js';
-//import cacheControl from 'models/cache-control';
 //import validator from 'models/validator.js';
 
 const TOKEN_EXPIRATION_IN_SECONDS = 60 * 10; // 10 minutes
@@ -66,7 +69,7 @@ const unmountedTokenSet = new Set([
 ]);
 
 function createRandomToken() {
-  const randomSortedUnmountedTokens = unmountedTokenSet.sort(() => Math.random() - 0.5);
+  const randomSortedUnmountedTokens = Array.from(unmountedTokenSet).sort(() => Math.random() - 0.5);
   const mountedToken = randomSortedUnmountedTokens.slice(0, 2).join(' ');
 
   return mountedToken;
@@ -107,7 +110,7 @@ async function validate(captchaToken, captchaId, options = {}) {
   const results = await database.query(query, options);
   const isAnValidCaptcha = Boolean(results.rows.length);
 
-  if(!isAnValidCaptcha) return false;
+  if (!isAnValidCaptcha) return false;
 
   const updateCaptchaQuery = {
     text: `
@@ -126,7 +129,59 @@ async function validate(captchaToken, captchaId, options = {}) {
   return true;
 }
 
+async function asPng(captchaToken) {
+  const svg = await satori(renderTemplate(captchaToken), {
+    width: 1200,
+    height: 630,
+    fonts: [
+      {
+        name: 'Roboto',
+        data: fs.readFileSync(join(resolve('.'), 'fonts', 'Roboto-Regular.ttf')),
+        weight: 400,
+        style: 'normal',
+      },
+      {
+        name: 'Roboto',
+        data: fs.readFileSync(join(resolve('.'), 'fonts', 'Roboto-Bold.ttf')),
+        weight: 700,
+        style: 'normal',
+      },
+      {
+        name: 'NotoEmoji',
+        data: fs.readFileSync(join(resolve('.'), 'fonts', 'NotoEmoji-Bold.ttf')),
+        weight: 700,
+        style: 'normal',
+      },
+    ],
+  });
+
+  const renderBuffer = await renderAsync(svg);
+  return renderBuffer.asPng();
+}
+
+export function renderTemplate(captchaToken) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
+        padding: '80px 60px 60px',
+        fontFamily: 'Roboto',
+        fontSize: '20pt',
+        backgroundColor: '#FFFFFF',
+        color: '#000000',
+        filter: 'blur(4px)',
+      }}>
+      <span>{captchaToken}</span>
+    </div>
+  );
+}
+
 export default Object.freeze({
   create,
   validate,
+  asPng,
 });
