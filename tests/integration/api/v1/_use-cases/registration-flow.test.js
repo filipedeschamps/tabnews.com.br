@@ -103,6 +103,8 @@ describe('Use case: Registration Flow (all successfully)', () => {
   });
 
   test('Login (successfully)', async () => {
+    const validCaptcha = await orchestrator.createCaptcha();
+
     const postSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
       method: 'post',
       headers: {
@@ -111,6 +113,8 @@ describe('Use case: Registration Flow (all successfully)', () => {
       body: JSON.stringify({
         email: 'RegularRegistrationFlow@gmail.com',
         password: 'RegularRegistrationFlowPassword',
+        captcha_id: validCaptcha.id,
+        captcha: validCaptcha.token,
       }),
     });
 
