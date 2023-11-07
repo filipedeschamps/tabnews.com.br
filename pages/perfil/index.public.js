@@ -75,19 +75,6 @@ function EditProfileForm() {
     setIsLoading(true);
     setErrorObject(undefined);
 
-    const suggestedEmail = suggestEmail(email);
-
-    if (suggestedEmail) {
-      setErrorObject({
-        suggestion: suggestedEmail,
-        key: 'email',
-        type: 'typo',
-      });
-
-      setIsLoading(false);
-      return;
-    }
-
     const payload = {};
 
     if (user.username !== username) {
@@ -107,6 +94,19 @@ function EditProfileForm() {
     }
 
     if (user.email !== email) {
+      const suggestedEmail = suggestEmail(email);
+
+      if (suggestedEmail) {
+        setErrorObject({
+          suggestion: suggestedEmail,
+          key: 'email',
+          type: 'typo',
+        });
+
+        setIsLoading(false);
+        return;
+      }
+
       payload.email = email;
     }
 

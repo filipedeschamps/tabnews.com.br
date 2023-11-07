@@ -12,8 +12,8 @@ const UserContext = createContext({
   user: null,
   isLoading: true,
   error: undefined,
-  fetchUser: () => {},
-  logout: () => {},
+  fetchUser: async () => {},
+  logout: async () => {},
 });
 
 export function UserProvider({ children }) {
