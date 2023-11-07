@@ -37,7 +37,6 @@ function EditProfileForm() {
   const usernameRef = useRef('');
   const emailRef = useRef('');
   const notificationsRef = useRef('');
-  const successTimeoutRef = useRef('');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -55,15 +54,15 @@ function EditProfileForm() {
     fetchUser();
   }, [fetchUser]);
 
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
-  const [globalSuccessMessage, setGlobalSuccessMessage] = useState(null);
+  const [globalMessageObject, setGlobalMessageObject] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [description, setDescription] = useState(user?.description || '');
 
-  function clearErrors() {
+  function clearMessages() {
     setErrorObject(undefined);
+    setGlobalMessageObject(undefined);
   }
 
   async function handleSubmit(event) {
@@ -120,6 +119,10 @@ function EditProfileForm() {
     }
 
     if (Object.keys(payload).length === 0) {
+      setGlobalMessageObject({
+        type: 'warning',
+        text: 'Nenhuma configuração foi alterada',
+      });
       setIsLoading(false);
       return;
     }
@@ -134,8 +137,6 @@ function EditProfileForm() {
         body: JSON.stringify(payload),
       });
 
-      setGlobalErrorMessage(undefined);
-
       const responseBody = await response.json();
 
       if (response.status === 200) {
@@ -149,13 +150,10 @@ function EditProfileForm() {
           });
           setEmailDisabled(true);
         } else {
-          clearTimeout(successTimeoutRef.current);
-
-          setGlobalSuccessMessage('Salvo com sucesso!');
-
-          successTimeoutRef.current = setTimeout(() => {
-            setGlobalSuccessMessage(null);
-          }, 5000);
+          setGlobalMessageObject({
+            type: 'success',
+            text: 'Salvo com sucesso!',
+          });
         }
 
         setIsLoading(false);
@@ -169,28 +167,29 @@ function EditProfileForm() {
       }
 
       if (response.status >= 403) {
-        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+        setGlobalMessageObject({
+          type: 'danger',
+          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+        });
         setIsLoading(false);
         return;
       }
     } catch (error) {
-      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+      setGlobalMessageObject({
+        type: 'danger',
+        text: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.',
+      });
       setIsLoading(false);
     }
   }
 
   return (
-    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+    <form style={{ width: '100%' }} onSubmit={handleSubmit} onChange={clearMessages}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
-
-        {globalSuccessMessage && <Flash variant="success">{globalSuccessMessage}</Flash>}
-
         <FormControl id="username">
           <FormControl.Label>Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
-            onChange={clearErrors}
             name="username"
             size="large"
             autoCorrect="off"
@@ -214,7 +213,6 @@ function EditProfileForm() {
           <FormControl.Label>Email</FormControl.Label>
           <TextInput
             ref={emailRef}
-            onChange={clearErrors}
             name="email"
             size="large"
             autoCorrect="off"
@@ -239,7 +237,7 @@ function EditProfileForm() {
                     sx={{ p: 1 }}
                     onClick={(event) => {
                       event.preventDefault();
-                      clearErrors();
+                      clearMessages();
                       emailRef.current.value = errorObject.suggestion;
                     }}>
                     {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
@@ -259,7 +257,7 @@ function EditProfileForm() {
 
           <Editor
             onChange={(value) => {
-              clearErrors();
+              clearMessages();
               setDescription(value);
             }}
             value={description}
@@ -278,7 +276,6 @@ function EditProfileForm() {
           <Checkbox
             sx={{ display: 'flex' }}
             ref={notificationsRef}
-            onChange={clearErrors}
             name="notifications"
             aria-label="Você deseja receber notificações?"
           />
@@ -294,6 +291,8 @@ function EditProfileForm() {
             Utilize o fluxo de recuperação de senha →
           </Link>
         </FormControl>
+
+        {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.text}</Flash>}
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
