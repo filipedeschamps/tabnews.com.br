@@ -102,17 +102,10 @@ export default function TabCoinButtons({ content }) {
           disabled={isInAction}
         />
       </Tooltip>
-      <Box>
-        <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px', width: '1px' }}></div>
-        <Text
-          sx={{
-            fontSize: 0,
-            fontWeight: 'bold',
-            color: 'accent.emphasis',
-          }}>
-          {contentObject.tabcoins}
-        </Text>
-      </Box>
+      <Text sx={{ fontSize: 0, fontWeight: 'bold', py: '4px', color: 'accent.emphasis' }}>
+        <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
+        {contentObject.tabcoins}
+      </Text>
       <Tooltip aria-label="Não achei relevante" direction="ne">
         <IconButton
           variant="invisible"
