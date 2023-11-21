@@ -1,0 +1,18 @@
+version: '2.4'
+services:
+  devcontainer:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: tabnews-devcontainer
+    image: tabnews/devcontainer:latest
+    working_dir: /tabnews
+    tty: true
+    user: vscode:vscode
+    shm_size: "4gb"
+    env_file:
+      - ../.env    
+    volumes:
+      - ../:/tabnews/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.ssh:/home/vscode/.ssh

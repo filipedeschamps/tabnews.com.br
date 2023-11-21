@@ -1,0 +1,42 @@
+{
+  "name": "TabNews",
+  "remoteUser": "vscode",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "shutdownAction": "stopCompose",
+  "service": "devcontainer",
+  "workspaceFolder": "/tabnews",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "dsznajder.es7-react-js-snippets",
+        "ms-vsliveshare.vsliveshare",
+        "pflannery.vscode-versionlens"
+      ],
+      "settings": {
+        "search.exclude": {
+          "**/.next": true,
+          "**/node_modules": true
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "javascript.tsdk": "/tabnews/node_modules/javascript/lib/",
+        "[javascriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true,
+          "source.fixAll": true,
+          "source.removeUnusedImports": true
+        },
+        "eslint.format.enable": true,
+        "eslint.validate": ["javascript", "javascriptreact"]
+      }
+    }
+  }
+}
