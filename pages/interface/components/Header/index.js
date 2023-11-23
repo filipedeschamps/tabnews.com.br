@@ -4,7 +4,6 @@ import {
   ActionList,
   ActionMenu,
   Box,
-  Confetti,
   HeaderLink,
   IconButton,
   Link,
@@ -41,9 +40,6 @@ export default function HeaderComponent() {
       sx={{
         px: [2, null, null, 3],
       }}>
-      {Date.now() < 1700708400000 && (asPath === '/' || asPath.includes('parabens-tabnews')) && (
-        <Confetti tweenDuration={45000} />
-      )}
       <PrimerHeader.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
