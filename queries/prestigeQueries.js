@@ -2,6 +2,7 @@ const byContentId = `
 WITH content_events AS (
   SELECT
     id,
+    originator_user_id,
     type
   FROM
     events
@@ -17,6 +18,9 @@ FROM
 INNER JOIN
   content_events
 ON balance_operations.originator_id = content_events.id
+  AND (balance_operations.recipient_id != content_events.originator_user_id
+    OR content_events.type = 'create:content:text_root'
+    OR content_events.type = 'create:content:text_child')
 WHERE balance_type = 'user:tabcoin'
 ;
 `;
