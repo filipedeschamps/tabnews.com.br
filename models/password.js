@@ -1,4 +1,5 @@
 import bcryptjs from 'bcryptjs';
+
 import webserver from 'infra/webserver.js';
 
 async function hash(password) {

@@ -1,7 +1,8 @@
 import Joi from 'joi';
-import { ValidationError } from 'errors/index.js';
-import removeMarkdown from 'models/remove-markdown';
+
+import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
+import removeMarkdown from 'models/remove-markdown';
 
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON
@@ -648,6 +649,7 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'reward:user:tabcoins',
           'system:update:tabcoins'
         )
         .messages({

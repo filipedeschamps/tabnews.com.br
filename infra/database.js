@@ -1,9 +1,10 @@
-import { Pool, Client } from 'pg';
 import retry from 'async-retry';
-import { ServiceError } from 'errors/index.js';
+import { Client, Pool } from 'pg';
+import snakeize from 'snakeize';
+
+import { ServiceError } from 'errors';
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
-import snakeize from 'snakeize';
 
 const configurations = {
   user: process.env.POSTGRES_USER,

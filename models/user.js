@@ -1,9 +1,9 @@
+import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
-import validator from 'models/validator.js';
 import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 async function findAll() {
   const query = {
@@ -34,6 +34,7 @@ async function findOneByUsername(username, options = {}) {
           users
         WHERE
           LOWER(username) = LOWER($1)
+          AND NOT 'nuked' = ANY(features)
         LIMIT
           1
       )`;
@@ -403,6 +404,35 @@ async function addFeatures(userId, features, options) {
   return results.rows[0];
 }
 
+async function updateRewardedAt(userId, options) {
+  if (!userId) {
+    throw new ValidationError({
+      message: `É necessário informar o "id" do usuário.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:USER:UPDATE_REWARDED_AT:USER_ID_REQUIRED',
+      key: 'userId',
+    });
+  }
+
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        rewarded_at = (now() at time zone 'utc')
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [userId],
+  };
+
+  const results = await database.query(query, options);
+
+  return results.rows[0];
+}
+
 export default Object.freeze({
   create,
   findAll,
@@ -413,4 +443,5 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
+  updateRewardedAt,
 });

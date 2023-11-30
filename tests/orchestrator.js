@@ -1,17 +1,25 @@
-import fs from 'node:fs';
-import fetch from 'cross-fetch';
-import retry from 'async-retry';
 import { faker } from '@faker-js/faker';
+import retry from 'async-retry';
+import fetch from 'cross-fetch';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
-import user from 'models/user.js';
-import activation from 'models/activation.js';
-import session from 'models/session.js';
-import content from 'models/content.js';
-import recovery from 'models/recovery.js';
-import balance from 'models/balance.js';
-import event from 'models/event.js';
 import webserver from 'infra/webserver.js';
+import activation from 'models/activation.js';
+import balance from 'models/balance.js';
+import content from 'models/content.js';
+import event from 'models/event.js';
+import recovery from 'models/recovery.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
+
+if (process.env.NODE_ENV !== 'test') {
+  throw new Error({
+    message: 'Orchestrator should only be used in tests',
+  });
+}
 
 const webserverUrl = webserver.host;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
@@ -189,34 +197,49 @@ async function createBalance(balanceObject) {
   });
 }
 
-async function createRate(contentObject, amount) {
-  const currentEvent = await event.create({
-    type: 'update:content:tabcoins',
-    metadata: {
-      transaction_type: amount < 0 ? 'debit' : 'credit',
-      content_owner_id: contentObject.owner_id,
-      content_id: contentObject.id,
-      amount: amount,
-    },
-  });
+async function createRate(contentObject, amount, fromUserId) {
+  const tabCoinsRequiredAmount = 2;
+  const originatorIp = faker.internet.ip();
+  const transactionType = amount < 0 ? 'debit' : 'credit';
 
-  await balance.create({
-    balanceType: 'content:tabcoin',
-    recipientId: contentObject.id,
-    amount: amount,
-    originatorType: 'event',
-    originatorId: currentEvent.id,
-  });
+  if (!fromUserId) {
+    fromUserId = randomUUID();
 
-  await balance.create({
-    balanceType: 'user:tabcoin',
-    recipientId: contentObject.owner_id,
-    amount: amount,
-    originatorType: 'event',
-    originatorId: currentEvent.id,
-  });
+    await createBalance({
+      balanceType: 'user:tabcoin',
+      recipientId: fromUserId,
+      amount: tabCoinsRequiredAmount * Math.abs(amount),
+      originatorType: 'orchestrator',
+      originatorId: fromUserId,
+    });
+  }
 
-  return currentEvent;
+  for (let i = 0; i < Math.abs(amount); i++) {
+    const currentEvent = await event.create({
+      type: 'update:content:tabcoins',
+      originatorUserId: fromUserId,
+      originatorIp,
+      metadata: {
+        transaction_type: transactionType,
+        from_user_id: fromUserId,
+        content_owner_id: contentObject.owner_id,
+        content_id: contentObject.id,
+        amount: tabCoinsRequiredAmount,
+      },
+    });
+
+    await balance.rateContent(
+      {
+        contentId: contentObject.id,
+        contentOwnerId: contentObject.owner_id,
+        fromUserId: fromUserId,
+        transactionType,
+      },
+      {
+        eventId: currentEvent.id,
+      }
+    );
+  }
 }
 
 async function createRecoveryToken(userObject) {
@@ -232,24 +255,24 @@ async function createFirewallTestFunctions() {
   }
 }
 
-// Prestige does not have to be an integer, so it can be given rationally.
+// Prestige does not have to be an integer, so it can be given as a fraction.
 // If the denominator is 0, the respective prestige will not be created.
 async function createPrestige(
   userId,
   {
     rootPrestigeNumerator = 1,
     rootPrestigeDenominator = 4,
-    childPrestigeNumerator = 1,
-    childPrestigeDenominator = 5,
+    childPrestigeNumerator = 0,
+    childPrestigeDenominator = 1,
   } = {}
 ) {
   if (
     rootPrestigeDenominator < 0 ||
     childPrestigeDenominator < 0 ||
-    rootPrestigeDenominator > 10 ||
-    childPrestigeDenominator > 10
+    rootPrestigeDenominator > 20 ||
+    childPrestigeDenominator > 20
   ) {
-    throw new Error('rootPrestigeDenominator and childPrestigeDenominator must be between 0 and 10');
+    throw new Error('rootPrestigeDenominator and childPrestigeDenominator must be between 0 and 20');
   }
 
   const rootContents = [];
@@ -320,7 +343,25 @@ async function createPrestige(
   return [...rootContents, ...childContents];
 }
 
-export default {
+async function updateRewardedAt(userId, rewardedAt) {
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        rewarded_at = $1
+      WHERE
+        id = $2
+      RETURNING
+        *
+    ;`,
+    values: [rewardedAt, userId],
+  };
+
+  return await database.query(query);
+}
+
+const orchestrator = {
   waitForAllServices,
   dropAllTables,
   runPendingMigrations,
@@ -340,4 +381,7 @@ export default {
   createBalance,
   createPrestige,
   createRate,
+  updateRewardedAt,
 };
+
+export default orchestrator;

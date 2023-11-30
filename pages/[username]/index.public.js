@@ -1,3 +1,8 @@
+import { useRouter } from 'next/router';
+import { getStaticPropsRevalidate } from 'next-swr';
+import { useState } from 'react';
+import useSWR from 'swr';
+
 import {
   ActionList,
   ActionMenu,
@@ -9,21 +14,17 @@ import {
   Label,
   LabelGroup,
   Pagehead,
-  Viewer,
   useConfirm,
+  Viewer,
 } from '@/TabNewsUI';
 import { FaUser, KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
-import { NotFoundError } from 'errors/index.js';
+import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { getStaticPropsRevalidate } from 'next-swr';
-import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { useState } from 'react';
-import useSWR from 'swr';
 
 export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {

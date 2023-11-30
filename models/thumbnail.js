@@ -1,9 +1,10 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
+import { renderAsync } from '@resvg/resvg-js';
 import fs from 'node:fs';
 import { join, resolve } from 'node:path';
-import { renderAsync } from '@resvg/resvg-js';
 import satori from 'satori';
+
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown';
 

@@ -1,7 +1,8 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import analytics from 'models/analytics.js';
 import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 
 export default nextConnect({
   attachParams: true,

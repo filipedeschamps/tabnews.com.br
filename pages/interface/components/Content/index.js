@@ -1,9 +1,13 @@
+import { useRouter } from 'next/router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import {
   ActionList,
   ActionMenu,
   Box,
   BranchName,
   Button,
+  ButtonWithLoader,
   Editor,
   Flash,
   FormControl,
@@ -18,9 +22,7 @@ import {
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
-import { useRouter } from 'next/router';
 import { useUser } from 'pages/interface';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function Content({ content, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
@@ -517,9 +519,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+            <ButtonWithLoader
+              variant="primary"
+              type="submit"
+              aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
+              isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
-            </Button>
+            </ButtonWithLoader>
           </Box>
         </Box>
       </form>

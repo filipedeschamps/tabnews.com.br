@@ -1,10 +1,25 @@
-import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
-import analytics from 'models/analytics.js';
 import { getStaticPropsRevalidate } from 'next-swr';
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import useSWR from 'swr';
 
-export default function Page({ usersCreated, rootContentPublished, childContentPublished }) {
+import { BarChart } from '@/Charts';
+import Graph from '@/Graph';
+import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import analytics from 'models/analytics.js';
+import { useUser } from 'pages/interface';
+
+export default function Page({ usersCreated, rootContentPublished, childContentPublished, votesGraph, votesTaken }) {
+  const { user } = useUser();
+
+  const { data: votes } = useSWR(user?.features?.includes('update:content:others') ? '/api/v1/status/votes' : null, {
+    fallbackData: { votesGraph },
+    refreshInterval: 60_000,
+    shouldRetryOnError: false,
+    dedupingInterval: 30_000,
+    revalidateOnFocus: false,
+  });
+
+  const votesAmount = votes.votesGraph.edges.reduce((acc, curr) => acc + (curr.value || 0), 0);
+
   const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
     refreshInterval: 1000 * 10,
   });
@@ -14,39 +29,15 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
-        <Box>
-          <h2>Novos cadastros</h2>
+        <BarChart title="Novos cadastros" data={usersCreated} yDataKey="cadastros" />
 
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={usersCreated}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="cadastros" name="cadastros" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <BarChart title="Novas publicações" data={rootContentPublished} yDataKey="conteudos" name="conteúdos" />
 
-        <Box>
-          <h2>Novas publicações</h2>
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={rootContentPublished}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="conteudos" name="conteúdos" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <BarChart title="Novas respostas" data={childContentPublished} yDataKey="respostas" />
 
-        <Box>
-          <h2>Novas respostas</h2>
-          <ResponsiveContainer width="100%" aspect={7}>
-            <BarChart height={400} data={childContentPublished}>
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <Tooltip />
-              <Bar type="monotone" dataKey="respostas" name="respostas" fill="#2da44e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Box>
+        <BarChart title="Novas qualificações" data={votesTaken} yDataKey="votos" />
+
+        <Graph title={`Rede de qualificações (últimas ${votesAmount})`} data={votes.votesGraph} />
 
         <Box>
           <h2>Banco de Dados</h2>
@@ -191,12 +182,16 @@ export const getStaticProps = getStaticPropsRevalidate(async () => {
   const childContentPublished = await analytics.getChildContentsPublished();
   const rootContentPublished = await analytics.getRootContentsPublished();
   const usersCreated = await analytics.getUsersCreated();
+  const votesGraph = await analytics.getVotesGraph();
+  const votesTaken = await analytics.getVotesTaken();
 
   return {
     props: {
       usersCreated,
       rootContentPublished,
       childContentPublished,
+      votesGraph,
+      votesTaken,
     },
     revalidate: 30,
     swr: { refreshInterval: 1000 * 60 * 5 },
