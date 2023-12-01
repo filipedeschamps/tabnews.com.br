@@ -18,7 +18,7 @@ Passos para reproduzir o comportamento:
 4. Veja o erro
 
 **Comportamento esperado***
-Por favor, descreva de forma clara e conscisa o comportamento esperado para a funcionalidade.
+Por favor, descreva de forma clara e concisa o comportamento esperado para a funcionalidade.
 
 **Imagens***
 Se possível, adicione imagens para ajudar a explicar o seu problema.
