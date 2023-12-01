@@ -1,6 +1,5 @@
-import { Box } from '@primer/react';
-import { Link } from 'pages/interface';
-import { CgTab } from 'react-icons/cg';
+import { Box, Link } from '@/TabNewsUI';
+import { CgTab } from '@/TabNewsUI/icons';
 
 export default function Footer(props) {
   return (
@@ -34,7 +33,8 @@ export default function Footer(props) {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            href="/">
+            href="/"
+            aria-label="Voltar para a página inicial">
             <CgTab size={26} />
           </Link>
           &copy; {new Date().getFullYear()} TabNews
@@ -44,7 +44,7 @@ export default function Footer(props) {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: [2, 3, 4, 5],
+            gap: [3, null, 4, 5],
             paddingX: [2, null, null, 5],
             flexWrap: 'wrap',
           }}>

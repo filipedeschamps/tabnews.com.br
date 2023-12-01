@@ -1,20 +1,19 @@
-import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
-
-import ip from 'models/ip.js';
-import session from 'models/session.js';
-import logger from 'infra/logger.js';
-import webserver from 'infra/webserver.js';
+import { v4 as uuidV4 } from 'uuid';
 
 import {
+  ForbiddenError,
   InternalServerError,
   NotFoundError,
-  ValidationError,
-  ForbiddenError,
-  UnauthorizedError,
   TooManyRequestsError,
+  UnauthorizedError,
   UnprocessableEntityError,
-} from '/errors/index.js';
+  ValidationError,
+} from 'errors';
+import logger from 'infra/logger.js';
+import webserver from 'infra/webserver.js';
+import ip from 'models/ip.js';
+import session from 'models/session.js';
 
 async function injectRequestMetadata(request, response, next) {
   request.context = {
@@ -72,7 +71,13 @@ function onErrorHandler(error, request, response) {
     errorLocationCode: error.errorLocationCode,
   });
 
-  const privateErrorObject = { ...publicErrorObject, context: { ...request.context }, stack: error.stack };
+  const privateErrorObject = {
+    ...new InternalServerError({
+      ...error,
+      requestId: request.context?.requestId,
+    }),
+    context: { ...request.context },
+  };
 
   logger.error(snakeize(privateErrorObject));
 
@@ -98,7 +103,7 @@ function logRequest(request, response, next) {
 
 function injectPaginationHeaders(pagination, endpoint, response) {
   const links = [];
-  const baseUrl = `${webserver.getHost()}${endpoint}?strategy=${pagination.strategy}`;
+  const baseUrl = `${webserver.host}${endpoint}?strategy=${pagination.strategy}`;
 
   if (pagination.firstPage) {
     links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);

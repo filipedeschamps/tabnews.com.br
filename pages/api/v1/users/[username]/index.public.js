@@ -1,13 +1,15 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
-import user from 'models/user.js';
-import ban from 'models/ban.js';
+
+import { ForbiddenError, UnprocessableEntityError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import ban from 'models/ban.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import database from 'infra/database.js';
-import { ForbiddenError, UnprocessableEntityError } from 'errors/index.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -15,11 +17,22 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
-  .patch(patchValidationHandler, authorization.canRequest('update:user'), patchHandler)
-  .delete(deleteValidationHandler, authorization.canRequest('ban:user'), deleteHandler);
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
+  .patch(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    patchValidationHandler,
+    authorization.canRequest('update:user'),
+    patchHandler
+  )
+  .delete(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    deleteValidationHandler,
+    authorization.canRequest('ban:user'),
+    deleteHandler
+  );
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -32,8 +45,10 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
-  const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
+  const userTryingToGet = user.createAnonymous();
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username, {
+    withBalance: true,
+  });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
@@ -51,6 +66,7 @@ function patchValidationHandler(request, response, next) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    description: 'optional',
     notifications: 'optional',
   });
 

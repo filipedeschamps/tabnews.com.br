@@ -1,9 +1,9 @@
+import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
-import validator from 'models/validator.js';
 import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
-import { ValidationError, NotFoundError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 async function findAll() {
   const query = {
@@ -25,9 +25,8 @@ async function findAll() {
   return results.rows;
 }
 
-async function findOneByUsername(username) {
-  const query = {
-    text: `
+async function findOneByUsername(username, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -35,20 +34,28 @@ async function findOneByUsername(username) {
           users
         WHERE
           LOWER(username) = LOWER($1)
+          AND NOT 'nuked' = ANY(features)
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [username],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -63,9 +70,8 @@ async function findOneByUsername(username) {
   return results.rows[0];
 }
 
-async function findOneByEmail(email) {
-  const query = {
-    text: `
+async function findOneByEmail(email, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -75,18 +81,25 @@ async function findOneByEmail(email) {
           LOWER(email) = LOWER($1)
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [email],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -102,9 +115,8 @@ async function findOneByEmail(email) {
 }
 
 // TODO: validate userId
-async function findOneById(userId) {
-  const query = {
-    text: `
+async function findOneById(userId, options = {}) {
+  const baseQuery = `
       WITH user_found AS (
         SELECT
           *
@@ -114,18 +126,25 @@ async function findOneById(userId) {
           id = $1
         LIMIT
           1
-      )
+      )`;
+
+  const balanceQuery = `
       SELECT
         user_found.*,
         get_current_balance('user:tabcoin', user_found.id) as tabcoins,
         get_current_balance('user:tabcash', user_found.id) as tabcash
       FROM
         user_found
-      ;`,
+      `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM user_found;`;
+
+  const query = {
+    text: queryText,
     values: [userId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -231,7 +250,8 @@ async function update(username, postedUserData, options = {}) {
           username = $2,
           email = $3,
           password = $4,
-          notifications = $5,
+          description = $5,
+          notifications = $6,
           updated_at = (now() at time zone 'utc')
         WHERE
           id = $1
@@ -243,6 +263,7 @@ async function update(username, postedUserData, options = {}) {
         userWithUpdatedValues.username,
         userWithUpdatedValues.email,
         userWithUpdatedValues.password,
+        userWithUpdatedValues.description,
         userWithUpdatedValues.notifications,
       ],
     };
@@ -268,6 +289,7 @@ async function validatePatchSchema(postedUserData) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    description: 'optional',
     notifications: 'optional',
   });
 
@@ -358,21 +380,6 @@ async function removeFeatures(userId, features, options = {}) {
     lastUpdatedUser = results.rows[0];
   }
 
-  lastUpdatedUser.tabcoins = await balance.getTotal(
-    {
-      balanceType: 'user:tabcoin',
-      recipientId: lastUpdatedUser.id,
-    },
-    options
-  );
-  lastUpdatedUser.tabcash = await balance.getTotal(
-    {
-      balanceType: 'user:tabcash',
-      recipientId: lastUpdatedUser.id,
-    },
-    options
-  );
-
   return lastUpdatedUser;
 }
 
@@ -394,21 +401,34 @@ async function addFeatures(userId, features, options) {
 
   const results = await database.query(query, options);
 
-  const updatedUser = results.rows[0];
-  updatedUser.tabcoins = await balance.getTotal(
-    {
-      balanceType: 'user:tabcoin',
-      recipientId: updatedUser.id,
-    },
-    options
-  );
-  updatedUser.tabcash = await balance.getTotal(
-    {
-      balanceType: 'user:tabcash',
-      recipientId: updatedUser.id,
-    },
-    options
-  );
+  return results.rows[0];
+}
+
+async function updateRewardedAt(userId, options) {
+  if (!userId) {
+    throw new ValidationError({
+      message: `É necessário informar o "id" do usuário.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:USER:UPDATE_REWARDED_AT:USER_ID_REQUIRED',
+      key: 'userId',
+    });
+  }
+
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        rewarded_at = (now() at time zone 'utc')
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [userId],
+  };
+
+  const results = await database.query(query, options);
 
   return results.rows[0];
 }
@@ -423,4 +443,5 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
+  updateRewardedAt,
 });

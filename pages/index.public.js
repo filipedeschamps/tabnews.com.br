@@ -1,9 +1,11 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
+import { getStaticPropsRevalidate } from 'next-swr';
+
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { FaTree } from '@/TabNewsUI/icons';
 import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { FaTree } from 'react-icons/fa';
 
 export default function Home({ contentListFound, pagination }) {
   return (
@@ -13,7 +15,6 @@ export default function Home({ contentListFound, pagination }) {
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"
-          revalidatePath="/api/v1/contents?strategy=relevant"
           emptyStateProps={{
             title: 'Nenhum conteúdo encontrado',
             description: 'Quando eu cheguei era tudo mato...',
@@ -25,7 +26,7 @@ export default function Home({ contentListFound, pagination }) {
   );
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   context.params = context.params ? context.params : {};
@@ -66,4 +67,4 @@ export async function getStaticProps(context) {
     },
     revalidate: 10,
   };
-}
+});

@@ -1,6 +1,6 @@
-import { setTimeout } from 'timers/promises';
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -197,7 +197,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -222,7 +222,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         children_deep_count: 1,
         status: 'published',
         source_url: null,
@@ -242,7 +242,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -283,7 +283,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         children_deep_count: 3,
         status: 'published',
         source_url: null,
@@ -303,7 +303,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -349,8 +349,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
-        children_deep_count: 1,
+        body: 'Body with relevant texts needs to contain a good amount of words',
+        children_deep_count: 2,
         status: 'published',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
@@ -370,7 +370,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         title: 'Root content title',
         body: 'Root content body',
-        status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
 
@@ -419,12 +418,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         body: '[Não disponível]',
         status: 'draft',
         source_url: null,
-        published_at: rootContent.published_at.toISOString(),
+        published_at: null,
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDrafted.updated_at.toISOString(),
         deleted_at: null,
         owner_username: firstUser.username,
-        tabcoins: 1,
+        tabcoins: 0,
         children_deep_count: 0,
       });
     });
@@ -436,7 +435,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: 'Root - Body with relevant texts needs to contain a good amount of words',
         status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });

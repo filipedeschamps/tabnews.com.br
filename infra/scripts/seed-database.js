@@ -1,9 +1,9 @@
 const fs = require('node:fs');
-const { join, resolve } = require('path');
-
+const { join, resolve } = require('node:path');
 const { Client } = require('pg');
+
 const client = new Client({
-  connectionString: 'postgres://local_user:local_password@localhost:54320/tabnews',
+  connectionString: process.env.DATABASE_URL,
   connectionTimeoutMillis: 5000,
   idleTimeoutMillis: 30000,
   allowExitOnIdle: false,
@@ -35,6 +35,9 @@ async function seedDevelopmentUsers() {
     'read:migration',
     'create:migration',
     'update:content:others',
+    'create:recovery_token:username',
+    'read:votes:others',
+    'read:user:list',
   ]);
   await insertUser('user', 'user@user.com', '$2a$04$v0hvAu/y6pJ17LzeCfcKG.rDStO9x5ficm2HTLZIfeDBG8oR/uQXi', [
     'create:session',

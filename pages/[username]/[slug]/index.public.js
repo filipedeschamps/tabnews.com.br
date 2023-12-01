@@ -1,45 +1,23 @@
-import useSWR from 'swr';
+import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
-import { Link, DefaultLayout, Content, TabCoinButtons, Confetti } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import validator from 'models/validator.js';
-import authorization from 'models/authorization.js';
-import removeMarkdown from 'models/remove-markdown.js';
-import { NotFoundError } from 'errors/index.js';
-import { Box, Tooltip } from '@primer/react';
-import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
+
+import { Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
+import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
+import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import { useCollapse } from 'pages/interface';
 
-export default function Post({
-  contentFound: contentFoundFallback,
-  childrenFound: childrenFallback,
-  rootContentFound,
-  parentContentFound,
-  contentMetadata,
-}) {
-  const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
-    {
-      fallbackData: contentFoundFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
-  // TODO: understand why enabling "revalidateOn..." breaks children rendering.
-  const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
-    {
-      fallbackData: childrenFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
+export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
+  const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
+    setChildrenToShow(Math.ceil(window.innerHeight / 10));
+
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
@@ -61,17 +39,17 @@ export default function Post({
           }}>
           <Box
             sx={{
-              pr: [0, null, null, 2],
+              pr: 2,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
             }}>
-            <TabCoinButtons content={contentFound} />
+            <TabCoinButtons key={contentFound.id} content={contentFound} />
             <Box
               sx={{
                 borderWidth: 0,
                 borderRightWidth: 1,
-                borderColor: 'border.muted',
+                borderColor: 'btn.activeBorder',
                 borderStyle: 'dotted',
                 width: '50%',
                 height: '100%',
@@ -79,7 +57,7 @@ export default function Post({
             />
           </Box>
 
-          <Box sx={{ width: '100%', overflow: 'auto' }}>
+          <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
             <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -96,10 +74,20 @@ export default function Post({
               p: 4,
               wordWrap: 'break-word',
             }}>
-            <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
+            <Content
+              key={contentFound.id}
+              content={{ owner_id: contentFound.owner_id, parent_id: contentFound.id }}
+              mode="compact"
+            />
           </Box>
 
-          <RenderChildrenTree key={contentFound.id} childrenList={children} level={0} />
+          <RenderChildrenTree
+            key={contentFound.id}
+            childrenDeepCount={contentFound.children_deep_count}
+            childrenList={contentFound.children}
+            renderIntent={childrenToShow}
+            renderIncrement={Math.ceil(childrenToShow / 2)}
+          />
         </Box>
       </DefaultLayout>
     </>
@@ -158,7 +146,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             Respondendo a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
-                <strong>"{parentContent.body}..."</strong>{' '}
+                <strong>{`"${parentContent.body}"`}</strong>{' '}
               </Link>
             )}
             {parentContent.status !== 'published' && (
@@ -180,7 +168,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
                 aria-label={`Este conteúdo está atualmente com status "${rootContent.status}"`}
                 direction="s"
                 noDelay={true}>
-                <strong>{rootContent.body}</strong>{' '}
+                <strong>{rootContent.title}</strong>{' '}
               </Tooltip>
             )}
           </Box>
@@ -190,9 +178,15 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, level }) {
-  return childrenList.map((child) => {
-    return (
+function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
+  const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
+
+  return childrenState.map((child) => {
+    const { children, children_deep_count, groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
+    const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
+    const plural = labelShowMore != 1 ? 's' : '';
+
+    return !renderIntent && !renderShowMore ? null : (
       <Box
         sx={{
           width: '100%',
@@ -200,36 +194,90 @@ function RenderChildrenTree({ childrenList, level }) {
           display: 'flex',
           mt: 4,
         }}
-        key={child.id}>
-        <Box
-          sx={{
-            pr: [0, null, null, 2],
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-          <TabCoinButtons content={child} />
-          <Box
-            sx={{
-              borderWidth: 0,
-              borderRightWidth: 1,
-              borderColor: 'border.muted',
-              borderStyle: 'dotted',
-              width: '50%',
-              height: '100%',
-            }}
-          />
-        </Box>
+        key={id}>
+        {renderIntent ? (
+          <>
+            <Box
+              sx={{
+                mr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}>
+              <TabCoinButtons content={child} />
+              <Tooltip
+                direction="ne"
+                aria-label={`Ocultar resposta${plural}`}
+                role="button"
+                onClick={() => handleCollapse(id)}
+                sx={{
+                  cursor: 'pointer',
+                  width: '80%',
+                  height: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mt: 1,
+                  mx: '10%',
+                  '&:hover': {
+                    div: {
+                      display: 'block',
+                      borderLeftWidth: 1,
+                      borderColor: 'btn.danger.hoverBg',
+                      borderStyle: 'dashed',
+                    },
+                    svg: {
+                      backgroundColor: 'canvas.default',
+                    },
+                  },
+                }}>
+                <Box
+                  sx={{
+                    display: 'none',
+                    position: 'relative',
+                    width: '0%',
+                    left: '-7px',
+                    color: 'btn.danger.hoverBg',
+                    borderStyle: 'hidden!important',
+                  }}>
+                  <FoldIcon />
+                </Box>
+                <Box
+                  sx={{
+                    borderWidth: 0,
+                    borderRightWidth: 1,
+                    borderLeftWidth: 0,
+                    borderColor: 'btn.activeBorder',
+                    borderStyle: 'dotted',
+                    width: 0,
+                    transition: 'border 0.1s cubic-bezier(1,1,1,0)',
+                  }}
+                />
+              </Tooltip>
+            </Box>
 
-        <Box sx={{ width: '100%', overflow: 'auto' }}>
-          <Content content={child} mode="view" />
+            <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
+              <Content content={child} mode="view" />
 
-          <Box sx={{ mt: 4 }}>
-            <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
-          </Box>
+              <Box sx={{ mt: 4 }}>
+                <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
+              </Box>
 
-          {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
-        </Box>
+              {children_deep_count > 0 && (
+                <RenderChildrenTree
+                  childrenDeepCount={children_deep_count}
+                  childrenList={children}
+                  renderIntent={renderIntent - 1}
+                  renderIncrement={renderIncrement}
+                />
+              )}
+            </Box>
+          </>
+        ) : (
+          <Button onClick={() => handleExpand(id)} variant="invisible">
+            <UnfoldIcon /> {`Ver mais ${labelShowMore} resposta${plural}`}
+            {labelShowMore != groupedCount && ` (${groupedCount} ocultas)`}
+          </Button>
+        )}
       </Box>
     );
   });
@@ -264,32 +312,20 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
-  try {
-    context.params = validator(context.params, {
-      username: 'required',
-      slug: 'required',
-    });
-  } catch (error) {
-    return {
-      notFound: true,
-    };
-  }
-
-  let contentFound;
+  let contentTreeFound;
 
   try {
-    contentFound = await content.findOne({
+    contentTreeFound = await content.findTree({
       where: {
         owner_username: context.params.username,
         slug: context.params.slug,
-        status: 'published',
       },
     });
 
-    if (!contentFound) {
+    if (!contentTreeFound?.length) {
       throw new NotFoundError({
         message: `O conteúdo informado não foi encontrado no sistema.`,
         action: 'Verifique se o "slug" está digitado corretamente.',
@@ -299,6 +335,12 @@ export async function getStaticProps(context) {
       });
     }
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return {
+        notFound: true,
+      };
+    }
+
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
@@ -309,24 +351,16 @@ export async function getStaticProps(context) {
     throw error;
   }
 
-  const secureContentFound = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+  const secureContentTree = authorization.filterOutput(userTryingToGet, 'read:content:list', contentTreeFound);
 
-  const childrenFound = await content.findChildrenTree({
-    where: {
-      parent_id: contentFound.id,
-    },
-  });
-
-  const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
+  const secureContentFound = secureContentTree[0];
 
   const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
-  const webserverHost = webserver.getHost();
-
   const contentMetadata = {
     title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
-    image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
-    url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
+    image: `${webserver.host}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
+    url: `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
     description: oneLineBody,
     published_time: secureContentFound.published_at,
     modified_time: secureContentFound.updated_at,
@@ -337,11 +371,12 @@ export async function getStaticProps(context) {
   let secureRootContentFound = null;
   let secureParentContentFound = null;
 
-  if (secureContentFound.parent_id) {
-    const rootContentFound = await content.findRootContent({
+  if (contentTreeFound[0].path.length > 1) {
+    const rootContentFound = await content.findOne({
       where: {
-        id: secureContentFound.id,
+        id: contentTreeFound[0].path[0],
       },
+      attributes: { exclude: ['body'] },
     });
 
     secureRootContentFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
@@ -356,14 +391,29 @@ export async function getStaticProps(context) {
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
   }
 
+  if (contentTreeFound[0].path.length === 1) {
+    const parentContentFound = await content.findOne({
+      where: {
+        id: secureContentFound.parent_id,
+      },
+    });
+
+    secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
+
+    secureRootContentFound = secureParentContentFound;
+
+    delete secureRootContentFound.body;
+    secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
+  }
+
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
-      childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
       rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
-    revalidate: 10,
+    revalidate: 1,
+    swr: { revalidateOnFocus: false },
   };
-}
+});

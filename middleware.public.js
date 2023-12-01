@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import snakeize from 'snakeize';
+
+import { UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';
 import rateLimit from 'infra/rate-limit.js';
-import snakeize from 'snakeize';
-import { UnauthorizedError } from '/errors/index.js';
+import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
 
 export const config = {
@@ -10,7 +12,7 @@ export const config = {
 };
 
 export async function middleware(request) {
-  if (process.env.VERCEL_ENV === 'production' && !ip.isRequestFromCloudflare(request)) {
+  if (webserver.isProduction && !ip.isRequestFromCloudflare(request)) {
     const publicErrorObject = new UnauthorizedError({
       message: 'Host não autorizado. Por favor, acesse https://www.tabnews.com.br.',
       action: 'Não repita esta requisição.',
@@ -45,6 +47,13 @@ export async function middleware(request) {
     if (!rateLimitResult.success) {
       url.pathname = '/api/v1/_responses/rate-limit-reached';
       return NextResponse.rewrite(url);
+    }
+
+    if (url.pathname === '/api/v1/swr') {
+      return new NextResponse(JSON.stringify({ timestamp: Date.now() }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     return NextResponse.next();

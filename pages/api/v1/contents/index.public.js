@@ -1,15 +1,17 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
+import { ForbiddenError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
-import notification from 'models/notification.js';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
+import notification from 'models/notification.js';
 import user from 'models/user.js';
-import database from 'infra/database.js';
-import { ForbiddenError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -17,10 +19,11 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .get(getValidationHandler, getHandler)
+  .use(controller.logRequest)
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
   .post(
+    cacheControl.noCache,
     authentication.injectAnonymousOrUser,
-    controller.logRequest,
     postValidationHandler,
     authorization.canRequest('create:content'),
     firewallValidationHandler,
@@ -60,8 +63,6 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
-
-  response.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate');
 
   return response.status(200).json(secureOutputValues);
 }

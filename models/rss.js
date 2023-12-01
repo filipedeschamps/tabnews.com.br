@@ -1,12 +1,12 @@
+import { Feed } from 'feed';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Viewer } from 'pages/interface';
+
+import { Viewer } from '@/TabNewsUI';
+import webserver from 'infra/webserver.js';
 import removeMarkdown from 'models/remove-markdown';
 
-import { Feed } from 'feed';
-import webserver from 'infra/webserver.js';
-
 function generateRss2(contentList) {
-  const webserverHost = webserver.getHost();
+  const webserverHost = webserver.host;
 
   // TODO: make this property flexible in the future to
   // support things like: `/[username]/rss`

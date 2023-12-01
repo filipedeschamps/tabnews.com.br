@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -89,6 +90,7 @@ describe('GET /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: userCreated.id,
         username: 'userNameToBeFound',
+        description: userCreated.description,
         features: userCreated.features,
         tabcoins: userCreated.tabcoins,
         tabcash: userCreated.tabcash,
@@ -117,6 +119,7 @@ describe('GET /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: userCreated.id,
         username: 'userNameToBeFoundCAPS',
+        description: userCreated.description,
         features: userCreated.features,
         tabcoins: userCreated.tabcoins,
         tabcash: userCreated.tabcash,
@@ -129,6 +132,27 @@ describe('GET /api/v1/users/[username]', () => {
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
       expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('email');
+    });
+
+    test('Retrieving nuked user', async () => {
+      const userCreated = await orchestrator.createUser({ username: 'nukedUser' });
+
+      await orchestrator.addFeaturesToUser(userCreated, ['nuked']);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/nukedUser`);
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(404);
+      expect(responseBody.status_code).toEqual(404);
+      expect(responseBody.name).toEqual('NotFoundError');
+      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
+      expect(responseBody.status_code).toEqual(404);
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.key).toEqual('username');
     });
   });
 });

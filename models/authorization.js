@@ -1,14 +1,12 @@
+import { ForbiddenError, ValidationError } from 'errors';
 import validator from 'models/validator.js';
-import { ValidationError, ForbiddenError } from 'errors/index.js';
 
 const availableFeatures = new Set([
   // USER
   'create:user',
   'read:user',
   'read:user:self',
-  'read:user:list',
   'update:user',
-  'ban:user',
 
   // MIGRATION
   'read:migration',
@@ -30,42 +28,41 @@ const availableFeatures = new Set([
   // CONTENT
   'read:content',
   'update:content',
-  'update:content:others',
   'create:content',
   'create:content:text_root',
   'create:content:text_child',
   'read:content:list',
   'read:content:tabcoins',
+
+  // MODERATION
+  'read:user:list',
+  'read:votes:others',
+  'update:content:others',
+  'ban:user',
+  'create:recovery_token:username',
 ]);
 
 function can(user, feature, resource) {
   validateUser(user);
   validateFeature(feature);
 
-  let authorized = false;
+  if (!user.features.includes(feature)) return false;
 
-  if (user.features.includes(feature)) {
-    authorized = true;
+  if (!resource) return true;
+
+  switch (feature) {
+    case 'update:user':
+      return user.id === resource.id;
+
+    case 'update:content':
+      return user.id === resource.owner_id || user.features.includes('update:content:others');
+
+    case 'create:content:text_root':
+    case 'create:content:text_child':
+      return true;
   }
 
-  // TODO: Double check if this is right and covered by tests
-  if (feature === 'update:user' && resource) {
-    authorized = false;
-
-    if (user.id === resource.id) {
-      authorized = true;
-    }
-  }
-
-  if (feature === 'update:content' && resource) {
-    authorized = false;
-
-    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
-      authorized = true;
-    }
-  }
-
-  return authorized;
+  return false;
 }
 
 function filterInput(user, feature, input) {
@@ -95,6 +92,7 @@ function filterInput(user, feature, input) {
       username: input.username,
       email: input.email,
       password: input.password,
+      description: input.description,
       notifications: input.notifications,
     };
   }
@@ -181,6 +179,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
+      description: output.description,
       features: output.features,
       tabcoins: output.tabcoins,
       tabcash: output.tabcash,
@@ -195,6 +194,7 @@ function filterOutput(user, feature, output) {
         id: output.id,
         username: output.username,
         email: output.email,
+        description: output.description,
         notifications: output.notifications,
         features: output.features,
         tabcoins: output.tabcoins,
@@ -209,6 +209,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = output.map((user) => ({
       id: user.id,
       username: user.username,
+      description: user.description,
       features: user.features,
       tabcoins: user.tabcoins,
       tabcash: user.tabcash,
@@ -234,6 +235,7 @@ function filterOutput(user, feature, output) {
       clonedOutput.body = '[Não disponível]';
       clonedOutput.slug = 'nao-disponivel';
       clonedOutput.source_url = null;
+      clonedOutput.children_deep_count = 0;
     }
 
     filteredOutputValues = validator(clonedOutput, {

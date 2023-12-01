@@ -1,8 +1,8 @@
-import email from 'infra/email.js';
+import { NotFoundError } from 'errors';
 import database from 'infra/database.js';
+import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
-import { NotFoundError } from 'errors/index.js';
 
 async function createAndSendEmail(userId, newEmail) {
   const userFound = await user.findOneById(userId);
@@ -52,8 +52,7 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
 }
 
 function getEmailConfirmationPageEndpoint(tokenId) {
-  const webserverHost = webserver.getHost();
-  return `${webserverHost}/perfil/confirmar-email/${tokenId}`;
+  return `${webserver.host}/perfil/confirmar-email/${tokenId}`;
 }
 
 async function findOneTokenById(tokenId) {

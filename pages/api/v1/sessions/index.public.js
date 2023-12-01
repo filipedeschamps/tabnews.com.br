@@ -1,12 +1,14 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
-import user from 'models/user';
+
+import { ForbiddenError, UnauthorizedError } from 'errors';
+import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import { UnauthorizedError, ForbiddenError } from '/errors/index.js';
-import activation from 'models/activation.js';
-import validator from 'models/validator.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import session from 'models/session';
+import user from 'models/user';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -16,18 +18,9 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(authorization.canRequest('read:session'), getHandler)
+  .use(cacheControl.noCache)
   .delete(authorization.canRequest('read:session'), deleteHandler)
   .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
-
-async function getHandler(request, response) {
-  const authenticatedUser = request.context.user;
-  const sessionObject = request.context.session;
-
-  const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:session', sessionObject);
-
-  return response.status(200).json(secureOutputValues);
-}
 
 async function deleteHandler(request, response) {
   const authenticatedUser = request.context.user;

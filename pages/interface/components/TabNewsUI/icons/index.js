@@ -1,0 +1,26 @@
+export { CgTab } from 'react-icons/cg';
+export { FaPause, FaPlay, FaTree, FaUser } from 'react-icons/fa';
+export {
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
+  CommentDiscussionIcon,
+  CommentIcon,
+  EyeClosedIcon,
+  EyeIcon,
+  FoldIcon,
+  HomeIcon,
+  KebabHorizontalIcon,
+  LinkIcon,
+  MoonIcon,
+  PencilIcon,
+  PersonFillIcon,
+  PlusIcon,
+  SearchIcon,
+  SquareFillIcon,
+  SunIcon,
+  TrashIcon,
+  UnfoldIcon,
+  XCircleFillIcon,
+} from '@primer/octicons-react';

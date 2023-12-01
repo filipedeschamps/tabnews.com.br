@@ -1,14 +1,8 @@
-import useSWR from 'swr';
-import { Box, Text } from '@primer/react';
-import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
+import { Box, EmptyState, Link, PublishedSince, Text } from '@/TabNewsUI';
+import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
 
-import { Link, PublishedSince, EmptyState } from 'pages/interface';
-
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
+export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
-
-  // const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
-  const list = contentList;
 
   const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
   const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
@@ -69,11 +63,11 @@ export default function ContentList({ contentList, pagination, paginationBasePat
 
   function RenderItems() {
     function ChildrenDeepCountText({ count }) {
-      return count !== 1 ? `${count} comentários` : `${count} comentário`;
+      return count > 1 ? `${count} comentários` : `${count} comentário`;
     }
 
     function TabCoinsText({ count }) {
-      return Math.abs(count) !== 1 ? `${count} tabcoins` : `${count} tabcoin`;
+      return count > 1 || count < -1 ? `${count} tabcoins` : `${count} tabcoin`;
     }
 
     return list.map((contentObject, index) => {
@@ -103,7 +97,8 @@ export default function ContentList({ contentList, pagination, paginationBasePat
               <Link
                 sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
                 href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
+                <CommentIcon verticalAlign="middle" size="small" />
+                {` "${contentObject.body}"`}
               </Link>
             ) : (
               <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
@@ -125,7 +120,7 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Link>
             {' · '}
             <Text>
-              <PublishedSince date={contentObject.published_at} />
+              <PublishedSince direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
             </Text>
           </Box>
         </Box>,

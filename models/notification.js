@@ -1,8 +1,8 @@
-import user from 'models/user.js';
-import content from 'models/content.js';
-import authorization from 'models/authorization.js';
-import webserver from 'infra/webserver.js';
 import email from 'infra/email.js';
+import webserver from 'infra/webserver.js';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 
 async function sendReplyEmailToParentUser(createdContent) {
   const anonymousUser = user.createAnonymous();
@@ -22,11 +22,14 @@ async function sendReplyEmailToParentUser(createdContent) {
     }
 
     const childContendUrl = getChildContendUrl(secureCreatedContent);
-    const rootContent = await content.findRootContent({
-      where: {
-        id: secureCreatedContent.id,
-      },
-    });
+    const rootContent = parentContent.parent_id
+      ? await content.findOne({
+          where: {
+            id: parentContent.path[0],
+          },
+          attributes: { exclude: ['body'] },
+        })
+      : parentContent;
 
     const secureRootContent = authorization.filterOutput(anonymousUser, 'read:content', rootContent);
 
@@ -76,9 +79,7 @@ function getBodyReplyLine({ createdContent, rootContent }) {
 }
 
 function getChildContendUrl({ owner_username, slug }) {
-  let webserverHost = webserver.getHost();
-
-  return `${webserverHost}/${owner_username}/${slug}`;
+  return `${webserver.host}/${owner_username}/${slug}`;
 }
 
 export default Object.freeze({

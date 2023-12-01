@@ -1,11 +1,12 @@
 import nextConnect from 'next-connect';
-import { v4 as uuidV4 } from 'uuid';
 import snakeize from 'snakeize';
+import { v4 as uuidV4 } from 'uuid';
+
+import { ForbiddenError, TooManyRequestsError, UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';
 import controller from 'models/controller.js';
-import validator from 'models/validator.js';
 import ip from 'models/ip.js';
-import { UnauthorizedError, ForbiddenError, TooManyRequestsError } from 'errors/index.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   onError: controller.onErrorHandler,

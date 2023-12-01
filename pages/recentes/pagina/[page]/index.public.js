@@ -1,19 +1,16 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
+import { getStaticPropsRevalidate } from 'next-swr';
+
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Recentes` }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/recentes/pagina"
-          revalidatePath={`/api/v1/contents?strategy=new&page=${pagination.currentPage}`}
-        />
+        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
       </DefaultLayout>
     </>
   );
@@ -26,7 +23,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
   context.params = context.params ? context.params : {};
@@ -64,4 +61,4 @@ export async function getStaticProps(context) {
     },
     revalidate: 10,
   };
-}
+});

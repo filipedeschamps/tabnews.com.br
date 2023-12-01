@@ -1,12 +1,13 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { ServiceError } from 'errors/index.js';
+
+import { ServiceError } from 'errors';
 import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
 
 async function check(request) {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    if (!webserver.isLambdaServer()) {
+    if (!webserver.isServerlessRuntime) {
       return { success: true };
     }
 

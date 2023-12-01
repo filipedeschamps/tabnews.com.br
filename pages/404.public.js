@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import { DefaultLayout } from 'pages/interface/index.js';
-import { Box, Link } from '@primer/react';
+
+import { Box, DefaultLayout, Link } from '@/TabNewsUI';
 import botSleepyFaceDarkTransparent from 'public/brand/bot-sleepy-face-dark-transparent.svg';
 
 export default function Custom404() {

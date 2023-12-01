@@ -1,8 +1,10 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import validator from 'models/validator.js';
 
 export default nextConnect({
@@ -13,6 +15,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.noCache)
   .patch(patchValidationHandler, authorization.canRequest('read:activation_token'), patchHandler);
 
 function patchValidationHandler(request, response, next) {

@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { DefaultLayout, useUser } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
   return (
@@ -23,7 +24,7 @@ function RecoverPasswordForm() {
 
   useEffect(() => {
     if (user && !userIsLoading) {
-      userInputRef.current.value = user.username;
+      userInputRef.current.value = user.email;
     }
   }, [user, userIsLoading]);
 
@@ -100,38 +101,77 @@ function RecoverPasswordForm() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
-        <FormControl id="username">
-          <FormControl.Label>Digite seu usuário ou e-mail</FormControl.Label>
-          <TextInput
-            ref={userInputRef}
-            onChange={clearErrors}
-            name="userInput"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu usuário ou e-mail"
-          />
-          {['userInput', 'email', 'username'].includes(errorObject?.key) && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
+        {user?.features.includes('create:recovery_token:username') && (
+          <Flash variant="default">
+            Você pode ajudar outra pessoa a recuperar sua senha, é só digitar o nome de usuário dela.
+          </Flash>
+        )}
 
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
-          )}
-        </FormControl>
+        {user?.features.includes('create:recovery_token:username') && (
+          <FormControl id="userInput">
+            <FormControl.Label>Digite seu e-mail ou o nome de usuário da pessoa que deseja ajudar</FormControl.Label>
+            <TextInput
+              contrast
+              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              ref={userInputRef}
+              onChange={clearErrors}
+              name="userInput"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Digite seu e-mail ou o nome de usuário de outra pessoa"
+            />
+            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            {errorObject?.type === 'string.alphanum' && (
+              <FormControl.Caption>
+                Dica: use somente letras e números, por exemplo: nomeSobrenome4{' '}
+              </FormControl.Caption>
+            )}
+          </FormControl>
+        )}
+
+        {!user?.features.includes('create:recovery_token:username') && (
+          <FormControl id="userInput">
+            <FormControl.Label>Digite seu e-mail</FormControl.Label>
+            <TextInput
+              contrast
+              sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              ref={userInputRef}
+              onChange={clearErrors}
+              name="userInput"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Seu e-mail"
+            />
+            {['userInput', 'email'].includes(errorObject?.key) && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            {errorObject?.key === 'username' && (
+              <FormControl.Validation variant="error">Insira um endereço de email válido.</FormControl.Validation>
+            )}
+          </FormControl>
+        )}
+
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <Button
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Recuperar">
+            aria-label="Recuperar"
+            isLoading={isLoading}>
             Recuperar
-          </Button>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

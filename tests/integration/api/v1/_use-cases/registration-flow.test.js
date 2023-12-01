@@ -1,11 +1,12 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import authentication from 'models/authentication';
+
 import activation from 'models/activation.js';
-import session from 'models/session.js';
+import authentication from 'models/authentication';
 import password from 'models/password.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
+import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -133,30 +134,36 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(parsedCookiesFromPost.session_id.httpOnly).toEqual(true);
   });
 
-  test('Use session (successfully)', async () => {
-    const getSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+  test('Get user (successfully)', async () => {
+    const getUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
       method: 'get',
       headers: {
         cookie: `session_id=${parsedCookiesFromPost.session_id.value}`,
       },
     });
 
-    const getSessionResponseBody = await getSessionResponse.json();
+    const getUserResponseBody = await getUserResponse.json();
 
-    expect(getSessionResponse.status).toEqual(200);
-    expect(getSessionResponseBody.id).toEqual(postSessionResponseBody.id);
-    expect(Date.parse(getSessionResponseBody.expires_at)).not.toEqual(NaN);
-    expect(Date.parse(getSessionResponseBody.created_at)).not.toEqual(NaN);
-    expect(Date.parse(getSessionResponseBody.updated_at)).not.toEqual(NaN);
-    expect(getSessionResponseBody.expires_at > postSessionResponseBody.expires_at).toBe(true);
-    expect(getSessionResponseBody.created_at === postSessionResponseBody.created_at).toBe(true);
-    expect(getSessionResponseBody.updated_at > postSessionResponseBody.updated_at).toBe(true);
-
-    const parsedCookiesFromGet = authentication.parseSetCookies(getSessionResponse);
-    expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-    expect(parsedCookiesFromGet.session_id.value).toEqual(parsedCookiesFromPost.session_id.value);
-    expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-    expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-    expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+    expect(getUserResponse.status).toEqual(200);
+    expect(getUserResponseBody).toStrictEqual({
+      id: postUserResponseBody.id,
+      username: postUserResponseBody.username,
+      email: 'regularregistrationflow@gmail.com',
+      description: '',
+      notifications: true,
+      features: [
+        'create:session',
+        'read:session',
+        'create:content',
+        'create:content:text_root',
+        'create:content:text_child',
+        'update:content',
+        'update:user',
+      ],
+      tabcoins: 0,
+      tabcash: 0,
+      created_at: postUserResponseBody.created_at,
+      updated_at: getUserResponseBody.updated_at,
+    });
   });
 });

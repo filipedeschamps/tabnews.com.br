@@ -1,9 +1,9 @@
-import email from 'infra/email.js';
+import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
+import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
-import user from 'models/user.js';
 import session from 'models/session';
-import { NotFoundError, ValidationError } from 'errors/index.js';
+import user from 'models/user.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
   const userFound = await findUserByUsernameOrEmail(secureInputValues);
@@ -69,8 +69,7 @@ Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
 }
 
 function getRecoverPageEndpoint(tokenId) {
-  const webserverHost = webserver.getHost();
-  return `${webserverHost}/cadastro/recuperar/${tokenId}`;
+  return `${webserver.host}/cadastro/recuperar/${tokenId}`;
 }
 
 async function resetUserPassword(secureInputValues) {

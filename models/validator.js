@@ -1,7 +1,8 @@
 import Joi from 'joi';
-import { ValidationError } from 'errors/index.js';
-import removeMarkdown from 'models/remove-markdown';
+
+import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
+import removeMarkdown from 'models/remove-markdown';
 
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON
@@ -99,6 +100,7 @@ const schemas = {
         .max(30)
         .trim()
         .invalid(null)
+        .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.owner_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"owner_username" é um campo obrigatório.`,
@@ -108,6 +110,7 @@ const schemas = {
           'string.min': `"owner_username" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"owner_username" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"owner_username" possui o valor inválido "null".`,
+          'username.reserved': `Este nome de usuário não está disponível para uso.`,
         }),
     });
   },
@@ -148,6 +151,23 @@ const schemas = {
           'string.min': `"password" deve conter no mínimo {#limit} caracteres.`,
           'string.max': `"password" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"password" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
+  description: function () {
+    return Joi.object({
+      description: Joi.string()
+        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
+        .max(5000)
+        .invalid(null)
+        .allow('')
+        .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"description" é um campo obrigatório.`,
+          'string.base': `"description" deve ser do tipo String.`,
+          'string.max': `"description" deve conter no máximo {#limit} caracteres.`,
+          'any.invalid': `"description" possui o valor inválido "null".`,
         }),
     });
   },
@@ -629,6 +649,7 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'reward:user:tabcoins',
           'system:update:tabcoins'
         )
         .messages({
@@ -787,7 +808,7 @@ const withoutMarkdown = (value, helpers) => {
 
 function checkReservedUsernames(username, helpers) {
   if (
-    (webserver.isLambdaServer() && reservedDevUsernames.includes(username.toLowerCase())) ||
+    (webserver.isServerlessRuntime && reservedDevUsernames.includes(username.toLowerCase())) ||
     reservedUsernames.includes(username.toLowerCase()) ||
     reservedUsernamesStartingWith.find((reserved) => username.toLowerCase().startsWith(reserved))
   ) {
@@ -865,6 +886,8 @@ const reservedUsernames = [
   'dados',
   'dashboard',
   'desconectar',
+  'descricao',
+  'description',
   'deslogar',
   'diretrizes',
   'discussao',
@@ -947,6 +970,7 @@ const reservedUsernames = [
   'superuser',
   'suporte',
   'support',
+  'swr',
   'sysadmin',
   'tabnew',
   'tabnews',

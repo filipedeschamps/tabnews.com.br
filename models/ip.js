@@ -1,5 +1,6 @@
-import webserver from 'infra/webserver';
 import { isInSubnet, isIP } from 'is-in-subnet';
+
+import webserver from 'infra/webserver';
 
 function extractFromRequest(request) {
   if (isRequestFromCloudflare(request)) {
@@ -13,12 +14,12 @@ function extractFromRequest(request) {
 
   if (request instanceof Request) {
     // edge runtime
-    realIp = webserver.isLambdaServer()
+    realIp = webserver.isServerlessRuntime
       ? request.headers.get('x-vercel-proxied-for')?.split(', ').at(-1) // Vercel
       : request.headers.get('x-forwarded-for')?.split(', ').at(-1); // remote development
   } else {
     // node runtime
-    realIp = webserver.isLambdaServer()
+    realIp = webserver.isServerlessRuntime
       ? request.headers['x-vercel-proxied-for']?.split(', ').at(-1) // Vercel
       : request.headers['x-forwarded-for']?.split(', ').at(-1); // remote development
   }

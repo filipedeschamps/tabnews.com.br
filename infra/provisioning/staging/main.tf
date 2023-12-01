@@ -37,7 +37,7 @@ module "database" {
   vpc_cidr_block = module.vpc.vpc_cidr_block
   route_table_id = module.vpc.route_table_id
 
-  engine_version           = "14.1"
+  engine_version           = "14.3"
   instance_class           = "db.t4g.micro"
   allocated_storage        = 20
   max_allocated_storage    = 21

@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -143,7 +144,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -184,7 +185,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -209,7 +210,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -250,7 +251,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(-1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -266,7 +267,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
     });
 
-    test('With "transaction_type" set to "credit" twice (should be blocked)', async () => {
+    test('With "transaction_type" set to "credit" four times (should be blocked)', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
@@ -282,7 +283,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 4,
+        amount: 8,
       });
 
       // ROUND 1 OF CREDIT
@@ -317,16 +318,50 @@ describe('POST /api/v1/contents/tabcoins', () => {
         }
       );
 
-      const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
+      expect(postTabCoinsResponse2.status).toBe(201);
 
-      expect(postTabCoinsResponse2.status).toBe(400);
-      expect(postTabCoinsResponse2Body).toStrictEqual({
+      // ROUND 3 OF CREDIT
+      const postTabCoinsResponse3 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'credit',
+          }),
+        }
+      );
+
+      expect(postTabCoinsResponse3.status).toBe(201);
+
+      // ROUND 4 OF CREDIT
+      const postTabCoinsResponse4 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'credit',
+          }),
+        }
+      );
+
+      const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
+
+      expect(postTabCoinsResponse4.status).toBe(400);
+      expect(postTabCoinsResponse4Body).toStrictEqual({
         name: 'ValidationError',
         message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
         action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
         status_code: 400,
-        error_id: postTabCoinsResponse2Body.error_id,
-        request_id: postTabCoinsResponse2Body.request_id,
+        error_id: postTabCoinsResponse4Body.error_id,
+        request_id: postTabCoinsResponse4Body.request_id,
       });
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -351,10 +386,10 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const secondUserResponseBody = await secondUserResponse.json();
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(3);
     });
 
-    test('With "transaction_type" set to "debit" twice (should be blocked)', async () => {
+    test('With "transaction_type" set to "debit" four times (should be blocked)', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
@@ -370,7 +405,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 4,
+        amount: 8,
       });
 
       // ROUND 1 OF DEBIT
@@ -405,16 +440,50 @@ describe('POST /api/v1/contents/tabcoins', () => {
         }
       );
 
-      const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
+      expect(postTabCoinsResponse2.status).toBe(201);
 
-      expect(postTabCoinsResponse2.status).toBe(400);
-      expect(postTabCoinsResponse2Body).toStrictEqual({
+      // ROUND 3 OF DEBIT
+      const postTabCoinsResponse3 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'debit',
+          }),
+        }
+      );
+
+      expect(postTabCoinsResponse3.status).toBe(201);
+
+      // ROUND 4 OF DEBIT
+      const postTabCoinsResponse4 = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${secondUserSession.token}`,
+          },
+          body: JSON.stringify({
+            transaction_type: 'debit',
+          }),
+        }
+      );
+
+      const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
+
+      expect(postTabCoinsResponse4.status).toBe(400);
+      expect(postTabCoinsResponse4Body).toStrictEqual({
         name: 'ValidationError',
         message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
         action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
         status_code: 400,
-        error_id: postTabCoinsResponse2Body.error_id,
-        request_id: postTabCoinsResponse2Body.request_id,
+        error_id: postTabCoinsResponse4Body.error_id,
+        request_id: postTabCoinsResponse4Body.request_id,
       });
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -426,7 +495,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(-3);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -439,14 +508,10 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const secondUserResponseBody = await secondUserResponse.json();
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(3);
     });
 
-    // This tests are beign temporarly skipped because of the new feature of not allowing
-    // to credit/debit twice the same content. This feature is just a temporary test
-    // to a more sofisticated feature that will be implemented in the future.
-
-    test.skip('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
+    test('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
       await orchestrator.activateUser(secondUser);
@@ -455,7 +520,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body',
+        body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
 
@@ -497,7 +562,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponse1Body = await firstUserResponse1.json();
 
-      expect(firstUserResponse1Body.tabcoins).toStrictEqual(1);
+      expect(firstUserResponse1Body.tabcoins).toStrictEqual(-1);
       expect(firstUserResponse1Body.tabcash).toStrictEqual(0);
 
       const secondUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -544,7 +609,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponse2Body = await firstUserResponse2.json();
 
-      expect(firstUserResponse2Body.tabcoins).toStrictEqual(0);
+      expect(firstUserResponse2Body.tabcoins).toStrictEqual(-2);
       expect(firstUserResponse2Body.tabcash).toStrictEqual(0);
 
       const secondUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -559,6 +624,10 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponse2Body.tabcoins).toStrictEqual(0);
       expect(secondUserResponse2Body.tabcash).toStrictEqual(2);
     });
+
+    // This tests are beign temporarly skipped because of the new feature of not allowing
+    // to credit/debit four times the same content. This feature is just a temporary test
+    // to a more sofisticated feature that will be implemented in the future.
 
     test.skip('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
       const timesToFetch = 20;

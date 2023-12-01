@@ -1,17 +1,27 @@
-import fs from 'node:fs';
-import fetch from 'cross-fetch';
-import retry from 'async-retry';
 import { faker } from '@faker-js/faker';
+import retry from 'async-retry';
+import fetch from 'cross-fetch';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
-import user from 'models/user.js';
+import webserver from 'infra/webserver.js';
 import activation from 'models/activation.js';
-import session from 'models/session.js';
-import content from 'models/content.js';
-import recovery from 'models/recovery.js';
 import balance from 'models/balance.js';
+import content from 'models/content.js';
+import event from 'models/event.js';
+import recovery from 'models/recovery.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
 
-const webserverUrl = `http://${process.env.WEBSERVER_HOST}:${process.env.WEBSERVER_PORT}`;
+if (process.env.NODE_ENV !== 'test') {
+  throw new Error({
+    message: 'Orchestrator should only be used in tests',
+  });
+}
+
+const webserverUrl = webserver.host;
 const emailServiceUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
 async function waitForAllServices() {
@@ -111,6 +121,7 @@ async function createUser(userObject) {
     username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
     email: userObject?.email || faker.internet.email(),
     password: userObject?.password || 'password',
+    description: userObject?.description || '',
   });
 }
 
@@ -130,16 +141,38 @@ async function createSession(userObject) {
   return await session.create(userObject.id);
 }
 
+async function findSessionByToken(token) {
+  return await session.findOneValidByToken(token);
+}
+
 async function createContent(contentObject) {
-  return await content.create({
-    parent_id: contentObject?.parent_id || undefined,
-    owner_id: contentObject?.owner_id || undefined,
-    title: contentObject?.title || undefined,
-    slug: contentObject?.slug || undefined,
-    body: contentObject?.body || faker.lorem.paragraphs(5),
-    status: contentObject?.status || 'draft',
-    source_url: contentObject?.source_url || undefined,
+  const currentEvent = await event.create({
+    type: contentObject?.parent_id ? 'create:content:text_child' : 'create:content:text_root',
+    originatorUserId: contentObject?.owner_id,
   });
+
+  const createdContent = await content.create(
+    {
+      parent_id: contentObject?.parent_id || undefined,
+      owner_id: contentObject?.owner_id || undefined,
+      title: contentObject?.title || undefined,
+      slug: contentObject?.slug || undefined,
+      body: contentObject?.body || faker.lorem.paragraphs(5),
+      status: contentObject?.status || 'draft',
+      source_url: contentObject?.source_url || undefined,
+    },
+    {
+      eventId: currentEvent.id,
+    }
+  );
+
+  await event.updateMetadata(currentEvent.id, {
+    metadata: {
+      id: createdContent.id,
+    },
+  });
+
+  return createdContent;
 }
 
 async function updateContent(contentId, contentObject) {
@@ -164,6 +197,51 @@ async function createBalance(balanceObject) {
   });
 }
 
+async function createRate(contentObject, amount, fromUserId) {
+  const tabCoinsRequiredAmount = 2;
+  const originatorIp = faker.internet.ip();
+  const transactionType = amount < 0 ? 'debit' : 'credit';
+
+  if (!fromUserId) {
+    fromUserId = randomUUID();
+
+    await createBalance({
+      balanceType: 'user:tabcoin',
+      recipientId: fromUserId,
+      amount: tabCoinsRequiredAmount * Math.abs(amount),
+      originatorType: 'orchestrator',
+      originatorId: fromUserId,
+    });
+  }
+
+  for (let i = 0; i < Math.abs(amount); i++) {
+    const currentEvent = await event.create({
+      type: 'update:content:tabcoins',
+      originatorUserId: fromUserId,
+      originatorIp,
+      metadata: {
+        transaction_type: transactionType,
+        from_user_id: fromUserId,
+        content_owner_id: contentObject.owner_id,
+        content_id: contentObject.id,
+        amount: tabCoinsRequiredAmount,
+      },
+    });
+
+    await balance.rateContent(
+      {
+        contentId: contentObject.id,
+        contentOwnerId: contentObject.owner_id,
+        fromUserId: fromUserId,
+        transactionType,
+      },
+      {
+        eventId: currentEvent.id,
+      }
+    );
+  }
+}
+
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
 }
@@ -177,7 +255,113 @@ async function createFirewallTestFunctions() {
   }
 }
 
-export default {
+// Prestige does not have to be an integer, so it can be given as a fraction.
+// If the denominator is 0, the respective prestige will not be created.
+async function createPrestige(
+  userId,
+  {
+    rootPrestigeNumerator = 1,
+    rootPrestigeDenominator = 4,
+    childPrestigeNumerator = 0,
+    childPrestigeDenominator = 1,
+  } = {}
+) {
+  if (
+    rootPrestigeDenominator < 0 ||
+    childPrestigeDenominator < 0 ||
+    rootPrestigeDenominator > 20 ||
+    childPrestigeDenominator > 20
+  ) {
+    throw new Error('rootPrestigeDenominator and childPrestigeDenominator must be between 0 and 20');
+  }
+
+  const rootContents = [];
+  const childContents = [];
+
+  jest.useFakeTimers({
+    now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+    advanceTimers: true,
+  });
+
+  for (let i = 0; i < rootPrestigeDenominator; i++) {
+    rootContents.push(
+      await createContent({
+        owner_id: userId,
+        title: faker.lorem.words(3),
+        body: faker.lorem.paragraphs(1),
+        status: 'published',
+      })
+    );
+  }
+
+  let parentId = rootContents[0]?.id;
+
+  if (childPrestigeDenominator && !parentId) {
+    const parent = await createContent({
+      owner_id: userId,
+      title: faker.lorem.words(3),
+      body: faker.lorem.paragraphs(1),
+      status: 'draft',
+    });
+
+    parentId = parent.id;
+  }
+
+  for (let i = 0; i < childPrestigeDenominator; i++) {
+    childContents.push(
+      await createContent({
+        parent_id: parentId,
+        owner_id: userId,
+        body: faker.lorem.paragraphs(1),
+        status: 'published',
+      })
+    );
+  }
+
+  jest.useRealTimers();
+
+  if (rootContents.length) {
+    await createBalance({
+      balanceType: 'content:tabcoin',
+      recipientId: rootContents[0].id,
+      amount: rootPrestigeNumerator,
+      originatorType: 'orchestrator',
+      originatorId: rootContents[0].id,
+    });
+  }
+
+  if (childContents.length) {
+    await createBalance({
+      balanceType: 'content:tabcoin',
+      recipientId: childContents[0].id,
+      amount: childPrestigeNumerator + childPrestigeDenominator,
+      originatorType: 'orchestrator',
+      originatorId: childContents[0].id,
+    });
+  }
+
+  return [...rootContents, ...childContents];
+}
+
+async function updateRewardedAt(userId, rewardedAt) {
+  const query = {
+    text: `
+      UPDATE
+        users
+      SET
+        rewarded_at = $1
+      WHERE
+        id = $2
+      RETURNING
+        *
+    ;`,
+    values: [rewardedAt, userId],
+  };
+
+  return await database.query(query);
+}
+
+const orchestrator = {
   waitForAllServices,
   dropAllTables,
   runPendingMigrations,
@@ -187,6 +371,7 @@ export default {
   createUser,
   activateUser,
   createSession,
+  findSessionByToken,
   addFeaturesToUser,
   removeFeaturesFromUser,
   createContent,
@@ -194,4 +379,9 @@ export default {
   createRecoveryToken,
   createFirewallTestFunctions,
   createBalance,
+  createPrestige,
+  createRate,
+  updateRewardedAt,
 };
+
+export default orchestrator;

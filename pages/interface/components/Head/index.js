@@ -1,9 +1,10 @@
-import webserver from 'infra/webserver.js';
 import NextHead from 'next/head';
 import { useRouter } from 'next/router';
-import { useMediaQuery } from 'pages/interface/index.js';
 
-const webserverHost = webserver.getHost();
+import webserver from 'infra/webserver.js';
+import { useMediaQuery } from 'pages/interface';
+
+const webserverHost = webserver.host;
 
 export function DefaultHead() {
   const router = useRouter();
@@ -18,10 +19,9 @@ export function DefaultHead() {
     description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.',
     url: `${webserverHost}${router.asPath}`,
     type: 'website',
-    noIndex: false,
   };
 
-  const { type, title, description, image, url, noIndex } = defaultMetadata;
+  const { type, title, description, image, url } = defaultMetadata;
 
   return (
     <NextHead>
@@ -58,7 +58,10 @@ export function DefaultHead() {
 }
 
 export default function Head({ metadata, children }) {
-  const { type, title, description, image, url, noIndex, author, published_time, modified_time } = metadata || {};
+  const { type, title, description, image, url, noIndex, author, published_time, modified_time, canonical } =
+    metadata || {};
+
+  const canonicalUrl = canonical?.startsWith('http') ? canonical : `${webserverHost}${canonical}`;
 
   return (
     <NextHead>
@@ -78,6 +81,8 @@ export default function Head({ metadata, children }) {
           <meta property="twitter:description" content={description} key="twitter:description" />
         </>
       )}
+
+      {canonical && <link rel="canonical" href={canonicalUrl} key="canonical" />}
 
       {url && (
         <>

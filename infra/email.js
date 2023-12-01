@@ -1,7 +1,8 @@
-const nodemailer = require('nodemailer');
-import { ServiceError } from 'errors/index.js';
+import nodemailer from 'nodemailer';
+
+import { ServiceError } from 'errors';
+import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
-import logger from './logger.js';
 
 const transporterConfiguration = {
   host: process.env.EMAIL_SMTP_HOST,
@@ -13,7 +14,7 @@ const transporterConfiguration = {
   },
 };
 
-if (!webserver.isLambdaServer()) {
+if (!webserver.isServerlessRuntime) {
   transporterConfiguration.secure = false;
 }
 
