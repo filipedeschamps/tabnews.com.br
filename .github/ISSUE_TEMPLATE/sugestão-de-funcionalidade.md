@@ -2,7 +2,7 @@
 name: Sugestão de Funcionalidade
 about: Envie uma ideia para o projeto
 title: "[Sugestão/Feature]"
-labels: enhancement
+labels: new feature
 assignees: ''
 
 ---
