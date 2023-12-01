@@ -21,7 +21,7 @@ Passos para reproduzir o comportamento:
 Por favor, descreva de forma clara e concisa o comportamento esperado para a funcionalidade.
 
 **Imagens***
-Se possível, adicione imagens para ajudar a explicar o seu problema.
+Se possível, adicione imagens para ilustrar o problema.
 
 **Desktop (preencha as seguintes informações):**
  - OS: [ex. iOS]
