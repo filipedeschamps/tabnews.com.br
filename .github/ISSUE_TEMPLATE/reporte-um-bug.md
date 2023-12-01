@@ -23,7 +23,7 @@ Por favor, descreva de forma clara e concisa o comportamento esperado para a fun
 **Imagens***
 Se possível, adicione imagens para ajudar a explicar o seu problema.
 
-**Desktop (preencha por favor a seguinte informação):**
+**Desktop (preencha as seguintes informações):**
  - OS: [ex. iOS]
  - Navegador [ex. chrome, safari]
  - Versão [ex. 22]
