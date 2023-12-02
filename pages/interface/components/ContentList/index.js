@@ -1,4 +1,4 @@
-import { Box, EmptyState, Link, PublishedSince, Text } from '@/TabNewsUI';
+import { Box, EmptyState, Link, PastTime, Text } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
 
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
@@ -120,7 +120,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
             </Link>
             {' · '}
             <Text>
-              <PublishedSince direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
+              <PastTime direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
             </Text>
           </Box>
         </Box>,

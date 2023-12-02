@@ -9,13 +9,14 @@ import {
   Link,
   PrimerHeader,
   SearchBox,
-  Text,
+  TabCashCount,
+  TabCoinCount,
   ThemeSelector,
   ThemeSwitcher,
   Tooltip,
   Truncate,
 } from '@/TabNewsUI';
-import { CgTab, HomeIcon, PersonFillIcon, PlusIcon, SquareFillIcon } from '@/TabNewsUI/icons';
+import { CgTab, HomeIcon, PersonFillIcon, PlusIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 
 export default function HeaderComponent() {
@@ -100,12 +101,7 @@ export default function HeaderComponent() {
               fontSize: 0,
               fontWeight: 'bold',
             }}>
-            <Tooltip aria-label="TabCoins" direction="s" noDelay={true} wrap={true}>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#0969da' }}>
-                <SquareFillIcon size={16} />
-                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcoins?.toLocaleString('pt-BR')}</Text>
-              </Box>
-            </Tooltip>
+            <TabCoinCount amount={user.tabcoins} sx={{ color: 'fg.onEmphasis', pl: 2, pr: 1 }} />
           </PrimerHeader.Item>
 
           <PrimerHeader.Item
@@ -114,12 +110,7 @@ export default function HeaderComponent() {
               fontSize: 0,
               fontWeight: 'bold',
             }}>
-            <Tooltip aria-label="TabCash" direction="s" noDelay={true} wrap={true}>
-              <Box sx={{ display: 'flex', alignItems: 'center', pr: 1, color: '#2da44e' }}>
-                <SquareFillIcon size={16} />
-                <Text sx={{ color: 'fg.onEmphasis' }}>{user.tabcash?.toLocaleString('pt-BR')}</Text>
-              </Box>
-            </Tooltip>
+            <TabCashCount amount={user.tabcash} sx={{ color: 'fg.onEmphasis', pr: 1 }} />
           </PrimerHeader.Item>
 
           <PrimerHeader.Item sx={{ mr: 0 }}>

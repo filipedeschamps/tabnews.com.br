@@ -12,10 +12,12 @@ export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
 export { default as PasswordInput } from '@/PasswordInput';
 export { default as NextNProgress } from '@/Progressbar';
-export { default as PublishedSince } from '@/PublishedSince';
+export { default as PastTime } from '@/PastTime';
 export { default as ReadTime } from '@/ReadTime';
 export { default as SearchBox } from '@/SearchBox';
+export { default as TabCashCount } from '@/TabCashCount';
 export { default as TabCoinButtons } from '@/TabCoinButtons';
+export { default as TabCoinCount } from '@/TabCoinCount';
 export { default as ThemeProvider } from '@/ThemeProvider';
 export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
 export {

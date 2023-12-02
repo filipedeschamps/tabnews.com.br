@@ -13,7 +13,12 @@ import {
   IconButton,
   Label,
   LabelGroup,
+  Link,
   Pagehead,
+  PastTime,
+  TabCashCount,
+  TabCoinCount,
+  Text,
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
@@ -85,28 +90,41 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
   }
 
   function OptionsMenu() {
+    const canNuke =
+      !isAuthenticatedUser && user?.features?.includes('ban:user') && !userFound?.features?.includes('nuked');
+    const canUpdate = isAuthenticatedUser && user?.features?.includes('update:user');
+    if (!canNuke && !canUpdate) {
+      return null;
+    }
+
     return (
-      <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0, top: 2 }}>
-          <ActionMenu>
-            <ActionMenu.Anchor>
-              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar usuário" />
-            </ActionMenu.Anchor>
-            <ActionMenu.Overlay>
-              <ActionList>
-                {!userFound?.features?.includes('nuked') && (
-                  <ActionList.Item variant="danger" onClick={handleClickNuke}>
-                    <ActionList.LeadingVisual>
-                      <TrashIcon />
-                    </ActionList.LeadingVisual>
-                    Nuke
-                  </ActionList.Item>
-                )}
-              </ActionList>
-            </ActionMenu.Overlay>
-          </ActionMenu>
-        </Box>
-      </Box>
+      <ActionMenu>
+        <ActionMenu.Anchor>
+          <IconButton
+            sx={{ ml: 'auto', px: 1, alignSelf: 'center' }}
+            size="small"
+            icon={KebabHorizontalIcon}
+            aria-label="Editar usuário"
+          />
+        </ActionMenu.Anchor>
+        <ActionMenu.Overlay>
+          <ActionList>
+            {canUpdate && (
+              <ActionList.LinkItem as={Link} href="/perfil">
+                Editar perfil
+              </ActionList.LinkItem>
+            )}
+            {canNuke && (
+              <ActionList.Item variant="danger" onClick={handleClickNuke}>
+                <ActionList.LeadingVisual>
+                  <TrashIcon />
+                </ActionList.LeadingVisual>
+                Nuke
+              </ActionList.Item>
+            )}
+          </ActionList>
+        </ActionMenu.Overlay>
+      </ActionMenu>
     );
   }
 
@@ -114,7 +132,7 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     if (!userFound?.features?.length) return null;
 
     return (
-      <LabelGroup sx={{ display: 'flex', ml: 2 }}>
+      <LabelGroup sx={{ display: 'flex', alignSelf: 'center', mt: 1, mr: 2 }}>
         {userFound.features.includes('nuked') && <Label variant="danger">nuked</Label>}
       </LabelGroup>
     );
@@ -129,12 +147,21 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
           </Flash>
         )}
 
-        <Box sx={{ width: '100%', display: 'flex' }}>
-          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 3 }}>
-            {userFound.username} <UserFeatures />
-          </Pagehead>
-          {user?.features?.includes('ban:user') && OptionsMenu()}
-        </Box>
+        <Pagehead sx={{ width: '100%', display: 'flex', mt: 0, pt: 0, pb: 3, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', wordBreak: 'break-word', flexWrap: 'wrap' }}>
+            <Text sx={{ margin: 0, pr: 2 }} as="h1">
+              {userFound.username}
+            </Text>
+            <UserFeatures />
+            <Box sx={{ display: 'flex' }}>
+              <TabCoinCount amount={userFound.tabcoins} direction="n" sx={{ pr: 1 }} />
+              <TabCashCount amount={userFound.tabcash} direction="n" sx={{ pr: 2 }} />
+              {' · '}
+              <PastTime date={userFound.created_at} formatText={(date) => `Membro há ${date}.`} sx={{ pl: 2 }} />
+            </Box>
+          </Box>
+          {OptionsMenu()}
+        </Pagehead>
 
         {userFound.description && (
           <Box
@@ -218,7 +245,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   let secureUserFound;
 
   try {
-    const userFound = await user.findOneByUsername(context.params.username);
+    const userFound = await user.findOneByUsername(context.params.username, { withBalance: true });
 
     secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
 

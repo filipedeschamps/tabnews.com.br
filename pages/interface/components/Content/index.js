@@ -14,7 +14,7 @@ import {
   Heading,
   IconButton,
   Link,
-  PublishedSince,
+  PastTime,
   ReadTime,
   Text,
   TextInput,
@@ -201,7 +201,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
               sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '2px', height: '22px' }}>
-              <PublishedSince direction="n" date={contentObject.published_at} />
+              <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
             </Link>
           </Box>
           {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
