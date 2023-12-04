@@ -628,7 +628,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 255 bytes', async () => {
+    test('Content with "slug" containing more than 226 bytes', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -642,7 +642,7 @@ describe('POST /api/v1/contents', () => {
         body: JSON.stringify({
           title: 'Mini curso de Node.js',
           body: 'Instale o Node.js',
-          slug: 'this-slug-must-be-changed-to-255-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         }),
       });
 
@@ -654,7 +654,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-255-bytessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
@@ -964,7 +964,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-ocupando-menos-de-256-bytessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-ocupando-menos-de-256-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         title:
           'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         body: 'Instale o Node.js',
@@ -1051,7 +1051,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: '4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pm',
+        slug: '4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4p',
         title: '♥'.repeat(255),
         body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
         status: 'draft',
