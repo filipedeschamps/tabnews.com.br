@@ -1054,7 +1054,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 255 bytes', async () => {
+    test('Content with "slug" containing more than 226 bytes', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -1074,7 +1074,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            slug: 'this-slug-must-be-changed-to-255-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+            slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
           }),
         }
       );
@@ -1087,7 +1087,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-255-bytessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',

@@ -237,7 +237,7 @@ const schemas = {
     return Joi.object({
       slug: Joi.string()
         .min(1)
-        .max(255, 'utf8')
+        .max(226, 'utf8')
         .trim()
         .truncate()
         .invalid(null)
