@@ -141,6 +141,7 @@ function GoogleBox({ onInputRender = () => {}, onSuggestionsRender = () => {} } 
 
     const waitInputBox = waitForElm('.gsc-input-box');
     const waitSuggestionBox = waitForElm('.gssb_c');
+    const waitAboveResultsBox = waitForElm('.gsc-above-wrapper-area');
 
     (async () => {
       const inputBox = await waitInputBox.start();
@@ -151,9 +152,15 @@ function GoogleBox({ onInputRender = () => {}, onSuggestionsRender = () => {} } 
       onSuggestionsRender(suggestionBox);
     })();
 
+    (async () => {
+      const aboveResultsBox = await waitAboveResultsBox.start();
+      aboveResultsBox.style.display = 'block';
+    })();
+
     return () => {
       waitInputBox.cancel();
       waitSuggestionBox.cancel();
+      waitAboveResultsBox.cancel();
     };
   }, [onInputRender, onSuggestionsRender]);
 
