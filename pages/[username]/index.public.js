@@ -13,7 +13,7 @@ import {
   IconButton,
   Label,
   LabelGroup,
-  Link,
+  NavItem,
   Pagehead,
   PastTime,
   TabCashCount,
@@ -109,11 +109,7 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
         </ActionMenu.Anchor>
         <ActionMenu.Overlay>
           <ActionList>
-            {canUpdate && (
-              <ActionList.LinkItem as={Link} href="/perfil">
-                Editar perfil
-              </ActionList.LinkItem>
-            )}
+            {canUpdate && <NavItem href="/perfil">Editar perfil</NavItem>}
             {canNuke && (
               <ActionList.Item variant="danger" onClick={handleClickNuke}>
                 <ActionList.LeadingVisual>

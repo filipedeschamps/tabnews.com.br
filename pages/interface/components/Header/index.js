@@ -6,7 +6,8 @@ import {
   Box,
   HeaderLink,
   IconButton,
-  Link,
+  NavItem,
+  NavList,
   PrimerHeader,
   TabCashCount,
   TabCoinCount,
@@ -136,36 +137,36 @@ export default function HeaderComponent() {
               </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>
-                <ActionList>
-                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
-                    <ActionList.LeadingVisual>
-                      <HomeIcon size={16} />
-                    </ActionList.LeadingVisual>
+                <NavList>
+                  <NavItem href={`/${user.username}`} aria-current={false}>
+                    <NavList.LeadingVisual>
+                      <HomeIcon />
+                    </NavList.LeadingVisual>
                     <Truncate>{user.username}</Truncate>
-                  </ActionList.LinkItem>
-                  <ActionList.Divider />
-                  <ActionList.LinkItem as={Link} href="/publicar">
-                    Publicar novo conteúdo
-                  </ActionList.LinkItem>
-                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
-                    Meus conteúdos
-                  </ActionList.LinkItem>
-                  <ActionList.LinkItem as={Link} href="/perfil">
-                    Editar perfil
-                  </ActionList.LinkItem>
-                  <ActionList.Divider />
+                  </NavItem>
+
+                  <NavList.Group>
+                    <NavItem href="/publicar">Publicar novo conteúdo</NavItem>
+
+                    <NavItem href={`/${user.username}`}>Meus conteúdos</NavItem>
+
+                    <NavItem href="/perfil">Editar perfil</NavItem>
+                    <NavList.Divider />
+                  </NavList.Group>
 
                   <ActionList.Item sx={{ display: [, 'none'] }} onSelect={onClickSearchButton}>
                     <SearchBarMenuItem />
                   </ActionList.Item>
 
-                  <ThemeSelector />
+                  <ActionList.Item>
+                    <ThemeSelector />
+                  </ActionList.Item>
                   <ActionList.Divider />
 
                   <ActionList.Item variant="danger" onSelect={logout}>
                     Deslogar
                   </ActionList.Item>
-                </ActionList>
+                </NavList>
               </ActionMenu.Overlay>
             </ActionMenu>
           </PrimerHeader.Item>
