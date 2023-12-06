@@ -8,13 +8,13 @@ import {
   IconButton,
   Link,
   PrimerHeader,
-  SearchBox,
   TabCashCount,
   TabCoinCount,
   ThemeSelector,
   ThemeSwitcher,
   Tooltip,
   Truncate,
+  useSearchBox,
 } from '@/TabNewsUI';
 import { CgTab, HomeIcon, PersonFillIcon, PlusIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
@@ -22,6 +22,8 @@ import { useUser } from 'pages/interface';
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { asPath } = useRouter();
+  const { onClickSearchButton, SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } =
+    useSearchBox();
 
   const loginUrl =
     !asPath || user || asPath.startsWith('/cadastro')
@@ -39,8 +41,10 @@ export default function HeaderComponent() {
     <PrimerHeader
       id="header"
       sx={{
+        minWidth: 'max-content',
         px: [2, null, null, 3],
       }}>
+      <SearchBoxOverlay />
       <PrimerHeader.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
@@ -60,9 +64,16 @@ export default function HeaderComponent() {
         </HeaderLink>
       </PrimerHeader.Item>
 
-      <PrimerHeader.Item sx={{ mr: 1 }}>
-        <SearchBox />
-      </PrimerHeader.Item>
+      {!isLoading && (
+        <PrimerHeader.Item
+          sx={{
+            display: user ? ['none', 'flex'] : 'flex',
+            mr: 1,
+          }}>
+          <SearchBarButton />
+          <SearchIconButton />
+        </PrimerHeader.Item>
+      )}
 
       {!isLoading && !user && (
         <>
@@ -72,10 +83,10 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href={loginUrl}>Login</HeaderLink>
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'], mr: 1 }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['flex', 'none'] }}>
+          <PrimerHeader.Item sx={{ display: ['flex', 'none'], mr: 1 }}>
             <HeaderLink href={loginUrl}>Entrar</HeaderLink>
           </PrimerHeader.Item>
         </>
@@ -143,6 +154,10 @@ export default function HeaderComponent() {
                     Editar perfil
                   </ActionList.LinkItem>
                   <ActionList.Divider />
+
+                  <ActionList.Item sx={{ display: [, 'none'] }} onSelect={onClickSearchButton}>
+                    <SearchBarMenuItem />
+                  </ActionList.Item>
 
                   <ThemeSelector />
                   <ActionList.Divider />
