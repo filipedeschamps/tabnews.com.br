@@ -11,6 +11,7 @@ import {
   Flash,
   FormControl,
   Heading,
+  HelpTooltip,
   Link,
   TextInput,
   useConfirm,
@@ -187,7 +188,15 @@ function EditProfileForm() {
     <form style={{ width: '100%' }} onSubmit={handleSubmit} onChange={clearMessages}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <FormControl id="username">
-          <FormControl.Label>Nome de usuário</FormControl.Label>
+          <FormControl.Label
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              gap: 1,
+            }}>
+            Nome de usuário
+            <HelpTooltip helpText="Este é o nome que aparece na URL das suas publicações." />
+          </FormControl.Label>
           <TextInput
             ref={usernameRef}
             name="username"
@@ -210,7 +219,15 @@ function EditProfileForm() {
         </FormControl>
 
         <FormControl id="email" disabled={emailDisabled}>
-          <FormControl.Label>Email</FormControl.Label>
+          <FormControl.Label
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              gap: 1,
+            }}>
+            Email
+            <HelpTooltip helpText="Seu email é usado para fazer login e receber notificações." />
+          </FormControl.Label>
           <TextInput
             ref={emailRef}
             name="email"
@@ -253,7 +270,15 @@ function EditProfileForm() {
         </FormControl>
 
         <FormControl id="description">
-          <FormControl.Label>Descrição</FormControl.Label>
+          <FormControl.Label
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              gap: 1,
+            }}>
+            Descrição
+            <HelpTooltip helpText="Uma breve descrição sobre você." />
+          </FormControl.Label>
 
           <Editor
             onChange={(value) => {
@@ -286,7 +311,15 @@ function EditProfileForm() {
         </FormControl>
 
         <FormControl id="password">
-          <FormControl.Label>Senha</FormControl.Label>
+          <FormControl.Label
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              gap: 1,
+            }}>
+            Senha
+            <HelpTooltip helpText="Sua senha é usada para fazer login. Não pode ser alterada diretamente." />
+          </FormControl.Label>
           <Link href="/cadastro/recuperar" sx={{ fontSize: 0 }}>
             Utilize o fluxo de recuperação de senha →
           </Link>

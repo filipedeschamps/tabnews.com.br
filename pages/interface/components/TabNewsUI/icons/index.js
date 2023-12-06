@@ -17,6 +17,7 @@ export {
   PencilIcon,
   PersonFillIcon,
   PlusIcon,
+  QuestionIcon,
   SearchIcon,
   SquareFillIcon,
   SunIcon,

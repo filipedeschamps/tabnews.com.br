@@ -12,6 +12,7 @@ import {
   Flash,
   FormControl,
   Heading,
+  HelpTooltip,
   IconButton,
   Link,
   PastTime,
@@ -442,7 +443,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="title">
-              <FormControl.Label visuallyHidden>Título</FormControl.Label>
+              <FormControl.Label
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}>
+                Título
+                <HelpTooltip helpText="O título da sua publicação será visível na página inicial." />
+              </FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -453,7 +462,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Título"
                 aria-label="Título"
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
@@ -468,7 +476,21 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           )}
 
           <FormControl id="body">
-            <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
+            <FormControl.Label
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}>
+              Conteúdo
+              <HelpTooltip
+                helpText={
+                  contentObject?.parent_id
+                    ? 'Seja respeitoso ao responder a publicação de outra pessoa, evite ofensas e palavras de baixo calão. Contribua com a discussão!'
+                    : 'O conteúdo que será mostrado apenas ao clicar na publicação. Lembre-se de ser respeitoso!'
+                }
+              />
+            </FormControl.Label>
             <Editor
               isValid={errorObject?.key === 'body'}
               value={newData.body}
@@ -484,7 +506,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
+              <FormControl.Label
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}>
+                Fonte
+                <HelpTooltip helpText="Informe a fonte da sua publicação, caso tenha alguma. Essa informação é opcional." />
+              </FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -495,7 +525,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Fonte (opcional)"
                 aria-label="Fonte (opcional)"
                 block={true}
                 value={newData.source_url}

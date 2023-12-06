@@ -7,6 +7,7 @@ import {
   Flash,
   FormControl,
   Heading,
+  HelpTooltip,
   Link,
   PasswordInput,
   Text,
@@ -94,7 +95,15 @@ function LoginForm() {
             Login
           </Heading>
           <FormControl id="email">
-            <FormControl.Label>Email</FormControl.Label>
+            <FormControl.Label
+              sx={{
+                alignItems: 'center',
+                display: 'flex',
+                gap: 1,
+              }}>
+              Email
+              <HelpTooltip helpText="Informe o email que você usou para se cadastrar no TabNews." />
+            </FormControl.Label>
             <TextInput
               ref={emailRef}
               onChange={clearErrors}
@@ -117,6 +126,7 @@ function LoginForm() {
             id="password"
             name="password"
             label="Senha"
+            helpTooltipText="Informe a senha que você usou para se cadastrar no TabNews."
             errorObject={errorObject}
             setErrorObject={setErrorObject}
           />
