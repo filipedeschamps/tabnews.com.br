@@ -4,8 +4,8 @@ import {
   ActionList,
   ActionMenu,
   Box,
+  Button,
   HeaderLink,
-  IconButton,
   NavItem,
   NavList,
   PrimerHeader,
@@ -17,7 +17,15 @@ import {
   Truncate,
   useSearchBox,
 } from '@/TabNewsUI';
-import { CgTab, HomeIcon, PersonFillIcon, PlusIcon } from '@/TabNewsUI/icons';
+import {
+  CgTab,
+  GearIcon,
+  ListUnorderedIcon,
+  PersonIcon,
+  PlusIcon,
+  SignOutIcon,
+  ThreeBarsIcon,
+} from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 
 export default function HeaderComponent() {
@@ -102,7 +110,7 @@ export default function HeaderComponent() {
             }}>
             <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
               <HeaderLink href="/publicar">
-                <PlusIcon size={16} />
+                <PlusIcon />
               </HeaderLink>
             </Tooltip>
           </PrimerHeader.Item>
@@ -128,29 +136,54 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ mr: 0 }}>
             <ActionMenu>
               <ActionMenu.Anchor>
-                <IconButton
-                  aria-label="Abrir opções do Perfil"
-                  icon={PersonFillIcon}
-                  size="small"
-                  sx={{ '&:focus-visible': { outline: '2px solid #FFF' } }}
-                />
+                <Button
+                  aria-label="Abrir o menu"
+                  variant="invisible"
+                  sx={{
+                    px: 0,
+                    mx: 1,
+                    color: 'header.logo',
+                    '&:hover': {
+                      color: 'header.text',
+                      backgroundColor: 'transparent',
+                    },
+                    '&:focus-visible': { outline: '2px solid #FFF' },
+                  }}
+                  style={{ background: 'transparent' }}>
+                  <ThreeBarsIcon size={24} />
+                </Button>
               </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>
                 <NavList>
                   <NavItem href={`/${user.username}`} aria-current={false}>
                     <NavList.LeadingVisual>
-                      <HomeIcon />
+                      <PersonIcon />
                     </NavList.LeadingVisual>
                     <Truncate>{user.username}</Truncate>
                   </NavItem>
 
                   <NavList.Group>
-                    <NavItem href="/publicar">Publicar novo conteúdo</NavItem>
+                    <NavItem href="/publicar">
+                      <NavList.LeadingVisual>
+                        <PlusIcon />
+                      </NavList.LeadingVisual>
+                      Novo conteúdo
+                    </NavItem>
 
-                    <NavItem href={`/${user.username}`}>Meus conteúdos</NavItem>
+                    <NavItem href={`/${user.username}`}>
+                      <NavList.LeadingVisual>
+                        <ListUnorderedIcon />
+                      </NavList.LeadingVisual>
+                      Meus conteúdos
+                    </NavItem>
 
-                    <NavItem href="/perfil">Editar perfil</NavItem>
+                    <NavItem href="/perfil">
+                      <NavList.LeadingVisual>
+                        <GearIcon />
+                      </NavList.LeadingVisual>
+                      Editar perfil
+                    </NavItem>
                     <NavList.Divider />
                   </NavList.Group>
 
@@ -164,6 +197,9 @@ export default function HeaderComponent() {
                   <ActionList.Divider />
 
                   <ActionList.Item variant="danger" onSelect={logout}>
+                    <ActionList.LeadingVisual>
+                      <SignOutIcon />
+                    </ActionList.LeadingVisual>
                     Deslogar
                   </ActionList.Item>
                 </NavList>
