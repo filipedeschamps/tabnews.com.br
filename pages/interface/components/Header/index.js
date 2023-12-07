@@ -4,24 +4,35 @@ import {
   ActionList,
   ActionMenu,
   Box,
+  Button,
   HeaderLink,
-  IconButton,
-  Link,
+  NavItem,
+  NavList,
   PrimerHeader,
-  SearchBox,
   TabCashCount,
   TabCoinCount,
   ThemeSelector,
   ThemeSwitcher,
   Tooltip,
   Truncate,
+  useSearchBox,
 } from '@/TabNewsUI';
-import { CgTab, HomeIcon, PersonFillIcon, PlusIcon } from '@/TabNewsUI/icons';
+import {
+  CgTab,
+  GearIcon,
+  ListUnorderedIcon,
+  PersonIcon,
+  PlusIcon,
+  SignOutIcon,
+  ThreeBarsIcon,
+} from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 
 export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { asPath } = useRouter();
+  const { onClickSearchButton, SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } =
+    useSearchBox();
 
   const loginUrl =
     !asPath || user || asPath.startsWith('/cadastro')
@@ -39,8 +50,10 @@ export default function HeaderComponent() {
     <PrimerHeader
       id="header"
       sx={{
+        minWidth: 'max-content',
         px: [2, null, null, 3],
       }}>
+      <SearchBoxOverlay />
       <PrimerHeader.Item>
         <HeaderLink href="/" aria-label="Voltar para a página inicial">
           <CgTab size={32} />
@@ -60,9 +73,16 @@ export default function HeaderComponent() {
         </HeaderLink>
       </PrimerHeader.Item>
 
-      <PrimerHeader.Item sx={{ mr: 1 }}>
-        <SearchBox />
-      </PrimerHeader.Item>
+      {!isLoading && (
+        <PrimerHeader.Item
+          sx={{
+            display: user ? ['none', 'flex'] : 'flex',
+            mr: 1,
+          }}>
+          <SearchBarButton />
+          <SearchIconButton />
+        </PrimerHeader.Item>
+      )}
 
       {!isLoading && !user && (
         <>
@@ -72,10 +92,10 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
             <HeaderLink href={loginUrl}>Login</HeaderLink>
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'], mr: 1 }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['flex', 'none'] }}>
+          <PrimerHeader.Item sx={{ display: ['flex', 'none'], mr: 1 }}>
             <HeaderLink href={loginUrl}>Entrar</HeaderLink>
           </PrimerHeader.Item>
         </>
@@ -90,7 +110,7 @@ export default function HeaderComponent() {
             }}>
             <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
               <HeaderLink href="/publicar">
-                <PlusIcon size={16} />
+                <PlusIcon />
               </HeaderLink>
             </Tooltip>
           </PrimerHeader.Item>
@@ -116,41 +136,73 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ mr: 0 }}>
             <ActionMenu>
               <ActionMenu.Anchor>
-                <IconButton
-                  aria-label="Abrir opções do Perfil"
-                  icon={PersonFillIcon}
-                  size="small"
-                  sx={{ '&:focus-visible': { outline: '2px solid #FFF' } }}
-                />
+                <Button
+                  aria-label="Abrir o menu"
+                  variant="invisible"
+                  sx={{
+                    px: 0,
+                    mx: 1,
+                    color: 'header.logo',
+                    '&:hover': {
+                      color: 'header.text',
+                      backgroundColor: 'transparent',
+                    },
+                    '&:focus-visible': { outline: '2px solid #FFF' },
+                  }}
+                  style={{ background: 'transparent' }}>
+                  <ThreeBarsIcon size={24} />
+                </Button>
               </ActionMenu.Anchor>
 
               <ActionMenu.Overlay>
-                <ActionList>
-                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
-                    <ActionList.LeadingVisual>
-                      <HomeIcon size={16} />
-                    </ActionList.LeadingVisual>
+                <NavList>
+                  <NavItem href={`/${user.username}`} aria-current={false}>
+                    <NavList.LeadingVisual>
+                      <PersonIcon />
+                    </NavList.LeadingVisual>
                     <Truncate>{user.username}</Truncate>
-                  </ActionList.LinkItem>
-                  <ActionList.Divider />
-                  <ActionList.LinkItem as={Link} href="/publicar">
-                    Publicar novo conteúdo
-                  </ActionList.LinkItem>
-                  <ActionList.LinkItem as={Link} href={`/${user.username}`}>
-                    Meus conteúdos
-                  </ActionList.LinkItem>
-                  <ActionList.LinkItem as={Link} href="/perfil">
-                    Editar perfil
-                  </ActionList.LinkItem>
-                  <ActionList.Divider />
+                  </NavItem>
 
-                  <ThemeSelector />
+                  <NavList.Group>
+                    <NavItem href="/publicar">
+                      <NavList.LeadingVisual>
+                        <PlusIcon />
+                      </NavList.LeadingVisual>
+                      Novo conteúdo
+                    </NavItem>
+
+                    <NavItem href={`/${user.username}`}>
+                      <NavList.LeadingVisual>
+                        <ListUnorderedIcon />
+                      </NavList.LeadingVisual>
+                      Meus conteúdos
+                    </NavItem>
+
+                    <NavItem href="/perfil">
+                      <NavList.LeadingVisual>
+                        <GearIcon />
+                      </NavList.LeadingVisual>
+                      Editar perfil
+                    </NavItem>
+                    <NavList.Divider />
+                  </NavList.Group>
+
+                  <ActionList.Item sx={{ display: [, 'none'] }} onSelect={onClickSearchButton}>
+                    <SearchBarMenuItem />
+                  </ActionList.Item>
+
+                  <ActionList.Item>
+                    <ThemeSelector />
+                  </ActionList.Item>
                   <ActionList.Divider />
 
                   <ActionList.Item variant="danger" onSelect={logout}>
+                    <ActionList.LeadingVisual>
+                      <SignOutIcon />
+                    </ActionList.LeadingVisual>
                     Deslogar
                   </ActionList.Item>
-                </ActionList>
+                </NavList>
               </ActionMenu.Overlay>
             </ActionMenu>
           </PrimerHeader.Item>

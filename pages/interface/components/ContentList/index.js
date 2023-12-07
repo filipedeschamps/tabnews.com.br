@@ -106,7 +106,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
               </Link>
             )}
           </Box>
-          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
+          <Box sx={{ width: 'fit-content', fontSize: 0, color: 'neutral.emphasis' }}>
             <Text>
               <TabCoinsText count={contentObject.tabcoins} />
             </Text>
@@ -119,7 +119,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
               {contentObject.owner_username}
             </Link>
             {' · '}
-            <Text>
+            <Text sx={{ width: '100px', height: '16px', float: 'inline-end' }}>
               <PastTime direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
             </Text>
           </Box>

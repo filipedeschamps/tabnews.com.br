@@ -13,7 +13,8 @@ import {
   IconButton,
   Label,
   LabelGroup,
-  Link,
+  NavItem,
+  NavList,
   Pagehead,
   PastTime,
   TabCashCount,
@@ -22,7 +23,7 @@ import {
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
-import { FaUser, KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { CircleSlashIcon, FaUser, GearIcon, KebabHorizontalIcon } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
@@ -110,14 +111,17 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
         <ActionMenu.Overlay>
           <ActionList>
             {canUpdate && (
-              <ActionList.LinkItem as={Link} href="/perfil">
+              <NavItem href="/perfil">
+                <NavList.LeadingVisual>
+                  <GearIcon />
+                </NavList.LeadingVisual>
                 Editar perfil
-              </ActionList.LinkItem>
+              </NavItem>
             )}
             {canNuke && (
               <ActionList.Item variant="danger" onClick={handleClickNuke}>
                 <ActionList.LeadingVisual>
-                  <TrashIcon />
+                  <CircleSlashIcon />
                 </ActionList.LeadingVisual>
                 Nuke
               </ActionList.Item>
