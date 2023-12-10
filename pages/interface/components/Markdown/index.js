@@ -14,6 +14,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
 
+import { copyCodeToClipboardPlugin } from './plugins/copy-code-to-clipboard';
+
 const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
   highlightSsrPlugin(),
@@ -23,6 +25,7 @@ const bytemdPluginBaseList = [
   }),
   breaksPlugin(),
   gemojiPlugin(),
+  copyCodeToClipboardPlugin(),
 ];
 
 function usePlugins() {

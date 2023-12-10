@@ -7,6 +7,7 @@
     "@bytemd/plugin-math": "1.21.0",
     "@bytemd/plugin-mermaid": "1.21.0",
     "@bytemd/react": "1.21.0",
+    "@primer/octicons": "19.8.0",
     "@primer/octicons-react": "18.3.0",
     "@primer/react": "35.25.1",
     "@resvg/resvg-js": "2.4.1",
