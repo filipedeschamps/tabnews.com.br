@@ -1803,9 +1803,6 @@ export function ViewerStyles() {
           line-height: 1.45;
           background-color: ${colors.canvas.subtle};
           border-radius: 6px;
-          display: flex;
-          justify-content: space-between;
-          gap: 4px;
         }
         .markdown-body .math {
           overflow: auto;
@@ -1918,19 +1915,20 @@ export function ViewerStyles() {
         }
 
         .copy-button {
-          border: 1px solid ${colors.btn.border} !important;
-          color: ${colors.fg.muted} !important;
+          border-color: ${colors.btn.border};
+          color: ${colors.fg.muted};
+          background-color: ${colors.btn.bg};
         }
 
         .copy-button:hover {
-          border-color: ${colors.btn.fg} !important;
-          background-color: ${colors.btn.hoverBg} !important;
+          border-color: ${colors.btn.hoverBorder};
+          background-color: ${colors.btn.hoverBg};
         }
 
         .copy-button.copied {
-          border-color: ${colors.success.fg} !important;
-          background-color: ${colors.btn.hoverBg} !important;
-          color: ${colors.success.fg} !important;
+          border-color: ${colors.success.fg};
+          background-color: ${colors.btn.hoverBg};
+          color: ${colors.success.fg};
         }
       `}
     </style>
