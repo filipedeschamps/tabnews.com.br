@@ -8,7 +8,7 @@ Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
 
 Você precisa ter duas principais dependências instaladas:
 
-- Node.js LTS v16 (ou qualquer versão superior)
+- Node.js LTS v20 (ou qualquer versão superior)
 - Docker Engine v17.12.0 com Docker Compose v1.24.1 (ou qualquer versão superior)
 
 Utiliza `nvm`? Então pode executar `nvm install` na pasta do projeto para instalar e utilizar a versão mais apropriada do Node.js.
