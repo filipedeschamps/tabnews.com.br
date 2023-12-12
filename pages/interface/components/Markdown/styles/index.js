@@ -1913,6 +1913,23 @@ export function ViewerStyles() {
         .markdown-body ::-webkit-calendar-picker-indicator {
           filter: invert(50%);
         }
+
+        .copy-button {
+          border-color: ${colors.btn.border};
+          color: ${colors.fg.muted};
+          background-color: ${colors.btn.bg};
+        }
+
+        .copy-button:hover {
+          border-color: ${colors.btn.hoverBorder};
+          background-color: ${colors.btn.hoverBg};
+        }
+
+        .copy-button.copied {
+          border-color: ${colors.success.fg};
+          background-color: ${colors.btn.hoverBg};
+          color: ${colors.success.fg};
+        }
       `}
     </style>
   );
