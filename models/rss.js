@@ -5,12 +5,10 @@ import { Viewer } from '@/TabNewsUI';
 import webserver from 'infra/webserver.js';
 import removeMarkdown from 'models/remove-markdown';
 
-function generateRss2(contentList) {
+function generateRss2(contentList, path) {
   const webserverHost = webserver.host;
 
-  // TODO: make this property flexible in the future to
-  // support things like: `/[username]/rss`
-  const feedURL = `${webserverHost}/recentes/rss`;
+  const feedURL = `${webserverHost}/${path}`;
 
   const feed = new Feed({
     title: 'TabNews',

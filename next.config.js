@@ -27,7 +27,15 @@ module.exports = {
     return [
       {
         source: '/recentes/rss',
-        destination: '/api/v1/contents/rss',
+        destination: '/api/v1/contents/rss?strategy=new',
+      },
+      {
+        source: '/rss/recentes',
+        destination: '/api/v1/contents/rss?strategy=new',
+      },
+      {
+        source: '/rss/relevantes',
+        destination: '/api/v1/contents/rss?strategy=relevant_rss',
       },
     ];
   },

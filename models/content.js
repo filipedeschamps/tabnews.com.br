@@ -193,18 +193,19 @@ async function findWithStrategy(options = {}) {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
+    relevant_rss: getRelevantRss,
   };
 
   return await strategies[options.strategy](options);
 
   async function getNew(options = {}) {
     const results = {};
-
+    
     options.order = 'published_at DESC';
     results.rows = await findAll(options);
     options.totalRows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
-
+    
     return results;
   }
 
@@ -235,6 +236,22 @@ async function findWithStrategy(options = {}) {
     } else {
       results.rows = rankContentListByRelevance(contentList);
     }
+
+    values.totalRows = results.rows[0]?.total_rows;
+    results.pagination = await getPagination(values, options);
+
+    return results;
+  }
+
+  async function getRelevantRss(values = {}) {
+    const results = {};
+    const options = {};
+
+    values.order = 'published_at DESC';
+
+    const contentList = await findAll(values, options);
+
+    results.rows = rankContentListByRelevance(contentList);
 
     values.totalRows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(values, options);

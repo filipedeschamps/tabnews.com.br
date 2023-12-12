@@ -19,21 +19,21 @@ export default nextConnect({
 
 async function handleRequest(request, response) {
   const userTryingToList = user.createAnonymous();
-
+  
   const results = await content.findWithStrategy({
-    strategy: 'new',
+    strategy: request.query.strategy,
     where: {
       parent_id: null,
       status: 'published',
     },
-    page: 1,
-    per_page: 30,
+    page: request.query.page,
+    per_page: request.query.per_page,
   });
 
   const contentListFound = results.rows;
 
   const secureContentListFound = authorization.filterOutput(userTryingToList, 'read:content:list', contentListFound);
-  const rss2 = rss.generateRss2(secureContentListFound);
+  const rss2 = rss.generateRss2(secureContentListFound, request.params.wild);
 
   response.setHeader('Content-Type', 'text/xml; charset=utf-8');
   response.status(200).send(rss2);
