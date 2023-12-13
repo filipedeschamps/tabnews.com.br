@@ -34,10 +34,12 @@ const cache = {
   reservedConnections: null,
   openedConnections: null,
   openedConnectionsLastUpdate: null,
+  poolQueryCount: 0,
 };
 
 async function query(query, options = {}) {
   let client;
+  cache.poolQueryCount += 1;
 
   try {
     client = options.transaction ? options.transaction : await tryToGetNewClientFromPool();
@@ -48,7 +50,16 @@ async function query(query, options = {}) {
     if (client && !options.transaction) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
-      client.release(tooManyConnections && webserver.isServerlessRuntime);
+      try {
+        client.release(tooManyConnections && webserver.isServerlessRuntime);
+      } catch (error) {
+        console.log({
+          location: 'database_query_finally',
+          cache: { ...cache, pool: !!cache.pool },
+          error,
+        });
+        throw error;
+      }
     }
   }
 }
@@ -92,6 +103,11 @@ async function checkForTooManyConnections(client) {
       cache.openedConnectionsLastUpdate = currentTime;
     }
   } catch (error) {
+    console.log({
+      location: 'checkForTooManyConnections',
+      cache: { ...cache, pool: !!cache.pool },
+      error,
+    });
     if (error.code === 'ECONNRESET') {
       return true;
     }
@@ -171,6 +187,7 @@ function parseQueryErrorAndLog(error, query) {
     message: error.message,
     context: {
       query: query.text,
+      databaseCache: { ...cache, pool: !!cache.pool },
     },
     errorLocationCode: 'INFRA:DATABASE:QUERY',
     databaseErrorCode: error.code,
