@@ -50,16 +50,7 @@ async function query(query, options = {}) {
     if (client && !options.transaction) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
-      try {
-        client.release(tooManyConnections && webserver.isServerlessRuntime);
-      } catch (error) {
-        console.log({
-          location: 'database_query_finally',
-          cache: { ...cache, pool: !!cache.pool },
-          error,
-        });
-        throw error;
-      }
+      client.release(tooManyConnections && webserver.isServerlessRuntime);
     }
   }
 }
@@ -103,11 +94,6 @@ async function checkForTooManyConnections(client) {
       cache.openedConnectionsLastUpdate = currentTime;
     }
   } catch (error) {
-    console.log({
-      location: 'checkForTooManyConnections',
-      cache: { ...cache, pool: !!cache.pool },
-      error,
-    });
     if (error.code === 'ECONNRESET') {
       return true;
     }
