@@ -100,7 +100,7 @@
     ]
   },
   "engines": {
-    "node": "20"
+    "node": "18"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
