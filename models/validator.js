@@ -521,6 +521,7 @@ const schemas = {
       'username',
       'owner_username',
       '$or',
+      '$not_null',
       'attributes',
     ]) {
       const keyValidationFunction = schemas[key];
@@ -563,6 +564,15 @@ const schemas = {
           'array.base': `"#or" deve ser do tipo Array.`,
         })
         .shared(statusSchemaWithId),
+    });
+  },
+
+  $not_null: function () {
+    return Joi.object({
+      $not_null: Joi.array().optional().items(Joi.string().valid('parent_id')).messages({
+        'array.base': `"#not_null" deve ser do tipo Array.`,
+        'any.only': `"#not_null" deve conter um dos seguintes valores: "parent_id".`,
+      }),
     });
   },
 
@@ -633,6 +643,32 @@ const schemas = {
     }
 
     return contentSchema;
+  },
+
+  with_children: function () {
+    return Joi.object({
+      with_children: Joi.boolean()
+        .allow(false)
+        .when('$required.with_children', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"with_children" é um campo obrigatório.`,
+          'string.empty': `"with_children" não pode estar em branco.`,
+          'boolean.base': `"with_children" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
+  with_root: function () {
+    return Joi.object({
+      with_root: Joi.boolean()
+        .allow(false)
+        .when('$required.with_root', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"with_root" é um campo obrigatório.`,
+          'string.empty': `"with_root" não pode estar em branco.`,
+          'boolean.base': `"with_root" deve ser do tipo Boolean.`,
+        }),
+    });
   },
 
   event: function () {

@@ -54,6 +54,8 @@ async function findAll(values = {}, options = {}) {
 
   if (values.where) {
     Object.keys(values.where).forEach((key) => {
+      if (key === '$not_null') return;
+
       if (key === '$or') {
         values.where[key].forEach(($orObject) => {
           query.values.push(Object.values($orObject)[0]);
@@ -83,6 +85,7 @@ async function findAll(values = {}, options = {}) {
       where: 'optional',
       count: 'optional',
       $or: 'optional',
+      $not_null: 'optional',
       limit: 'optional',
       attributes: 'optional',
     });
@@ -165,6 +168,16 @@ async function findAll(values = {}, options = {}) {
             .join(' OR ');
 
           return `(${$orQuery})`;
+        }
+
+        if (columnName === '$not_null') {
+          const $notNullQuery = columnValue
+            .map((notColumnName) => {
+              return `contents.${notColumnName} IS NOT NULL`;
+            })
+            .join(' AND ');
+
+          return `(${$notNullQuery})`;
         }
 
         globalIndex += 1;
