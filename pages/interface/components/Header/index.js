@@ -67,7 +67,7 @@ export default function HeaderComponent() {
         </HeaderLink>
       </PrimerHeader.Item>
 
-      <PrimerHeader.Item full>
+      <PrimerHeader.Item full sx={{ mr: 0 }}>
         <HeaderLink href="/recentes" sx={asPath.startsWith('/recentes') ? activeLinkStyle : undefined}>
           Recentes
         </HeaderLink>
@@ -77,7 +77,8 @@ export default function HeaderComponent() {
         <PrimerHeader.Item
           sx={{
             display: user ? ['none', 'flex'] : 'flex',
-            mr: 1,
+            ml: 3,
+            mr: [1, , 3],
           }}>
           <SearchBarButton />
           <SearchIconButton />
@@ -86,16 +87,16 @@ export default function HeaderComponent() {
 
       {!isLoading && !user && (
         <>
-          <PrimerHeader.Item sx={{ mr: 2 }}>
+          <PrimerHeader.Item sx={{ mr: 1 }}>
             <ThemeSwitcher />
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'] }}>
+          <PrimerHeader.Item sx={{ display: ['none', 'flex'], ml: 2 }}>
             <HeaderLink href={loginUrl}>Login</HeaderLink>
           </PrimerHeader.Item>
           <PrimerHeader.Item sx={{ display: ['none', 'flex'], mr: 1 }}>
             <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['flex', 'none'], mr: 1 }}>
+          <PrimerHeader.Item sx={{ display: ['flex', 'none'], ml: 2, mr: 1 }}>
             <HeaderLink href={loginUrl}>Entrar</HeaderLink>
           </PrimerHeader.Item>
         </>
@@ -117,7 +118,7 @@ export default function HeaderComponent() {
 
           <PrimerHeader.Item
             sx={{
-              mr: 2,
+              mr: [0, 2],
               fontSize: 0,
               fontWeight: 'bold',
             }}>

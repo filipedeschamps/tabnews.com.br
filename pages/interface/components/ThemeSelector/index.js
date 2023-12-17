@@ -62,6 +62,7 @@ export function ThemeSwitcher({ ...props }) {
           outline: '2px solid #FFF',
         },
         px: '7px',
+        pb: '3px',
       }}
       {...props}>
       {mode === 'day' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
