@@ -24,6 +24,8 @@ function getValidationHandler(request, response, next) {
     page: 'optional',
     per_page: 'optional',
     strategy: 'optional',
+    with_root: 'optional',
+    with_children: 'optional',
   });
 
   request.query = cleanValues;
@@ -37,8 +39,10 @@ async function getHandler(request, response) {
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
     where: {
+      parent_id: request.query.with_children === false ? null : undefined,
       owner_username: request.query.username,
       status: 'published',
+      $not_null: request.query.with_root === false ? ['parent_id'] : undefined,
     },
     page: request.query.page,
     per_page: request.query.per_page,
