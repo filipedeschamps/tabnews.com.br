@@ -1,0 +1,29 @@
+name: Faça uma pergunta
+description: Tem alguma dúvida sobre o repositório, código ou implementação de algo do TabNews? Faça uma pergunta.
+labels: ['dúvida']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de abrir um novo issue, faça uma [pesquisa](https://github.com/filipedeschamps/tabnews.com.br/issues?q=is%3Aissue) para ver se a sua dúvida já foi respondida.
+  - type: dropdown
+    attributes:
+      label: Assunto
+      description: Qual é o assunto da sua dúvida?
+      multiple: true
+      options:
+        - API
+        - Código
+        - Repositório
+        - Contribuição
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Dúvida
+      description: Qual é a sua dúvida? Seja claro e coloque as informações relevantes para que outras pessoas consigam te ajudar.
+      placeholder: |
+        Eu não consegui entender como faço para...
+    validations:
+      required: true
