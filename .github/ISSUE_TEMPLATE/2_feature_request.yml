@@ -1,0 +1,23 @@
+name: Sugerir novo recurso
+description: Sugira um novo recurso, funcionalidade ou melhoria para o TabNews.
+labels: ['novo recurso']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de abrir um novo issue, faça uma [pesquisa](https://github.com/filipedeschamps/tabnews.com.br/issues?q=is%3Aissue) para garantir que não está sugerindo algo duplicado. Caso encontre um issue equivalente, contribua com informações adicionais, se necessário.
+  - type: textarea
+    attributes:
+      label: Descrição
+      description: O que você deseja melhorar? Por favor, descreva a sua sugestão e qual necessidade você tem hoje que essa sugestão resolveria.
+      placeholder: |
+        Eu acho que a página ... ficaria melhor se ... porque tive dificuldade em...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Sugestão de implementação
+      description: Você pensou em como isso poderia ser implementado? Compartilhe imagens, código ou referências que você considera úteis para a implementação dessa sugestão.
+      placeholder: |
+        Poderíamos mudar ... para acrescentar ... Fiz alguns desenhos de como isso poderia ficar:
+        ![imagem](https://example.com/imagem)
