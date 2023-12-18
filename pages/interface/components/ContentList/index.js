@@ -1,4 +1,4 @@
-import { Box, EmptyState, Link, PastTime, Text } from '@/TabNewsUI';
+import { Box, EmptyState, Link, PastTime, Text, Tooltip } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
 
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
@@ -14,7 +14,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
           sx={{
             display: 'grid',
             gap: '0.5rem',
-            gridTemplateColumns: 'auto 1fr',
+            gridTemplateColumns: 'auto minmax(0, 1fr)',
           }}>
           <RenderItems />
           <EndOfRelevant />
@@ -29,6 +29,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
             display: 'flex',
             width: '100%',
             justifyContent: 'center',
+            whiteSpace: 'nowrap',
             gap: 4,
             m: 4,
             mb: 2,
@@ -78,7 +79,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
             {itemCount}.
           </Text>
         </Box>,
-        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
+        <Box as="article" key={contentObject.id}>
           <Box
             sx={{
               overflow: 'auto',
@@ -106,7 +107,16 @@ export default function ContentList({ contentList: list, pagination, paginationB
               </Link>
             )}
           </Box>
-          <Box sx={{ width: 'fit-content', fontSize: 0, color: 'neutral.emphasis' }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1,
+              gridTemplateColumns:
+                'max-content max-content max-content max-content minmax(20px, max-content) max-content max-content',
+              fontSize: 0,
+              whiteSpace: 'nowrap',
+              color: 'neutral.emphasis',
+            }}>
             <Text>
               <TabCoinsText count={contentObject.tabcoins} />
             </Text>
@@ -115,12 +125,16 @@ export default function ContentList({ contentList: list, pagination, paginationB
               <ChildrenDeepCountText count={contentObject.children_deep_count} />
             </Text>
             {' · '}
-            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
-            </Link>
+            <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
+              <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                  {contentObject.owner_username}
+                </Link>
+              </Box>
+            </Tooltip>
             {' · '}
-            <Text sx={{ width: '100px', height: '16px', float: 'inline-end' }}>
-              <PastTime direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
+            <Text>
+              <PastTime direction="nw" date={contentObject.published_at} />
             </Text>
           </Box>
         </Box>,
