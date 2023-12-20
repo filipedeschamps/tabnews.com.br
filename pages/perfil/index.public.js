@@ -143,11 +143,11 @@ function EditProfileForm() {
         await fetchUser();
 
         if (user.email !== email) {
-          setErrorObject({
-            message: `Atenção: Um email de confirmação foi enviado para ${email}`,
-            key: 'email',
-            type: 'confirmation',
-          });
+          const hasSavedModifications = Object.keys(payload).length > 1;
+          const text = hasSavedModifications
+            ? `Alterações salvas. O email será alterado apenas após a confirmação pelo link enviado para "${email}".`
+            : `Alteração pendente. Um email de confirmação foi enviado para "${email}".`;
+          setGlobalMessageObject({ text, type: 'warning' });
           setEmailDisabled(true);
         } else {
           setGlobalMessageObject({
@@ -245,10 +245,6 @@ function EditProfileForm() {
                 </Box>
               </Box>
             </FormControl.Validation>
-          )}
-
-          {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
-            <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 

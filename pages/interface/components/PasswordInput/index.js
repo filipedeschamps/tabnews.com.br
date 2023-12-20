@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { FormControl, TextInput } from '@/TabNewsUI';
-import { EyeClosedIcon, EyeIcon } from '@/TabNewsUI/icons';
+import { AlertFillIcon, EyeClosedIcon, EyeIcon } from '@/TabNewsUI/icons';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -70,7 +70,10 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
         {...props}
       />
       {capsLockWarningMessage && (
-        <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
+        <FormControl.Caption sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <AlertFillIcon size={12} />
+          {capsLockWarningMessage}
+        </FormControl.Caption>
       )}
       {['empty', 'password', 'password_confirm'].includes(errorObject?.key) && (
         <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>

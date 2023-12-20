@@ -10,7 +10,7 @@ export default function EmptyState(props) {
       <Heading sx={{ fontSize: 3 }}>{title}</Heading>
       {description && <Text>{description}</Text>}
       {action && (
-        <Button style={{ marginTop: '1rem' }} leadingIcon={PlusIcon} onClick={action.onClick}>
+        <Button style={{ marginTop: '1rem' }} leadingVisual={PlusIcon} onClick={action.onClick}>
           {action.text}
         </Button>
       )}

@@ -58,7 +58,7 @@ export default function useSearchBox() {
           },
           ...sx,
         }}
-        leadingIcon={SearchIcon}
+        leadingVisual={SearchIcon}
         {...props}>
         Pesquisar
       </Button>
@@ -80,7 +80,7 @@ export default function useSearchBox() {
           },
           ...sx,
         }}
-        leadingIcon={SearchIcon}
+        leadingVisual={SearchIcon}
         {...props}>
         Pesquisar
       </Button>
