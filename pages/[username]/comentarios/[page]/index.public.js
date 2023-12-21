@@ -1,24 +1,35 @@
 import { getStaticPropsRevalidate } from 'next-swr';
 
-import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { ContentList, DefaultLayout, UserHeader } from '@/TabNewsUI';
+import { FaUser } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
+import { useUser } from 'pages/interface';
 
-export default function Home({ contentListFound, pagination, username }) {
+export default function ChildContent({ contentListFound, pagination, username }) {
+  const { user, isLoading } = useUser();
+  const isAuthenticatedUser = user && user.username === username;
+
   return (
-    <>
-      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · ${username}` }}>
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath={`/${username}/pagina`}
-        />
-      </DefaultLayout>
-    </>
+    <DefaultLayout metadata={{ title: `Comentários · Página ${pagination.currentPage} · ${username}` }}>
+      <UserHeader username={username} childContentCount={pagination.totalRows} />
+
+      <ContentList
+        contentList={contentListFound}
+        pagination={pagination}
+        paginationBasePath={`/${username}/comentarios`}
+        emptyStateProps={{
+          isLoading: isLoading,
+          title: 'Nenhum comentário encontrado',
+          description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhum comentário.`,
+          icon: FaUser,
+        }}
+      />
+    </DefaultLayout>
   );
 }
 
@@ -57,6 +68,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       where: {
         owner_id: secureUserFound.id,
         status: 'published',
+        $not_null: ['parent_id'],
       },
       page: context.params.page,
       per_page: context.params.per_page,
@@ -76,17 +88,25 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
+  if (secureContentListFound.length === 0 && context.params.page !== 1) {
+    const lastValidPage = `/${secureUserFound.username}/comentarios/${results.pagination.lastPage || 1}`;
+    const revalidate = context.params.page > results.pagination.lastPage + 1 ? 60 : 1;
+
+    return {
+      redirect: {
+        destination: lastValidPage,
+      },
+      revalidate,
+    };
+  }
+
   for (const content of secureContentListFound) {
-    if (content.parent_id) {
-      content.body = removeMarkdown(content.body, { maxLength: 255 });
-    } else {
-      delete content.body;
-    }
+    content.body = removeMarkdown(content.body, { maxLength: 255 });
   }
 
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
+      contentListFound: secureContentListFound,
       pagination: results.pagination,
       username: secureUserFound.username,
     },

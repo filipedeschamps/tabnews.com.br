@@ -157,7 +157,7 @@ export default function HeaderComponent() {
 
               <ActionMenu.Overlay>
                 <NavList>
-                  <NavItem href={`/${user.username}`} aria-current={false}>
+                  <NavItem href={`/${user.username}`}>
                     <NavList.LeadingVisual>
                       <PersonIcon />
                     </NavList.LeadingVisual>
@@ -172,7 +172,7 @@ export default function HeaderComponent() {
                       Novo conteúdo
                     </NavItem>
 
-                    <NavItem href={`/${user.username}`}>
+                    <NavItem href={`/${user.username}/conteudos/1`}>
                       <NavList.LeadingVisual>
                         <ListUnorderedIcon />
                       </NavList.LeadingVisual>

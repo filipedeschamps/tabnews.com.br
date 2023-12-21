@@ -1,7 +1,9 @@
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 
-import { NavList, PrimerHeader, PrimerLink } from '@/TabNewsUI';
+import { NavList, PrimerHeader, PrimerLink, PrimerTabNav } from '@/TabNewsUI';
+
+export default NextLink;
 
 export function Link({ href, children, ...props }) {
   return (
@@ -19,8 +21,6 @@ export function HeaderLink({ href, children, ...props }) {
   );
 }
 
-export default NextLink;
-
 export function NavItem({ href, children, ...props }) {
   const router = useRouter();
   const isCurrent = typeof href === 'string' ? router.asPath === href : router.pathname === href.pathname;
@@ -28,5 +28,15 @@ export function NavItem({ href, children, ...props }) {
     <NavList.Item as={NextLink} href={href} aria-current={isCurrent ? 'page' : false} prefetch={false} {...props}>
       {children}
     </NavList.Item>
+  );
+}
+
+export function TabNavLink({ href, children, ...props }) {
+  const router = useRouter();
+  const isCurrent = typeof href === 'string' ? router.asPath === href : router.pathname === href.pathname;
+  return (
+    <PrimerTabNav.Link as={NextLink} href={href} selected={isCurrent} prefetch={false} {...props}>
+      {children}
+    </PrimerTabNav.Link>
   );
 }

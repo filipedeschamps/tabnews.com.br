@@ -7,7 +7,7 @@ export { default as EmptyState } from '@/EmptyState';
 export { default as Footer } from '@/Footer';
 export { default as GoToTopButton } from '@/GoToTopButton';
 export { default as Header } from '@/Header';
-export { HeaderLink, Link, NavItem, default as NextLink } from '@/Link';
+export { HeaderLink, Link, NavItem, TabNavLink, default as NextLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
 export { default as PasswordInput } from '@/PasswordInput';
@@ -20,6 +20,7 @@ export { default as TabCoinButtons } from '@/TabCoinButtons';
 export { default as TabCoinCount } from '@/TabCoinCount';
 export { default as ThemeProvider } from '@/ThemeProvider';
 export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
+export { default as UserHeader } from '@/UserHeader';
 export {
   ActionList,
   ActionMenu,
@@ -29,6 +30,7 @@ export {
   BranchName,
   Button,
   Checkbox,
+  CounterLabel,
   Flash,
   FormControl,
   Heading,
@@ -44,6 +46,7 @@ export {
   SSRProvider,
   SegmentedControl,
   Spinner,
+  TabNav as PrimerTabNav,
   Text,
   TextInput,
   Tooltip,
