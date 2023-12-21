@@ -1,6 +1,7 @@
 export { CgTab } from 'react-icons/cg';
 export { FaPause, FaPlay, FaTree, FaUser } from 'react-icons/fa';
 export {
+  AlertFillIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -24,8 +25,8 @@ export {
   SignOutIcon,
   SquareFillIcon,
   SunIcon,
-  TrashIcon,
   ThreeBarsIcon,
+  TrashIcon,
   UnfoldIcon,
   XCircleFillIcon,
 } from '@primer/octicons-react';
