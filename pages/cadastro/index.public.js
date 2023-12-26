@@ -114,12 +114,12 @@ function SignUpForm() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
-        <FormControl id="username">
+        <FormControl id="name">
           <FormControl.Label>Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
             onChange={clearErrors}
-            name="username"
+            name="name"
             size="large"
             autoCorrect="off"
             autoCapitalize="off"
@@ -144,6 +144,7 @@ function SignUpForm() {
             onChange={clearErrors}
             name="email"
             size="large"
+            autoComplete="username"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
