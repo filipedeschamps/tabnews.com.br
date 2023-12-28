@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -7,7 +6,7 @@ import {
   ActionList,
   ActionMenu,
   Box,
-  ContentList,
+  Button,
   DefaultLayout,
   Flash,
   IconButton,
@@ -15,35 +14,34 @@ import {
   LabelGroup,
   NavItem,
   NavList,
-  Pagehead,
+  NextLink,
   PastTime,
   TabCashCount,
   TabCoinCount,
-  Text,
   useConfirm,
+  UserHeader,
   Viewer,
 } from '@/TabNewsUI';
-import { CircleSlashIcon, FaUser, GearIcon, KebabHorizontalIcon } from '@/TabNewsUI/icons';
+import { CircleSlashIcon, GearIcon, KebabHorizontalIcon } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
-import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { useUser } from 'pages/interface';
 
-export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
+export default function Page({ userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
     fallbackData: userFoundFallback,
     revalidateOnMount: false,
   });
 
-  const { user, isLoading } = useUser();
-  const { push } = useRouter();
+  const { user } = useUser();
   const confirm = useConfirm();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
 
   const isAuthenticatedUser = user && user.username === userFound.username;
+  const canUpdate = isAuthenticatedUser && user?.features?.includes('update:user');
 
   async function handleClickNuke() {
     setGlobalErrorMessage(null);
@@ -93,7 +91,6 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
   function OptionsMenu() {
     const canNuke =
       !isAuthenticatedUser && user?.features?.includes('ban:user') && !userFound?.features?.includes('nuked');
-    const canUpdate = isAuthenticatedUser && user?.features?.includes('update:user');
     if (!canNuke && !canUpdate) {
       return null;
     }
@@ -136,69 +133,68 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     if (!userFound?.features?.length) return null;
 
     return (
-      <LabelGroup sx={{ display: 'flex', alignSelf: 'center', mt: 1, mr: 2 }}>
+      <LabelGroup sx={{ display: 'flex', alignSelf: 'center' }}>
         {userFound.features.includes('nuked') && <Label variant="danger">nuked</Label>}
       </LabelGroup>
     );
   }
 
   return (
-    <>
-      <DefaultLayout metadata={{ title: `${userFound.username}` }}>
-        {globalErrorMessage && (
-          <Flash variant="danger" sx={{ width: '100%', mb: 4 }}>
-            {globalErrorMessage}
-          </Flash>
-        )}
+    <DefaultLayout metadata={{ title: `${userFound.username}` }}>
+      {globalErrorMessage && (
+        <Flash variant="danger" sx={{ width: '100%', mb: 4 }}>
+          {globalErrorMessage}
+        </Flash>
+      )}
 
-        <Pagehead sx={{ width: '100%', display: 'flex', mt: 0, pt: 0, pb: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', wordBreak: 'break-word', flexWrap: 'wrap' }}>
-            <Text sx={{ margin: 0, pr: 2 }} as="h1">
-              {userFound.username}
-            </Text>
-            <UserFeatures />
-            <Box sx={{ display: 'flex' }}>
-              <TabCoinCount amount={userFound.tabcoins} direction="n" sx={{ pr: 1 }} />
-              <TabCashCount amount={userFound.tabcash} direction="n" sx={{ pr: 2 }} />
-              {' · '}
-              <PastTime date={userFound.created_at} formatText={(date) => `Membro há ${date}.`} sx={{ pl: 2 }} />
-            </Box>
+      <UserHeader username={userFound.username}>
+        <UserFeatures />
+        <OptionsMenu />
+      </UserHeader>
+
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'end',
+          wordBreak: 'break-word',
+          flexWrap: 'wrap',
+          gap: 2,
+          mb: 3,
+        }}>
+        <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          {userFound.tabcoins !== undefined && <TabCoinCount amount={userFound.tabcoins} mode="full" />}
+
+          {userFound.tabcash !== undefined && <TabCashCount amount={userFound.tabcash} mode="full" />}
+
+          <Box sx={{ ml: 1 }}>
+            <PastTime date={userFound.created_at} formatText={(date) => `Membro há ${date}`} direction="ne" />
           </Box>
-          {OptionsMenu()}
-        </Pagehead>
+        </Box>
+      </Box>
 
-        {userFound.description && (
-          <Box
-            sx={{
-              borderWidth: 1,
-              borderStyle: 'solid',
-              borderColor: 'border.default',
-              borderRadius: '6px',
-              width: '100%',
-              p: 3,
-              mb: 3,
-            }}>
-            <Viewer value={userFound.description} />
-          </Box>
-        )}
+      {userFound.description && (
+        <Box
+          sx={{
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: 'border.default',
+            borderRadius: '6px',
+            width: '100%',
+            p: 3,
+            mb: 3,
+            overflow: 'hidden',
+          }}>
+          <Viewer value={userFound.description} />
+        </Box>
+      )}
 
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath={`/${userFound.username}/pagina`}
-          emptyStateProps={{
-            isLoading: isLoading,
-            title: 'Nenhum conteúdo encontrado',
-            description: `${isAuthenticatedUser ? 'Você' : userFound.username} ainda não fez nenhuma publicação.`,
-            icon: FaUser,
-            action: isAuthenticatedUser && {
-              text: 'Publicar conteúdo',
-              onClick: () => push('/publicar'),
-            },
-          }}
-        />
-      </DefaultLayout>
-    </>
+      {!userFound.description && canUpdate && (
+        <Button href="/perfil" as={NextLink} sx={{ mx: 'auto' }}>
+          Criar descrição
+        </Button>
+      )}
+    </DefaultLayout>
   );
 }
 
@@ -245,23 +241,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     };
   }
 
-  let results;
   let secureUserFound;
 
   try {
     const userFound = await user.findOneByUsername(context.params.username, { withBalance: true });
 
     secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
-
-    results = await content.findWithStrategy({
-      strategy: 'new',
-      where: {
-        owner_id: secureUserFound.id,
-        status: 'published',
-      },
-      page: context.params.page,
-      per_page: context.params.per_page,
-    });
   } catch (error) {
     // `user` model will throw a `NotFoundError` if the user is not found.
     if (error instanceof NotFoundError) {
@@ -274,22 +259,8 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     throw error;
   }
 
-  const contentListFound = results.rows;
-
-  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
-  for (const content of secureContentListFound) {
-    if (content.parent_id) {
-      content.body = removeMarkdown(content.body, { maxLength: 255 });
-    } else {
-      delete content.body;
-    }
-  }
-
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
-      pagination: results.pagination,
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
     },
 
