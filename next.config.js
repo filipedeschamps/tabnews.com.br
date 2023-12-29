@@ -21,6 +21,16 @@ module.exports = {
         destination: '/recentes/rss',
         permanent: true,
       },
+      {
+        source: '/recentes/comentarios',
+        destination: '/recentes/comentarios/1',
+        permanent: true,
+      },
+      {
+        source: '/recentes/todos',
+        destination: '/recentes/todos/1',
+        permanent: true,
+      },
     ];
   },
   async rewrites() {

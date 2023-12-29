@@ -2,12 +2,13 @@ export { default as ButtonWithLoader } from '@/ButtonWithLoader';
 export { default as Confetti } from '@/Confetti';
 export { default as Content } from '@/Content';
 export { default as ContentList } from '@/ContentList';
+export { default as ContentTabNav } from '@/ContentTabNav';
 export { default as DefaultLayout } from '@/DefaultLayout';
 export { default as EmptyState } from '@/EmptyState';
 export { default as Footer } from '@/Footer';
 export { default as GoToTopButton } from '@/GoToTopButton';
 export { default as Header } from '@/Header';
-export { HeaderLink, Link, NavItem, TabNavLink, default as NextLink } from '@/Link';
+export { HeaderLink, Link, NavItem, default as NextLink, TabNavLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
 export { default as PasswordInput } from '@/PasswordInput';
@@ -42,11 +43,11 @@ export {
   Pagehead,
   Header as PrimerHeader,
   Link as PrimerLink,
+  TabNav as PrimerTabNav,
   ThemeProvider as PrimerThemeProvider,
   SSRProvider,
   SegmentedControl,
   Spinner,
-  TabNav as PrimerTabNav,
   Text,
   TextInput,
   Tooltip,
