@@ -9,7 +9,7 @@ export default function TabCoinCount({ amount, direction, mode = 'tooltip', sx }
     },
     full: {
       iconSize: 20,
-      text: `${amount?.toLocaleString('pt-BR')} TabCoin${amount !== 1 && 's'}`,
+      text: `${amount?.toLocaleString('pt-BR')} TabCoin${amount > 1 || amount < -1 ? 's' : ''}`,
     },
   };
 
