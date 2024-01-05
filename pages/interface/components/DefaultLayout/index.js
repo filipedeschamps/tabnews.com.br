@@ -7,6 +7,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
       {metadata && <Head metadata={metadata} />}
       <Header />
       <Box
+        as="main"
         maxWidth={containerWidth}
         sx={{
           marginX: 'auto',

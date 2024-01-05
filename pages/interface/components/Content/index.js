@@ -158,6 +158,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
   return (
     <Box
+      as="article"
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -188,8 +189,8 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               mt: '2px',
               color: 'fg.muted',
             }}>
-            <BranchName as={Link} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
+            <BranchName as="address" sx={{ fontStyle: 'normal' }}>
+              <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
             </BranchName>
             {!contentObject.parent_id && (
               <>
@@ -200,7 +201,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '2px', height: '22px' }}>
+              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
               <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
             </Link>
           </Box>
@@ -436,13 +437,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
   return (
     <Box sx={{ mb: 4, width: '100%' }}>
-      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+      <form onSubmit={handleSubmit} style={{ width: '100%' }} noValidate>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
           {!contentObject?.parent_id && (
-            <FormControl id="title">
-              <FormControl.Label visuallyHidden>Título</FormControl.Label>
+            <FormControl id="title" required>
+              <FormControl.Label>Título</FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -453,8 +454,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Título"
-                aria-label="Título"
+                placeholder="e.g. Desafios que tive no meu primeiro ano empreendendo com software"
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
@@ -467,8 +467,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             </FormControl>
           )}
 
-          <FormControl id="body">
-            <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
+          <FormControl id="body" required={!contentObject?.parent_id}>
+            <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
             <Editor
               isValid={errorObject?.key === 'body'}
               value={newData.body}
@@ -484,7 +484,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
+              <FormControl.Label>Fonte</FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -495,8 +495,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Fonte (opcional)"
-                aria-label="Fonte (opcional)"
+                placeholder="https://origem.site/noticia"
                 block={true}
                 value={newData.source_url}
               />
@@ -505,6 +504,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
             </FormControl>
+          )}
+
+          {!contentObject?.parent_id && (
+            <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>

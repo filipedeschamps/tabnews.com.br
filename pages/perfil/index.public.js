@@ -12,6 +12,7 @@ import {
   FormControl,
   Heading,
   Link,
+  Text,
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
@@ -186,7 +187,7 @@ function EditProfileForm() {
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit} onChange={clearMessages}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <FormControl id="username">
+        <FormControl id="username" required>
           <FormControl.Label>Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
@@ -209,7 +210,7 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="email" disabled={emailDisabled}>
+        <FormControl id="email" disabled={emailDisabled} required>
           <FormControl.Label>Email</FormControl.Label>
           <TextInput
             ref={emailRef}
@@ -223,10 +224,10 @@ function EditProfileForm() {
             contrast
             sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
-          {errorObject?.key === 'email' && !errorObject?.type && (
+          {errorObject?.key === 'email' && errorObject.type !== 'typo' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
-          {errorObject?.key === 'email' && errorObject?.type === 'typo' && (
+          {errorObject?.key === 'email' && errorObject.type === 'typo' && (
             <FormControl.Validation variant="error">
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Box>Você quis dizer:</Box>
@@ -261,7 +262,7 @@ function EditProfileForm() {
             compact={true}
           />
 
-          {errorObject?.key === 'description' && errorObject?.type === 'string.max' && (
+          {errorObject?.key === 'description' && errorObject.type === 'string.max' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
@@ -287,6 +288,8 @@ function EditProfileForm() {
             Utilize o fluxo de recuperação de senha →
           </Link>
         </FormControl>
+
+        <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
 
         {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.text}</Flash>}
 

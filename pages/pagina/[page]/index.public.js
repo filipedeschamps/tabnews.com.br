@@ -9,7 +9,7 @@ import validator from 'models/validator.js';
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
-      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Melhores` }}>
+      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Relevantes` }}>
         <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/pagina" />
       </DefaultLayout>
     </>

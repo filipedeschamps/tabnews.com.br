@@ -10,7 +10,7 @@ export default function ReadTime({ text, ...props }) {
   }, [text]);
 
   return (
-    <Text sx={{ fontSize: 0, color: 'fg.muted', py: '2px', height: '22px' }} {...props}>
+    <Text sx={{ fontSize: 0, color: 'fg.muted', py: '1px', height: '22px' }} {...props}>
       {readTimeInMinutes}
     </Text>
   );
