@@ -44,34 +44,32 @@ export default function HeaderComponent() {
   const activeLinkStyle = {
     textDecoration: 'underline',
     textUnderlineOffset: 6,
+    ml: 3,
   };
 
   return (
-    <PrimerHeader
-      id="header"
-      sx={{
-        minWidth: 'max-content',
-        px: [2, null, null, 3],
-      }}>
+    <PrimerHeader as="header" id="header" sx={{ minWidth: 'max-content', px: [2, null, null, 3] }}>
       <SearchBoxOverlay />
-      <PrimerHeader.Item>
-        <HeaderLink href="/" aria-label="Voltar para a página inicial">
-          <CgTab size={32} />
-          <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
-        </HeaderLink>
-      </PrimerHeader.Item>
+      <Box as="nav" sx={{ display: 'flex', flex: 1, margin: 0, padding: 0 }}>
+        <PrimerHeader.Item sx={{ mr: 0 }}>
+          <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
+            <CgTab size={32} />
 
-      <PrimerHeader.Item>
-        <HeaderLink href="/" sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : undefined}>
-          Relevantes
-        </HeaderLink>
-      </PrimerHeader.Item>
+            <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
 
-      <PrimerHeader.Item full sx={{ mr: 0 }}>
-        <HeaderLink href="/recentes" sx={asPath.startsWith('/recentes') ? activeLinkStyle : undefined}>
-          Recentes
-        </HeaderLink>
-      </PrimerHeader.Item>
+            <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>Relevantes</Box>
+          </HeaderLink>
+        </PrimerHeader.Item>
+
+        <PrimerHeader.Item full sx={{ mr: 0 }}>
+          <HeaderLink
+            href="/recentes"
+            aria-current={asPath === '/recentes' ? 'page' : false}
+            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
+            Recentes
+          </HeaderLink>
+        </PrimerHeader.Item>
+      </Box>
 
       {!isLoading && (
         <PrimerHeader.Item
