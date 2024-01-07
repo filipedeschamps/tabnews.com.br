@@ -1,35 +1,34 @@
 import { Box, Button, SegmentedControl, useTheme } from '@/TabNewsUI';
 import { MoonIcon, SunIcon } from '@/TabNewsUI/icons';
 
-export default function ThemeSelector({ ...props }) {
+export default function ThemeSelector({ onSelect, sx, ...props }) {
   const { colorMode, setColorMode } = useTheme();
-
-  const handleChangeColorMode = (mode) => {
+  const handleChangeColorMode = (index) => {
+    const mode = ['night', 'auto', 'day'][index];
     setColorMode(mode);
+    onSelect?.(mode);
     localStorage.setItem('colorMode', mode);
   };
 
   return (
-    <Box sx={{ maxWidth: '160px', mx: 'auto', color: 'accent.emphasis' }} {...props}>
-      <SegmentedControl aria-label="Tema claro, auto ou escuro" size="small" fullWidth>
+    <Box sx={{ maxWidth: '160px', mx: 'auto', color: 'accent.emphasis', ...sx }} {...props}>
+      <SegmentedControl
+        aria-label="Seletor de tema: claro, automático ou escuro"
+        size="small"
+        onChange={handleChangeColorMode}
+        fullWidth>
         <SegmentedControl.IconButton
           aria-label="Tema escuro"
           selected={['night', 'dark'].includes(colorMode)}
-          onClick={() => handleChangeColorMode('night')}
           icon={MoonIcon}
           size="small"
         />
-        <SegmentedControl.Button
-          aria-label="Tema automático"
-          selected={'auto' === colorMode}
-          onClick={() => handleChangeColorMode('auto')}
-          size="small">
+        <SegmentedControl.Button aria-label="Tema automático" selected={'auto' === colorMode} size="small">
           Auto
         </SegmentedControl.Button>
         <SegmentedControl.IconButton
           aria-label="Tema claro"
           selected={['day', 'light'].includes(colorMode)}
-          onClick={() => handleChangeColorMode('day')}
           icon={SunIcon}
           size="small"
         />
