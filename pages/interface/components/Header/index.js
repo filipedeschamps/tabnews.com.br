@@ -85,31 +85,37 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ mr: 1 }}>
             <ThemeSwitcher />
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'], ml: 2 }}>
-            <HeaderLink href={loginUrl}>Login</HeaderLink>
-          </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'], mr: 1 }}>
-            <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
-          </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['flex', 'none'], ml: 2, mr: 1 }}>
-            <HeaderLink href={loginUrl}>Entrar</HeaderLink>
-          </PrimerHeader.Item>
+
+          {!isScreenSmall && (
+            <>
+              <PrimerHeader.Item sx={{ ml: 2 }}>
+                <HeaderLink href={loginUrl}>Login</HeaderLink>
+              </PrimerHeader.Item>
+              <PrimerHeader.Item sx={{ mr: 1 }}>
+                <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
+              </PrimerHeader.Item>
+            </>
+          )}
+
+          {isScreenSmall && (
+            <PrimerHeader.Item sx={{ ml: 2, mr: 1 }}>
+              <HeaderLink href={loginUrl}>Entrar</HeaderLink>
+            </PrimerHeader.Item>
+          )}
         </>
       )}
 
       {user && (
         <>
-          <PrimerHeader.Item
-            sx={{
-              display: ['none', 'flex'],
-              m: 2,
-            }}>
-            <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
-              <HeaderLink href="/publicar">
-                <PlusIcon />
-              </HeaderLink>
-            </Tooltip>
-          </PrimerHeader.Item>
+          {!isScreenSmall && (
+            <PrimerHeader.Item sx={{ m: 2 }}>
+              <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
+                <HeaderLink href="/publicar">
+                  <PlusIcon />
+                </HeaderLink>
+              </Tooltip>
+            </PrimerHeader.Item>
+          )}
 
           <PrimerHeader.Item
             sx={{
