@@ -85,6 +85,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             key={contentFound.id}
             childrenDeepCount={contentFound.children_deep_count}
             childrenList={contentFound.children}
+            pageRootOwnerId={contentFound.owner_id}
             renderIntent={childrenToShow}
             renderIncrement={Math.ceil(childrenToShow / 2)}
           />
@@ -178,13 +179,14 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
+function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, renderIncrement }) {
   const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
 
   return childrenState.map((child) => {
     const { children, children_deep_count, groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
     const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
     const plural = labelShowMore != 1 ? 's' : '';
+    const isPageRootOwner = pageRootOwnerId === owner_id;
 
     return !renderIntent && !renderShowMore ? null : (
       <Box
@@ -256,7 +258,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
             </Box>
 
             <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
-              <Content content={child} mode="view" />
+              <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />
 
               <Box sx={{ mt: 4 }}>
                 <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
@@ -266,6 +268,7 @@ function RenderChildrenTree({ childrenList, renderIntent, renderIncrement }) {
                 <RenderChildrenTree
                   childrenDeepCount={children_deep_count}
                   childrenList={children}
+                  pageRootOwnerId={pageRootOwnerId}
                   renderIntent={renderIntent - 1}
                   renderIncrement={renderIncrement}
                 />
