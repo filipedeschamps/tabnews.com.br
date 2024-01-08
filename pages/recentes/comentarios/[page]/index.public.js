@@ -13,7 +13,7 @@ export default function CommentsPage({ contentListFound, pagination }) {
     <DefaultLayout
       metadata={{
         title: `Página ${pagination.currentPage} · Comentários Recentes`,
-        description: 'Comentários no TabNews ordenadas pelos mais recentes.',
+        description: 'Comentários no TabNews ordenados pelos mais recentes.',
       }}>
       <RecentTabNav />
       <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/comentarios" />

@@ -13,7 +13,7 @@ export default function ContentsPage({ contentListFound, pagination }) {
     <DefaultLayout
       metadata={{
         title: `Página ${pagination.currentPage} · Conteúdos Recentes`,
-        description: 'Conteúdos no TabNews ordenadas pelos mais recentes.',
+        description: 'Conteúdos no TabNews ordenados pelos mais recentes.',
       }}>
       <RecentTabNav />
       <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/todos" />
