@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 
 import {
   ActionList,
@@ -26,13 +27,14 @@ import {
   SignOutIcon,
   ThreeBarsIcon,
 } from '@/TabNewsUI/icons';
-import { useUser } from 'pages/interface';
+import { useMediaQuery, useUser } from 'pages/interface';
 
 export default function HeaderComponent() {
+  const isScreenSmall = useMediaQuery('(max-width: 440px)');
   const { user, isLoading, logout } = useUser();
   const { asPath } = useRouter();
-  const { onClickSearchButton, SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } =
-    useSearchBox();
+  const { SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } = useSearchBox();
+  const [isOpenMenu, setIsOpenMenu] = useState(false);
 
   const loginUrl =
     !asPath || user || asPath.startsWith('/cadastro')
@@ -71,13 +73,8 @@ export default function HeaderComponent() {
         </PrimerHeader.Item>
       </Box>
 
-      {!isLoading && (
-        <PrimerHeader.Item
-          sx={{
-            display: user ? ['none', 'flex'] : 'flex',
-            ml: 3,
-            mr: [1, , 3],
-          }}>
+      {!isLoading && !(isScreenSmall && user) && (
+        <PrimerHeader.Item sx={{ ml: 3, mr: [1, , 3] }}>
           <SearchBarButton />
           <SearchIconButton />
         </PrimerHeader.Item>
@@ -88,31 +85,37 @@ export default function HeaderComponent() {
           <PrimerHeader.Item sx={{ mr: 1 }}>
             <ThemeSwitcher />
           </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'], ml: 2 }}>
-            <HeaderLink href={loginUrl}>Login</HeaderLink>
-          </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['none', 'flex'], mr: 1 }}>
-            <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
-          </PrimerHeader.Item>
-          <PrimerHeader.Item sx={{ display: ['flex', 'none'], ml: 2, mr: 1 }}>
-            <HeaderLink href={loginUrl}>Entrar</HeaderLink>
-          </PrimerHeader.Item>
+
+          {!isScreenSmall && (
+            <>
+              <PrimerHeader.Item sx={{ ml: 2 }}>
+                <HeaderLink href={loginUrl}>Login</HeaderLink>
+              </PrimerHeader.Item>
+              <PrimerHeader.Item sx={{ mr: 1 }}>
+                <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
+              </PrimerHeader.Item>
+            </>
+          )}
+
+          {isScreenSmall && (
+            <PrimerHeader.Item sx={{ ml: 2, mr: 1 }}>
+              <HeaderLink href={loginUrl}>Entrar</HeaderLink>
+            </PrimerHeader.Item>
+          )}
         </>
       )}
 
       {user && (
         <>
-          <PrimerHeader.Item
-            sx={{
-              display: ['none', 'flex'],
-              m: 2,
-            }}>
-            <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
-              <HeaderLink href="/publicar">
-                <PlusIcon />
-              </HeaderLink>
-            </Tooltip>
-          </PrimerHeader.Item>
+          {!isScreenSmall && (
+            <PrimerHeader.Item sx={{ m: 2 }}>
+              <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
+                <HeaderLink href="/publicar">
+                  <PlusIcon />
+                </HeaderLink>
+              </Tooltip>
+            </PrimerHeader.Item>
+          )}
 
           <PrimerHeader.Item
             sx={{
@@ -133,7 +136,7 @@ export default function HeaderComponent() {
           </PrimerHeader.Item>
 
           <PrimerHeader.Item sx={{ mr: 0 }}>
-            <ActionMenu>
+            <ActionMenu open={isOpenMenu} onOpenChange={setIsOpenMenu}>
               <ActionMenu.Anchor>
                 <Button
                   aria-label="Abrir o menu"
@@ -186,13 +189,14 @@ export default function HeaderComponent() {
                     <NavList.Divider />
                   </NavList.Group>
 
-                  <ActionList.Item sx={{ display: [, 'none'] }} onSelect={onClickSearchButton}>
-                    <SearchBarMenuItem />
-                  </ActionList.Item>
+                  {isScreenSmall && (
+                    <>
+                      <SearchBarMenuItem />
+                      <ActionList.Divider />
+                    </>
+                  )}
 
-                  <ActionList.Item>
-                    <ThemeSelector />
-                  </ActionList.Item>
+                  <ThemeSelector onSelect={() => setIsOpenMenu(false)} as="li" role="none" sx={{ listStyle: 'none' }} />
                   <ActionList.Divider />
 
                   <ActionList.Item variant="danger" onSelect={logout}>

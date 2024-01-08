@@ -19,7 +19,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
             padding: 0,
             margin: 0,
           }}
-          key={listNumberStart}
+          key={`content-list-${listNumberStart}`}
           start={listNumberStart}>
           <RenderItems />
           <EndOfRelevant />

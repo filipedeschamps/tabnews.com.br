@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Box, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
+import { ActionList, Box, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
 import { SearchIcon, XCircleFillIcon } from '@/TabNewsUI/icons';
 
 const searchURL = process.env.NEXT_PUBLIC_SEARCH_URL + process.env.NEXT_PUBLIC_SEARCH_ID;
@@ -65,25 +65,14 @@ export default function useSearchBox() {
     );
   }
 
-  function SearchBarMenuItem({ sx, ...props }) {
+  function SearchBarMenuItem(props) {
     return (
-      <Button
-        onClick={onClickSearchButton}
-        alignContent="flex-start"
-        sx={{
-          width: '100%',
-          color: 'checks.inputPlaceholderText',
-          borderColor: 'headerSearch.border',
-          cursor: 'text',
-          '&:focus-visible': {
-            outline: '2px solid #FFF !important',
-          },
-          ...sx,
-        }}
-        leadingVisual={SearchIcon}
-        {...props}>
+      <ActionList.Item onSelect={onClickSearchButton} {...props}>
+        <ActionList.LeadingVisual>
+          <SearchIcon />
+        </ActionList.LeadingVisual>
         Pesquisar
-      </Button>
+      </ActionList.Item>
     );
   }
 
