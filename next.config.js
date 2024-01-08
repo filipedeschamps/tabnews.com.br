@@ -22,6 +22,16 @@ module.exports = {
         permanent: true,
       },
       {
+        source: '/pagina/1',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/recentes',
+        destination: '/recentes/pagina/1',
+        permanent: true,
+      },
+      {
         source: '/recentes/comentarios',
         destination: '/recentes/comentarios/1',
         permanent: true,

@@ -1,6 +1,7 @@
 import { getStaticPropsRevalidate } from 'next-swr';
 
-import { ContentList, ContentTabNav, DefaultLayout } from '@/TabNewsUI';
+import { ContentList, DefaultLayout, RecentTabNav } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown';
@@ -11,10 +12,10 @@ export default function CommentsPage({ contentListFound, pagination }) {
   return (
     <DefaultLayout
       metadata={{
-        title: 'Comentários',
-        description: 'Comentários no TabNews ordenadas pelos mais recentes.',
+        title: `Página ${pagination.currentPage} · Comentários Recentes`,
+        description: 'Comentários no TabNews ordenados pelos mais recentes.',
       }}>
-      <ContentTabNav />
+      <RecentTabNav />
       <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/comentarios" />
     </DefaultLayout>
   );
@@ -48,7 +49,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   const contentListFound = results.rows;
 
-  if (contentListFound.length === 0 && context.params.page !== 1) {
+  if (contentListFound.length === 0 && context.params.page !== 1 && !webserver.isBuildTime) {
     const lastValidPage = `/recentes/comentarios/${results.pagination.lastPage || 1}`;
     const revalidate = context.params.page > results.pagination.lastPage + 1 ? 10 : 1;
 
@@ -77,7 +78,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
 export async function getStaticPaths() {
   return {
-    paths: [],
+    paths: [{ params: { page: '1' } }, { params: { page: '2' } }, { params: { page: '3' } }],
     fallback: 'blocking',
   };
 }

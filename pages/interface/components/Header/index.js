@@ -65,8 +65,8 @@ export default function HeaderComponent() {
 
         <PrimerHeader.Item full sx={{ mr: 0 }}>
           <HeaderLink
-            href="/recentes"
-            aria-current={asPath === '/recentes' ? 'page' : false}
+            href="/recentes/pagina/1"
+            aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
             sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
             Recentes
           </HeaderLink>

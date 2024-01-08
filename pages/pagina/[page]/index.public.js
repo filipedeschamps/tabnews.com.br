@@ -1,6 +1,7 @@
 import { getStaticPropsRevalidate } from 'next-swr';
 
 import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
@@ -51,11 +52,23 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   const contentListFound = results.rows;
 
+  if (contentListFound.length === 0 && context.params.page !== 1 && !webserver.isBuildTime) {
+    const lastValidPage = `/pagina/${results.pagination.lastPage || 1}`;
+    const revalidate = context.params.page > results.pagination.lastPage + 1 ? 10 : 1;
+
+    return {
+      redirect: {
+        destination: lastValidPage,
+      },
+      revalidate,
+    };
+  }
+
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      contentListFound: secureContentValues,
       pagination: results.pagination,
     },
 
