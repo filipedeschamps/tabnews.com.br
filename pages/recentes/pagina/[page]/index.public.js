@@ -1,6 +1,7 @@
 import { getStaticPropsRevalidate } from 'next-swr';
 
-import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { ContentList, DefaultLayout, RecentTabNav } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
@@ -9,7 +10,12 @@ import validator from 'models/validator.js';
 export default function Home({ contentListFound, pagination }) {
   return (
     <>
-      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Recentes` }}>
+      <DefaultLayout
+        metadata={{
+          title: `Página ${pagination.currentPage} · Recentes`,
+          description: 'Publicações no TabNews ordenadas pelas mais recentes.',
+        }}>
+        <RecentTabNav />
         <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
       </DefaultLayout>
     </>
@@ -18,7 +24,7 @@ export default function Home({ contentListFound, pagination }) {
 
 export async function getStaticPaths() {
   return {
-    paths: [{ params: { page: '2' } }, { params: { page: '3' } }],
+    paths: [{ params: { page: '1' } }, { params: { page: '2' } }, { params: { page: '3' } }],
     fallback: 'blocking',
   };
 }
@@ -36,7 +42,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   } catch (error) {
     return {
       notFound: true,
-      revalidate: 1,
     };
   }
 
@@ -52,13 +57,25 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   const contentListFound = results.rows;
 
+  if (contentListFound.length === 0 && context.params.page !== 1 && !webserver.isBuildTime) {
+    const lastValidPage = `/recentes/pagina/${results.pagination.lastPage || 1}`;
+    const revalidate = context.params.page > results.pagination.lastPage + 1 ? 10 : 1;
+
+    return {
+      redirect: {
+        destination: lastValidPage,
+      },
+      revalidate,
+    };
+  }
+
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      contentListFound: secureContentValues,
       pagination: results.pagination,
     },
-    revalidate: 10,
+    revalidate: 1,
   };
 });

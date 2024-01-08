@@ -161,7 +161,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
     if (paginationBasePath == '/pagina' && !pagination.nextPage) {
       return (
         <Box key="end-of-relevant" sx={{ gridColumnStart: 2 }}>
-          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes/pagina/1'}>
             <Box
               sx={{
                 overflow: 'auto',

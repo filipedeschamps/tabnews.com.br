@@ -8,7 +8,6 @@ const webserverHost = webserver.host;
 
 export function DefaultHead() {
   const router = useRouter();
-  const pathName = router.pathname;
 
   const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
   const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
@@ -30,7 +29,7 @@ export function DefaultHead() {
       <meta name="description" content={description} key="description" />
       <meta name="robots" content="index follow" key="robots" />
 
-      {(pathName === '/' || pathName === '/recentes') && (
+      {(router.asPath === '/' || router.asPath === '/recentes/pagina/1') && (
         <link rel="alternate" type="application/rss+xml" title="TabNews: Recentes" href="/recentes/rss" />
       )}
 

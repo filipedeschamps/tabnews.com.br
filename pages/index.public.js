@@ -26,22 +26,10 @@ export default function Home({ contentListFound, pagination }) {
   );
 }
 
-export const getStaticProps = getStaticPropsRevalidate(async (context) => {
+export const getStaticProps = getStaticPropsRevalidate(async () => {
   const userTryingToGet = user.createAnonymous();
 
-  context.params = context.params ? context.params : {};
-
-  try {
-    context.params = validator(context.params, {
-      page: 'optional',
-      per_page: 'optional',
-    });
-  } catch (error) {
-    return {
-      notFound: true,
-      revalidate: 1,
-    };
-  }
+  const params = validator({}, { per_page: 'optional' });
 
   const results = await content.findWithStrategy({
     strategy: 'relevant',
@@ -52,8 +40,8 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     attributes: {
       exclude: ['body'],
     },
-    page: context.params.page,
-    per_page: context.params.per_page,
+    page: 1,
+    per_page: params.per_page,
   });
 
   const contentListFound = results.rows;
@@ -62,7 +50,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      contentListFound: secureContentValues,
       pagination: results.pagination,
     },
     revalidate: 10,
