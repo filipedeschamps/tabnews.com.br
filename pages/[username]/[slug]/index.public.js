@@ -7,11 +7,12 @@ import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import pageView from 'models/page-view';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import { useCollapse } from 'pages/interface';
 
-export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
+export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata, pageViews }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -31,6 +32,8 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
       {showConfetti && <Confetti />}
       <DefaultLayout metadata={contentMetadata}>
         <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
+
+        {JSON.stringify(pageViews)}
 
         <Box
           sx={{
@@ -406,12 +409,15 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
   }
 
+  const pageViews = await pageView.get('/' + context.params.username + '/' + context.params.slug);
+
   return {
     props: {
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
       rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
+      pageViews: pageViews,
     },
     revalidate: 1,
     swr: { revalidateOnFocus: false },

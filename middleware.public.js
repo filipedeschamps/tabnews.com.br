@@ -6,6 +6,7 @@ import logger from 'infra/logger.js';
 import rateLimit from 'infra/rate-limit.js';
 import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
+import pageView from 'models/page-view';
 
 export const config = {
   matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],
@@ -54,6 +55,10 @@ export async function middleware(request) {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    if (!url.pathname.startsWith('/api/')) {
+      await pageView.increment(url.pathname, request);
     }
 
     return NextResponse.next();
