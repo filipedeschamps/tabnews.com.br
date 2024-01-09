@@ -88,7 +88,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', viewF
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative', minWidth: '28px' }}>
       <Box sx={{ position: 'absolute', right: 0 }}>
         {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
         flickering after this menu appears, because without `position: absolute` it increases the row height */}
@@ -198,28 +198,18 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
               alignItems: 'center',
               whiteSpace: 'nowrap',
               gap: 1,
-              mt: '2px',
-              mr: isOptionsMenuVisible ? '28px' : 0,
               color: 'fg.muted',
             }}>
-            <BranchName as="address" sx={{ fontStyle: 'normal' }}>
+            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
               <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
             </BranchName>
-            {isPageRootOwner && (
-              <LabelGroup>
-                <Box sx={{ display: 'flex' }}>
-                  <Label aria-hidden sx={{ opacity: 0, userSelect: 'none' }}>
-                    Autor
-                  </Label>
-                  <Tooltip
-                    aria-label="Autor do conteúdo principal da página"
-                    direction="n"
-                    sx={{ position: 'absolute' }}>
-                    <Label>Autor</Label>
-                  </Tooltip>
-                </Box>
-              </LabelGroup>
-            )}
+            <LabelGroup>
+              {isPageRootOwner && (
+                <Tooltip aria-label="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                  <Label>Autor</Label>
+                </Tooltip>
+              )}
+            </LabelGroup>
             {!contentObject.parent_id && (
               <>
                 <ReadTime text={contentObject.body} />
@@ -229,7 +219,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '80px', py: '1px', height: '22px' }}>
+              sx={{ fontSize: 0, color: 'fg.muted' }}>
               <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
             </Link>
           </Box>
