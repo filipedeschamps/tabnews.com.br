@@ -13,18 +13,21 @@ import {
   FormControl,
   Heading,
   IconButton,
+  Label,
+  LabelGroup,
   Link,
   PastTime,
   ReadTime,
   Text,
   TextInput,
+  Tooltip,
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 
-export default function Content({ content, mode = 'view', viewFrame = false }) {
+export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -59,7 +62,14 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [localStorageKey, user, contentObject]);
 
   if (componentMode === 'view') {
-    return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
+    return (
+      <ViewMode
+        setComponentMode={setComponentMode}
+        contentObject={contentObject}
+        isPageRootOwner={isPageRootOwner}
+        viewFrame={viewFrame}
+      />
+    );
   } else if (componentMode === 'compact') {
     return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
   } else if (componentMode === 'edit') {
@@ -78,10 +88,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative', minWidth: '28px' }}>
       <Box sx={{ position: 'absolute', right: 0 }}>
         {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
-          flickering after this menu appears */}
+        flickering after this menu appears, because without `position: absolute` it increases the row height */}
         <ActionMenu>
           <ActionMenu.Anchor>
             <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
@@ -109,7 +119,7 @@ function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   );
 }
 
-function ViewMode({ setComponentMode, contentObject, viewFrame }) {
+function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
@@ -156,6 +166,8 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     }
   };
 
+  const isOptionsMenuVisible = user?.id === contentObject.owner_id || user?.features?.includes('update:content:others');
+
   return (
     <Box
       as="article"
@@ -186,12 +198,18 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               alignItems: 'center',
               whiteSpace: 'nowrap',
               gap: 1,
-              mt: '2px',
               color: 'fg.muted',
             }}>
-            <BranchName as="address" sx={{ fontStyle: 'normal' }}>
+            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
               <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
             </BranchName>
+            <LabelGroup>
+              {isPageRootOwner && (
+                <Tooltip aria-label="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                  <Label>Autor</Label>
+                </Tooltip>
+              )}
+            </LabelGroup>
             {!contentObject.parent_id && (
               <>
                 <ReadTime text={contentObject.body} />
@@ -201,11 +219,11 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '1px', height: '22px' }}>
+              sx={{ fontSize: 0, color: 'fg.muted' }}>
               <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
             </Link>
           </Box>
-          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
+          {isOptionsMenuVisible && (
             <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
           )}
         </Box>

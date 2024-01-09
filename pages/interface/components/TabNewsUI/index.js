@@ -21,6 +21,7 @@ export { default as TabCoinButtons } from '@/TabCoinButtons';
 export { default as TabCoinCount } from '@/TabCoinCount';
 export { default as ThemeProvider } from '@/ThemeProvider';
 export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
+export { default as Tooltip } from '@/Tooltip';
 export { default as UserHeader } from '@/UserHeader';
 export {
   ActionList,
@@ -45,12 +46,12 @@ export {
   Link as PrimerLink,
   TabNav as PrimerTabNav,
   ThemeProvider as PrimerThemeProvider,
+  Tooltip as PrimerTooltip,
   SSRProvider,
   SegmentedControl,
   Spinner,
   Text,
   TextInput,
-  Tooltip,
   Truncate,
   useConfirm,
   useTheme,
