@@ -38,19 +38,11 @@ async function checkDatabaseDependency() {
   let result;
   try {
     const firstQueryTimer = performance.now();
-    const [maxConnectionsResult, superuserReservedConnectionsResult] = await database.query(
-      'SHOW max_connections; SHOW superuser_reserved_connections;'
-    );
-    const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
-    const superuserReservedConnectionsValue = superuserReservedConnectionsResult.rows[0].superuser_reserved_connections;
+    const [maxConnectionsValue, superuserReservedConnectionsValue] = await database.stat.getConnectionLimits();
     const firstQueryDuration = performance.now() - firstQueryTimer;
 
     const secondQueryTimer = performance.now();
-    const openConnectionsResult = await database.query({
-      text: 'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
-      values: [process.env.POSTGRES_DB],
-    });
-    const openConnectionsValue = openConnectionsResult.rows[0].opened_connections;
+    const openConnectionsValue = await database.stat.getOpenedConnections();
     const secondQueryDuration = performance.now() - secondQueryTimer;
 
     const thirdQueryTimer = performance.now();

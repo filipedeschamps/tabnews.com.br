@@ -74,6 +74,23 @@ async function tryToGetNewClientFromPool() {
   }
 }
 
+async function getConnectionLimits(queryFunction) {
+  const result = await queryFunction('SHOW max_connections; SHOW superuser_reserved_connections;');
+  const [maxConnectionsResult, reservedConnectionResult] = result;
+  return [
+    maxConnectionsResult.rows[0].max_connections,
+    reservedConnectionResult.rows[0].superuser_reserved_connections,
+  ];
+}
+
+async function getOpenedConnections(queryFunction) {
+  const openConnectionsResult = await queryFunction({
+    text: 'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
+    values: [process.env.POSTGRES_DB],
+  });
+  return openConnectionsResult.rows[0].opened_connections;
+}
+
 async function checkForTooManyConnections(client) {
   if (webserver.isBuildTime) return false;
 
@@ -82,14 +99,16 @@ async function checkForTooManyConnections(client) {
   const maxConnectionsTolerance = 0.8;
 
   try {
+    const queryFunction = (sql) => client.query(sql);
     if (cache.maxConnections === null || cache.reservedConnections === null) {
-      const [maxConnections, reservedConnections] = await getConnectionLimits();
+      const [maxConnections, reservedConnections] = await getConnectionLimits(queryFunction);
+
       cache.maxConnections = maxConnections;
       cache.reservedConnections = reservedConnections;
     }
 
     if (cache.openedConnections === null || currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge) {
-      const openedConnections = await getOpenedConnections();
+      const openedConnections = await getOpenedConnections(queryFunction);
       cache.openedConnections = openedConnections;
       cache.openedConnectionsLastUpdate = currentTime;
     }
@@ -100,29 +119,9 @@ async function checkForTooManyConnections(client) {
     throw error;
   }
 
-  if (cache.openedConnections > (cache.maxConnections - cache.reservedConnections) * maxConnectionsTolerance) {
-    return true;
-  }
+  const threshold = (cache.maxConnections - cache.reservedConnections) * maxConnectionsTolerance;
 
-  return false;
-
-  async function getConnectionLimits() {
-    const [maxConnectionsResult, reservedConnectionResult] = await client.query(
-      'SHOW max_connections; SHOW superuser_reserved_connections;'
-    );
-    return [
-      maxConnectionsResult.rows[0].max_connections,
-      reservedConnectionResult.rows[0].superuser_reserved_connections,
-    ];
-  }
-
-  async function getOpenedConnections() {
-    const openConnectionsResult = await client.query({
-      text: 'SELECT numbackends as opened_connections FROM pg_stat_database where datname = $1',
-      values: [process.env.POSTGRES_DB],
-    });
-    return openConnectionsResult.rows[0].opened_connections;
-  }
+  return cache.openedConnections > threshold;
 }
 
 async function getNewClient() {
@@ -198,5 +197,9 @@ export default Object.freeze({
     UNIQUE_CONSTRAINT_VIOLATION,
     SERIALIZATION_FAILURE,
     UNDEFINED_FUNCTION,
+  },
+  stat: {
+    getConnectionLimits: () => getConnectionLimits(query),
+    getOpenedConnections: () => getOpenedConnections(query),
   },
 });
