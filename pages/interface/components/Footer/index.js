@@ -48,6 +48,7 @@ export default function Footer(props) {
             paddingX: [2, null, null, 5],
             flexWrap: 'wrap',
           }}>
+          {/* Ordered alphabetically. */}
           <Link href="/contato">Contato</Link>
           <Link href="/faq">FAQ</Link>
           <Link href="https://github.com/filipedeschamps/tabnews.com.br">GitHub</Link>
