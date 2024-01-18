@@ -140,7 +140,7 @@ ${tableOfContents}\n`;
               </Text>
             </Link>
           </Heading>,
-          <Viewer key={`a-${faq.id}`} value={faq.answer} />,
+          <Viewer key={`a-${faq.id}`} areLinksTrusted value={faq.answer} />,
         ])}
       </Box>
     </DefaultLayout>

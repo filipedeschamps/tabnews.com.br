@@ -36,6 +36,7 @@
     "react-icons": "4.8.0",
     "react-rewards": "2.0.4",
     "recharts": "2.5.0",
+    "rehype-external-links": "3.0.0",
     "satori": "0.9.1",
     "set-cookie-parser": "2.6.0",
     "slug": "8.2.2",
