@@ -28,6 +28,16 @@ import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsU
 import { useUser } from 'pages/interface';
 import isTrustedDomain from 'pages/interface/utils/trusted-domain';
 
+const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
+  'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
+  'e.g. Desafios ao empreender como desenvolvedor',
+  'e.g. Como funciona o conceito de ownership em Rust',
+  'e.g. 5 livros fundamentais para desenvolvedores',
+  'e.g. Como os jogos de Atari eram desenvolvidos',
+  'e.g. Ferramentas para melhorar sua produtividade',
+  'e.g. Como renomear uma branch local no Git?',
+];
+
 export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
@@ -265,6 +275,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
   });
+  const [titlePlaceholder, setTitlePlaceholder] = useState('');
 
   const confirm = useConfirm();
 
@@ -289,6 +300,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     addEventListener('focus', onFocus);
     return () => removeEventListener('focus', onFocus);
   }, [localStorageKey]);
+
+  useEffect(() => {
+    setTitlePlaceholder(randomTitlePlaceholder());
+  }, []);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -478,7 +493,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="e.g. Desafios que tive no meu primeiro ano empreendendo com software"
+                placeholder={titlePlaceholder}
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
@@ -636,4 +651,8 @@ function isValidJsonString(jsonString) {
   } catch (error) {
     return false;
   }
+}
+
+function randomTitlePlaceholder() {
+  return CONTENT_TITLE_PLACEHOLDER_EXAMPLES[Math.floor(Math.random() * CONTENT_TITLE_PLACEHOLDER_EXAMPLES.length)];
 }
