@@ -26,6 +26,7 @@ import {
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
+import isTrustedDomain from 'pages/interface/utils/trusted-domain';
 
 export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
@@ -240,7 +241,12 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
       {contentObject.source_url && (
         <Box>
           <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
-            <LinkIcon size={16} /> Fonte: <Link href={contentObject.source_url}>{contentObject.source_url}</Link>
+            <LinkIcon size={16} /> Fonte:{' '}
+            <Link
+              href={contentObject.source_url}
+              rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
+              {contentObject.source_url}
+            </Link>
           </Text>
         </Box>
       )}
