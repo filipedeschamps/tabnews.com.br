@@ -1,6 +1,6 @@
 # [tabnews.com.br](https://www.tabnews.com.br/)
 
-O [TabNews](https://www.tabnews.com.br/) nasceu com o objetivo de ser um local com **conteúdos de valor concreto para quem trabalha com tecnologia**.
+O [TabNews](https://www.tabnews.com.br/) é um site focado na comunidade da área de tecnologia, destinado a debates e troca de conhecimentos por meio de publicações e comentários criados pelos próprios usuários.
 
 Esse repositório contém o código-fonte do site e da API do TabNews.
 
