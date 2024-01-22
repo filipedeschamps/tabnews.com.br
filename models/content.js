@@ -585,7 +585,9 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
     // We should not credit if the content has little or no value.
     // Expected 5 or more words with 5 or more characters.
-    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
+    const numCharacters = 5;
+
+    if (newContent.body.normalize('NFC').match(/[a-záéíóúâôãõç]{5,}/gi).length < numCharacters) return;
   }
 
   if (userEarnings > 0) {
