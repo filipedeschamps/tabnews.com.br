@@ -1246,5 +1246,154 @@ describe('GET /api/v1/contents', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
+
+    describe('with_children and with_root using different strategies', () => {
+      let firstRootContentExpect;
+      let secondRootContentExpect;
+      let firstCommentExpect;
+      let secondCommentExpect;
+
+      beforeEach(async () => {
+        const createUser = async () => orchestrator.createUser();
+        const createContent = async (user, options) => orchestrator.createContent({ owner_id: user.id, ...options });
+        const createComment = async (user, parent, body) =>
+          createContent(user, { body, status: 'published', parent_id: parent.id });
+
+        const [firstUser, secondUser, thirdUser] = await Promise.all(Array.from({ length: 3 }, () => createUser()));
+
+        await createContent(firstUser, { title: 'Contéudo "Draft"', status: 'draft' });
+
+        const firstRootContent = await createContent(secondUser, {
+          title: 'Primeiro conteúdo criado',
+          status: 'published',
+        });
+        firstRootContentExpect = {
+          id: firstRootContent.id,
+          owner_id: secondUser.id,
+          parent_id: null,
+          slug: 'primeiro-conteudo-criado',
+          title: 'Primeiro conteúdo criado',
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: secondUser.username,
+          tabcoins: 2,
+          children_deep_count: 1,
+        };
+        await orchestrator.createRate(firstRootContent, 1);
+
+        const secondRootContent = await createContent(thirdUser, {
+          title: 'Segundo conteúdo criado',
+          status: 'published',
+        });
+        secondRootContentExpect = {
+          id: secondRootContent.id,
+          owner_id: thirdUser.id,
+          parent_id: null,
+          slug: 'segundo-conteudo-criado',
+          title: 'Segundo conteúdo criado',
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: thirdUser.username,
+          tabcoins: 1,
+          children_deep_count: 1,
+        };
+
+        const firstComment = await createComment(firstUser, secondRootContent, 'Comentário #1');
+        const secondComment = await createComment(thirdUser, firstRootContent, 'Comentário #2');
+        await orchestrator.createRate(firstComment, 1);
+
+        function createCommentExpect(comment, owner, parent, tabcoins = 0) {
+          return {
+            id: comment.id,
+            owner_id: owner.id,
+            parent_id: parent.id,
+            slug: comment.slug,
+            title: null,
+            body: comment.body,
+            status: 'published',
+            source_url: null,
+            created_at: comment.created_at.toISOString(),
+            updated_at: comment.updated_at.toISOString(),
+            published_at: comment.published_at.toISOString(),
+            deleted_at: null,
+            owner_username: owner.username,
+            tabcoins,
+            children_deep_count: 0,
+          };
+        }
+
+        firstCommentExpect = createCommentExpect(firstComment, firstUser, secondRootContent, 1);
+        secondCommentExpect = createCommentExpect(secondComment, thirdUser, firstRootContent);
+      });
+
+      test.each([
+        {
+          content: 'relevant root',
+          params: [],
+          getExpected: () => [firstRootContentExpect, secondRootContentExpect],
+        },
+        {
+          content: 'relevant root',
+          params: ['with_children=false'],
+          getExpected: () => [firstRootContentExpect, secondRootContentExpect],
+        },
+        {
+          content: 'relevant root and children',
+          params: ['with_children=true'],
+          getExpected: () => [firstRootContentExpect, firstCommentExpect, secondRootContentExpect, secondCommentExpect],
+        },
+        {
+          content: 'new root',
+          params: ['with_children=false', 'with_root=true', 'strategy=new'],
+          getExpected: () => [secondRootContentExpect, firstRootContentExpect],
+        },
+        {
+          content: 'new root',
+          params: ['with_children=false', 'with_root=true', 'strategy=new'],
+          getExpected: () => [secondRootContentExpect, firstRootContentExpect],
+        },
+        {
+          content: 'new root',
+          params: ['with_children=false', 'strategy=new'],
+          getExpected: () => [secondRootContentExpect, firstRootContentExpect],
+        },
+        {
+          content: 'new children',
+          params: ['with_children=true', 'with_root=false', 'strategy=new'],
+          getExpected: () => [secondCommentExpect, firstCommentExpect],
+        },
+        {
+          content: 'new root and children',
+          params: ['with_children=true', 'strategy=new'],
+          getExpected: () => [secondCommentExpect, firstCommentExpect, secondRootContentExpect, firstRootContentExpect],
+        },
+        {
+          content: 'new root and children',
+          params: ['with_children=true', 'with_root=true', 'strategy=new'],
+          getExpected: () => [secondCommentExpect, firstCommentExpect, secondRootContentExpect, firstRootContentExpect],
+        },
+        {
+          content: 'new root',
+          params: ['with_root=true', 'strategy=new'],
+          getExpected: () => [secondRootContentExpect, firstRootContentExpect],
+        },
+      ])('get $content with params: $params', async ({ params, getExpected }) => {
+        const url = `${orchestrator.webserverUrl}/api/v1/contents?${params.join('&')}`;
+
+        const response = await fetch(url);
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toStrictEqual(getExpected());
+      });
+    });
   });
 });
