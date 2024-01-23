@@ -4,20 +4,21 @@ import { SquareFillIcon } from '@/TabNewsUI/icons';
 export default function TabCoinCount({ amount, direction, mode = 'tooltip', sx }) {
   const modes = {
     tooltip: {
+      iconLabel: 'TabCoins',
       iconSize: 16,
       text: amount?.toLocaleString('pt-BR'),
     },
     full: {
       iconSize: 20,
-      text: `${amount?.toLocaleString('pt-BR')} TabCoin${amount !== 1 && 's'}`,
+      text: `${amount?.toLocaleString('pt-BR')} TabCoin${amount > 1 || amount < -1 ? 's' : ''}`,
     },
   };
 
-  const { iconSize, text } = modes[mode];
+  const { iconLabel, iconSize, text } = modes[mode];
 
   const content = (
     <Box sx={{ display: 'flex', textWrap: 'nowrap', alignItems: 'center', ...sx }}>
-      <SquareFillIcon fill="#0969da" size={iconSize} />
+      <SquareFillIcon aria-label={iconLabel} fill="#0969da" size={iconSize} />
       <Text>{text}</Text>
     </Box>
   );

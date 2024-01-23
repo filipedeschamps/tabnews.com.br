@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Start containers
-        run: docker-compose -f infra/docker-compose.development.yml up -d
+        run: npm run services:up
 
       - uses: actions/cache@v2
         with:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Stop containers
         if: always()
-        run: docker-compose -f infra/docker-compose.development.yml down
+        run: npm run services:down
 
   lint-styles:
     name: Lint Styles

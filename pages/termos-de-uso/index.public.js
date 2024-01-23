@@ -45,12 +45,12 @@ export default function Page() {
     <DefaultLayout metadata={{ title: 'Termos de Uso' }}>
       <Box>
         <Heading as="h1">Termos de Uso</Heading>
-        <Viewer value={body} />
+        <Viewer areLinksTrusted value={body} />
       </Box>
 
       <Box sx={{ mt: 5 }}>
         <Heading as="h2">Histórico de alterações</Heading>
-        <Viewer value={changelog} />
+        <Viewer areLinksTrusted value={changelog} />
       </Box>
     </DefaultLayout>
   );

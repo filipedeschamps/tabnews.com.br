@@ -2,11 +2,11 @@ version: '2.4'
 services:
   postgres_dev:
     container_name: 'postgres-dev'
-    image: 'postgres:14.1-alpine'
+    image: 'postgres:14.7-alpine'
     env_file:
       - ../.env
     ports:
-      - '54320:5432'
+      - '${POSTGRES_PORT}:5432'
     volumes:
       - postgres_data:/data/postgres
     restart: unless-stopped
@@ -14,10 +14,10 @@ services:
     container_name: mailcatcher
     image: sj26/mailcatcher
     expose:
-      - 1025
-      - 1080
+      - '${EMAIL_SMTP_PORT}'
+      - '${EMAIL_HTTP_PORT}'
     ports:
-      - 1025:1025
-      - 1080:1080
+      - '${EMAIL_SMTP_PORT}:1025'
+      - '${EMAIL_HTTP_PORT}:1080'
 volumes:
   postgres_data:

@@ -1,5 +1,27 @@
 # [tabnews.com.br](https://www.tabnews.com.br/)
 
+O [TabNews](https://www.tabnews.com.br/) nasceu com o objetivo de ser um local com **conteúdos de valor concreto para quem trabalha com tecnologia**.
+
+Esse repositório contém o código-fonte do site e da API do TabNews.
+
+O TabNews disponibiliza APIs públicas que você pode utilizar para construir outros projetos relacionados, desde que respeite os [Termos de Uso](https://www.tabnews.com.br/termos-de-uso).
+
+**Conteúdo**
+
+- [Instalar e rodar o projeto](#instalar-e-rodar-o-projeto)
+  - [Dependências globais](#dependências-globais)
+  - [Dependências locais](#dependências-locais)
+  - [Rodar o projeto](#rodar-o-projeto)
+  - [Cadastro e Login de usuários](#cadastro-e-login-de-usuários)
+    - [Criar um usuário manualmente](#criar-um-usuário-manualmente)
+    - [Utilizar usuários pré-cadastrados](#utilizar-usuários-pré-cadastrados)
+- [Rodar os testes](#rodar-os-testes)
+- [Formas de contribuir](#formas-de-contribuir)
+- [Histórico do desenvolvimento](#histórico-de-desenvolvimento)
+  - [Início do projeto](#início-do-projeto)
+  - [Milestones](#milestones)
+- [Contribuidores](#contribuidores)
+
 ## Instalar e rodar o projeto
 
 Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
@@ -11,11 +33,9 @@ Você precisa ter duas principais dependências instaladas:
 - Node.js LTS v18 (ou qualquer versão superior)
 - Docker Engine v17.12.0 com Docker Compose v1.24.1 (ou qualquer versão superior)
 
-Utiliza `nvm`? Então pode executar `nvm install` na pasta do projeto para instalar e utilizar a versão mais apropriada do Node.js.
-
 ### Dependências locais
 
-Então após baixar o repositório, não se esqueça de instalar as dependências locais do projeto:
+Com o repositório clonado e as dependências globais instaladas, você pode instalar as dependências locais do projeto:
 
 ```bash
 npm install
@@ -23,7 +43,7 @@ npm install
 
 ### Rodar o projeto
 
-Para rodar o projeto localmente, basta rodar o comando abaixo:
+Para rodar o projeto localmente, basta executar o comando abaixo:
 
 ```bash
 npm run dev
@@ -45,7 +65,7 @@ Observações:
 
 No ambiente de desenvolvimento você poderá tanto criar usuários manualmente (inclusive para receber e testar o email de ativação), quanto utilizar usuários pré-cadastrados e que já foram ativados para sua conveniência.
 
-#### Manualmente criar um usuário
+#### Criar um usuário manualmente
 
 1. Após subir os serviços, acesse http://localhost:3000/cadastro
 2. Preencha os dados e utilize **qualquer email** com formato válido, mesmo que este email não exista, por exemplo: `teste@teste.com`
@@ -55,7 +75,7 @@ No ambiente de desenvolvimento você poderá tanto criar usuários manualmente (
 
 #### Utilizar usuários pré-cadastrados
 
-Por padrão, ao rodar o comando `npm run dev` será injetado dois usuários ativados, um com features padrões e outro com features administrativas como a habilidade de rodar as Migrations usando a API ou alterar o conteúdo de outros usuários. Segue abaixo as credenciais destes dois usuários (`"email"` + `"senha"`):
+Por padrão, ao rodar o comando `npm run dev` será injetado dois usuários ativados, um com features padrões e outro com features administrativas, como a habilidade de rodar as Migrations usando a API ou alterar o conteúdo de outros usuários. Segue abaixo as credenciais destes dois usuários (`"email"` + `"senha"`):
 
 - **Usuário Admin**: `"admin@admin.com"` + `"password"`
 - **Usuário padrão**: `"user@user.com"` + `"password"`
@@ -68,7 +88,7 @@ Há várias formas de rodar os testes dependendo do que você deseja fazer, mas 
 npm test
 ```
 
-Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração), use o comando abaixo:
+Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o comando abaixo:
 
 ```bash
 npm run test:watch:services
@@ -84,19 +104,19 @@ npm run dev
 npm run test:watch
 ```
 
-Caso não queira dar `watch` em todos os testes e queira isolar apenas 1 arquivo de teste (ou um grupo de testes), você pode utilizar um simples `regex` para dar `match` no que quiser, por exemplo:
+Caso não queira dar `watch` em todos os testes e queira isolar arquivos específicos de teste, você pode utilizar uma expressão regular (`regex`) para dar `match` no que quiser. Não é necessário digitar o caminho inteiro para o arquivo, veja alguns exemplos abaixo:
 
 ```bash
-# Rodar apenas /tests/api/v1/_use-cases/registration-flow.test.js
-npm run test:watch -- registration-flow
-
 # Rodar todos os testes de "users" da api "v1"
 npm run test:watch -- v1/users/
 
-# Rodar apenas /tests/api/v1/users/[username]/patch.test.js
+# Rodar apenas o arquivo tests/integration/api/v1/_use-cases/registration-flow.test.js
+npm run test:watch -- registration-flow
+
+# Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/patch.test.js
 npm run test:watch -- username./patch
 
-# tests/integration/api/v1/contents/[username]/[slug]/get.test.js
+# Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/[slug]/get.test.js
 npm run test:watch -- contents/.username./.slug./get
 ```
 
@@ -105,35 +125,24 @@ Observações:
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
 - A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá usar `regex` para evitar usar esses caracteres, como por exemplo utilizar o `.` que representa o `match` com qualquer caractere. Isto foi utilizado nos exemplos acima para evitar os caracteres `[` e `]` dos arquivos.
 
-## Criar novas Migrations
+## Formas de contribuir
 
-Você pode utilizar o script `migration:create`, por exemplo:
+Você pode contribuir com o projeto de várias formas diferentes:
 
-```
-npm run migration:create alter table users add tabcoins
-```
+- **Criar conteúdos no site:** você pode criar publicações ou comentários no [TabNews](https://www.tabnews.com.br/) com conteúdo de valor para outros leitores. Para entender mais sobre isso, leia [sobre a plataforma](https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa) e veja as [perguntas mais frequentes](https://www.tabnews.com.br/faq).
+- **[Reportar privadamente problemas de segurança](/CONTRIBUTING.md#reportar-privadamente-problemas-de-segurança):** problemas que envolvem falhas de segurança devem ser reportados de forma privada para possibilitar a discussão das vulnerabilidades diretamente com os mantenedores do repositório.
+- **[Participar de debates em issues do repositório](/CONTRIBUTING.md#participar-de-debates-em-issues-do-repositório):** mesmo sem implementar algo no código, você pode contribuir com detalhes para a resolução de algum problema ou com ideias de implementação de algum recurso.
+- **[Enviar PRs com soluções previamente debatidas](/CONTRIBUTING.md#enviar-prs-com-soluções-previamente-debatidas):** se você encontrou um issue que foi debatido e deseja implementá-lo, pode abrir um PR com a solução para ser avaliada e incorporada no TabNews.
 
-Isto irá resultar em:
+## Histórico de Desenvolvimento
 
-```
-Created migration -- ./infra/migrations/1655399502254_alter-table-users-add-tabcoins.js
-```
+### Início do projeto
 
-Caso esta nova migração esteja válida, ela será automaticamente executada na próxima vez que você rodar o comando `npm run dev`. Caso contrário, o serviço não irá subir e os logs de erro estarão registrados no arquivo `migrations.log` encontrado na raiz do projeto.
+No início do projeto foram feitas 40 publicações no [Wiki](https://github.com/filipedeschamps/tabnews.com.br/wiki) do repositório. Lá você encontrará informações desde como a ideia do TabNews surgiu e como foram as contribuições no início do projeto, até as definições do layout e outras tomadas de decisão.
 
-## Commit das alterações
+### Milestones
 
-Após finalizar suas alterações e se certificar que todos os testes estão passando com o comando geral `npm test`, chegou a hora de fazer o commit das suas alterações.
-
-Para ser auxiliado no padrão de commit que utilizamos, rode o comando abaixo e siga as instruções:
-
-```bash
-npm run commit
-```
-
-## Diário de Desenvolvimento
-
-- [Acessar o diário](https://github.com/filipedeschamps/tabnews.com.br/wiki)
+Milestones são marcos históricos do projeto para ajudar a guiar o desenvolvimento numa direção específica. Pelo GitHub é possível ver [a Milestone em andamento](https://github.com/filipedeschamps/tabnews.com.br/milestones?state=open) e [as Milestones encerradas](https://github.com/filipedeschamps/tabnews.com.br/milestones?state=closed).
 
 ## Contribuidores
 
