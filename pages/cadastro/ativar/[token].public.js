@@ -59,7 +59,15 @@ export default function ActiveUser() {
     <>
       {isSuccess && <Confetti />}
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Ativar cadastro' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            mt: [4, 8, 10],
+            textAlign: 'center',
+          }}>
           {isLoading ? (
             <Flash variant="default">Verificando Token de Ativação...</Flash>
           ) : (
