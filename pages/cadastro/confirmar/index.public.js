@@ -22,7 +22,7 @@ export default function ConfirmSignup() {
           width: '100%',
           mt: 10,
         }}>
-        <Heading sx={{ fontSize: [2, 3, 4], overflowWrap: 'anywhere' }}>Confira seu e-mail: {email}</Heading>
+        <Heading sx={{ fontSize: [2, 3, 4], overflowWrap: 'anywhere' }}>Confira seu e-mail: {email} </Heading>
         <Text>Você receberá um link para confirmar seu cadastro e ativar a sua conta.</Text>
       </Box>
     </DefaultLayout>
