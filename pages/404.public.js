@@ -9,7 +9,6 @@ export default function Custom404() {
       <DefaultLayout metadata={{ title: '404 - Página não encontrada' }}>
         <Box
           sx={{
-            height: 'calc(90vh - 64px)',
             width: '100%',
             display: 'flex',
             alignContent: 'center',

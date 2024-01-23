@@ -3,10 +3,11 @@ import { Head } from 'pages/interface';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: 'canvas.default' }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: 'canvas.default', display: 'flex', flexDirection: 'column' }}>
       {metadata && <Head metadata={metadata} />}
       <Header />
       <Box
+        as="main"
         maxWidth={containerWidth}
         sx={{
           marginX: 'auto',
@@ -14,6 +15,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           flexWrap: 'wrap',
           padding: [2, null, null, 4],
           paddingTop: [3, null, null, 4],
+          flex: 1,
         }}>
         {children}
       </Box>

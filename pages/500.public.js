@@ -9,7 +9,6 @@ export default function Custom500() {
       <DefaultLayout metadata={{ title: '500 - Erro Interno Não Esperado' }}>
         <Box
           sx={{
-            height: 'calc(90vh - 64px)',
             width: '100%',
             display: 'flex',
             alignContent: 'center',
