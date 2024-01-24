@@ -4,8 +4,13 @@ import { LinkIcon } from '@/TabNewsUI/icons';
 export default function Page() {
   const faqContent = [
     {
+      id: 'tabnews',
+      question: 'O que é o TabNews?',
+      answer: `O TabNews é um site focado na comunidade da área de tecnologia, destinado a debates e troca de conhecimentos por meio de publicações e comentários criados pelos próprios usuários.`,
+    },
+    {
       id: 'proposito-tabnews',
-      question: 'Por que o TabNews foi criado?',
+      question: 'Qual é o propósito do TabNews?',
       answer: `O TabNews nasceu com o objetivo de ser um local com **conteúdos de valor concreto para quem trabalha com tecnologia**.
 
 Queremos ter conteúdo de qualidade tanto na publicação principal quanto nos comentários, e algo que contribui para isso acontecer é a plataforma dar o mesmo espaço de criação para quem está publicando ambos os tipos de conteúdo. Tudo no TabNews é considerado um **conteúdo**, tanto que um comentário possui a sua própria página (basta clicar na data de publicação do comentário).`,
@@ -13,7 +18,7 @@ Queremos ter conteúdo de qualidade tanto na publicação principal quanto nos c
     {
       id: 'conteudo-tabnews',
       question: 'Que tipo de conteúdo eu posso publicar no TabNews?',
-      answer: `Você pode publicar notícias, artigos, tutoriais, indicações, curiosidades, sugestões de software e ferramentas, perguntas bem formuladas ou qualquer outro tipo de conteúdo que poderá fazer alguma diferença na vida de quem trabalha em áreas diretamente ou indiretamente relacionadas à área de tecnologia.`,
+      answer: `Você pode publicar notícias, artigos, tutoriais, indicações, curiosidades, sugestões de software e ferramentas, perguntas bem formuladas ou outros tipos de conteúdo, desde que o assunto da publicação seja [aceito no TabNews](#assunto-tabnews).`,
     },
     {
       id: 'assunto-tabnews',
