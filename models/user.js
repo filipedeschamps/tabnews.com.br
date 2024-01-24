@@ -433,6 +433,50 @@ async function updateRewardedAt(userId, options) {
   return results.rows[0];
 }
 
+async function getUserActivity(userId) {
+  if (!userId) {
+    throw new ValidationError({
+      message: `É necessário informar o "id" do usuário.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:USER:GET_USER_ACTIVITY:USER_ID_REQUIRED',
+      key: 'userId',
+    });
+  }
+
+  const query = {
+    text: `
+      SELECT
+        COUNT(*)::int as count,
+        published_at::date as date
+      FROM
+        contents
+      WHERE
+        owner_id = $1 AND
+        status = 'published' AND
+        created_at IS NOT NULL AND
+        published_at IS NOT NULL
+      GROUP BY
+        owner_id, published_at::date
+      ORDER BY
+        date
+    ;`,
+    values: [userId],
+  };
+
+  const results = await database.query(query);
+
+  const response = {
+    userId: userId,
+    activity: results.rows,
+  };
+
+  for (const activity of response.activity) {
+    activity.date = activity.date.toISOString().split('T')[0];
+  }
+
+  return response;
+}
+
 export default Object.freeze({
   create,
   findAll,
@@ -444,4 +488,5 @@ export default Object.freeze({
   addFeatures,
   createAnonymous,
   updateRewardedAt,
+  getUserActivity,
 });
