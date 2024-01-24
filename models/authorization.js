@@ -176,16 +176,22 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:user') {
-    filteredOutputValues = {
-      id: output.id,
-      username: output.username,
-      description: output.description,
-      features: output.features,
-      tabcoins: output.tabcoins,
-      tabcash: output.tabcash,
-      created_at: output.created_at,
-      updated_at: output.updated_at,
-    };
+    if (output.activity)
+      filteredOutputValues = {
+        id: output.userId,
+        activity: output.activity,
+      };
+    else
+      filteredOutputValues = {
+        id: output.id,
+        username: output.username,
+        description: output.description,
+        features: output.features,
+        tabcoins: output.tabcoins,
+        tabcash: output.tabcash,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
+      };
   }
 
   if (feature === 'read:user:self') {
