@@ -314,8 +314,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         return;
       }
 
-      const numCharacters = 5;
-      const confirmBodyValue = isContentTooShort(newData.body, numCharacters)
+      const minimumNumWords = 5;
+      const confirmBodyValue = isContentTooShort(newData.body, minimumNumWords)
         ? await confirm({
             title: 'Tem certeza que deseja publicar essa mensagem curta?',
             content: (

@@ -586,9 +586,9 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
     // We should not credit if the content has little or no value.
     // Expected 5 or more words with 5 or more characters.
-    const numCharacters = 5;
+    const minimumNumWords = 5;
 
-    if (isContentTooShort(newContent.body, numCharacters)) return;
+    if (isContentTooShort(newContent.body, minimumNumWords)) return;
   }
 
   if (userEarnings > 0) {
