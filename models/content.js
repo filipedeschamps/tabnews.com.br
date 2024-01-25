@@ -8,6 +8,7 @@ import prestige from 'models/prestige';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import queries from 'queries/rankingQueries';
+import { isContentTooShort } from 'utils/content';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -587,7 +588,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     // Expected 5 or more words with 5 or more characters.
     const numCharacters = 5;
 
-    if (newContent.body.normalize('NFC').match(/[a-záéíóúâôãõç]{5,}/gi).length < numCharacters) return;
+    if (isContentTooShort(newContent.body, numCharacters)) return;
   }
 
   if (userEarnings > 0) {

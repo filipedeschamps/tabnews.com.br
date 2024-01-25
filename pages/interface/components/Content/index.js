@@ -27,6 +27,7 @@ import {
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 import isTrustedDomain from 'pages/interface/utils/trusted-domain';
+import { isContentTooShort } from 'utils/content';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
@@ -313,24 +314,24 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         return;
       }
 
-      const confirmBodyValue =
-        newData.body.split(/[a-z]{5,}/i, 6).length < 6
-          ? await confirm({
-              title: 'Tem certeza que deseja publicar essa mensagem curta?',
-              content: (
-                <Flash variant="warning">
-                  ⚠ Atenção: Pedimos encarecidamente que{' '}
-                  <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
-                    leia isso antes
-                  </Link>{' '}
-                  de fazer essa publicação.
-                </Flash>
-              ),
-              cancelButtonContent: 'Cancelar',
-              confirmButtonContent: 'Publicar',
-              confirmButtonType: 'danger',
-            })
-          : true;
+      const numCharacters = 5;
+      const confirmBodyValue = isContentTooShort(newData.body, numCharacters)
+        ? await confirm({
+            title: 'Tem certeza que deseja publicar essa mensagem curta?',
+            content: (
+              <Flash variant="warning">
+                ⚠ Atenção: Pedimos encarecidamente que{' '}
+                <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
+                  leia isso antes
+                </Link>{' '}
+                de fazer essa publicação.
+              </Flash>
+            ),
+            cancelButtonContent: 'Cancelar',
+            confirmButtonContent: 'Publicar',
+            confirmButtonType: 'danger',
+          })
+        : true;
 
       if (!confirmBodyValue) return;
 
