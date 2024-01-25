@@ -236,7 +236,7 @@ async function findWithStrategy(options = {}) {
     const results = {};
     const options = {};
 
-    if (!values?.where?.owner_username) {
+    if (!values?.where?.owner_username && values?.where?.parent_id === null) {
       options.strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';

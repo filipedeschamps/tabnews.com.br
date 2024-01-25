@@ -10,6 +10,7 @@ import controller from 'models/controller.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
 import notification from 'models/notification.js';
+import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
@@ -35,6 +36,8 @@ function getValidationHandler(request, response, next) {
     page: 'optional',
     per_page: 'optional',
     strategy: 'optional',
+    with_root: 'optional',
+    with_children: 'optional',
   });
 
   request.query = cleanValues;
@@ -48,11 +51,12 @@ async function getHandler(request, response) {
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
     where: {
-      parent_id: null,
+      parent_id: request.query.with_children ? undefined : null,
       status: 'published',
+      $not_null: request.query.with_root === false ? ['parent_id'] : undefined,
     },
     attributes: {
-      exclude: ['body'],
+      exclude: request.query.with_children ? undefined : ['body'],
     },
     page: request.query.page,
     per_page: request.query.per_page,
@@ -61,6 +65,16 @@ async function getHandler(request, response) {
   const contentList = results.rows;
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
+
+  if (request.query.with_children) {
+    for (const content of secureOutputValues) {
+      if (content.parent_id) {
+        content.body = removeMarkdown(content.body, { maxLength: 255 });
+      } else {
+        delete content.body;
+      }
+    }
+  }
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
 
