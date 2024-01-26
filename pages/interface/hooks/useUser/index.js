@@ -1,11 +1,8 @@
 import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-import webserver from 'infra/webserver';
-
 const userEndpoint = '/api/v1/user';
 const sessionEndpoint = '/api/v1/sessions';
-const protectedRoutes = ['/login', '/cadastro', '/cadastro/recuperar'];
 const refreshInterval = 600000; // 10 minutes
 
 const UserContext = createContext({
@@ -19,7 +16,6 @@ const UserContext = createContext({
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(undefined);
   const router = useRouter();
 
@@ -43,43 +39,25 @@ export function UserProvider({ children }) {
 
         setUser(fetchedUser);
         localStorage.setItem('user', JSON.stringify(cachedUserProperties));
-        localStorage.removeItem('reloadTime');
-      }
-
-      if (response.status >= 400) {
+      } else if ([401, 403].includes(response.status) && !responseBody?.blocked) {
+        setUser(null);
+        localStorage.removeItem('user');
+      } else {
         const error = new Error(responseBody.message);
         error.status = response.status;
-        error.isProxyResponse =
-          response.status === 403 && webserver.isProduction && !response.headers.get('x-vercel-id');
         throw error;
       }
     } catch (error) {
       setError(error);
-      if (error.status === undefined || error.isProxyResponse) {
-        // If is proxy error, then go to login page and reload if is already there
-        if (localStorage.getItem('reloadTime') > Date.now() - 30000) return;
-        if (protectedRoutes.includes(router.pathname)) {
-          localStorage.setItem('reloadTime', Date.now());
-          router.reload();
-        } else {
-          setUser((user) => (user?.id ? { ...user, proxyResponse: true } : null));
-          await router.push(`/login?redirect=${router.asPath}`);
-        }
-      } else if (error.status === 401 || error.status === 403) {
-        setUser(null);
-        localStorage.removeItem('user');
-      }
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     (async () => {
-      if (storedUser && isLoading && !isFetching) {
+      if (storedUser && isLoading) {
         setUser(JSON.parse(storedUser));
-        setIsFetching(true);
         await fetchUser();
-        setIsFetching(false);
       }
       setIsLoading(false);
     })();
@@ -94,27 +72,22 @@ export function UserProvider({ children }) {
     addEventListener('focus', onFocus);
 
     return () => removeEventListener('focus', onFocus);
-  }, [fetchUser, isFetching, isLoading]);
+  }, [fetchUser, isLoading]);
 
   useEffect(() => {
-    if (!router || !protectedRoutes.includes(router.pathname)) return;
+    if (!user?.id || router?.pathname !== '/login') return;
 
-    (async () => {
-      if (user?.proxyResponse || !user?.id) await fetchUser();
-
-      if (!user?.id || router.pathname !== '/login') return;
-
-      if (
-        router.query?.redirect?.startsWith('/') &&
-        !router.query.redirect.startsWith('/login') &&
-        !router.query.redirect.startsWith('/cadastro')
-      ) {
-        router.replace(router.query.redirect);
-      } else {
-        router.replace('/');
-      }
-    })();
-  }, [user, router, fetchUser]);
+    if (
+      router.query?.redirect?.startsWith('/') &&
+      !router.query?.redirect?.startsWith('//') &&
+      !router.query.redirect.startsWith('/login') &&
+      !router.query.redirect.startsWith('/cadastro')
+    ) {
+      router.replace(router.query.redirect);
+    } else {
+      router.replace('/');
+    }
+  }, [user, router]);
 
   const logout = useCallback(async () => {
     try {
