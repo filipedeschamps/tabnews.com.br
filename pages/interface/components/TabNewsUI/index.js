@@ -22,6 +22,7 @@ export { default as TabCoinCount } from '@/TabCoinCount';
 export { default as ThemeProvider } from '@/ThemeProvider';
 export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
 export { default as Tooltip } from '@/Tooltip';
+export { default as Turnstile } from '@/Turnstile';
 export { default as UserHeader } from '@/UserHeader';
 export {
   ActionList,

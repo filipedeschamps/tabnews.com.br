@@ -2,7 +2,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { RevalidateProvider } from 'next-swr';
 import { SWRConfig } from 'swr';
 
-import { ThemeProvider } from '@/TabNewsUI';
+import { ThemeProvider, Turnstile } from '@/TabNewsUI';
 import { DefaultHead, UserProvider } from 'pages/interface';
 
 async function SWRFetcher(resource, init) {
@@ -20,6 +20,7 @@ async function SWRFetcher(resource, init) {
 function MyApp({ Component, pageProps }) {
   return (
     <ThemeProvider>
+      <Turnstile />
       <UserProvider>
         <DefaultHead />
         <SWRConfig value={{ fetcher: SWRFetcher }}>
