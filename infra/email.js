@@ -7,7 +7,7 @@ import webserver from 'infra/webserver.js';
 const transporterConfiguration = {
   host: process.env.EMAIL_SMTP_HOST,
   port: process.env.EMAIL_SMTP_PORT,
-  secure: true,
+  requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
@@ -15,7 +15,7 @@ const transporterConfiguration = {
 };
 
 if (!webserver.isServerlessRuntime) {
-  transporterConfiguration.secure = false;
+  transporterConfiguration.requireTLS = false;
 }
 
 const transporter = nodemailer.createTransport(transporterConfiguration);
