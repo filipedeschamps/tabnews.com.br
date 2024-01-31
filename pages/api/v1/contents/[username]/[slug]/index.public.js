@@ -115,31 +115,30 @@ async function patchHandler(request, response) {
     });
   }
 
-  let filteredBodyValues;
-
   if (!unfilteredBodyValues.parent_id) {
-    if (!authorization.can(userTryingToPatch, 'create:content:text_root', unfilteredBodyValues)) {
+    if (!authorization.can(userTryingToPatch, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos na raiz do site.',
         action: 'Verifique se você possui a feature "create:content:text_root".',
         errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       });
     }
-
-    filteredBodyValues = authorization.filterInput(userTryingToPatch, 'update:content', unfilteredBodyValues);
-  }
-
-  if (unfilteredBodyValues.parent_id) {
-    if (!authorization.can(userTryingToPatch, 'create:content:text_child', unfilteredBodyValues)) {
+  } else {
+    if (!authorization.can(userTryingToPatch, 'create:content:text_child')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos dentro de outros conteúdos.',
         action: 'Verifique se você possui a feature "create:content:text_child".',
         errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       });
     }
-
-    filteredBodyValues = authorization.filterInput(userTryingToPatch, 'update:content', unfilteredBodyValues);
   }
+
+  const filteredBodyValues = authorization.filterInput(
+    userTryingToPatch,
+    'update:content',
+    unfilteredBodyValues,
+    contentToBeUpdated
+  );
 
   const transaction = await database.transaction();
 
