@@ -81,7 +81,7 @@ function EditProfileForm() {
     if (user.username !== username) {
       const confirmChangeUsername = await confirm({
         title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isto irá quebrar todas as URLs das suas publicações.`,
+        content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
         cancelButtonContent: 'Cancelar',
         confirmButtonContent: 'Sim',
       });
