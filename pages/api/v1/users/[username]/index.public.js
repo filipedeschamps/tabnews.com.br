@@ -80,7 +80,6 @@ async function patchHandler(request, response) {
   const targetUsername = request.query.username;
   const targetUser = await user.findOneByUsername(targetUsername);
   const insecureInputValues = request.body;
-  const secureInputValues = authorization.filterInput(userTryingToPatch, 'update:user', insecureInputValues);
 
   if (!authorization.can(userTryingToPatch, 'update:user', targetUser)) {
     throw new ForbiddenError({
@@ -89,6 +88,13 @@ async function patchHandler(request, response) {
       errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
     });
   }
+
+  const secureInputValues = authorization.filterInput(
+    userTryingToPatch,
+    'update:user',
+    insecureInputValues,
+    targetUser
+  );
 
   // TEMPORARY BEHAVIOR
   // TODO: only let user update "password"

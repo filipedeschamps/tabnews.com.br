@@ -111,7 +111,7 @@ async function postHandler(request, response) {
   let secureInputValues;
 
   if (!insecureInputValues.parent_id) {
-    if (!authorization.can(userTryingToCreate, 'create:content:text_root', insecureInputValues)) {
+    if (!authorization.can(userTryingToCreate, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para criar conteúdos na raiz do site.',
         action: 'Verifique se você possui a feature "create:content:text_root".',
@@ -120,10 +120,8 @@ async function postHandler(request, response) {
     }
 
     secureInputValues = authorization.filterInput(userTryingToCreate, 'create:content:text_root', insecureInputValues);
-  }
-
-  if (insecureInputValues.parent_id) {
-    if (!authorization.can(userTryingToCreate, 'create:content:text_child', insecureInputValues)) {
+  } else {
+    if (!authorization.can(userTryingToCreate, 'create:content:text_child')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
         action: 'Verifique se você possui a feature "create:content:text_child".',

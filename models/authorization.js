@@ -48,24 +48,20 @@ function can(user, feature, resource) {
 
   if (!user.features.includes(feature)) return false;
 
-  if (!resource) return true;
-
   switch (feature) {
     case 'update:user':
-      return user.id === resource.id;
+      return resource?.id && user.id === resource.id;
 
     case 'update:content':
-      return user.id === resource.owner_id || user.features.includes('update:content:others');
-
-    case 'create:content:text_root':
-    case 'create:content:text_child':
-      return true;
+      return (resource?.owner_id && user.id === resource.owner_id) || user.features.includes('update:content:others');
   }
+
+  if (!resource) return true;
 
   return false;
 }
 
-function filterInput(user, feature, input) {
+function filterInput(user, feature, input, target) {
   validateUser(user);
   validateFeature(feature);
   validateInput(input);
@@ -87,7 +83,7 @@ function filterInput(user, feature, input) {
     };
   }
 
-  if (feature === 'update:user' && can(user, feature)) {
+  if (feature === 'update:user' && can(user, feature, target)) {
     filteredInputValues = {
       username: input.username,
       email: input.email,
@@ -130,7 +126,7 @@ function filterInput(user, feature, input) {
     };
   }
 
-  if (feature === 'update:content' && can(user, feature)) {
+  if (feature === 'update:content' && can(user, feature, target)) {
     filteredInputValues = {
       parent_id: input.parent_id,
       slug: input.slug,
@@ -337,7 +333,7 @@ function canRequest(feature) {
   return function (request, response, next) {
     const userTryingToRequest = request.context.user;
 
-    if (!can(userTryingToRequest, feature)) {
+    if (!userTryingToRequest.features.includes(feature)) {
       throw new ForbiddenError({
         message: `Usuário não pode executar esta operação.`,
         action: `Verifique se este usuário possui a feature "${feature}".`,
