@@ -1,18 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { FormControl, TextInput } from '@/TabNewsUI';
+import { FormControl, IconButton, TextInput, Tooltip } from '@/TabNewsUI';
 import { AlertFillIcon, EyeClosedIcon, EyeIcon } from '@/TabNewsUI/icons';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
-
-  useEffect(() => {
-    // change tooltip direction of TextInput.Action
-    const tooltip = inputRef.current.parentElement.getElementsByClassName('tooltipped-n')[0];
-    tooltip?.classList.add('tooltipped-nw');
-    tooltip?.classList.remove('tooltipped-n');
-  }, [inputRef]);
 
   function focusAfterEnd(ref) {
     setTimeout(() => {
@@ -46,15 +39,21 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
       <FormControl.Label>{label}</FormControl.Label>
       <TextInput
         trailingVisual={
-          <TextInput.Action
+          // Using custom Tooltip while waiting for the fix of the `TextInput.Action`
+          // Issue https://github.com/primer/react/issues/4091
+          <Tooltip
             aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
-            onClick={handlePasswordVisible}
-            icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
-            sx={{ color: 'fg.subtle' }}
-          />
+            direction="nw"
+            sx={{ position: 'absolute' }}>
+            <IconButton
+              onClick={handlePasswordVisible}
+              icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
+              variant="invisible"
+            />
+          </Tooltip>
         }
         contrast
-        sx={{ minHeight: '46px', pl: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+        sx={{ pl: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
         ref={inputRef}
         onChange={clearErrors}
         onKeyDown={detectCapsLock}
