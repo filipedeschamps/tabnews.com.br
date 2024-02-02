@@ -127,7 +127,7 @@ function SignUpForm() {
             block={true}
             aria-label="Seu nome de usuário"
             contrast
-            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -151,7 +151,7 @@ function SignUpForm() {
             block={true}
             aria-label="Seu email"
             contrast
-            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'email' && errorObject?.message && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
