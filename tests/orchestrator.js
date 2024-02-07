@@ -282,9 +282,8 @@ async function createPrestige(
   const rootContents = [];
   const childContents = [];
 
-  jest.useFakeTimers({
+  vi.useFakeTimers({
     now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-    advanceTimers: true,
   });
 
   for (let i = 0; i < rootPrestigeDenominator; i++) {
@@ -296,6 +295,8 @@ async function createPrestige(
         status: 'published',
       }),
     );
+
+    vi.advanceTimersByTime(10);
   }
 
   let parentId = rootContents[0]?.id;
@@ -322,7 +323,7 @@ async function createPrestige(
     );
   }
 
-  jest.useRealTimers();
+  vi.useRealTimers();
 
   if (rootContents.length) {
     await createBalance({

@@ -172,16 +172,15 @@ describe('GET /api/v1/user', () => {
     });
 
     test('With expired session', async () => {
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
-        advanceTimers: true,
       });
 
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
         method: 'GET',
@@ -214,16 +213,15 @@ describe('GET /api/v1/user', () => {
     describe('Renew Session', () => {
       test('Should be able to renew with token almost expiring', async () => {
         // 29 days, 23 hours and 59 minutes (1 minute left to expire)
-        jest.useFakeTimers({
+        vi.useFakeTimers({
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 + 1000 * 60),
-          advanceTimers: true,
         });
 
         let defaultUser = await orchestrator.createUser();
         defaultUser = await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
 
         const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
 
@@ -266,16 +264,15 @@ describe('GET /api/v1/user', () => {
       });
 
       test('Should be able to renew with 9 day token', async () => {
-        jest.useFakeTimers({
+        vi.useFakeTimers({
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), // 9 days ago
-          advanceTimers: true,
         });
 
         let defaultUser = await orchestrator.createUser();
         defaultUser = await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
 
         const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
 
@@ -319,16 +316,15 @@ describe('GET /api/v1/user', () => {
       });
 
       test('Should not be able to renew with less than 9 days token', async () => {
-        jest.useFakeTimers({
+        vi.useFakeTimers({
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9 + 1000 * 60), // 1 minute left for 9 days
-          advanceTimers: true,
         });
 
         let defaultUser = await orchestrator.createUser();
         defaultUser = await orchestrator.activateUser(defaultUser);
         const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-        jest.useRealTimers();
+        vi.useRealTimers();
 
         const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
 

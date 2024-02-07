@@ -24,7 +24,7 @@ describe('GET /api/v1/contents', () => {
       // to avoid "Received: serializes to the same string" error.
       const responseHeaders = JSON.parse(JSON.stringify(response.headers.raw()));
 
-      expect(responseHeaders).toEqual({
+      const expectedHeaders = {
         'x-dns-prefetch-control': ['on'],
         'strict-transport-security': ['max-age=63072000; includeSubDomains; preload'],
         'x-xss-protection': ['1; mode=block'],
@@ -46,9 +46,15 @@ describe('GET /api/v1/contents', () => {
         'content-length': ['2'],
         vary: ['Accept-Encoding'],
         date: responseHeaders.date,
-        connection: [expect.stringMatching(/close|keep-alive/)],
-        'keep-alive': expect.objectContaining([]),
-      });
+        connection: [expect.stringMatching(/^close$|^keep-alive$/)],
+      };
+
+      const expectedHeadersAlternative = {
+        ...expectedHeaders,
+        'keep-alive': [expect.stringMatching(/^timeout=/)],
+      };
+
+      expect([expectedHeaders, expectedHeadersAlternative]).toContainEqual(responseHeaders);
     });
 
     test('With no content', async () => {
@@ -399,9 +405,8 @@ describe('GET /api/v1/contents', () => {
       const numberOfContents = 60;
       const contentList = [];
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -412,7 +417,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -427,9 +432,8 @@ describe('GET /api/v1/contents', () => {
         amount: 10, // -> with recent comment, but same user
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), // 9 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -440,7 +444,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createContent({
         owner_id: secondUser.id,
@@ -455,9 +459,8 @@ describe('GET /api/v1/contents', () => {
         amount: 10, // -> score = 33, more than 7 days ago, but with recent comment
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8), // 8 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -468,7 +471,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createContent({
         owner_id: secondUser.id,
@@ -483,9 +486,8 @@ describe('GET /api/v1/contents', () => {
         amount: 9, // -> score = 30, more than 7 days ago, but with recent comment
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -496,7 +498,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
@@ -504,9 +506,8 @@ describe('GET /api/v1/contents', () => {
         amount: 9, // -> score = 30, but more than 7 days ago
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -517,7 +518,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
@@ -525,9 +526,8 @@ describe('GET /api/v1/contents', () => {
         amount: 8, // -> score = 27 and 3 days ago -> group_6
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 35), // 35 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -538,7 +538,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
@@ -546,9 +546,8 @@ describe('GET /api/v1/contents', () => {
         amount: 3, // score = 12 and less than 36 hours -> group_4
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 37), // 37 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -559,7 +558,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
@@ -567,9 +566,8 @@ describe('GET /api/v1/contents', () => {
         amount: 4, // score = 15 and more than 37 hours -> group_5
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -580,7 +578,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',
@@ -588,9 +586,8 @@ describe('GET /api/v1/contents', () => {
         amount: 4, // score = 15 and more than 36 hours -> group_5
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24), // 24 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -601,7 +598,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
         balanceType: 'content:tabcoin',

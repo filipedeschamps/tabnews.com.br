@@ -82,9 +82,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         username: 'abc',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-01-01T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const rootContent = await orchestrator.createContent({
@@ -93,7 +92,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
@@ -125,9 +124,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         username: 'ThisUsernameHas30Characterssss',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-06-06T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const rootContent = await orchestrator.createContent({
@@ -137,7 +135,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
@@ -169,9 +167,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         username: 'ThisUsernameHas30Charactersss2',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-07-01T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const rootContent = await orchestrator.createContent({
@@ -181,7 +178,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const childContent1 = await orchestrator.createContent({
         parent_id: rootContent.id,
@@ -233,9 +230,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-02-02T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const childContent = await orchestrator.createContent({
@@ -245,7 +241,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
@@ -284,9 +280,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-10-10T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const childContent = await orchestrator.createContent({
@@ -296,7 +291,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
@@ -334,9 +329,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-02-02T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const contentLevel2 = await orchestrator.createContent({
@@ -353,7 +347,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
@@ -391,9 +385,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-02-02T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const contentLevel2 = await orchestrator.createContent({
@@ -410,7 +403,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,

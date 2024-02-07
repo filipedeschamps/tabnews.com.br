@@ -74,16 +74,15 @@ describe('PATCH /api/v1/users/[username]', () => {
     });
 
     test('With expired session', async () => {
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
-        advanceTimers: true,
       });
 
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
         method: 'patch',
