@@ -1,6 +1,6 @@
 const isServerlessRuntime = !!process.env.NEXT_PUBLIC_VERCEL_ENV;
 
-const isBuildTime = !!process.env.CI;
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
 
 const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 
