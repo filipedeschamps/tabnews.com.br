@@ -117,7 +117,7 @@ async function getLastEmail() {
 
 async function createUser(userObject) {
   return await user.create({
-    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
+    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', '').replace('-', ''),
     email: userObject?.email || faker.internet.email(),
     password: userObject?.password || 'password',
     description: userObject?.description || '',
