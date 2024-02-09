@@ -24,14 +24,14 @@ export default nextConnect({
     authentication.injectAnonymousOrUser,
     patchValidationHandler,
     authorization.canRequest('update:user'),
-    patchHandler
+    patchHandler,
   )
   .delete(
     cacheControl.noCache,
     authentication.injectAnonymousOrUser,
     deleteValidationHandler,
     authorization.canRequest('ban:user'),
-    deleteHandler
+    deleteHandler,
   );
 
 function getValidationHandler(request, response, next) {
@@ -99,7 +99,7 @@ async function patchHandler(request, response) {
     userTryingToPatch,
     updateAnotherUser ? 'update:user:others' : 'update:user',
     insecureInputValues,
-    targetUser
+    targetUser,
   );
 
   // TEMPORARY BEHAVIOR
@@ -120,7 +120,7 @@ async function patchHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     const updatedUser = await user.update(targetUsername, secureInputValues, {
@@ -134,7 +134,7 @@ async function patchHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     await transaction.query('COMMIT');
@@ -143,7 +143,7 @@ async function patchHandler(request, response) {
     const secureOutputValues = authorization.filterOutput(
       userTryingToPatch,
       updateAnotherUser ? 'read:user' : 'read:user:self',
-      updatedUser
+      updatedUser,
     );
 
     return response.status(200).json(secureOutputValues);
@@ -219,7 +219,7 @@ async function deleteHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     if (secureInputValues.ban_type === 'nuke') {

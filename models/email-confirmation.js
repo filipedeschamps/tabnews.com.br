@@ -171,7 +171,7 @@ async function updateUserEmail(userId, newEmail) {
     },
     {
       skipEmailConfirmation: true,
-    }
+    },
   );
 }
 

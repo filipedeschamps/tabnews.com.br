@@ -108,7 +108,7 @@ async function checkForTooManyConnections(client) {
 
   async function getConnectionLimits() {
     const [maxConnectionsResult, reservedConnectionResult] = await client.query(
-      'SHOW max_connections; SHOW superuser_reserved_connections;'
+      'SHOW max_connections; SHOW superuser_reserved_connections;',
     );
     return [
       maxConnectionsResult.rows[0].max_connections,

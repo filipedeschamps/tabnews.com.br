@@ -291,7 +291,7 @@ describe('DELETE /api/v1/users/[username]', () => {
           body: JSON.stringify({
             status: 'deleted',
           }),
-        }
+        },
       );
 
       // 4) MOVE TABCOINS FROM SECOND USER TO THE FIRST USER ROOT CONTENT (credit)
@@ -306,7 +306,7 @@ describe('DELETE /api/v1/users/[username]', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       // 5) MOVE TABCOINS FROM SECOND USER TO THE FIRST USER CHILD CONTENT (debit)
@@ -321,7 +321,7 @@ describe('DELETE /api/v1/users/[username]', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       // 6) CHECK FIRST USER (PRE-BAN)
@@ -362,7 +362,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       // 8) CHECK FIRST USER ROOT CONTENT (PRE-BAN)
       const firstUserRootContentCheck1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserRootContentBody.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserRootContentBody.slug}`,
       );
       const firstUserRootContentCheck1Body = await firstUserRootContentCheck1.json();
 
@@ -373,7 +373,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       // 9) CHECK FIRST USER CHILD CONTENT (PRE-BAN)
       const firstUserChildCheck1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserChildContentBody.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserChildContentBody.slug}`,
       );
       const firstUserChildCheck1Body = await firstUserChildCheck1.json();
 
@@ -384,13 +384,13 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       // 10) CHECK SECOND USER CONTENTS (PRE-BAN)
       const secondUserRootContentCheck1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserRootContentBody.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserRootContentBody.slug}`,
       );
       const secondUserChildContent1Check1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent1Body.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent1Body.slug}`,
       );
       const secondUserChildContent2Check1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent2Body.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent2Body.slug}`,
       );
 
       const secondUserRootContentCheck1Body = await secondUserRootContentCheck1.json();
@@ -465,7 +465,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       // 14) CHECK FIRST USER ROOT CONTENT (POST-BAN)
       const firstUserRootContentCheck2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserRootContentBody.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserRootContentBody.slug}`,
       );
       const firstUserRootContentCheck2Body = await firstUserRootContentCheck2.json();
 
@@ -476,7 +476,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       // 15) CHECK FIRST USER CHILD CONTENT (POST-BAN)
       const firstUserChildCheck2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserChildContentBody.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserChildContentBody.slug}`,
       );
       const firstUserChildCheck2Body = await firstUserChildCheck2.json();
 
@@ -487,13 +487,13 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       // 16) CHECK SECOND USER CONTENTS (POST-BAN)
       const secondUserRootContentCheck2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserRootContentBody.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserRootContentBody.slug}`,
       );
       const secondUserChildContent1Check2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent1Body.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent1Body.slug}`,
       );
       const secondUserChildContent2Check2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent2Body.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent2Body.slug}`,
       );
 
       expect(secondUserRootContentCheck2.status).toStrictEqual(404);

@@ -39,7 +39,7 @@ async function checkDatabaseDependency() {
   try {
     const firstQueryTimer = performance.now();
     const [maxConnectionsResult, superuserReservedConnectionsResult] = await database.query(
-      'SHOW max_connections; SHOW superuser_reserved_connections;'
+      'SHOW max_connections; SHOW superuser_reserved_connections;',
     );
     const maxConnectionsValue = maxConnectionsResult.rows[0].max_connections;
     const superuserReservedConnectionsValue = superuserReservedConnectionsResult.rows[0].superuser_reserved_connections;

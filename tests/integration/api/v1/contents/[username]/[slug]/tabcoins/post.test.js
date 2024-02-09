@@ -31,7 +31,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -73,7 +73,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
             cookie: `session_id=${secondUserSession.token}`,
           },
           body: JSON.stringify({}),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -117,7 +117,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -165,7 +165,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponseBody = await postTabCoinsResponse.json();
@@ -231,7 +231,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponseBody = await postTabCoinsResponse.json();
@@ -298,7 +298,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse1.status).toBe(201);
@@ -315,7 +315,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse2.status).toBe(201);
@@ -332,7 +332,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse3.status).toBe(201);
@@ -349,7 +349,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
@@ -420,7 +420,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse1.status).toBe(201);
@@ -437,7 +437,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse2.status).toBe(201);
@@ -454,7 +454,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse3.status).toBe(201);
@@ -471,7 +471,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
@@ -542,7 +542,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse1Body = await postTabCoinsResponse1.json();
@@ -589,7 +589,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
@@ -663,18 +663,18 @@ describe('POST /api/v1/contents/tabcoins', () => {
               body: JSON.stringify({
                 transaction_type: 'credit',
               }),
-            }
-          )
+            },
+          ),
         );
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
       const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json()
+        postTabCoinsResponse.json(),
       );
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status
+        (postTabCoinsResponse) => postTabCoinsResponse.status,
       );
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
@@ -766,18 +766,18 @@ describe('POST /api/v1/contents/tabcoins', () => {
               body: JSON.stringify({
                 transaction_type: 'credit',
               }),
-            }
-          )
+            },
+          ),
         );
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
       const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json()
+        postTabCoinsResponse.json(),
       );
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status
+        (postTabCoinsResponse) => postTabCoinsResponse.status,
       );
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
@@ -814,7 +814,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           error_id: responseBody.error_id,
           request_id: responseBody.request_id,
           error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
-        })
+        }),
       );
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -878,18 +878,18 @@ describe('POST /api/v1/contents/tabcoins', () => {
               body: JSON.stringify({
                 transaction_type: 'credit',
               }),
-            }
-          )
+            },
+          ),
         );
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
       const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json()
+        postTabCoinsResponse.json(),
       );
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status
+        (postTabCoinsResponse) => postTabCoinsResponse.status,
       );
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
@@ -903,7 +903,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           action: 'Tente realizar esta operação mais tarde.',
           status_code: 422,
           error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
-        })
+        }),
       );
     });
   });

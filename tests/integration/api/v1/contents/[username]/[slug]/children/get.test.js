@@ -20,7 +20,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`,
       );
       const responseBody = await response.json();
 
@@ -45,7 +45,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`,
       );
       const responseBody = await response.json();
 
@@ -68,7 +68,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`,
       );
       const responseBody = await response.json();
 
@@ -137,7 +137,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${rootBranchLevel0.slug}/children`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${rootBranchLevel0.slug}/children`,
       );
       const responseBody = await response.json();
 
@@ -323,7 +323,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${childBranchBLevel1.slug}/children`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${childBranchBLevel1.slug}/children`,
       );
       const responseBody = await response.json();
 

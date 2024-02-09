@@ -631,7 +631,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
       const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
-        tokenObjectInDatabase.id
+        tokenObjectInDatabase.id,
       );
 
       expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');

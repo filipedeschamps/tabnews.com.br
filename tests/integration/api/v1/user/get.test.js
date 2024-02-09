@@ -159,12 +159,12 @@ describe('GET /api/v1/user', () => {
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não possui permissão para executar esta ação.');
       expect(responseBody.action).toEqual(
-        'Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".'
+        'Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".',
       );
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION'
+        'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
       );
 
       const parsedCookiesFromGet = authentication.parseSetCookies(response);
@@ -390,7 +390,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         );
 
         const rewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
@@ -446,7 +446,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
@@ -456,7 +456,7 @@ describe('GET /api/v1/user', () => {
             expect(result.status).toBe(200);
             const resultBody = await result.json();
             return resultBody.tabcoins;
-          })
+          }),
         );
 
         expect(tabcoins).toContain(defaultTestRewardValue);
@@ -494,7 +494,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
@@ -539,7 +539,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
@@ -590,7 +590,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);

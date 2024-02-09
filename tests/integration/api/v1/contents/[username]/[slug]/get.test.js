@@ -30,7 +30,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/esse-slug-nao-existe`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/esse-slug-nao-existe`,
       );
       const responseBody = await response.json();
 
@@ -56,7 +56,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -83,7 +83,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -125,7 +125,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(defaultUserContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -188,7 +188,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(childContentLeve4.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -235,7 +235,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -268,7 +268,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -336,7 +336,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(childContentLeve3.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -386,7 +386,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(childContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 

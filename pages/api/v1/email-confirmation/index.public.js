@@ -37,7 +37,7 @@ async function patchHandler(request, response) {
   const authorizedValuesToReturn = authorization.filterOutput(
     userTryingToChangeEmail,
     'read:email_confirmation_token',
-    tokenObject
+    tokenObject,
   );
 
   return response.status(200).json(authorizedValuesToReturn);

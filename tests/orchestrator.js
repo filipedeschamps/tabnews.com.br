@@ -41,7 +41,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 
@@ -59,7 +59,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 
@@ -76,7 +76,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 }
@@ -162,7 +162,7 @@ async function createContent(contentObject) {
     },
     {
       eventId: currentEvent.id,
-    }
+    },
   );
 
   await event.updateMetadata(currentEvent.id, {
@@ -236,7 +236,7 @@ async function createRate(contentObject, amount, fromUserId) {
       },
       {
         eventId: currentEvent.id,
-      }
+      },
     );
   }
 }
@@ -263,7 +263,7 @@ async function createPrestige(
     rootPrestigeDenominator = 4,
     childPrestigeNumerator = 0,
     childPrestigeDenominator = 1,
-  } = {}
+  } = {},
 ) {
   if (
     rootPrestigeDenominator < 0 ||
@@ -289,7 +289,7 @@ async function createPrestige(
         title: faker.lorem.words(3),
         body: faker.lorem.paragraphs(1),
         status: 'published',
-      })
+      }),
     );
   }
 
@@ -313,7 +313,7 @@ async function createPrestige(
         owner_id: userId,
         body: faker.lorem.paragraphs(1),
         status: 'published',
-      })
+      }),
     );
   }
 

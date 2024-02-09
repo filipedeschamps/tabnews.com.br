@@ -280,14 +280,14 @@ async function update(username, postedUserData, options = {}) {
         balanceType: 'user:tabcoin',
         recipientId: updatedUser.id,
       },
-      options
+      options,
     );
     updatedUser.tabcash = await balance.getTotal(
       {
         balanceType: 'user:tabcash',
         recipientId: updatedUser.id,
       },
-      options
+      options,
     );
 
     return updatedUser;

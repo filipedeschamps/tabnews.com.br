@@ -24,7 +24,7 @@ export default nextConnect({
     authentication.injectAnonymousOrUser,
     patchValidationHandler,
     authorization.canRequest('update:content'),
-    patchHandler
+    patchHandler,
   );
 
 function getValidationHandler(request, response, next) {
@@ -137,7 +137,7 @@ async function patchHandler(request, response) {
     userTryingToPatch,
     'update:content',
     unfilteredBodyValues,
-    contentToBeUpdated
+    contentToBeUpdated,
   );
 
   const transaction = await database.transaction();
@@ -153,7 +153,7 @@ async function patchHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues, {
@@ -170,7 +170,7 @@ async function patchHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     await transaction.query('COMMIT');

@@ -594,7 +594,7 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant`,
       );
       const responseBody = await response.json();
 
@@ -719,7 +719,7 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_children=false`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_children=false`,
       );
       const responseBody = await response.json();
 
@@ -819,7 +819,7 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_root=false`
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_root=false`,
       );
       const responseBody = await response.json();
 

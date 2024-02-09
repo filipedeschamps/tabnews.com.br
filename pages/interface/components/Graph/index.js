@@ -70,8 +70,8 @@ function Graph({ title, data, simulationTimeout = 200 }) {
             IPs: { shape: 'icon', icon: { code: '🌐' } },
           },
           interaction: { hover: true },
-        }
-      )
+        },
+      ),
     );
   }, [network]);
 
@@ -96,7 +96,7 @@ function Graph({ title, data, simulationTimeout = 200 }) {
           network.setOptions({
             physics: { enabled: config.physics },
           }),
-        simulationTimeout
+        simulationTimeout,
       );
 
     const dragStart = () => {

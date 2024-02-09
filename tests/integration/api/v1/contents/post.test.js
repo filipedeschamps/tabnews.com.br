@@ -65,7 +65,7 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND'
+        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       );
     });
   });
@@ -104,13 +104,13 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual(
-        'Você não possui permissão para criar conteúdos dentro de outros conteúdos.'
+        'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
       );
       expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_child".');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND'
+        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       );
     });
   });
@@ -1302,7 +1302,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1334,7 +1334,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1366,7 +1366,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1574,7 +1574,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1606,7 +1606,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1638,7 +1638,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1670,7 +1670,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1702,7 +1702,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2296,7 +2296,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'
+        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.',
       );
       expect(responseBody.action).toEqual('Utilize um "parent_id" que aponte para um conteúdo que existe.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2450,7 +2450,7 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(
-          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`
+          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`,
         );
         expect(getLastEmail.text.includes(`Olá, ${firstUser.username}`)).toBe(true);
         expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
@@ -2506,7 +2506,7 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
         expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
         expect(getLastEmail.text.includes(`"${firstUser.username}" respondeu ao seu comentário na publicação`)).toBe(
-          true
+          true,
         );
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
@@ -2564,8 +2564,8 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail.text.includes(rootContent.title)).toBe(false);
         expect(
           getLastEmail.text.includes(
-            `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`
-          )
+            `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`,
+          ),
         ).toBe(true);
         expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
       });
@@ -2923,15 +2923,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
         expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
         expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
         );
       });
 
@@ -2968,15 +2968,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
         expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
         expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
         );
       });
 
@@ -3373,15 +3373,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
         expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
         expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
         );
       });
 
