@@ -4,15 +4,15 @@ import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import user from 'models/user.js';
 
-async function createAndSendEmail(userId, newEmail) {
-  const userFound = await user.findOneById(userId);
-  const tokenObject = await create(userFound.id, newEmail);
+async function createAndSendEmail(userId, newEmail, options) {
+  const userFound = await user.findOneById(userId, options);
+  const tokenObject = await create(userFound.id, newEmail, options);
   await sendEmailToUser(userFound, newEmail, tokenObject.id);
 
   return tokenObject;
 }
 
-async function create(userId, newEmail) {
+async function create(userId, newEmail, options) {
   const query = {
     text: `
       INSERT INTO
@@ -25,7 +25,7 @@ async function create(userId, newEmail) {
     values: [userId, newEmail],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
   return results.rows[0];
 }
 

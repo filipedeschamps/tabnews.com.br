@@ -214,20 +214,22 @@ function validatePostSchema(postedUserData) {
 // and to accept update using "userId".
 async function update(username, postedUserData, options = {}) {
   const validPostedUserData = await validatePatchSchema(postedUserData);
-  const currentUser = await findOneByUsername(username);
+  const currentUser = await findOneByUsername(username, { transaction: options.transaction });
 
   if (
     'username' in validPostedUserData &&
     currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()
   ) {
-    await validateUniqueUsername(validPostedUserData.username);
+    await validateUniqueUsername(validPostedUserData.username, { transaction: options.transaction });
   }
 
   if ('email' in validPostedUserData) {
-    await validateUniqueEmail(validPostedUserData.email);
+    await validateUniqueEmail(validPostedUserData.email, { transaction: options.transaction });
 
     if (!options.skipEmailConfirmation) {
-      await emailConfirmation.createAndSendEmail(currentUser.id, validPostedUserData.email);
+      await emailConfirmation.createAndSendEmail(currentUser.id, validPostedUserData.email, {
+        transaction: options.transaction,
+      });
       delete validPostedUserData.email;
     }
   }
@@ -238,10 +240,12 @@ async function update(username, postedUserData, options = {}) {
 
   const userWithUpdatedValues = { ...currentUser, ...validPostedUserData };
 
-  const updatedUser = await runUpdateQuery(currentUser, userWithUpdatedValues);
+  const updatedUser = await runUpdateQuery(currentUser, userWithUpdatedValues, {
+    transaction: options.transaction,
+  });
   return updatedUser;
 
-  async function runUpdateQuery(currentUser, userWithUpdatedValues) {
+  async function runUpdateQuery(currentUser, userWithUpdatedValues, options) {
     const query = {
       text: `
         UPDATE
@@ -268,17 +272,23 @@ async function update(username, postedUserData, options = {}) {
       ],
     };
 
-    const results = await database.query(query);
+    const results = await database.query(query, options);
     const updatedUser = results.rows[0];
 
-    updatedUser.tabcoins = await balance.getTotal({
-      balanceType: 'user:tabcoin',
-      recipientId: updatedUser.id,
-    });
-    updatedUser.tabcash = await balance.getTotal({
-      balanceType: 'user:tabcash',
-      recipientId: updatedUser.id,
-    });
+    updatedUser.tabcoins = await balance.getTotal(
+      {
+        balanceType: 'user:tabcoin',
+        recipientId: updatedUser.id,
+      },
+      options
+    );
+    updatedUser.tabcash = await balance.getTotal(
+      {
+        balanceType: 'user:tabcash',
+        recipientId: updatedUser.id,
+      },
+      options
+    );
 
     return updatedUser;
   }
@@ -296,13 +306,13 @@ async function validatePatchSchema(postedUserData) {
   return cleanValues;
 }
 
-async function validateUniqueUsername(username) {
+async function validateUniqueUsername(username, options) {
   const query = {
     text: 'SELECT username FROM users WHERE LOWER(username) = LOWER($1)',
     values: [username],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount > 0) {
     throw new ValidationError({
@@ -314,13 +324,13 @@ async function validateUniqueUsername(username) {
   }
 }
 
-async function validateUniqueEmail(email) {
+async function validateUniqueEmail(email, options) {
   const query = {
     text: 'SELECT email FROM users WHERE LOWER(email) = LOWER($1)',
     values: [email],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount > 0) {
     throw new ValidationError({

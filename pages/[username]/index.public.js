@@ -7,17 +7,20 @@ import {
   ActionMenu,
   Box,
   Button,
+  ButtonWithLoader,
   DefaultLayout,
+  Editor,
   Flash,
+  FormControl,
   IconButton,
   Label,
   LabelGroup,
   NavItem,
   NavList,
-  NextLink,
   PastTime,
   TabCashCount,
   TabCoinCount,
+  Text,
   useConfirm,
   UserHeader,
   Viewer,
@@ -38,13 +41,15 @@ export default function Page({ userFound: userFoundFallback }) {
 
   const { user } = useUser();
   const confirm = useConfirm();
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
+  const [globalMessageObject, setGlobalMessageObject] = useState(null);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
 
   const isAuthenticatedUser = user && user.username === userFound.username;
   const canUpdate = isAuthenticatedUser && user?.features?.includes('update:user');
+  const canUpdateDescription = canUpdate || user?.features?.includes('update:user:others');
 
   async function handleClickNuke() {
-    setGlobalErrorMessage(null);
+    setGlobalMessageObject(null);
 
     const confirmDelete1 = await confirm({
       title: `Atenção: Você está realizando um Nuke!`,
@@ -80,12 +85,26 @@ export default function Page({ userFound: userFoundFallback }) {
     const responseBody = await response.json();
 
     if (response.status === 200) {
-      userFoundMutate(responseBody);
+      userFoundMutate(responseBody, { revalidate: false });
       return;
     }
 
-    setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+    setGlobalMessageObject({
+      type: 'danger',
+      position: 'main',
+      text: `${responseBody.message} ${responseBody.action}`,
+    });
     return;
+  }
+
+  function handleEditDescription() {
+    setGlobalMessageObject(null);
+    setIsEditingDescription(true);
+  }
+
+  function handleEditSuccess(newUser) {
+    setIsEditingDescription(false);
+    userFoundMutate(newUser, { revalidate: false });
   }
 
   function OptionsMenu() {
@@ -141,9 +160,9 @@ export default function Page({ userFound: userFoundFallback }) {
 
   return (
     <DefaultLayout metadata={{ title: `${userFound.username}` }}>
-      {globalErrorMessage && (
-        <Flash variant="danger" sx={{ width: '100%', mb: 4 }}>
-          {globalErrorMessage}
+      {globalMessageObject?.position === 'main' && (
+        <Flash variant={globalMessageObject.type} sx={{ width: '100%', mb: 4 }}>
+          {globalMessageObject.text}
         </Flash>
       )}
 
@@ -160,7 +179,7 @@ export default function Page({ userFound: userFoundFallback }) {
           wordBreak: 'break-word',
           flexWrap: 'wrap',
           gap: 2,
-          mb: 3,
+          mb: 2,
         }}>
         <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           {userFound.tabcoins !== undefined && <TabCoinCount amount={userFound.tabcoins} mode="full" />}
@@ -173,28 +192,230 @@ export default function Page({ userFound: userFoundFallback }) {
         </Box>
       </Box>
 
-      {userFound.description && (
-        <Box
-          sx={{
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: 'border.default',
-            borderRadius: '6px',
-            width: '100%',
-            p: 3,
-            mb: 3,
-            overflow: 'hidden',
-          }}>
-          <Viewer value={userFound.description} />
-        </Box>
+      {userFound.description && !isEditingDescription && (
+        <>
+          <Box
+            sx={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between',
+              mb: 1,
+              minHeight: '32px', // This is the button height, so it doesn't flick when the button is rendered
+            }}>
+            <Text sx={{ fontSize: 1, fontWeight: 'bold', mt: 'auto', pb: 1 }}>Descrição</Text>
+            {canUpdateDescription && (
+              <Button variant="invisible" onClick={handleEditDescription}>
+                Editar descrição
+              </Button>
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              borderWidth: 1,
+              borderStyle: 'solid',
+              borderColor: 'border.default',
+              borderRadius: 2,
+              width: '100%',
+              p: 3,
+              overflow: 'hidden',
+            }}>
+            <Viewer value={userFound.description} />
+          </Box>
+        </>
       )}
 
-      {!userFound.description && canUpdate && (
-        <Button href="/perfil" as={NextLink} sx={{ mx: 'auto' }}>
+      {!userFound.description && canUpdateDescription && !isEditingDescription && (
+        <Button sx={{ mx: 'auto', mt: 1 }} onClick={handleEditDescription}>
           Criar descrição
         </Button>
       )}
+
+      {isEditingDescription && (
+        <DescriptionForm
+          user={userFound}
+          onCancel={() => setIsEditingDescription(false)}
+          onSuccess={handleEditSuccess}
+          globalMessageObject={globalMessageObject}
+          setGlobalMessageObject={setGlobalMessageObject}
+          isAuthenticatedUser={isAuthenticatedUser}
+        />
+      )}
+
+      {!isEditingDescription && globalMessageObject?.position === 'description' && (
+        <Flash variant={globalMessageObject.type} sx={{ width: '100%', mt: 3 }}>
+          {globalMessageObject.text}
+        </Flash>
+      )}
     </DefaultLayout>
+  );
+}
+
+function DescriptionForm({
+  user,
+  onCancel,
+  onSuccess,
+  globalMessageObject,
+  setGlobalMessageObject,
+  isAuthenticatedUser,
+}) {
+  const [description, setDescription] = useState(user.description ?? '');
+  const [isPosting, setIsPosting] = useState(false);
+  const [errorObject, setErrorObject] = useState();
+
+  const confirm = useConfirm();
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    clearMessages();
+
+    if (user.description === description) {
+      setGlobalMessageObject({
+        type: 'warning',
+        position: 'description',
+        text: 'A descrição não foi alterada.',
+      });
+      return;
+    }
+
+    const confirmSubmit = !isAuthenticatedUser
+      ? await confirm({
+          title: 'Tem certeza que deseja salvar as alterações?',
+          content: (
+            <Text>
+              Você está editando a descrição do usuário &quot;<Text sx={{ fontWeight: 'bold' }}>{user.username}</Text>
+              &quot;.
+            </Text>
+          ),
+          cancelButtonContent: 'Cancelar',
+          confirmButtonContent: 'Sim',
+        })
+      : true;
+
+    if (!confirmSubmit) return;
+
+    setIsPosting(true);
+
+    try {
+      const response = await fetch(`/api/v1/users/${user.username}`, {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ description: description }),
+      });
+
+      const responseBody = await response.json();
+
+      if (response.status === 200) {
+        setGlobalMessageObject({
+          type: 'success',
+          position: 'description',
+          text: 'Descrição salva com sucesso!',
+        });
+        onSuccess(responseBody);
+        return;
+      }
+
+      if (response.status === 400) {
+        setErrorObject(responseBody);
+        return;
+      }
+
+      if (response.status >= 403) {
+        setGlobalMessageObject({
+          type: 'danger',
+          position: 'description',
+          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+        });
+      }
+    } catch (error) {
+      setGlobalMessageObject({
+        type: 'danger',
+        position: 'description',
+        text: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.',
+      });
+    } finally {
+      setIsPosting(false);
+    }
+  }
+
+  async function handleCancel() {
+    const confirmCancel =
+      description !== user.description
+        ? await confirm({
+            title: 'Tem certeza que deseja sair da edição?',
+            content: 'A alteração não foi salva e será perdida.',
+            cancelButtonContent: 'Cancelar',
+            confirmButtonContent: 'Sim',
+          })
+        : true;
+
+    if (!confirmCancel) return;
+
+    clearMessages();
+    onCancel();
+  }
+
+  function handleDescriptionChange(value) {
+    setDescription(value);
+    clearMessages();
+  }
+
+  function clearMessages() {
+    setErrorObject(undefined);
+    setGlobalMessageObject(null);
+  }
+
+  function handleKeyDown(event) {
+    if (isPosting) return;
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      handleSubmit(event);
+    } else if (event.key === 'Escape') {
+      handleCancel();
+    }
+  }
+
+  return (
+    <Box as="form" sx={{ width: '100%' }} onSubmit={handleSubmit}>
+      <FormControl id="description">
+        {/* Label styled similar to the "read" view so it is in the same position */}
+        <FormControl.Label sx={{ display: 'flex', alignItems: 'flex-end', pb: 1, minHeight: '32px' }}>
+          Descrição
+        </FormControl.Label>
+        <Editor
+          isValid={errorObject?.key === 'body'}
+          value={description}
+          onChange={handleDescriptionChange}
+          onKeyDown={handleKeyDown}
+          compact
+        />
+      </FormControl>
+
+      {globalMessageObject?.position === 'description' && (
+        <Flash variant={globalMessageObject.type} sx={{ mt: 3 }}>
+          {globalMessageObject.text}
+        </Flash>
+      )}
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, mt: 3 }}>
+        <Button
+          variant="invisible"
+          type="button"
+          disabled={isPosting}
+          sx={{ fontWeight: 'normal', color: 'fg.muted' }}
+          aria-label="Cancelar alteração"
+          onClick={handleCancel}>
+          Cancelar
+        </Button>
+
+        <ButtonWithLoader variant="primary" type="submit" aria-label="Salvar" isLoading={isPosting}>
+          Salvar
+        </ButtonWithLoader>
+      </Box>
+    </Box>
   );
 }
 
@@ -262,6 +483,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   return {
     props: {
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
+      key: secureUserFound.id,
     },
 
     revalidate: 10,

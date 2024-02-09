@@ -38,6 +38,7 @@ const availableFeatures = new Set([
   'read:user:list',
   'read:votes:others',
   'update:content:others',
+  'update:user:others',
   'ban:user',
   'create:recovery_token:username',
 ]);
@@ -90,6 +91,12 @@ function filterInput(user, feature, input, target) {
       password: input.password,
       description: input.description,
       notifications: input.notifications,
+    };
+  }
+
+  if (feature === 'update:user:others' && can(user, feature)) {
+    filteredInputValues = {
+      description: input.description,
     };
   }
 

@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
+import authentication from 'models/authentication';
 import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
 import user from 'models/user.js';
@@ -13,8 +14,6 @@ beforeAll(async () => {
 });
 
 describe('PATCH /api/v1/users/[username]', () => {
-  //TODO: test with expired session
-
   describe('Anonymous user', () => {
     test('Patching other user', async () => {
       const defaultUser = await orchestrator.createUser();
@@ -74,6 +73,51 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.error_location_code).toEqual('CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER');
     });
 
+    test('With expired session', async () => {
+      jest.useFakeTimers({
+        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
+        advanceTimers: true,
+      });
+
+      let defaultUser = await orchestrator.createUser();
+      defaultUser = await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      jest.useRealTimers();
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: 'A new description',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(401);
+      expect(responseBody.status_code).toEqual(401);
+      expect(responseBody.name).toEqual('UnauthorizedError');
+      expect(responseBody.message).toEqual('Usuário não possui sessão ativa.');
+      expect(responseBody.action).toEqual('Verifique se este usuário está logado.');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+
+      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
+      expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
+      expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);
+      expect(parsedCookiesFromGet.session_id.path).toEqual('/');
+      expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+
+      const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
+      expect(sessionObject).toBeUndefined();
+    });
+
     test('Patching itself with a valid and unique username', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
@@ -96,10 +140,12 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
-        id: responseBody.id,
+        id: defaultUser.id,
         username: 'regularUserPatchingHisUsername',
         description: defaultUser.description,
+        email: defaultUser.email,
         features: defaultUser.features,
+        notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
         created_at: defaultUser.created_at.toISOString(),
@@ -112,9 +158,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
-
-      const userInDatabase = await user.findOneById(responseBody.id);
-      expect(userInDatabase.email).toEqual(defaultUser.email);
+      expect(defaultUserInDatabase.email).toEqual(defaultUser.email);
     });
 
     test('Patching itself with a valid and same username but with different case letters', async () => {
@@ -141,10 +185,12 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
-        id: responseBody.id,
+        id: defaultUser.id,
         username: 'REGULARUser',
+        email: defaultUser.email,
         description: defaultUser.description,
         features: defaultUser.features,
+        notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
         created_at: defaultUser.created_at.toISOString(),
@@ -157,9 +203,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
-
-      const userInDatabase = await user.findOneById(responseBody.id);
-      expect(userInDatabase.email).toEqual(defaultUser.email);
+      expect(defaultUserInDatabase.email).toEqual(defaultUser.email);
     });
 
     test('Patching itself with a valid, unique but "untrimmed" username', async () => {
@@ -184,10 +228,12 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toStrictEqual({
-        id: responseBody.id,
+        id: defaultUser.id,
         username: 'untrimmedUsername',
         description: defaultUser.description,
+        email: defaultUser.email,
         features: defaultUser.features,
+        notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
         created_at: defaultUser.created_at.toISOString(),
@@ -596,7 +642,32 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(confirmationEmail.text.includes(emailConfirmationPageEndpoint)).toBe(true);
     });
 
-    test('Patching itselt with a "description" containing a valid value', async () => {
+    test('Patching itself with "notifications"', async () => {
+      const defaultUser = await orchestrator.createUser({
+        notifications: true,
+      });
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          notifications: false,
+        }),
+      });
+
+      expect(response.status).toEqual(200);
+
+      const userInDatabase = await user.findOneById(defaultUser.id);
+      expect(userInDatabase.notifications).toBe(false);
+    });
+
+    test('Patching itself with a "description" containing a valid value', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -616,9 +687,10 @@ describe('PATCH /api/v1/users/[username]', () => {
       const responseBody = await response.json();
       expect(response.status).toEqual(200);
       expect(responseBody).toStrictEqual({
-        id: responseBody.id,
-        username: responseBody.username,
+        id: defaultUser.id,
+        username: defaultUser.username,
         description: 'my description',
+        email: defaultUser.email,
         features: [
           'create:session',
           'read:session',
@@ -628,14 +700,15 @@ describe('PATCH /api/v1/users/[username]', () => {
           'update:content',
           'update:user',
         ],
+        notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
-        created_at: responseBody.created_at,
+        created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
     });
 
-    test('Patching itselt with a "description" containing more than 5.000 characters', async () => {
+    test('Patching itself with a "description" containing more than 5.000 characters', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -664,7 +737,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Patching itselt with a "description" containing value null', async () => {
+    test('Patching itself with a "description" containing value null', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -721,6 +794,96 @@ describe('PATCH /api/v1/users/[username]', () => {
         expect(passwordsMatch).toBe(true);
         expect(wrongPasswordMatch).toBe(false);
       });
+    });
+  });
+
+  describe('User with "update:user:others" feature', () => {
+    test('Patching other user only with fields that cannot be updated', async () => {
+      let privilegedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(privilegedUser, ['update:user:others']);
+      privilegedUser = await orchestrator.activateUser(privilegedUser);
+      const privilegedUserSession = await orchestrator.createSession(privilegedUser);
+
+      let secondUser = await orchestrator.createUser();
+      secondUser = await orchestrator.activateUser(secondUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${privilegedUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          username: 'newUsername',
+          email: 'new-email@example.com',
+          notifications: false,
+          password: 'new_password',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(400);
+      expect(responseBody.status_code).toEqual(400);
+      expect(responseBody.name).toEqual('ValidationError');
+      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.key).toEqual('object');
+    });
+
+    test('Patching other user with all fields', async () => {
+      let privilegedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(privilegedUser, ['update:user:others']);
+      privilegedUser = await orchestrator.activateUser(privilegedUser);
+      const privilegedUserSession = await orchestrator.createSession(privilegedUser);
+
+      let secondUser = await orchestrator.createUser({
+        password: 'initialPassword',
+      });
+      secondUser = await orchestrator.activateUser(secondUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
+        method: 'patch',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${privilegedUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: 'New description.',
+          username: 'newUsername',
+          email: 'new-email@example.com',
+          notifications: false,
+          password: 'new_password',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+      expect(responseBody).toStrictEqual({
+        id: secondUser.id,
+        username: secondUser.username,
+        description: 'New description.',
+        features: secondUser.features,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: secondUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      const secondUserInDatabase = await user.findOneById(secondUser.id);
+      expect(secondUserInDatabase.notifications).toBe(true);
+      expect(secondUserInDatabase.email).toBe(secondUser.email);
+
+      const passwordsMatch = await password.compare('initialPassword', secondUserInDatabase.password);
+      const wrongPasswordMatch = await password.compare('new_password', secondUserInDatabase.password);
+      expect(passwordsMatch).toBe(true);
+      expect(wrongPasswordMatch).toBe(false);
     });
   });
 });

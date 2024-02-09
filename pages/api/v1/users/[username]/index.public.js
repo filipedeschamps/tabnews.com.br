@@ -81,17 +81,23 @@ async function patchHandler(request, response) {
   const targetUser = await user.findOneByUsername(targetUsername);
   const insecureInputValues = request.body;
 
+  let updateAnotherUser = false;
+
   if (!authorization.can(userTryingToPatch, 'update:user', targetUser)) {
-    throw new ForbiddenError({
-      message: 'Você não possui permissão para atualizar outro usuário.',
-      action: 'Verifique se você possui a feature "update:user:others".',
-      errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
-    });
+    if (!authorization.can(userTryingToPatch, 'update:user:others')) {
+      throw new ForbiddenError({
+        message: 'Você não possui permissão para atualizar outro usuário.',
+        action: 'Verifique se você possui a feature "update:user:others".',
+        errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
+      });
+    }
+
+    updateAnotherUser = true;
   }
 
   const secureInputValues = authorization.filterInput(
     userTryingToPatch,
-    'update:user',
+    updateAnotherUser ? 'update:user:others' : 'update:user',
     insecureInputValues,
     targetUser
   );
@@ -101,11 +107,67 @@ async function patchHandler(request, response) {
   // once we have double confirmation.
   delete secureInputValues.password;
 
-  const updatedUser = await user.update(targetUsername, secureInputValues);
+  const transaction = await database.transaction();
 
-  const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:user', updatedUser);
+  try {
+    await transaction.query('BEGIN');
 
-  return response.status(200).json(secureOutputValues);
+    const currentEvent = await event.create(
+      {
+        type: 'update:user',
+        originatorUserId: request.context.user.id,
+        originatorIp: request.context.clientIp,
+      },
+      {
+        transaction: transaction,
+      }
+    );
+
+    const updatedUser = await user.update(targetUsername, secureInputValues, {
+      transaction: transaction,
+    });
+
+    await event.updateMetadata(
+      currentEvent.id,
+      {
+        metadata: getEventMetadata(targetUser, updatedUser),
+      },
+      {
+        transaction: transaction,
+      }
+    );
+
+    await transaction.query('COMMIT');
+    await transaction.release();
+
+    const secureOutputValues = authorization.filterOutput(
+      userTryingToPatch,
+      updateAnotherUser ? 'read:user' : 'read:user:self',
+      updatedUser
+    );
+
+    return response.status(200).json(secureOutputValues);
+  } catch (error) {
+    await transaction.query('ROLLBACK');
+    await transaction.release();
+    throw error;
+  }
+
+  function getEventMetadata(originalUser, updatedUser) {
+    const metadata = {
+      id: originalUser.id,
+      updatedFields: [],
+    };
+
+    const updatableFields = ['description', 'notifications', 'username'];
+    for (const field of updatableFields) {
+      if (originalUser[field] !== updatedUser[field]) {
+        metadata.updatedFields.push(field);
+      }
+    }
+
+    return metadata;
+  }
 }
 
 function deleteValidationHandler(request, response, next) {
