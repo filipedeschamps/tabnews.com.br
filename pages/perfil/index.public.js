@@ -35,31 +35,28 @@ function EditProfileForm() {
 
   const { user, fetchUser, isLoading: userIsLoading } = useUser();
 
-  const usernameRef = useRef('');
-  const emailRef = useRef('');
-  const notificationsRef = useRef('');
-
-  useEffect(() => {
-    if (router && !user && !userIsLoading) {
-      router.push(`/login?redirect=${router.asPath}`);
-    }
-
-    if (user && !userIsLoading) {
-      usernameRef.current.value = user.username;
-      emailRef.current.value = user.email;
-      notificationsRef.current.checked = user.notifications;
-    }
-  }, [user, router, userIsLoading]);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  const usernameRef = useRef();
+  const emailRef = useRef();
+  const notificationsRef = useRef();
 
   const [globalMessageObject, setGlobalMessageObject] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [description, setDescription] = useState(user?.description || '');
+
+  useEffect(() => {
+    if (router && !user && !userIsLoading) {
+      router.push(`/login?redirect=${router.asPath}`);
+    }
+
+    if (user && !userIsLoading && !usernameRef.current.value) {
+      setDescription(user.description);
+      usernameRef.current.value = user.username;
+      emailRef.current.value = user.email;
+      notificationsRef.current.checked = user.notifications;
+    }
+  }, [user, router, userIsLoading]);
 
   function clearMessages() {
     setErrorObject(undefined);

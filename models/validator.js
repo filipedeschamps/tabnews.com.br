@@ -676,6 +676,7 @@ const schemas = {
       type: Joi.string()
         .valid(
           'create:user',
+          'update:user',
           'ban:user',
           'create:content:text_root',
           'create:content:text_child',
