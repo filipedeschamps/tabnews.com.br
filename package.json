@@ -21,7 +21,7 @@
     "feed": "4.2.2",
     "is-in-subnet": "4.0.1",
     "joi": "17.12.1",
-    "next": "13.2.4",
+    "next": "14.1.0",
     "next-connect": "0.13.0",
     "next-swr": "0.2.0-canary.0",
     "node-pg-migrate": "6.2.2",
