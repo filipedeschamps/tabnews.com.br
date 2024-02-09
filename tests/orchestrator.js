@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
-import fetch from 'cross-fetch';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 

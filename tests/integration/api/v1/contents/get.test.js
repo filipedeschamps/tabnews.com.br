@@ -24,9 +24,7 @@ describe('GET /api/v1/contents', () => {
       // to avoid "Received: serializes to the same string" error.
       const responseHeaders = JSON.parse(JSON.stringify(response.headers.raw()));
 
-      // I'm testing with `toStrictEqual()` to know when new properties are
-      // added or leaked to the response headers.
-      expect(responseHeaders).toStrictEqual({
+      expect(responseHeaders).toEqual({
         'x-dns-prefetch-control': ['on'],
         'strict-transport-security': ['max-age=63072000; includeSubDomains; preload'],
         'x-xss-protection': ['1; mode=block'],
@@ -48,7 +46,8 @@ describe('GET /api/v1/contents', () => {
         'content-length': ['2'],
         vary: ['Accept-Encoding'],
         date: responseHeaders.date,
-        connection: ['close'],
+        connection: [expect.stringMatching(/close|keep-alive/)],
+        'keep-alive': expect.objectContaining([]),
       });
     });
 
