@@ -81,7 +81,7 @@ describe('GET /api/v1/status/votes', () => {
     });
 
     test('Should retrieve voting data', async () => {
-      orchestrator.createRate({ owner_id: privilegedUser.id, id: uuidV4() }, 1);
+      await orchestrator.createRate({ owner_id: privilegedUser.id, id: uuidV4() }, 1);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/status/votes`, {
         method: 'GET',
