@@ -9,6 +9,8 @@
     "@bytemd/react": "1.21.0",
     "@primer/octicons-react": "19.8.0",
     "@primer/react": "36.7.1",
+    "@react-email/components": "0.0.14",
+    "@react-email/render": "0.0.12",
     "@resvg/resvg-js": "2.6.0",
     "@upstash/ratelimit": "1.0.1",
     "@upstash/redis": "1.28.3",
@@ -66,6 +68,7 @@
     "kill-port": "1.6.1",
     "lint-staged": "15.2.2",
     "prettier": "3.2.5",
+    "react-email": "2.0.0",
     "retry-cli": "0.7.0"
   },
   "scripts": {
@@ -75,6 +78,7 @@
     "build:local": "npm run services:seed && next build",
     "start": "next start",
     "start:local": "npm run services:seed && next start && npm run services:stop",
+    "email": "email dev --dir models/transactional/emails --port 3001",
     "services:seed": "kill-port 3000 && npm run services:up && npm run migration:run && npm run migration:seed",
     "services:up": "npm run docker:compose -- up -d",
     "services:stop": "npm run docker:compose -- stop",

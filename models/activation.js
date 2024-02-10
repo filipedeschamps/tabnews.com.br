@@ -3,6 +3,7 @@ import database from 'infra/database.js';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
+import { ActivationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function createAndSendActivationEmail(user) {
@@ -24,6 +25,11 @@ async function create(user) {
 async function sendEmailToUser(user, tokenId) {
   const activationPageEndpoint = getActivationPageEndpoint(tokenId);
 
+  const { html, text } = ActivationEmail({
+    username: user.username,
+    activationLink: activationPageEndpoint,
+  });
+
   await email.send({
     from: {
       name: 'TabNews',
@@ -31,15 +37,8 @@ async function sendEmailToUser(user, tokenId) {
     },
     to: user.email,
     subject: 'Ative seu cadastro no TabNews',
-    text: `${user.username}, clique no link abaixo para ativar seu cadastro no TabNews:
-
-${activationPageEndpoint}
-
-Caso você não tenha feito esta requisição, ignore esse email.
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+    html,
+    text,
   });
 }
 

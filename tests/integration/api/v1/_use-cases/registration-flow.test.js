@@ -63,8 +63,10 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(activationEmail.sender).toEqual('<contato@tabnews.com.br>');
     expect(activationEmail.recipients).toEqual(['<regularregistrationflow@gmail.com>']);
     expect(activationEmail.subject).toEqual('Ative seu cadastro no TabNews');
-    expect(activationEmail.text.includes(postUserResponseBody.username)).toBe(true);
-    expect(activationEmail.text.includes(activationPageEndpoint)).toBe(true);
+    expect(activationEmail.text).toContain(postUserResponseBody.username);
+    expect(activationEmail.html).toContain(postUserResponseBody.username);
+    expect(activationEmail.text).toContain(activationPageEndpoint);
+    expect(activationEmail.html).toContain(activationPageEndpoint);
   });
 
   test('Activate (successfully)', async () => {

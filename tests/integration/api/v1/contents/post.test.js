@@ -2405,11 +2405,16 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título curto do conteúdo raiz"`);
-        expect(getLastEmail.text.includes(firstUser.username)).toBe(true);
-        expect(getLastEmail.text.includes(secondUser.username)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes('respondeu à sua publicação')).toBe(true);
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.text).toContain(secondUser.username);
+        expect(getLastEmail.html).toContain(secondUser.username);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain('respondeu à sua publicação');
+        expect(getLastEmail.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "root" content with long "title" replied by other user', async () => {
@@ -2452,10 +2457,15 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail.subject).toBe(
           `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`,
         );
-        expect(getLastEmail.text.includes(`Olá, ${firstUser.username}`)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes(`"${secondUser.username}" respondeu à sua publicação`)).toBe(true);
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain(`Olá, ${firstUser.username}`);
+        expect(getLastEmail.html).toContain(`Olá, ${firstUser.username}`);
+        expect(getLastEmail.text).toContain(`"${secondUser.username}" respondeu à sua publicação`);
+        expect(getLastEmail.html).toContain(secondUser.username);
+        expect(getLastEmail.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "child" content replied by other user', async () => {
@@ -2503,12 +2513,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "Testando resposta ao conteúdo child"`);
-        expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes(`"${firstUser.username}" respondeu ao seu comentário na publicação`)).toBe(
-          true,
-        );
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.html).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain(`"${firstUser.username}" respondeu ao seu comentário na publicação`);
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain('respondeu ao seu comentário na publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "child" content replied by other user, but "root" with "deleted" status', async () => {
@@ -2560,14 +2573,18 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "[Não disponível]"`);
-        expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(false);
-        expect(
-          getLastEmail.text.includes(
-            `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`,
-          ),
-        ).toBe(true);
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.html).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.text).not.toContain(rootContent.title);
+        expect(getLastEmail.html).not.toContain(rootContent.title);
+        expect(getLastEmail.text).toContain(
+          `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`,
+        );
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain('respondeu ao seu comentário na publicação');
+        expect(getLastEmail.html).toContain('[Não disponível]');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "root" content replied by other user (with "notifications" disabled)', async () => {
@@ -2683,11 +2700,16 @@ describe('POST /api/v1/contents', () => {
 
         expect(getLastEmail2.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail2.subject).toBe(`"${secondUser.username}" comentou em "Testando sistema de notificação"`);
-        expect(getLastEmail2.text.includes(firstUser.username)).toBe(true);
-        expect(getLastEmail2.text.includes(secondUser.username)).toBe(true);
-        expect(getLastEmail2.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail2.text.includes('respondeu à sua publicação')).toBe(true);
-        expect(getLastEmail2.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail2.text).toContain(firstUser.username);
+        expect(getLastEmail2.text).toContain(secondUser.username);
+        expect(getLastEmail2.text).toContain(rootContent.title);
+        expect(getLastEmail2.text).toContain('respondeu à sua publicação');
+        expect(getLastEmail2.text).toContain(childContentUrl);
+        expect(getLastEmail2.html).toContain(firstUser.username);
+        expect(getLastEmail2.html).toContain(secondUser.username);
+        expect(getLastEmail2.html).toContain(rootContent.title);
+        expect(getLastEmail2.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail2.html).toContain(childContentUrl);
       });
     });
 

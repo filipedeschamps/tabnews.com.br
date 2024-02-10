@@ -637,9 +637,12 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');
       expect(confirmationEmail.recipients).toEqual(['<different@email.com>']);
       expect(confirmationEmail.subject).toEqual('Confirme seu novo email');
-      expect(confirmationEmail.text.includes(defaultUser.username)).toBe(true);
-      expect(confirmationEmail.text.includes('uma alteração de email foi solicitada')).toBe(true);
-      expect(confirmationEmail.text.includes(emailConfirmationPageEndpoint)).toBe(true);
+      expect(confirmationEmail.text).toContain(defaultUser.username);
+      expect(confirmationEmail.html).toContain(defaultUser.username);
+      expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
+      expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
     });
 
     test('Patching itself with "notifications"', async () => {

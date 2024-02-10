@@ -2,6 +2,7 @@ import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import { NotificationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function sendReplyEmailToParentUser(createdContent) {
@@ -43,6 +44,12 @@ async function sendReplyEmailToParentUser(createdContent) {
       rootContent: secureRootContent,
     });
 
+    const { html, text } = NotificationEmail({
+      username: parentContentUser.username,
+      bodyReplyLine: bodyReplyLine,
+      contentLink: childContendUrl,
+    });
+
     await email.send({
       to: parentContentUser.email,
       from: {
@@ -50,15 +57,8 @@ async function sendReplyEmailToParentUser(createdContent) {
         address: 'contato@tabnews.com.br',
       },
       subject: subject,
-      text: `Olá, ${parentContentUser.username}!
-
-${bodyReplyLine}
-
-${childContendUrl}
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+      html,
+      text,
     });
   }
 }
@@ -72,10 +72,10 @@ function getSubject({ createdContent, rootContent }) {
 
 function getBodyReplyLine({ createdContent, rootContent }) {
   if (createdContent.parent_id === rootContent.id) {
-    return `"${createdContent.owner_username}" respondeu à sua publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
+    return `"${createdContent.owner_username}" respondeu à sua publicação "${rootContent.title}".`;
   }
 
-  return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}". Para ler a resposta, utilize o link abaixo:`;
+  return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}".`;
 }
 
 function getChildContendUrl({ owner_username, slug }) {

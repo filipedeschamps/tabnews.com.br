@@ -2,6 +2,7 @@ import { NotFoundError } from 'errors';
 import database from 'infra/database.js';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
+import { ConfirmationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function createAndSendEmail(userId, newEmail, options) {
@@ -32,6 +33,11 @@ async function create(userId, newEmail, options) {
 async function sendEmailToUser(user, newEmail, tokenId) {
   const emailConfirmationPageEndpoint = getEmailConfirmationPageEndpoint(tokenId);
 
+  const { html, text } = ConfirmationEmail({
+    username: user.username,
+    confirmationLink: emailConfirmationPageEndpoint,
+  });
+
   await email.send({
     from: {
       name: 'TabNews',
@@ -39,15 +45,8 @@ async function sendEmailToUser(user, newEmail, tokenId) {
     },
     to: newEmail,
     subject: 'Confirme seu novo email',
-    text: `${user.username}, uma alteração de email foi solicitada.
-
-Clique no link abaixo para confirmar esta alteração:
-
-${emailConfirmationPageEndpoint}
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+    html,
+    text,
   });
 }
 
