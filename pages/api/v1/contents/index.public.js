@@ -28,7 +28,7 @@ export default nextConnect({
     postValidationHandler,
     authorization.canRequest('create:content'),
     firewallValidationHandler,
-    postHandler
+    postHandler,
   );
 
 function getValidationHandler(request, response, next) {
@@ -147,7 +147,7 @@ async function postHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     const createdContent = await content.create(secureInputValues, {
@@ -164,7 +164,7 @@ async function postHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     await transaction.query('COMMIT');

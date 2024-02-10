@@ -95,7 +95,7 @@ async function findOneValidByToken(sessionToken) {
     },
     {
       session_id: 'required',
-    }
+    },
   );
 
   const query = {

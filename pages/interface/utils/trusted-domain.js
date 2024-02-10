@@ -8,6 +8,6 @@ const trustedHosts = [...new Set([webserverHostname, ...DEFAULT_TRUSTED_HOSTS])]
 export default function isTrustedDomain(url) {
   const { hostname } = new URL(url, webserver.host);
   return trustedHosts.some(
-    (trustedHostname) => hostname === trustedHostname || hostname.endsWith(`.${trustedHostname}`)
+    (trustedHostname) => hostname === trustedHostname || hostname.endsWith(`.${trustedHostname}`),
   );
 }

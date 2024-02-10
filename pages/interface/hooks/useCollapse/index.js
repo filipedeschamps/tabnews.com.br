@@ -13,7 +13,7 @@ export default function useCollapse({
       renderIntent,
       childrenDeepCount,
       minimalSubTree,
-    })
+    }),
   );
 
   function handleExpand(id) {

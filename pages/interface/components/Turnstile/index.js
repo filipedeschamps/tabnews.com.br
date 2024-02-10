@@ -147,7 +147,7 @@ function checkFirewallResponse(response) {
       error_id: headers?.has('cf-ray') ? `cf-ray: ${headers.get('cf-ray')}` : '',
       blocked: true,
     }),
-    response
+    response,
   );
 }
 

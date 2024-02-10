@@ -227,7 +227,7 @@ describe('reward model', () => {
         originatorType: 'event',
         recipientId: request.context.user.id,
       },
-      { transaction: expect.any(Object) }
+      { transaction: expect.any(Object) },
     );
     expect(event.create).toHaveBeenCalledWith(
       {
@@ -239,7 +239,7 @@ describe('reward model', () => {
         originatorUserId: request.context.user.id,
         type: 'reward:user:tabcoins',
       },
-      { transaction: expect.any(Object) }
+      { transaction: expect.any(Object) },
     );
   });
 
@@ -304,7 +304,7 @@ describe('reward model', () => {
         const result = await reward(request);
 
         expect(result).toBe(expected);
-      }
+      },
     );
   });
 });

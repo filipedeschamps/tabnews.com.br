@@ -118,7 +118,7 @@ async function activateUserByUserId(userId, options = {}) {
       'update:content',
       'update:user',
     ],
-    options
+    options,
   );
 }
 

@@ -20,7 +20,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -52,7 +52,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -82,7 +82,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -124,7 +124,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -169,7 +169,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -210,7 +210,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -271,7 +271,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
       const responseBody = await response.json();
 
@@ -336,7 +336,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
 
       const responseBody = await response.json();
@@ -402,7 +402,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
 
       const responseBody = await response.json();
@@ -469,7 +469,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
 
       const responseBody = await response.json();

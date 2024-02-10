@@ -95,7 +95,7 @@ async function saveReward(request, reward, { transaction }) {
             amount: reward,
           },
         },
-        { transaction }
+        { transaction },
       );
 
       await balance.create(
@@ -106,7 +106,7 @@ async function saveReward(request, reward, { transaction }) {
           originatorType: 'event',
           originatorId: currentEvent.id,
         },
-        { transaction }
+        { transaction },
       );
     }
 

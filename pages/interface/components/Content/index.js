@@ -421,7 +421,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         setIsPosting(false);
       }
     },
-    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser]
+    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
   );
 
   const handleChange = useCallback(
@@ -433,7 +433,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         return newData;
       });
     },
-    [localStorageKey]
+    [localStorageKey],
   );
 
   const handleCancel = useCallback(async () => {
@@ -471,7 +471,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         handleCancel();
       }
     },
-    [handleCancel, handleSubmit, isPosting]
+    [handleCancel, handleSubmit, isPosting],
   );
 
   return (

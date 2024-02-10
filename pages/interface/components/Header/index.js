@@ -40,8 +40,8 @@ export default function HeaderComponent() {
     !asPath || user || asPath.startsWith('/cadastro')
       ? '/login'
       : asPath.startsWith('/login')
-      ? asPath
-      : `/login?redirect=${asPath}`;
+        ? asPath
+        : `/login?redirect=${asPath}`;
 
   const activeLinkStyle = {
     textDecoration: 'underline',

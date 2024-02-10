@@ -259,7 +259,7 @@ const schemas = {
       title: Joi.string()
         .replace(
           /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
-          ''
+          '',
         )
         .allow(null)
         .min(1)
@@ -687,7 +687,7 @@ const schemas = {
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
           'reward:user:tabcoins',
-          'system:update:tabcoins'
+          'system:update:tabcoins',
         )
         .messages({
           'any.required': `"type" é um campo obrigatório.`,

@@ -97,7 +97,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title: 'Usuário válido, tentando atualizar conteúdo "child".',
             body: 'Não deveria conseguir, pois não possui a feature "update:content".',
           }),
-        }
+        },
       );
       const responseBody = await response.json();
 
@@ -228,7 +228,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({}),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -295,7 +295,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title: 'Tentando atualizar um conteúdo próprio, mas errando o slug',
             body: 'Não deveria conseguir',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -335,7 +335,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title: 'Primeiro usuário tentando atualizar o conteúdo do Segundo usuário',
             body: 'Não deveria conseguir',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -348,7 +348,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER'
+        'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
       );
     });
 
@@ -378,7 +378,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
             owner_id: secondUser.id,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -431,7 +431,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             body: 'Body novo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -483,7 +483,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             body: '',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -521,7 +521,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: `![](https://image-url.com/image.png)
             <div><a></a></div>`,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -561,7 +561,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: 'Terminando com caractere proibido no Postgres\u0000',
             source_url: 'https://teste-caractere.invalido/\u0000',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -613,7 +613,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title: 'Título terminando com caracteres inválidos.\u200f',
             body: '\u2800Texto terminando com caracteres inválidos.\u200e',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -650,7 +650,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             body: 'A'.repeat(20001),
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -687,7 +687,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             body: ' Espaço no início e no fim ',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -724,7 +724,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             body: 'Espaço só no fim ',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -776,7 +776,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             body: null,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -814,7 +814,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: 'slug-novo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -877,7 +877,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: 'primeiro-conteudo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -931,7 +931,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: 'primeiro-conteudo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -988,7 +988,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: 'primeiro-conteudo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1039,7 +1039,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: '',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1076,7 +1076,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1128,7 +1128,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: 'slug-não-pode-ter-caracteres-especiais',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1165,7 +1165,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             slug: null,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1202,7 +1202,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: 'Título novo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1254,7 +1254,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: '',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1295,7 +1295,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: 'Título novo',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1339,7 +1339,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title:
               'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1376,7 +1376,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: null,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1420,7 +1420,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: null,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1472,7 +1472,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: ' Título válido, mas com espaços em branco no início e no fim ',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1524,7 +1524,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1576,7 +1576,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: 'draft',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1629,7 +1629,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: 'published',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1683,7 +1683,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: 'draft',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1727,7 +1727,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: 'deleted',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1795,7 +1795,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: 'published',
           }),
-        }
+        },
       );
 
       const republishedResponseBody = await republishedResponse.json();
@@ -1837,7 +1837,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: 'inexisting_status',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1846,7 +1846,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1876,7 +1876,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: null,
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1885,7 +1885,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1915,7 +1915,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             status: '',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -1924,7 +1924,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1954,7 +1954,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'http://www.tabnews.com.br/',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2006,7 +2006,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://www.tabnews.com.br/museu',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2058,7 +2058,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://nic.xn--vermgensberatung-pwb/',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2110,7 +2110,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://t.me',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2162,7 +2162,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'http://invalidtl.d',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2171,7 +2171,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2201,7 +2201,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://tl.dcomvinteecincocaracteres',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2210,7 +2210,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2240,7 +2240,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'ftp://www.tabnews.com.br',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2249,7 +2249,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2279,7 +2279,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'www.tabnews.com.br',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2288,7 +2288,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2318,7 +2318,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://lol.',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2327,7 +2327,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2357,7 +2357,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2410,7 +2410,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: 'https://www.tabnews.com.br/#:~:text=TabNews,-Status',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2463,7 +2463,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: '',
           }),
-        }
+        },
       );
       const responseBody = await response.json();
 
@@ -2500,7 +2500,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             source_url: null,
           }),
-        }
+        },
       );
       const responseBody = await response.json();
 
@@ -2557,7 +2557,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             parent_id: rootContent.id,
           }),
-        }
+        },
       );
       const responseBody = await response.json();
 
@@ -2609,7 +2609,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title: 'Updated title, but not "parent_id"',
             parent_id: rootContent2.id,
           }),
-        }
+        },
       );
       const responseBody = await response.json();
 
@@ -2662,7 +2662,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           body: JSON.stringify({
             title: 'Tentando atualizar o conteúdo.',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -2675,7 +2675,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER'
+        'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
       );
     });
 
@@ -2704,7 +2704,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'draft',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -2748,7 +2748,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'published',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -2792,7 +2792,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -2856,7 +2856,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -2913,7 +2913,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -2969,7 +2969,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3013,7 +3013,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         await orchestrator.createRate(defaultUserContent, 10);
 
         const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
         );
         const contentFirstGetResponseBody = await contentFirstGetResponse.json();
         expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
@@ -3033,7 +3033,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentSecondResponseBody = await contentSecondResponse.json();
@@ -3070,7 +3070,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         await orchestrator.createRate(defaultUserContent, 10);
 
         const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
         );
         const contentFirstGetResponseBody = await contentFirstGetResponse.json();
         expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
@@ -3090,7 +3090,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentSecondResponseBody = await contentSecondResponse.json();
@@ -3134,7 +3134,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         await orchestrator.createRate(defaultUserContent, -10);
 
         const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
         );
         const contentFirstGetResponseBody = await contentFirstGetResponse.json();
         expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
@@ -3154,7 +3154,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentSecondResponseBody = await contentSecondResponse.json();
@@ -3191,7 +3191,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         await orchestrator.createRate(defaultUserContent, -10);
 
         const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
         );
         const contentFirstGetResponseBody = await contentFirstGetResponse.json();
         expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
@@ -3211,7 +3211,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentSecondResponseBody = await contentSecondResponse.json();
@@ -3263,7 +3263,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'draft',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3316,7 +3316,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'published',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3382,7 +3382,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'published',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3447,7 +3447,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3513,7 +3513,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3578,7 +3578,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3642,7 +3642,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3707,7 +3707,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3771,7 +3771,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3836,7 +3836,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3903,7 +3903,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -3970,7 +3970,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             body: JSON.stringify({
               status: 'deleted',
             }),
-          }
+          },
         );
 
         const contentResponseBody = await contentResponse.json();
@@ -4019,7 +4019,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             title: 'Novo title.',
             body: 'Novo body.',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();

@@ -20,7 +20,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -52,7 +52,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -82,7 +82,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -124,7 +124,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -169,7 +169,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -210,7 +210,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -271,7 +271,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/parent`,
       );
       const responseBody = await response.json();
 
@@ -335,7 +335,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/parent`,
       );
 
       const responseBody = await response.json();
@@ -401,7 +401,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/parent`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/parent`,
       );
 
       const responseBody = await response.json();

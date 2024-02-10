@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
-import fetch from 'cross-fetch';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 
@@ -42,7 +41,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 
@@ -60,7 +59,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 
@@ -77,7 +76,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 }
@@ -118,7 +117,7 @@ async function getLastEmail() {
 
 async function createUser(userObject) {
   return await user.create({
-    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
+    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', '').replace('-', ''),
     email: userObject?.email || faker.internet.email(),
     password: userObject?.password || 'password',
     description: userObject?.description || '',
@@ -163,7 +162,7 @@ async function createContent(contentObject) {
     },
     {
       eventId: currentEvent.id,
-    }
+    },
   );
 
   await event.updateMetadata(currentEvent.id, {
@@ -237,7 +236,7 @@ async function createRate(contentObject, amount, fromUserId) {
       },
       {
         eventId: currentEvent.id,
-      }
+      },
     );
   }
 }
@@ -264,7 +263,7 @@ async function createPrestige(
     rootPrestigeDenominator = 4,
     childPrestigeNumerator = 0,
     childPrestigeDenominator = 1,
-  } = {}
+  } = {},
 ) {
   if (
     rootPrestigeDenominator < 0 ||
@@ -290,7 +289,7 @@ async function createPrestige(
         title: faker.lorem.words(3),
         body: faker.lorem.paragraphs(1),
         status: 'published',
-      })
+      }),
     );
   }
 
@@ -314,7 +313,7 @@ async function createPrestige(
         owner_id: userId,
         body: faker.lorem.paragraphs(1),
         status: 'published',
-      })
+      }),
     );
   }
 

@@ -301,7 +301,14 @@ export function EditorStyles({ mode, compact }) {
           border-width: 1px;
           border-style: solid;
           border-radius: 4px;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji,
+          font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            Segoe UI,
+            Helvetica,
+            Arial,
+            sans-serif,
+            Apple Color Emoji,
             Segoe UI Emoji;
           box-sizing: border-box;
         }
@@ -321,7 +328,12 @@ export function EditorStyles({ mode, compact }) {
         .bytemd .CodeMirror,
         .bytemd code,
         .bytemd kbd {
-          font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+          font-family:
+            SFMono-Regular,
+            Consolas,
+            Liberation Mono,
+            Menlo,
+            monospace;
         }
 
         .bytemd-toolbar {
@@ -739,7 +751,14 @@ export function EditorStyles({ mode, compact }) {
           white-space: normal;
           outline: 0;
           transition-property: transform, visibility, opacity;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji,
+          font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            Segoe UI,
+            Helvetica,
+            Arial,
+            sans-serif,
+            Apple Color Emoji,
             Segoe UI Emoji;
         }
         .tippy-box[data-placement^='top'] > .tippy-arrow {
@@ -1206,7 +1225,14 @@ export function ViewerStyles() {
         .markdown-body kbd {
           display: inline-block;
           padding: 3px 5px;
-          font: 11px ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+          font:
+            11px ui-monospace,
+            SFMono-Regular,
+            SF Mono,
+            Menlo,
+            Consolas,
+            Liberation Mono,
+            monospace;
           line-height: 10px;
           color: ${colors.fg.default};
           vertical-align: middle;
@@ -1294,14 +1320,28 @@ export function ViewerStyles() {
 
         .markdown-body tt,
         .markdown-body code {
-          font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+          font-family:
+            ui-monospace,
+            SFMono-Regular,
+            SF Mono,
+            Menlo,
+            Consolas,
+            Liberation Mono,
+            monospace;
           font-size: 12px;
         }
 
         .markdown-body pre {
           margin-top: 0;
           margin-bottom: 0;
-          font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+          font-family:
+            ui-monospace,
+            SFMono-Regular,
+            SF Mono,
+            Menlo,
+            Consolas,
+            Liberation Mono,
+            monospace;
           font-size: 12px;
           word-wrap: normal;
         }

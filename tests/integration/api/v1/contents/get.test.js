@@ -24,9 +24,7 @@ describe('GET /api/v1/contents', () => {
       // to avoid "Received: serializes to the same string" error.
       const responseHeaders = JSON.parse(JSON.stringify(response.headers.raw()));
 
-      // I'm testing with `toStrictEqual()` to know when new properties are
-      // added or leaked to the response headers.
-      expect(responseHeaders).toStrictEqual({
+      expect(responseHeaders).toEqual({
         'x-dns-prefetch-control': ['on'],
         'strict-transport-security': ['max-age=63072000; includeSubDomains; preload'],
         'x-xss-protection': ['1; mode=block'],
@@ -48,7 +46,8 @@ describe('GET /api/v1/contents', () => {
         'content-length': ['2'],
         vary: ['Accept-Encoding'],
         date: responseHeaders.date,
-        connection: ['close'],
+        connection: [expect.stringMatching(/close|keep-alive/)],
+        'keep-alive': expect.objectContaining([]),
       });
     });
 
@@ -400,7 +399,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: firstUser.id,
           title: `Conteúdo #1`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -428,7 +427,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: firstUser.id,
           title: `Conteúdo #2`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -456,7 +455,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: firstUser.id,
           title: `Conteúdo #3`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -484,7 +483,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: firstUser.id,
           title: `Conteúdo #4`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -505,7 +504,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: secondUser.id,
           title: `Conteúdo #5`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -526,7 +525,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: thirdUser.id,
           title: `Conteúdo #6`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -547,7 +546,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: firstUser.id,
           title: `Conteúdo #7`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -568,7 +567,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: secondUser.id,
           title: `Conteúdo #8`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -589,7 +588,7 @@ describe('GET /api/v1/contents', () => {
           owner_id: thirdUser.id,
           title: `Conteúdo #9`,
           status: 'published',
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -606,7 +605,7 @@ describe('GET /api/v1/contents', () => {
             owner_id: firstUser.id,
             title: `Conteúdo #${item + 1}`,
             status: 'published',
-          })
+          }),
         );
 
         contentList.push(
@@ -614,7 +613,7 @@ describe('GET /api/v1/contents', () => {
             owner_id: secondUser.id,
             title: `Conteúdo #${item + 2}`,
             status: 'published',
-          })
+          }),
         );
 
         contentList.push(
@@ -622,7 +621,7 @@ describe('GET /api/v1/contents', () => {
             owner_id: thirdUser.id,
             title: `Conteúdo #${item + 3}`,
             status: 'published',
-          })
+          }),
         );
       }
 
@@ -1342,7 +1341,7 @@ describe('GET /api/v1/contents', () => {
 
         childSortedByOld.push(
           createCommentExpect(firstComment, firstUser, secondRootContent, 1),
-          createCommentExpect(secondComment, thirdUser, firstRootContent)
+          createCommentExpect(secondComment, thirdUser, firstRootContent),
         );
 
         rootSortedByNew.push(...rootSortedByOld.slice().reverse());

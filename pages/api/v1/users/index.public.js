@@ -24,7 +24,7 @@ export default nextConnect({
     postValidationHandler,
     authorization.canRequest('create:user'),
     firewall.canRequest('create:user'),
-    postHandler
+    postHandler,
   );
 
 async function getHandler(request, response) {

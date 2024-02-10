@@ -312,7 +312,7 @@ async function create(postedContent, options = {}) {
     },
     {
       transaction: options.transaction,
-    }
+    },
   );
 
   return newContent;
@@ -423,7 +423,7 @@ async function checkIfParentIdExists(content, options) {
         id: content.parent_id,
       },
     },
-    options
+    options,
   );
 
   if (!existingContent) {
@@ -544,7 +544,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
     return;
   }
@@ -576,7 +576,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
             id: newContent.parent_id,
           },
         },
-        options
+        options,
       );
 
       // We should not credit if the parent content is from the same user.
@@ -599,7 +599,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
   }
 
@@ -614,7 +614,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
   }
 }
@@ -628,7 +628,7 @@ async function update(contentId, postedContent, options = {}) {
         id: contentId,
       },
     },
-    options
+    options,
   );
 
   const newContent = { ...oldContent, ...validPostedContent };
@@ -663,7 +663,7 @@ async function update(contentId, postedContent, options = {}) {
     },
     {
       transaction: options.transaction,
-    }
+    },
   );
 
   return updatedContent;

@@ -101,7 +101,7 @@ export default function removeMarkdown(md, options) {
     if (options.trim) {
       output = output.replace(
         /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu,
-        ''
+        '',
       );
     }
   } catch (e) {

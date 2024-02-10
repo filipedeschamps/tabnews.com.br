@@ -104,7 +104,7 @@ async function postHandler(request, response) {
         },
         {
           transaction: transaction,
-        }
+        },
       );
 
       currentContentTabCoinsBalance = await balance.rateContent(
@@ -117,7 +117,7 @@ async function postHandler(request, response) {
         {
           eventId: currentEvent.id,
           transaction: transaction,
-        }
+        },
       );
 
       await transaction.query('COMMIT');
@@ -149,7 +149,7 @@ async function postHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(
     userTryingToPost,
     'read:content:tabcoins',
-    currentContentTabCoinsBalance
+    currentContentTabCoinsBalance,
   );
 
   return response.status(201).json(secureOutputValues);
