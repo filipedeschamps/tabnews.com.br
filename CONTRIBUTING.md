@@ -75,6 +75,16 @@ Created migration -- ./infra/migrations/1655399502254_alter-table-users-add-tabc
 
 Caso esta nova migração esteja válida, ela será automaticamente executada na próxima vez que você rodar o comando `npm run dev`. Caso contrário, o serviço não irá subir e os logs de erro estarão registrados no arquivo `migrations.log` encontrado na raiz do projeto.
 
+### Templates de email
+
+Os templates de email estão localizados em `models/transactional/emails`, eles utilizam o [react-email](https://react.email/) para a composição do layout e renderização.
+
+Para visualizar e testar os templates, você pode utilizar o comando:
+
+```bash
+npm run email
+```
+
 ### Commit das alterações
 
 Após finalizar suas alterações e se certificar que todos os testes estão passando com o comando geral `npm test`, chegou a hora de fazer o commit das suas alterações.

@@ -3,6 +3,7 @@ import database from 'infra/database.js';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import session from 'models/session';
+import { RecoveryEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
@@ -49,6 +50,11 @@ async function create(user) {
 async function sendEmailToUser(user, tokenId) {
   const recoverPageEndpoint = getRecoverPageEndpoint(tokenId);
 
+  const { html, text } = RecoveryEmail({
+    username: user.username,
+    recoveryLink: recoverPageEndpoint,
+  });
+
   await email.send({
     from: {
       name: 'TabNews',
@@ -56,15 +62,8 @@ async function sendEmailToUser(user, tokenId) {
     },
     to: user.email,
     subject: 'Recuperação de Senha',
-    text: `${user.username}, foi solicitada uma recuperação de senha. Caso você não tenha feito a solicitação, ignore esse email.
-
-Caso você tenha feito essa solicitação, clique no link abaixo para definir uma nova senha:
-
-${recoverPageEndpoint}
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+    html,
+    text,
   });
 }
 

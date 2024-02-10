@@ -20,11 +20,12 @@ if (!webserver.isServerlessRuntime) {
 
 const transporter = nodemailer.createTransport(transporterConfiguration);
 
-async function send({ from, to, subject, text }) {
+async function send({ from, to, subject, html, text }) {
   const mailOptions = {
     from: from,
     to: to,
     subject: subject,
+    html: html,
     text: text,
   };
 

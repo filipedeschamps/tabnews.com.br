@@ -112,6 +112,10 @@ async function getLastEmail() {
   const emailText = await emailTextResponse.text();
   lastEmailItem.text = emailText;
 
+  const emailHtmlResponse = await fetch(`${emailServiceUrl}/messages/${lastEmailItem.id}.html`);
+  const emailHtml = await emailHtmlResponse.text();
+  lastEmailItem.html = emailHtml;
+
   return lastEmailItem;
 }
 

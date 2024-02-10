@@ -110,8 +110,10 @@ describe('POST /api/v1/recovery', () => {
       const lastEmail = await orchestrator.getLastEmail();
       expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
       expect(lastEmail.subject).toEqual('Recuperação de Senha');
-      expect(lastEmail.text.includes(defaultUser.username)).toBe(true);
-      expect(lastEmail.text.includes(recovery.getRecoverPageEndpoint(tokenInDatabase.id))).toBe(true);
+      expect(lastEmail.text).toContain(defaultUser.username);
+      expect(lastEmail.html).toContain(defaultUser.username);
+      expect(lastEmail.text).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
+      expect(lastEmail.html).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
     });
 
     test('With "email" valid, but user not found', async () => {
@@ -306,8 +308,10 @@ describe('POST /api/v1/recovery', () => {
       const lastEmail = await orchestrator.getLastEmail();
       expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
       expect(lastEmail.subject).toEqual('Recuperação de Senha');
-      expect(lastEmail.text.includes(defaultUser.username)).toBe(true);
-      expect(lastEmail.text.includes(recovery.getRecoverPageEndpoint(tokenInDatabase.id))).toBe(true);
+      expect(lastEmail.text).toContain(defaultUser.username);
+      expect(lastEmail.html).toContain(defaultUser.username);
+      expect(lastEmail.text).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
+      expect(lastEmail.html).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
     });
 
     test('With "username" valid, but user not found', async () => {
