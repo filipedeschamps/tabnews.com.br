@@ -69,7 +69,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
 
   function RenderItems() {
     function ChildrenDeepCountText({ count }) {
-      return count > 1 ? `${count} comentários` : `${count} comentário`;
+      return count === 1 ? `${count} comentários` : `${count} comentário`;
     }
 
     function TabCoinsText({ count }) {
