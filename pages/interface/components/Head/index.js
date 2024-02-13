@@ -1,6 +1,7 @@
 import NextHead from 'next/head';
 import { useRouter } from 'next/router';
 
+import { useTheme } from '@/TabNewsUI';
 import webserver from 'infra/webserver.js';
 import { useMediaQuery } from 'pages/interface';
 
@@ -8,6 +9,8 @@ const webserverHost = webserver.host;
 
 export function DefaultHead() {
   const router = useRouter();
+
+  const { theme } = useTheme();
 
   const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
   const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
@@ -46,6 +49,7 @@ export function DefaultHead() {
       <meta property="twitter:description" content={description} key="twitter:description" />
       <meta property="twitter:image" content={image} key="twitter:image" />
 
+      <meta name="theme-color" content={theme.colors.header.bg} />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="icon" href={favicon} type="image/png" />
       <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
