@@ -56,9 +56,10 @@ export default function HeaderComponent() {
         <PrimerHeader.Item sx={{ mr: 0 }}>
           <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
             <CgTab size={32} />
-
             <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
+          </HeaderLink>
 
+          <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
             <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>Relevantes</Box>
           </HeaderLink>
         </PrimerHeader.Item>
