@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid';
 
 class BaseError extends Error {
   constructor({
+    name,
     message,
     stack,
     action,
@@ -15,7 +16,7 @@ class BaseError extends Error {
     databaseErrorCode,
   }) {
     super();
-    this.name = this.constructor.name;
+    this.name = name;
     this.message = message;
     this.action = action;
     this.statusCode = statusCode || 500;
@@ -33,6 +34,7 @@ class BaseError extends Error {
 export class InternalServerError extends BaseError {
   constructor({ message, action, requestId, errorId, statusCode, stack, errorLocationCode }) {
     super({
+      name: 'InternalServerError',
       message: message || 'Um erro interno não esperado aconteceu.',
       action: action || "Informe ao suporte o valor encontrado no campo 'error_id'.",
       statusCode: statusCode || 500,
@@ -47,6 +49,7 @@ export class InternalServerError extends BaseError {
 export class NotFoundError extends BaseError {
   constructor({ message, action, requestId, errorId, stack, errorLocationCode, key }) {
     super({
+      name: 'NotFoundError',
       message: message || 'Não foi possível encontrar este recurso no sistema.',
       action: action || 'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.',
       statusCode: 404,
@@ -62,6 +65,7 @@ export class NotFoundError extends BaseError {
 export class ServiceError extends BaseError {
   constructor({ message, action, stack, context, statusCode, errorLocationCode, databaseErrorCode }) {
     super({
+      name: 'ServiceError',
       message: message || 'Serviço indisponível no momento.',
       action: action || 'Verifique se o serviço está disponível.',
       stack: stack,
@@ -76,6 +80,7 @@ export class ServiceError extends BaseError {
 export class ValidationError extends BaseError {
   constructor({ message, action, stack, statusCode, context, errorLocationCode, key, type }) {
     super({
+      name: 'ValidationError',
       message: message || 'Um erro de validação ocorreu.',
       action: action || 'Ajuste os dados enviados e tente novamente.',
       statusCode: statusCode || 400,
@@ -91,6 +96,7 @@ export class ValidationError extends BaseError {
 export class UnauthorizedError extends BaseError {
   constructor({ message, action, requestId, stack, errorLocationCode }) {
     super({
+      name: 'UnauthorizedError',
       message: message || 'Usuário não autenticado.',
       action: action || 'Verifique se você está autenticado com uma sessão ativa e tente novamente.',
       requestId: requestId,
@@ -104,6 +110,7 @@ export class UnauthorizedError extends BaseError {
 export class ForbiddenError extends BaseError {
   constructor({ message, action, requestId, stack, errorLocationCode }) {
     super({
+      name: 'ForbiddenError',
       message: message || 'Você não possui permissão para executar esta ação.',
       action: action || 'Verifique se você possui permissão para executar esta ação.',
       requestId: requestId,
@@ -117,6 +124,7 @@ export class ForbiddenError extends BaseError {
 export class TooManyRequestsError extends BaseError {
   constructor({ message, action, context, stack, errorLocationCode }) {
     super({
+      name: 'TooManyRequestsError',
       message: message || 'Você realizou muitas requisições recentemente.',
       action: action || 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
       statusCode: 429,
@@ -130,6 +138,7 @@ export class TooManyRequestsError extends BaseError {
 export class UnprocessableEntityError extends BaseError {
   constructor({ message, action, stack, errorLocationCode }) {
     super({
+      name: 'UnprocessableEntityError',
       message: message || 'Não foi possível realizar esta operação.',
       action: action || 'Os dados enviados estão corretos, porém não foi possível realizar esta operação.',
       statusCode: 422,
