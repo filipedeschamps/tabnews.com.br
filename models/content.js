@@ -606,7 +606,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   if (contentEarnings > 0) {
     await balance.create(
       {
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:initial',
         recipientId: newContent.id,
         amount: contentEarnings,
         originatorType: options.eventId ? 'event' : 'content',

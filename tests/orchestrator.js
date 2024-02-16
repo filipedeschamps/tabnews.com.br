@@ -325,7 +325,7 @@ async function createPrestige(
 
   if (rootContents.length) {
     await createBalance({
-      balanceType: 'content:tabcoin',
+      balanceType: rootPrestigeNumerator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
       recipientId: rootContents[0].id,
       amount: rootPrestigeNumerator,
       originatorType: 'orchestrator',
@@ -335,7 +335,8 @@ async function createPrestige(
 
   if (childContents.length) {
     await createBalance({
-      balanceType: 'content:tabcoin',
+      balanceType:
+        childPrestigeNumerator + childPrestigeDenominator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
       recipientId: childContents[0].id,
       amount: childPrestigeNumerator + childPrestigeDenominator,
       originatorType: 'orchestrator',
