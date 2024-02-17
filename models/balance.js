@@ -53,6 +53,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
   const originatorType = 'event';
   const originatorId = options.eventId;
+  const contentBalanceType = transactionType === 'credit' ? 'content:tabcoin:credit' : 'content:tabcoin:debit';
 
   const query = {
     text: `
@@ -70,7 +71,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
         INSERT INTO balance_operations
           (balance_type, recipient_id, amount, originator_type, originator_id)
         VALUES
-          ('content:tabcoin', $4, $5, $8, $9)
+          ($10, $4, $5, $8, $9)
         RETURNING
           *
       )
@@ -96,6 +97,8 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
 
       originatorType, // $8
       originatorId, // $9
+
+      contentBalanceType, // $10
     ],
   };
 
