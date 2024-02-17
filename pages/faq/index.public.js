@@ -26,6 +26,16 @@ Queremos ter conteúdo de qualidade tanto na publicação principal quanto nos c
       answer: `O conteúdo publicado no TabNews deve estar diretamente relacionado à tecnologia. Alguns exemplos de assuntos diretamente relacionados à tecnologia são: desenvolvimento de software, análise de dados, design, inteligência artificial, modelagem 3D, edição de vídeo, manipulação de imagens etc. Exemplos de assuntos indiretamente relacionados à tecnologia, mas que podem ser abordados do ponto de vista da tecnologia, são: produtividade, empreendedorismo, criação de conteúdo etc.`,
     },
     {
+      id: 'qualidade-tabnews',
+      question: 'Como criar um bom conteúdo no TabNews?',
+      answer: `A forma como cada pessoa avalia a qualidade de um conteúdo é subjetiva, mas temos algumas recomendações que podem ajudar a criar uma publicação mais relevante: 
+
+- **Atenção à gramática e aos erros de digitação:** antes de publicar, confirme se precisa corrigir algum erro gramatical ou de digitação. O uso correto da língua portuguesa ajudará a transmitir a sua mensagem para os leitores.
+- **Formate o conteúdo para facilitar a leitura:** o editor de texto do TabNews aceita a sintaxe Markdown, então você pode usá-la para identificar no seu texto títulos e subtítulos, trechos de código, citações, enfatizar trechos específicos, exibir diagramas etc.
+- **Use imagens e fontes de apoio quando for apropriado:** nem todo conteúdo precisa de imagens ou links de referência, mas isso pode ajudar a transmitir mais credibilidade e facilitar o entendimento do seu conteúdo. Você também pode disponibilizar links para o leitor se aprofundar no assunto.
+- **Transmita informações corretas:** antes de compartilhar um fato ou notícia, confirme se isso é realmente verdade. Se for algo opinativo, deixe claro que está compartilhando a sua opinião ou de um terceiro.`,
+    },
+    {
       id: 'tabcash',
       question: 'O que é TabCash?',
       answer: `O TabCash é uma moeda digital para recompensar pessoas que estão criando conteúdos com valor concreto e também ajudando a qualificar outros conteúdos. O saldo de TabCash poderá ser utilizado no sistema de Revenue Share, onde você poderá usar espaços de anúncio para compartilhar o que desejar, desde que respeite os [Termos de Uso](/termos-de-uso). Esse sistema ainda não está implementado, mas você pode [acompanhar o progresso no GitHub](https://github.com/filipedeschamps/tabnews.com.br/issues/1490).`,
