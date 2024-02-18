@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
 import { randomUUID } from 'node:crypto';

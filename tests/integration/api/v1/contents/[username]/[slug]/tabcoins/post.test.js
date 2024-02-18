@@ -740,6 +740,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
     // to credit/debit four times the same content. This feature is just a temporary test
     // to a more sophisticated feature that will be implemented in the future.
 
+    // eslint-disable-next-line jest/no-disabled-tests
     test.skip('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
       const timesToFetch = 100;
       const timesSuccessfully = 6;
@@ -852,6 +853,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(timesSuccessfully);
     });
 
+    // eslint-disable-next-line jest/no-disabled-tests
     test.skip('With 100 simultaneous posts, enough TabCoins for 90, no db resources, but only responses 201 or 422', async () => {
       const timesToFetch = 100;
       const timesSuccessfully = 90;

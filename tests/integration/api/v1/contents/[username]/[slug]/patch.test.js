@@ -1599,7 +1599,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
             cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
-            title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+            title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
           }),
         },
       );
@@ -1613,7 +1613,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_id: defaultUser.id,
         parent_id: null,
         slug: 'titulo-velho',
-        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
         body: 'Body velho',
         status: 'draft',
         source_url: null,

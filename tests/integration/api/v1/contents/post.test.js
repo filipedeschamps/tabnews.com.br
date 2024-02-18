@@ -1144,7 +1144,7 @@ describe('POST /api/v1/contents', () => {
           cookie: `session_id=${sessionObject.token}`,
         },
         body: JSON.stringify({
-          title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+          title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
           body: 'Qualquer coisa.',
         }),
       });
@@ -1158,7 +1158,7 @@ describe('POST /api/v1/contents', () => {
         owner_id: defaultUser.id,
         parent_id: null,
         slug: 'tab-e-news-conteudos-com-valor-strong-concreto-strong-e-massa-participe-o',
-        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
         body: 'Qualquer coisa.',
         status: 'draft',
         source_url: null,

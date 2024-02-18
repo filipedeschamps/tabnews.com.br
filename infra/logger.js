@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import pino from 'pino';
 
 function getLogger() {
