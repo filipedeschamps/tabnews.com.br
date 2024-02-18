@@ -1,4 +1,4 @@
-import { Box, EmptyState, Link, PastTime, Text, Tooltip } from '@/TabNewsUI';
+import { Box, EmptyState, Link, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
 
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
@@ -129,9 +129,12 @@ export default function ContentList({ contentList: list, pagination, paginationB
                 whiteSpace: 'nowrap',
                 color: 'neutral.emphasis',
               }}>
-              <Text>
+              <TabCoinBalanceTooltip
+                direction="ne"
+                credit={contentObject.tabcoins_credit}
+                debit={contentObject.tabcoins_debit}>
                 <TabCoinsText count={contentObject.tabcoins} />
-              </Text>
+              </TabCoinBalanceTooltip>
               {' · '}
               <Text>
                 <ChildrenDeepCountText count={contentObject.children_deep_count} />
