@@ -146,6 +146,8 @@ describe('GET /api/v1/contents', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
           children_deep_count: 0,
         },
@@ -162,6 +164,8 @@ describe('GET /api/v1/contents', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
           children_deep_count: 1,
         },
@@ -239,6 +243,8 @@ describe('GET /api/v1/contents', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
           children_deep_count: 1,
         },
@@ -255,6 +261,8 @@ describe('GET /api/v1/contents', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
           children_deep_count: 0,
         },
@@ -325,6 +333,8 @@ describe('GET /api/v1/contents', () => {
           published_at: rootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
           children_deep_count: 3,
         },
@@ -1288,6 +1298,8 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           owner_username: secondUser.username,
           tabcoins: 2,
+          tabcoins_credit: 1,
+          tabcoins_debit: 0,
           children_deep_count: 1,
         });
 
@@ -1312,6 +1324,8 @@ describe('GET /api/v1/contents', () => {
           deleted_at: null,
           owner_username: thirdUser.username,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 1,
         });
 
@@ -1335,6 +1349,8 @@ describe('GET /api/v1/contents', () => {
             deleted_at: null,
             owner_username: owner.username,
             tabcoins,
+            tabcoins_credit: tabcoins,
+            tabcoins_debit: 0,
             children_deep_count: 0,
           };
         }

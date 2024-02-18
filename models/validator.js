@@ -4,6 +4,9 @@ import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
 import removeMarkdown from 'models/remove-markdown';
 
+const MAX_INTEGER = 2147483647;
+const MIN_INTEGER = -2147483648;
+
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON
   // doesn't support them and Joi doesn't clean
@@ -637,6 +640,8 @@ const schemas = {
       'owner_username',
       'children_deep_count',
       'tabcoins',
+      'tabcoins_credit',
+      'tabcoins_debit',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
@@ -770,17 +775,55 @@ const schemas = {
     return Joi.object({
       tabcoins: Joi.number()
         .integer()
-        .min(-2147483648)
-        .max(2147483647)
+        .min(MIN_INTEGER)
+        .max(MAX_INTEGER)
         .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"tabcoins" é um campo obrigatório.`,
           'string.empty': `"tabcoins" não pode estar em branco.`,
           'number.base': `"tabcoins" deve ser do tipo Number.`,
           'number.integer': `"tabcoins" deve ser um Inteiro.`,
-          'number.min': `"tabcoins" deve possuir um valor mínimo de -2147483648.`,
-          'number.max': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
-          'number.unsafe': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+          'number.min': `"tabcoins" deve possuir um valor mínimo de ${MIN_INTEGER}.`,
+          'number.max': `"tabcoins" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"tabcoins" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
+  tabcoins_credit: function () {
+    return Joi.object({
+      tabcoins_credit: Joi.number()
+        .integer()
+        .min(0)
+        .max(MAX_INTEGER)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins_credit" é um campo obrigatório.`,
+          'string.empty': `"tabcoins_credit" não pode estar em branco.`,
+          'number.base': `"tabcoins_credit" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins_credit" deve ser um Inteiro.`,
+          'number.min': `"tabcoins_credit" deve possuir um valor mínimo de 0.`,
+          'number.max': `"tabcoins_credit" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"tabcoins_credit" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
+  tabcoins_debit: function () {
+    return Joi.object({
+      tabcoins_debit: Joi.number()
+        .integer()
+        .min(MIN_INTEGER)
+        .max(0)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins_debit" é um campo obrigatório.`,
+          'string.empty': `"tabcoins_debit" não pode estar em branco.`,
+          'number.base': `"tabcoins_debit" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins_debit" deve ser um Inteiro.`,
+          'number.min': `"tabcoins_debit" deve possuir um valor mínimo de ${MIN_INTEGER}.`,
+          'number.max': `"tabcoins_debit" deve possuir um valor máximo de 0.`,
+          'number.unsafe': `"tabcoins_debit" deve possuir um valor máximo de 0.`,
         }),
     });
   },
@@ -789,17 +832,17 @@ const schemas = {
     return Joi.object({
       tabcash: Joi.number()
         .integer()
-        .min(-2147483648)
-        .max(2147483647)
+        .min(MIN_INTEGER)
+        .max(MAX_INTEGER)
         .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"tabcash" é um campo obrigatório.`,
           'string.empty': `"tabcash" não pode estar em branco.`,
           'number.base': `"tabcash" deve ser do tipo Number.`,
           'number.integer': `"tabcash" deve ser um Inteiro.`,
-          'number.min': `"tabcash" deve possuir um valor mínimo de -2147483648.`,
-          'number.max': `"tabcash" deve possuir um valor máximo de 2147483647.`,
-          'number.unsafe': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+          'number.min': `"tabcash" deve possuir um valor mínimo de ${MIN_INTEGER}.`,
+          'number.max': `"tabcash" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"tabcash" deve possuir um valor máximo de ${MAX_INTEGER}.`,
         }),
     });
   },

@@ -399,6 +399,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: firstUser.username,
       });
 
@@ -452,6 +454,65 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+    });
+
+    test('Content with TabCoins credits and debits', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Title',
+        body: 'Body',
+      });
+
+      await orchestrator.createRate(defaultUserContent, 3);
+      await orchestrator.createRate(defaultUserContent, -2);
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: 'New body',
+          }),
+        },
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'title',
+        title: 'Title',
+        body: 'New body',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 1,
+        tabcoins_credit: 3,
+        tabcoins_debit: -2,
         owner_username: defaultUser.username,
       });
 
@@ -582,6 +643,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -745,6 +808,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -835,6 +900,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1004,6 +1071,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Segundo conteúdo',
         status: 'published',
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1097,6 +1166,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1223,6 +1294,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1441,6 +1514,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1493,6 +1568,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1545,6 +1622,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1597,6 +1676,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1650,6 +1731,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1743,6 +1826,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'deleted',
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1975,6 +2060,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2027,6 +2114,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2079,6 +2168,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2131,6 +2222,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2378,6 +2471,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2431,6 +2526,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2520,6 +2617,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2629,6 +2728,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -4040,6 +4141,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: secondUser.username,
       });
 

@@ -17,6 +17,7 @@ export { default as ReadTime } from '@/ReadTime';
 export { default as RecentTabNav } from '@/RecentTabNav';
 export { default as useSearchBox } from '@/SearchBox';
 export { default as TabCashCount } from '@/TabCashCount';
+export { default as TabCoinBalanceTooltip } from '@/TabCoinBalanceTooltip';
 export { default as TabCoinButtons } from '@/TabCoinButtons';
 export { default as TabCoinCount } from '@/TabCoinCount';
 export { default as ThemeProvider } from '@/ThemeProvider';

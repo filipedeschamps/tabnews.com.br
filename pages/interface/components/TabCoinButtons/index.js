@@ -3,7 +3,7 @@ import { useRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
 
-import { Box, IconButton, Text, Tooltip } from '@/TabNewsUI';
+import { Box, IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 
@@ -102,10 +102,21 @@ export default function TabCoinButtons({ content }) {
           disabled={isInAction}
         />
       </Tooltip>
-      <Text sx={{ fontSize: 0, fontWeight: 'bold', py: '4px', color: 'accent.emphasis' }}>
+      <TabCoinBalanceTooltip
+        direction="ne"
+        sx={{
+          width: '100%',
+          textAlign: 'center',
+          fontSize: 0,
+          fontWeight: 'bold',
+          py: 1,
+          color: 'accent.emphasis',
+        }}
+        credit={contentObject.tabcoins_credit}
+        debit={contentObject.tabcoins_debit}>
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
         {contentObject.tabcoins}
-      </Text>
+      </TabCoinBalanceTooltip>
       <Tooltip aria-label="Não achei relevante" direction="ne">
         <IconButton
           variant="invisible"

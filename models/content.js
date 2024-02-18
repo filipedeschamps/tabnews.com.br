@@ -120,7 +120,9 @@ async function findAll(values = {}, options = {}) {
         contents.path,
         users.username as owner_username,
         content_window.total_rows,
-        get_current_balance('content:tabcoin', contents.id) as tabcoins,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
         (
           SELECT COUNT(*)
           FROM contents as children
@@ -133,6 +135,7 @@ async function findAll(values = {}, options = {}) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
+      LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
     `;
   }
 
@@ -305,15 +308,17 @@ async function create(postedContent, options = {}) {
     transaction: options.transaction,
   });
 
-  newContent.tabcoins = await balance.getTotal(
+  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
-      balanceType: 'content:tabcoin',
       recipientId: newContent.id,
     },
     {
       transaction: options.transaction,
     },
   );
+  newContent.tabcoins = tabcoinsCount.tabcoins;
+  newContent.tabcoins_credit = tabcoinsCount.tabcoins_credit;
+  newContent.tabcoins_debit = tabcoinsCount.tabcoins_debit;
 
   return newContent;
 
@@ -656,15 +661,17 @@ async function update(contentId, postedContent, options = {}) {
     });
   }
 
-  updatedContent.tabcoins = await balance.getTotal(
+  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
-      balanceType: 'content:tabcoin',
       recipientId: updatedContent.id,
     },
     {
       transaction: options.transaction,
     },
   );
+  updatedContent.tabcoins = tabcoinsCount.tabcoins;
+  updatedContent.tabcoins_credit = tabcoinsCount.tabcoins_credit;
+  updatedContent.tabcoins_debit = tabcoinsCount.tabcoins_debit;
 
   return updatedContent;
 
@@ -800,11 +807,15 @@ async function findTree(options) {
       SELECT
         *,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', contents.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
         contents
       INNER JOIN
         users ON owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(c.id) tabcoins_count ON true
       WHERE
         path @> ARRAY[$1]::uuid[] AND
         status = 'published';`;
@@ -820,24 +831,32 @@ async function findTree(options) {
       SELECT
         parent.*,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', parent.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
         parent
       INNER JOIN
         users ON parent.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(parent.id) tabcoins_count ON true
 
       UNION ALL
 
       SELECT
         c.*,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', c.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
         contents c
       INNER JOIN
         parent ON c.path @> ARRAY[parent.id]::uuid[]
       INNER JOIN
         users ON c.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(c.id) tabcoins_count ON true
       WHERE
         c.status = 'published';`;
 
