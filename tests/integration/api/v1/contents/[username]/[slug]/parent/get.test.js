@@ -232,6 +232,8 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
       });
     });
 
@@ -293,6 +295,8 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
       });
     });
 
@@ -358,6 +362,8 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
       });
     });
 
@@ -424,6 +430,58 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         deleted_at: childContentLevel2Deleted.deleted_at.toISOString(),
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+      });
+    });
+
+    test('Parent containing TabCoins credits and debits', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root content title',
+        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        status: 'published',
+      });
+
+      const childContentLevel1 = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        parent_id: rootContent.id,
+        title: 'Child content title Level 1',
+        body: 'Child content body Level 1',
+        status: 'published',
+      });
+
+      await orchestrator.createRate(rootContent, 10);
+      await orchestrator.createRate(rootContent, -11);
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`,
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: rootContent.id,
+        parent_id: null,
+        owner_id: firstUser.id,
+        slug: 'root-content-title',
+        title: 'Root content title',
+        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        children_deep_count: 1,
+        status: 'published',
+        source_url: null,
+        published_at: rootContent.published_at.toISOString(),
+        created_at: rootContent.created_at.toISOString(),
+        updated_at: rootContent.updated_at.toISOString(),
+        deleted_at: null,
+        owner_username: firstUser.username,
+        tabcoins: 0,
+        tabcoins_credit: 10,
+        tabcoins_debit: -11,
       });
     });
   });

@@ -202,6 +202,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: firstUser.username,
       });
 
@@ -387,6 +389,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -517,6 +521,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -590,6 +596,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -664,6 +672,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -866,6 +876,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Outro body',
         status: 'published',
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: secondContentBody.created_at,
         updated_at: secondContentBody.updated_at,
@@ -975,6 +987,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1018,6 +1032,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1061,6 +1077,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1104,6 +1122,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1147,6 +1167,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1191,6 +1213,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1235,6 +1259,8 @@ describe('POST /api/v1/contents', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1410,6 +1436,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1454,6 +1482,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1498,6 +1528,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1542,6 +1574,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1746,6 +1780,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1790,6 +1826,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1864,6 +1902,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1909,6 +1949,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1959,6 +2001,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2065,6 +2109,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2124,6 +2170,8 @@ describe('POST /api/v1/contents', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2177,6 +2225,8 @@ describe('POST /api/v1/contents', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -3039,6 +3089,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3104,6 +3156,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3161,6 +3215,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3226,6 +3282,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3283,6 +3341,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3348,6 +3408,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3444,6 +3506,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3509,6 +3573,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3568,6 +3634,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3633,6 +3701,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 

@@ -123,6 +123,8 @@ describe('GET /api/v1/contents/[username]', () => {
           deleted_at: null,
           owner_username: firstUser.username,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 0,
         },
       ]);
@@ -180,6 +182,8 @@ describe('GET /api/v1/contents/[username]', () => {
           deleted_at: null,
           owner_username: firstUser.username,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 0,
         },
       ]);
@@ -246,6 +250,8 @@ describe('GET /api/v1/contents/[username]', () => {
           deleted_at: null,
           owner_username: firstUser.username,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 0,
         },
         {
@@ -261,6 +267,8 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: firstUser.username,
           children_deep_count: 0,
         },
@@ -277,6 +285,8 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: firstUser.username,
           children_deep_count: 1,
         },
@@ -351,6 +361,8 @@ describe('GET /api/v1/contents/[username]', () => {
           deleted_at: null,
           owner_username: firstUser.username,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 0,
         },
         {
@@ -366,6 +378,8 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: firstUser.username,
           children_deep_count: 0,
         },
@@ -382,6 +396,83 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: firstUser.username,
+          children_deep_count: 1,
+        },
+      ]);
+
+      expect(uuidVersion(responseBody[0].id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].id)).toEqual(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+    });
+
+    test('"username" existent with "root" and "child" content with TabCoins credits and debits', async () => {
+      const firstUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Conteúdo raiz',
+        status: 'published',
+      });
+
+      await orchestrator.createRate(rootContent, -3);
+      await orchestrator.createRate(rootContent, 1);
+
+      const childContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        parent_id: rootContent.id,
+        title: 'Comentário',
+        body: 'Um comentário',
+        status: 'published',
+      });
+
+      await orchestrator.createRate(childContent, 10);
+      await orchestrator.createRate(childContent, -2);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: childContent.id,
+          owner_id: firstUser.id,
+          parent_id: rootContent.id,
+          slug: 'comentario',
+          title: 'Comentário',
+          body: 'Um comentário',
+          status: 'published',
+          source_url: null,
+          created_at: childContent.created_at.toISOString(),
+          updated_at: childContent.updated_at.toISOString(),
+          published_at: childContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 8,
+          tabcoins_credit: 10,
+          tabcoins_debit: -2,
+          children_deep_count: 0,
+        },
+        {
+          id: rootContent.id,
+          owner_id: firstUser.id,
+          parent_id: null,
+          slug: 'conteudo-raiz',
+          title: 'Conteúdo raiz',
+          status: 'published',
+          source_url: null,
+          created_at: rootContent.created_at.toISOString(),
+          updated_at: rootContent.updated_at.toISOString(),
+          published_at: rootContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: -1,
+          tabcoins_credit: 1,
+          tabcoins_debit: -3,
           owner_username: firstUser.username,
           children_deep_count: 1,
         },
@@ -739,6 +830,8 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: secondRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: firstUser.username,
           children_deep_count: 0,
         },
@@ -755,6 +848,8 @@ describe('GET /api/v1/contents/[username]', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: firstUser.username,
           children_deep_count: 1,
         },
@@ -841,6 +936,8 @@ describe('GET /api/v1/contents/[username]', () => {
           deleted_at: null,
           owner_username: firstUser.username,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 0,
         },
         {
@@ -858,6 +955,8 @@ describe('GET /api/v1/contents/[username]', () => {
           deleted_at: null,
           owner_username: firstUser.username,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           children_deep_count: 0,
         },
       ]);
