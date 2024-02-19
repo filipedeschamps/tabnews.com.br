@@ -4,8 +4,8 @@ import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icon
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
 
-  const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
-  const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
+  const previousPageUrl = `${paginationBasePath}/${pagination.previousPage}`;
+  const nextPageUrl = `${paginationBasePath}/${pagination.nextPage}`;
 
   return (
     <>

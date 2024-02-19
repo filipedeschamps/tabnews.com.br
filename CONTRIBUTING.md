@@ -8,12 +8,12 @@ A seguir, temos um guia para lhe ajudar a contribuir com o TabNews através de _
 
 - [Reportar privadamente problemas de segurança](#reportar-privadamente-problemas-de-segurança)
 - [Participar de debates em issues do repositório](#participar-de-debates-em-issues-do-repositório)
-- [Participar de revisões de Pull Requests](#participar-de-revisões-de-pull-requests-prs)
+- [Participar de revisões de Pull Requests (PRs)](#participar-de-revisões-de-pull-requests-prs)
 - [Desenvolver o código-fonte](#desenvolver-o-código-fonte)
   - [Rodar o lint do código](#rodar-o-lint-do-código)
   - [Criar novas Migrations](#criar-novas-migrations)
   - [Commit das alterações](#commit-das-alterações)
-  - [Enviar PRs com soluções previamente debatidas](#enviar-prs-com-soluções-previamente-debatidas)
+  - [Enviar pull requests](#enviar-pull-requests)
 
 ## Reportar privadamente problemas de segurança
 

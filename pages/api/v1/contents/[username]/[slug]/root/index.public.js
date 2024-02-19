@@ -50,7 +50,7 @@ async function getHandler(request, response) {
     });
   }
 
-  if (contentFound && !contentFound.parent_id) {
+  if (!contentFound.parent_id) {
     throw new NotFoundError({
       message: `O conteúdo requisitado é um conteúdo raiz.`,
       action:
