@@ -18,7 +18,7 @@ const healthCheckDB = async () => {
 
       return await new Promise((resolve, reject) => {
         exec(`docker exec postgres-dev pg_isready`, async (error, stdout) => {
-          healthCheckStatus = stdout;
+          const healthCheckStatus = stdout;
           console.log('health check postgres: ', healthCheckStatus);
 
           if (healthCheckStatus?.indexOf('accepting connections') != -1) {

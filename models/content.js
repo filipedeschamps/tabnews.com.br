@@ -34,7 +34,7 @@ async function findAll(values = {}, options = {}) {
   }
 
   const selectClause = buildSelectClause(values);
-  const whereClause = buildWhereClause(values?.where);
+  const whereClause = buildWhereClause(values.where);
   const orderByClause = buildOrderByClause(values);
 
   query.text = `
@@ -70,7 +70,7 @@ async function findAll(values = {}, options = {}) {
   return results.rows;
 
   async function replaceOwnerUsernameWithOwnerId(values) {
-    if (values?.where?.owner_username) {
+    if (values.where?.owner_username) {
       const userOwner = await user.findOneByUsername(values.where.owner_username);
       values.where.owner_id = userOwner.id;
       delete values.where.owner_username;
@@ -110,7 +110,7 @@ async function findAll(values = {}, options = {}) {
         contents.parent_id,
         contents.slug,
         contents.title,
-        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
+        ${!values.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
         contents.status,
         contents.source_url,
         contents.created_at,
@@ -239,7 +239,7 @@ async function findWithStrategy(options = {}) {
     const results = {};
     const options = {};
 
-    if (!values?.where?.owner_username && values?.where?.parent_id === null) {
+    if (!values.where?.owner_username && values.where?.parent_id === null) {
       options.strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';
@@ -788,8 +788,8 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
   }
 }
 
-async function findTree(options) {
-  options.where = validateWhereSchema(options?.where);
+async function findTree(options = {}) {
+  options.where = validateWhereSchema(options.where);
   let values;
   if (options.where.parent_id) {
     values = [options.where.parent_id];

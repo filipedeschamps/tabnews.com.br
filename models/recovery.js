@@ -31,9 +31,8 @@ async function findUserByUsernameOrEmail({ username, email }) {
         errorLocationCode: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
       });
     }
+    throw error;
   }
-
-  throw error;
 }
 
 async function create(user) {

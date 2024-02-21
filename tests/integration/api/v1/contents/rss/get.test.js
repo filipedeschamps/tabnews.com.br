@@ -24,7 +24,7 @@ describe('GET /recentes/rss', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
       const responseBody = await response.text();
 
-      const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody, 'g')[1];
+      const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
 
       expect(response.status).toEqual(200);
 

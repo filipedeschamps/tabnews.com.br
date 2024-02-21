@@ -64,7 +64,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', viewF
   }, [contentObject]);
 
   useEffect(() => {
-    if (user && contentObject?.owner_id === user?.id) {
+    if (user && contentObject?.owner_id === user.id) {
       const localStorageContent = localStorage.getItem(localStorageKey);
       if (isValidJsonString(localStorageContent)) {
         setComponentMode('edit');
@@ -239,7 +239,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
           )}
         </Box>
 
-        {!contentObject?.parent_id && contentObject?.title && (
+        {!contentObject.parent_id && contentObject.title && (
           <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
             {contentObject.title}
           </Heading>
