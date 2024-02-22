@@ -25,8 +25,7 @@ import {
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
-import { useUser } from 'pages/interface';
-import isTrustedDomain from 'pages/interface/utils/trusted-domain';
+import { isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
@@ -365,60 +364,75 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         requestBody.parent_id = contentObject.parent_id;
       }
 
-      try {
-        const response = await fetch(requestUrl, {
-          method: requestMethod,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
+      fetch(requestUrl, {
+        method: requestMethod,
+        headers: {
+          Accept: 'application/json, application/x-ndjson',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+        .then(processResponse)
+        .catch(() => {
+          setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+          setIsPosting(false);
         });
 
+      function processResponse(response) {
         setGlobalErrorMessage(undefined);
-
-        const responseBody = await response.json();
         fetchUser();
 
-        if (response.status === 200) {
+        if (response.ok) {
           localStorage.removeItem(localStorageKey);
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
+        } else {
+          setIsPosting(false);
+        }
+
+        processNdJsonStream(response.body, getResponseBodyCallback(response));
+      }
+
+      function getResponseBodyCallback(response) {
+        if (response.status === 200) {
+          return (responseBody) => {
+            setContentObject(responseBody);
+            setComponentMode('view');
+          };
         }
 
         if (response.status === 201) {
-          localStorage.removeItem(localStorageKey);
+          return (responseBody) => {
+            if (responseBody.message) {
+              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+              console.error(responseBody);
+              return;
+            }
 
-          if (!responseBody.parent_id) {
-            localStorage.setItem('justPublishedNewRootContent', true);
-            router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
-            return;
-          }
+            if (!responseBody.parent_id) {
+              localStorage.setItem('justPublishedNewRootContent', true);
+              router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
+              return;
+            }
 
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
+            setContentObject(responseBody);
+            setComponentMode('view');
+          };
         }
 
         if (response.status === 400) {
-          setErrorObject(responseBody);
+          return (responseBody) => {
+            setErrorObject(responseBody);
 
-          if (responseBody.key === 'slug') {
-            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-          }
-          setIsPosting(false);
-          return;
+            if (responseBody.key === 'slug') {
+              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+            }
+          };
         }
 
         if (response.status >= 401) {
-          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
-          setIsPosting(false);
-          return;
+          return (responseBody) => {
+            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+          };
         }
-      } catch (error) {
-        setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-        setIsPosting(false);
       }
     },
     [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
@@ -638,19 +652,6 @@ function DeletedMode({ viewFrame }) {
       </Box>
     </Box>
   );
-}
-
-function isValidJsonString(jsonString) {
-  if (!(jsonString && typeof jsonString === 'string')) {
-    return false;
-  }
-
-  try {
-    JSON.parse(jsonString);
-    return true;
-  } catch (error) {
-    return false;
-  }
 }
 
 function randomTitlePlaceholder() {

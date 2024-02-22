@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+import readline from 'node:readline';
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
@@ -2760,6 +2761,84 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail2.html).toContain(rootContent.title);
         expect(getLastEmail2.html).toContain('respondeu à sua publicação');
         expect(getLastEmail2.html).toContain(childContentUrl);
+      });
+    });
+
+    describe('Stream Response', () => {
+      test('Reply with body containing 20k characters', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Título do conteúdo raiz',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json, application/x-ndjson',
+            cookie: `session_id=${secondUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'.repeat(
+              200,
+            ),
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        expect(response.ok).toBe(true);
+        expect(response.status).toBe(201);
+        expect(response.headers.get('content-Type')).toBe('application/x-ndjson');
+
+        const rl = readline.createInterface({
+          input: response.body,
+          crlfDelay: Infinity,
+        });
+
+        const streamData = [];
+        let responseBody;
+
+        await new Promise((resolve) => {
+          rl.on('line', (line) => {
+            streamData.push(JSON.parse(line));
+          }).on('close', () => {
+            responseBody = streamData[0];
+            resolve();
+          });
+        });
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
+
+        expect(responseBody.body).toBe(
+          '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'
+            .repeat(200)
+            .slice(0, 19999),
+        );
+        expect(responseBody.parent_id).toBe(rootContent.id);
+        expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
+        expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título do conteúdo raiz"`);
+        expect(getLastEmail.text).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.text).toContain(secondUser.username);
+        expect(getLastEmail.html).toContain(secondUser.username);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain('respondeu à sua publicação');
+        expect(getLastEmail.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
     });
 

@@ -34,7 +34,7 @@ async function onNoMatchHandler(request, response) {
   const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
   logger.info(snakeize(privateErrorObject));
 
-  return response.status(publicErrorObject.statusCode).json(snakeize(publicErrorObject));
+  return errorResponse(response, publicErrorObject.statusCode, snakeize(publicErrorObject));
 }
 
 function onErrorHandler(error, request, response) {
@@ -50,7 +50,7 @@ function onErrorHandler(error, request, response) {
     const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
     logger.info(snakeize(privateErrorObject));
 
-    return response.status(error.statusCode).json(snakeize(publicErrorObject));
+    return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
   }
 
   if (error instanceof UnauthorizedError) {
@@ -61,7 +61,7 @@ function onErrorHandler(error, request, response) {
 
     session.clearSessionIdCookie(response);
 
-    return response.status(error.statusCode).json(snakeize(publicErrorObject));
+    return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
   }
 
   const publicErrorObject = new InternalServerError({
@@ -81,7 +81,19 @@ function onErrorHandler(error, request, response) {
 
   logger.error(snakeize(privateErrorObject));
 
-  return response.status(publicErrorObject.statusCode).json(snakeize(publicErrorObject));
+  return errorResponse(response, publicErrorObject.statusCode, snakeize(publicErrorObject));
+}
+
+function errorResponse(response, statusCode, publicErrorObject) {
+  response.status(statusCode);
+
+  const isStream = response.getHeader('Content-Type') === 'application/x-ndjson';
+  if (isStream) {
+    response.write(JSON.stringify(publicErrorObject) + '\n');
+    response.end();
+  }
+
+  return response.json(publicErrorObject);
 }
 
 function logRequest(request, response, next) {

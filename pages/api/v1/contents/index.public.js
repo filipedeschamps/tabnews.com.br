@@ -170,13 +170,29 @@ async function postHandler(request, response) {
     await transaction.query('COMMIT');
     await transaction.release();
 
-    if (createdContent.parent_id) {
-      await notification.sendReplyEmailToParentUser(createdContent);
+    const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+    const sendStream = !!insecureInputValues.parent_id && request.headers.accept?.includes('application/x-ndjson');
+
+    response.status(201);
+
+    if (sendStream) {
+      response.setHeader('Content-Type', 'application/x-ndjson');
+      response.write(JSON.stringify(secureOutputValues) + '\n');
     }
 
-    const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+    if (createdContent.parent_id) {
+      try {
+        await notification.sendReplyEmailToParentUser(createdContent);
+      } catch (error) {
+        if (sendStream) throw error;
+      }
+    }
 
-    return response.status(201).json(secureOutputValues);
+    if (sendStream) {
+      response.end();
+    } else {
+      response.json(secureOutputValues);
+    }
   } catch (error) {
     await transaction.query('ROLLBACK');
     await transaction.release();
