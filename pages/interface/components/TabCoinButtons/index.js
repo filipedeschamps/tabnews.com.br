@@ -89,7 +89,6 @@ export default function TabCoinButtons({ content }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        mt: contentObject.title ? '9px' : '0px',
       }}>
       <Tooltip aria-label="Achei relevante" direction="ne">
         <IconButton
@@ -109,6 +108,7 @@ export default function TabCoinButtons({ content }) {
           textAlign: 'center',
           fontSize: 0,
           fontWeight: 'bold',
+          my: 2,
           py: 1,
           color: 'accent.emphasis',
         }}
@@ -123,7 +123,7 @@ export default function TabCoinButtons({ content }) {
           aria-label="Debitar TabCoin"
           icon={ChevronDownIcon}
           size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+          sx={{ color: 'fg.subtle', lineHeight: '18px', mb: 2 }}
           onClick={() => transactTabCoin('debit')}
           disabled={isInAction}
         />
