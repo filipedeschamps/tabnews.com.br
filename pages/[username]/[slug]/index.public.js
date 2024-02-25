@@ -53,11 +53,12 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
                 borderStyle: 'dotted',
                 width: '50%',
                 height: '100%',
+                minHeight: '8px',
               }}
             />
           </Box>
 
-          <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
+          <Box sx={{ width: '100%', mt: contentFound.title ? 0 : '9px', pl: '1px', overflow: 'auto' }}>
             <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -70,7 +71,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
               borderColor: 'border.default',
               borderStyle: 'solid',
               mt: 4,
-              mb: 4,
+              mb: 3,
               p: 4,
               wordWrap: 'break-word',
             }}>
@@ -102,7 +103,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
         [root]->[child]->[child]
       */}
       {content.parent_id && parentContent.id === rootContent.id && (
-        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ fontSize: 1, mb: 2, display: 'flex', flexDirection: 'row' }}>
           <Box
             sx={{
               textAlign: 'center',
@@ -134,7 +135,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
         [root]->[child]->[child]
       */}
       {content.parent_id && parentContent.id !== rootContent.id && (
-        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ fontSize: 1, mb: 2, display: 'flex', flexDirection: 'row' }}>
           <Box
             sx={{
               textAlign: 'center',
@@ -194,7 +195,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
           width: '100%',
           wordWrap: 'break-word',
           display: 'flex',
-          mt: 4,
+          mt: 3,
         }}
         key={id}>
         {renderIntent ? (
@@ -216,6 +217,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
                   cursor: 'pointer',
                   width: '80%',
                   height: '100%',
+                  minHeight: '24px',
                   display: 'flex',
                   justifyContent: 'center',
                   mt: 1,
@@ -257,10 +259,11 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
               </Tooltip>
             </Box>
 
-            <Box sx={{ width: '100%', pl: '1px', overflow: 'auto' }}>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', width: '100%', mt: '9px', pl: '1px', overflow: 'auto' }}>
               <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />
 
-              <Box sx={{ mt: 4 }}>
+              <Box sx={{ display: 'flex', flex: 1, mt: 4, alignItems: 'end' }}>
                 <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
               </Box>
 
