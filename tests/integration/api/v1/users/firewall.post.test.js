@@ -27,6 +27,10 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         }),
       });
 
+      const request1Body = await request1.json();
+
+      await orchestrator.activateUser(request1Body);
+
       const request2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -51,7 +55,6 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         }),
       });
 
-      const request1Body = await request1.json();
       const request2Body = await request2.json();
       const request3Body = await request3.json();
 
@@ -61,7 +64,8 @@ describe('POST /api/v1/users [FIREWALL]', () => {
 
       expect(request3Body).toStrictEqual({
         name: 'TooManyRequestsError',
-        message: 'Você está tentando criar muitos usuários.',
+        message:
+          'Você está tentando criar muitos usuários, então usuários criados recentemente podem ter sido desabilitados.',
         action: 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
         status_code: 429,
         error_id: request3Body.error_id,
@@ -72,8 +76,20 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       const user2 = await user.findOneById(request2Body.id);
       await expect(user.findOneByUsername('request3')).rejects.toThrow();
 
-      expect(user1.features).toStrictEqual([]);
+      expect(user1.features).toStrictEqual([
+        'create:content',
+        'create:content:text_root',
+        'create:content:text_child',
+        'update:content',
+        'update:user',
+      ]);
+      expect(user1.updated_at).not.toEqual(request1Body.updated_at);
+      expect(user1.updated_at.toISOString()).not.toEqual(request1Body.updated_at);
+      expect(Date.parse(user1.updated_at)).not.toEqual(NaN);
+
       expect(user2.features).toStrictEqual([]);
+      expect(user2.updated_at.toISOString()).not.toEqual(request2Body.updated_at);
+      expect(Date.parse(user2.updated_at)).not.toEqual(NaN);
 
       const events = await event.findAll();
       expect(events.length).toEqual(3);

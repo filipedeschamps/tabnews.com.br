@@ -49,7 +49,8 @@ BEGIN
           UPDATE
             users
           SET
-            features = array_remove(features, feature)
+            features = array_remove(features, feature),
+            updated_at = (NOW() AT TIME ZONE 'utc')
           WHERE
             id = users_to_block.id::uuid;
         END LOOP;

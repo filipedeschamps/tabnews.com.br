@@ -24,7 +24,11 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION firewall_create_content_text_child_side_effect(clientIp inet) RETURNS TABLE (
-  content_id uuid
+  content_id uuid,
+  content_published_at timestamp,
+  content_status varchar,
+  content_owner_id uuid,
+  content_tabcoins integer
 ) AS $$
 DECLARE
   contents_to_update record;
@@ -41,16 +45,31 @@ BEGIN
           AND created_at > NOW() - INTERVAL '2 minutes'
     )
     LOOP
-      content_id := contents_to_update.id;
-
       UPDATE
-          contents
+        contents
       SET
-        status = 'draft'
+        status = 'deleted',
+        deleted_at = (NOW() AT TIME ZONE 'utc'),
+        updated_at = (NOW() AT TIME ZONE 'utc')
       WHERE
-        id = contents_to_update.id::uuid;
+        id = contents_to_update.id::uuid
+        AND status = 'published'
+      RETURNING
+        id,
+        published_at,
+        status,
+        owner_id,
+        get_current_balance('content:tabcoin', contents_to_update.id::uuid)
+      INTO
+        content_id,
+        content_published_at,
+        content_status,
+        content_owner_id,
+        content_tabcoins;
 
-      RETURN NEXT;
+      IF FOUND THEN
+        RETURN NEXT;
+      END IF;
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
