@@ -2,6 +2,7 @@ import { version as uuidVersion } from 'uuid';
 
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -13,67 +14,60 @@ beforeAll(async () => {
 describe('POST /api/v1/users [FIREWALL]', () => {
   describe('Anonymous user', () => {
     test('Spamming valid users', async () => {
-      const request1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'request1',
-          email: 'request1@gmail.com',
-          password: 'validpassword',
-        }),
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { response: response1, responseBody: response1Body } = await usersRequestBuilder.post({
+        username: 'request1',
+        email: 'request1@gmail.com',
+        password: 'validpassword',
       });
 
-      const request2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'request2',
-          email: 'request2@gmail.com',
-          password: 'validpassword',
-        }),
+      const activatedUser1 = await orchestrator.activateUser(response1Body);
+
+      const { response: response2, responseBody: response2Body } = await usersRequestBuilder.post({
+        username: 'request2',
+        email: 'request2@gmail.com',
+        password: 'validpassword',
       });
 
-      const request3 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'request3',
-          email: 'request3@gmail.com',
-          password: 'validpassword',
-        }),
+      const { response: response3, responseBody: response3Body } = await usersRequestBuilder.post({
+        username: 'request3',
+        email: 'request3@gmail.com',
+        password: 'validpassword',
       });
 
-      const request1Body = await request1.json();
-      const request2Body = await request2.json();
-      const request3Body = await request3.json();
+      expect.soft(response1.status).toBe(201);
+      expect.soft(response2.status).toBe(201);
+      expect.soft(response3.status).toBe(429);
 
-      expect.soft(request1.status).toBe(201);
-      expect.soft(request2.status).toBe(201);
-      expect.soft(request3.status).toBe(429);
-
-      expect(request3Body).toStrictEqual({
+      expect(response3Body).toStrictEqual({
         name: 'TooManyRequestsError',
-        message: 'Você está tentando criar muitos usuários.',
+        message:
+          'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desabilitados.',
         action: 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
         status_code: 429,
-        error_id: request3Body.error_id,
-        request_id: request3Body.request_id,
+        error_id: response3Body.error_id,
+        request_id: response3Body.request_id,
       });
 
-      const user1 = await user.findOneById(request1Body.id);
-      const user2 = await user.findOneById(request2Body.id);
+      const user1 = await user.findOneById(response1Body.id);
+      const user2 = await user.findOneById(response2Body.id);
       await expect(user.findOneByUsername('request3')).rejects.toThrow(
         'O "username" informado não foi encontrado no sistema.',
       );
 
-      expect(user1.features).toStrictEqual([]);
+      expect(user1.features).toStrictEqual([
+        'create:content',
+        'create:content:text_root',
+        'create:content:text_child',
+        'update:content',
+        'update:user',
+      ]);
+      expect(user1.updated_at.toISOString()).toEqual(activatedUser1.updated_at.toISOString());
+      expect(Date.parse(user1.updated_at)).not.toEqual(NaN);
+
       expect(user2.features).toStrictEqual([]);
+      expect(user2.updated_at.toISOString()).toEqual(response2Body.updated_at);
+      expect(Date.parse(user2.updated_at)).not.toEqual(NaN);
 
       const lastEvent = await orchestrator.getLastEvent();
 

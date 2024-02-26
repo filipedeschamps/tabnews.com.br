@@ -1,5 +1,6 @@
 import { TooManyRequestsError } from 'errors';
 import database from 'infra/database.js';
+import content from 'models/content.js';
 import event from 'models/event.js';
 
 const rules = {
@@ -36,7 +37,8 @@ async function createUserRule(context) {
     await createUserRuleSideEffect(context);
 
     throw new TooManyRequestsError({
-      message: 'Você está tentando criar muitos usuários.',
+      message:
+        'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desabilitados.',
     });
   }
 }
@@ -72,7 +74,8 @@ async function createContentTextRootRule(context) {
     await createContentTextRootRuleSideEffect(context);
 
     throw new TooManyRequestsError({
-      message: 'Você está tentando criar muitos conteúdos na raiz do site.',
+      message:
+        'Identificamos a criação de muitas publicações em um curto período, então publicações criadas recentemente podem ter sido removidas.',
     });
   }
 }
@@ -83,9 +86,9 @@ async function createContentTextRootRuleSideEffect(context) {
     values: [context.clientIp],
   });
 
-  const contentsAffected = results.rows.map((row) => row.content_id);
+  const contentsAffected = results.rows.map((row) => row.id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_contents:text_root',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
@@ -94,6 +97,8 @@ async function createContentTextRootRuleSideEffect(context) {
       contents: contentsAffected,
     },
   });
+
+  await undoContentsTabcoins(results.rows, createdEvent);
 }
 
 async function createContentTextChildRule(context) {
@@ -108,7 +113,8 @@ async function createContentTextChildRule(context) {
     await createContentTextChildRuleSideEffect(context);
 
     throw new TooManyRequestsError({
-      message: 'Você está tentando criar muitas respostas.',
+      message:
+        'Identificamos a criação de muitos comentários em um curto período, então comentários criados recentemente podem ter sido removidos.',
     });
   }
 }
@@ -119,9 +125,9 @@ async function createContentTextChildRuleSideEffect(context) {
     values: [context.clientIp],
   });
 
-  const contentsAffected = results.rows.map((row) => row.content_id);
+  const contentsAffected = results.rows.map((row) => row.id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_contents:text_child',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
@@ -130,6 +136,23 @@ async function createContentTextChildRuleSideEffect(context) {
       contents: contentsAffected,
     },
   });
+
+  await undoContentsTabcoins(results.rows, createdEvent);
+}
+
+async function undoContentsTabcoins(contentRows, createdEvent) {
+  for (const contentObject of contentRows) {
+    await content.creditOrDebitTabCoins(
+      {
+        ...contentObject,
+        status: 'published',
+      },
+      contentObject,
+      {
+        eventId: createdEvent.id,
+      },
+    );
+  }
 }
 
 export default Object.freeze({

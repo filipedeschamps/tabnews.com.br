@@ -937,4 +937,5 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  creditOrDebitTabCoins,
 });
