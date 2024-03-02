@@ -25,6 +25,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION firewall_create_content_text_root_side_effect(clientIp inet) RETURNS TABLE (
   id uuid,
+  title varchar,
   published_at timestamp,
   status varchar,
   owner_id uuid,
@@ -55,12 +56,14 @@ BEGIN
         AND contents.status = 'published'
       RETURNING
         contents.id,
+        contents.title,
         contents.published_at,
         contents.status,
         contents.owner_id,
         get_content_current_tabcoins(contents_to_update.id::uuid)
       INTO
         id,
+        title,
         published_at,
         status,
         owner_id,

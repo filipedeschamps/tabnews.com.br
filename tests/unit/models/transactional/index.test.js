@@ -1,4 +1,10 @@
-import { ActivationEmail, ConfirmationEmail, NotificationEmail, RecoveryEmail } from 'models/transactional';
+import {
+  ActivationEmail,
+  ConfirmationEmail,
+  FirewallEmail,
+  NotificationEmail,
+  RecoveryEmail,
+} from 'models/transactional';
 
 describe('Transactional model', () => {
   describe('Email layouts', () => {
@@ -17,6 +23,18 @@ describe('Transactional model', () => {
       const confirmationLink = 'https://tabnews.com.br/perfil/confirmar-email/TOKEN_ID';
 
       const { html, text } = ConfirmationEmail({ username, confirmationLink });
+
+      expect(html).toMatchSnapshot();
+      expect(text).toMatchSnapshot();
+    });
+
+    it('Firewall', () => {
+      const { html, text } = FirewallEmail({
+        username: 'User',
+        sideEffectLine:
+          'Identificamos a criação de muitas publicações em um curto período, então a sua publicação "Título da publicação" foi removida.',
+        eventId: 'c7854f84-f7b4-468c-9805-a96d7ac4853a',
+      });
 
       expect(html).toMatchSnapshot();
       expect(text).toMatchSnapshot();

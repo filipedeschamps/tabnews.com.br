@@ -29,6 +29,8 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         password: 'validpassword',
       });
 
+      await orchestrator.deleteAllEmails();
+
       const { response: response3, responseBody: response3Body } = await usersRequestBuilder.post({
         username: 'request3',
         email: 'request3@gmail.com',
@@ -82,9 +84,38 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         },
         created_at: lastEvent.created_at,
       });
-
       expect(uuidVersion(lastEvent.id)).toBe(4);
       expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+
+      const allEmails = await orchestrator.getEmails();
+      expect(allEmails).toHaveLength(2);
+
+      const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));
+      const user2Email = allEmails.find((email) => email.recipients.includes(`<${user2.email}>`));
+
+      expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
+      expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
+
+      expect(user1Email.subject).toEqual('Sua conta foi desativada');
+      expect(user2Email.subject).toEqual('Sua conta foi desativada');
+
+      expect(user1Email.text).toContain(user1.username);
+      expect(user1Email.html).toContain(user1.username);
+      expect(user2Email.text).toContain(user2.username);
+      expect(user2Email.html).toContain(user2.username);
+
+      const userDeletedContentText = `Identificamos a criação de muitos usuários em um curto período, então a sua conta foi desativada.`;
+      expect(user1Email.text).toContain(userDeletedContentText);
+      expect(user1Email.html).toContain(userDeletedContentText);
+      expect(user2Email.text).toContain(userDeletedContentText);
+      expect(user2Email.html).toContain(userDeletedContentText);
+
+      expect(user1Email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+      expect(user1Email.html).toContain('Identificador do evento');
+      expect(user1Email.html).toContain(lastEvent.id);
+      expect(user2Email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+      expect(user2Email.html).toContain('Identificador do evento');
+      expect(user2Email.html).toContain(lastEvent.id);
     });
   });
 });

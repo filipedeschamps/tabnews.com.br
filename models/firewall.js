@@ -2,6 +2,7 @@ import { TooManyRequestsError } from 'errors';
 import database from 'infra/database.js';
 import content from 'models/content.js';
 import event from 'models/event.js';
+import notification from 'models/notification.js';
 
 const rules = {
   'create:user': createUserRule,
@@ -49,9 +50,9 @@ async function createUserRuleSideEffect(context) {
     values: [context.clientIp],
   });
 
-  const usersAffected = results.rows.map((row) => row.user_id);
+  const usersAffected = results.rows.map((user) => user.id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_users',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
@@ -60,6 +61,23 @@ async function createUserRuleSideEffect(context) {
       users: usersAffected,
     },
   });
+
+  await sendUserNotification(results.rows, createdEvent);
+}
+
+async function sendUserNotification(userRows, event) {
+  const notifications = [];
+
+  for (const user of userRows) {
+    notifications.push(
+      notification.sendUserDisabled({
+        eventId: event.id,
+        user: user,
+      }),
+    );
+  }
+
+  return Promise.allSettled(notifications);
 }
 
 async function createContentTextRootRule(context) {
@@ -98,7 +116,10 @@ async function createContentTextRootRuleSideEffect(context) {
     },
   });
 
-  await undoContentsTabcoins(results.rows, createdEvent);
+  await Promise.allSettled([
+    undoContentsTabcoins(results.rows, createdEvent),
+    sendContentTextNotification(results.rows, createdEvent),
+  ]);
 }
 
 async function createContentTextChildRule(context) {
@@ -137,7 +158,10 @@ async function createContentTextChildRuleSideEffect(context) {
     },
   });
 
-  await undoContentsTabcoins(results.rows, createdEvent);
+  await Promise.allSettled([
+    undoContentsTabcoins(results.rows, createdEvent),
+    sendContentTextNotification(results.rows, createdEvent),
+  ]);
 }
 
 async function undoContentsTabcoins(contentRows, createdEvent) {
@@ -153,6 +177,34 @@ async function undoContentsTabcoins(contentRows, createdEvent) {
       },
     );
   }
+}
+
+async function sendContentTextNotification(contentRows, event) {
+  const usersToNotify = {};
+
+  for (const content of contentRows) {
+    if (content.owner_id !== event.originator_user_id) {
+      if (usersToNotify[content.owner_id]) {
+        usersToNotify[content.owner_id].push(content);
+      } else {
+        usersToNotify[content.owner_id] = [content];
+      }
+    }
+  }
+
+  const notifications = [];
+
+  for (const [userId, contents] of Object.entries(usersToNotify)) {
+    notifications.push(
+      notification.sendContentDeletedToUser({
+        contents: contents,
+        eventId: event.id,
+        userId: userId,
+      }),
+    );
+  }
+
+  return Promise.allSettled(notifications);
 }
 
 export default Object.freeze({

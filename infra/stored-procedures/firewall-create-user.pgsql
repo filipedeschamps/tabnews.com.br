@@ -24,7 +24,9 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION firewall_create_user_side_effect(clientIp inet) RETURNS TABLE (
-  user_id uuid
+  id uuid,
+  username varchar,
+  email varchar
 ) AS $$
 DECLARE
   users_to_block record;
@@ -42,7 +44,7 @@ BEGIN
           AND created_at > NOW() - INTERVAL '2 minutes'
     )
     LOOP
-      user_id := users_to_block.id;
+      id := users_to_block.id;
 
       FOREACH feature IN ARRAY features_to_remove
         LOOP
@@ -51,7 +53,13 @@ BEGIN
           SET
             features = array_remove(features, feature)
           WHERE
-            id = users_to_block.id::uuid;
+            users.id = users_to_block.id::uuid
+          RETURNING
+            users.username,
+            users.email
+          INTO
+            username,
+            email;
         END LOOP;
 
       RETURN NEXT;
