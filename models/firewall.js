@@ -2,6 +2,8 @@ import { TooManyRequestsError } from 'errors';
 import database from 'infra/database.js';
 import content from 'models/content.js';
 import event from 'models/event.js';
+import notification from 'models/notification.js';
+
 
 const rules = {
   'create:user': createUserRule,
@@ -51,7 +53,7 @@ async function createUserRuleSideEffect(context) {
 
   const usersAffected = results.rows.map((row) => row.user_id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_users',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
@@ -60,6 +62,27 @@ async function createUserRuleSideEffect(context) {
       users: usersAffected,
     },
   });
+
+  await sendUserNotification(results.rows, createdEvent);
+}
+
+async function sendUserNotification(userRows, event) {
+  const notifications = [];
+
+  for (const userObject of userRows) {
+    notifications.push(
+      notification.sendUserDisabled({
+        eventId: event.id,
+        user: {
+          id: userObject.user_id,
+          email: userObject.user_email,
+          username: userObject.user_username,
+        },
+      }),
+    );
+  }
+
+  return Promise.allSettled(notifications);
 }
 
 async function createContentTextRootRule(context) {
@@ -98,7 +121,10 @@ async function createContentTextRootRuleSideEffect(context) {
     },
   });
 
-  await undoContentsTabcoins(results.rows, createdEvent);
+  await Promise.allSettled([
+    undoContentsTabcoins(results.rows, createdEvent),
+    sendContentTextNotification(results.rows, createdEvent),
+  ]);
 }
 
 async function createContentTextChildRule(context) {
@@ -137,7 +163,10 @@ async function createContentTextChildRuleSideEffect(context) {
     },
   });
 
-  await undoContentsTabcoins(results.rows, createdEvent);
+  await Promise.allSettled([
+    undoContentsTabcoins(results.rows, createdEvent),
+    sendContentTextNotification(results.rows, createdEvent),
+  ]);
 }
 
 async function undoContentsTabcoins(contentRows, createdEvent) {
@@ -163,6 +192,38 @@ async function undoContentsTabcoins(contentRows, createdEvent) {
     );
   }
 }
+
+async function sendContentTextNotification(contentRows, event) {
+  const usersToNotify = {};
+
+  for (const row of contentRows) {
+    if (row.content_owner_id !== event.originator_user_id) {
+      if (usersToNotify[row.content_owner_id]) {
+        usersToNotify[row.content_owner_id].push(row);
+      } else {
+        usersToNotify[row.content_owner_id] = [row];
+      }
+    }
+  }
+
+  const notifications = [];
+
+  for (const [userId, contents] of Object.entries(usersToNotify)) {
+    notifications.push(
+      notification.sendContentDeletedToUser({
+        contents: contents.map((content) => ({
+          id: content.content_id,
+          title: content.content_title,
+        })),
+        eventId: event.id,
+        userId: userId,
+      }),
+    );
+  }
+
+  return Promise.allSettled(notifications);
+}
+
 
 export default Object.freeze({
   canRequest,

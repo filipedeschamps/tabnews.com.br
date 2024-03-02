@@ -11,6 +11,7 @@ beforeEach(async () => {
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
   await orchestrator.createFirewallTestFunctions();
+  await orchestrator.deleteAllEmails();
 });
 
 describe('POST /api/v1/contents [FIREWALL]', () => {
@@ -102,6 +103,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           contents: [content1.id, content2.id],
         });
         expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(0);
       });
 
       test('Spamming valid "root" contents with a content deleted', async () => {
@@ -174,6 +178,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           contents: [content1.id],
         });
         expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(0);
       });
 
       test('Spamming valid "root" contents with TabCoins earnings', async () => {
@@ -260,6 +267,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           withBalance: true,
         });
         expect(userAfterFirewallCatch.tabcoins).toEqual(0);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(0);
       });
 
       test('Different users spamming valid "root" contents with TabCoins earnings', async () => {
@@ -356,6 +366,24 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           withBalance: true,
         });
         expect(user2AfterFirewallCatch.tabcoins).toEqual(0);
+
+        const allEmails = await orchestrator.getEmails();
+        const email = allEmails[0];
+
+        expect(allEmails).toHaveLength(1);
+        expect(email.recipients).toEqual([`<${user1.email}>`]);
+        expect(email.subject).toEqual('Um conteúdo seu foi removido');
+        expect(email.text).toContain(user1.username);
+        expect(email.html).toContain(user1.username);
+
+        const deletedContentText =
+          'Identificamos que você está tentando criar muitas publicações, então a sua publicação "Título 1" foi removida.';
+        expect(email.text).toContain(deletedContentText);
+        expect(email.html).toContain(deletedContentText.replaceAll('"', '&quot;'));
+
+        expect(email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+        expect(email.html).toContain('Identificador do evento');
+        expect(email.html).toContain(lastEvent.id);
       });
     });
 
@@ -433,6 +461,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           contents: [content1.id, content2.id],
         });
         expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(0);
       });
 
       test('Spamming valid "child" contents with a content deleted', async () => {
@@ -508,6 +539,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           contents: [content1.id],
         });
         expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(0);
       });
 
       test('Spamming valid "child" contents with TabCoins earnings', async () => {
@@ -596,6 +630,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           withBalance: true,
         });
         expect(userAfterFirewallCatch.tabcoins).toEqual(0);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(0);
       });
 
       test('Different users spamming valid "child" contents with TabCoins earnings', async () => {
@@ -707,6 +744,38 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           withBalance: true,
         });
         expect(user2AfterFirewallCatch.tabcoins).toEqual(0);
+
+        const allEmails = await orchestrator.getEmails();
+        expect(allEmails).toHaveLength(2);
+
+        const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));
+        const user2Email = allEmails.find((email) => email.recipients.includes(`<${user2.email}>`));
+
+        expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
+        expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
+
+        expect(user1Email.subject).toEqual('Um conteúdo seu foi removido');
+        expect(user2Email.subject).toEqual('Um conteúdo seu foi removido');
+
+        expect(user1Email.text).toContain(user1.username);
+        expect(user1Email.html).toContain(user1.username);
+        expect(user2Email.text).toContain(user2.username);
+        expect(user2Email.html).toContain(user2.username);
+
+        const user1DeletedContentText = `Identificamos que você está tentando criar muitos comentários, então o seu comentário de ID "${content1.id}" foi removido.`;
+        expect(user1Email.text).toContain(user1DeletedContentText);
+        expect(user1Email.html).toContain(user1DeletedContentText.replaceAll('"', '&quot;'));
+
+        const user2DeletedContentText = `Identificamos que você está tentando criar muitos comentários, então o seu comentário de ID "${content2.id}" foi removido.`;
+        expect(user2Email.text).toContain(user2DeletedContentText);
+        expect(user2Email.html).toContain(user2DeletedContentText.replaceAll('"', '&quot;'));
+
+        expect(user1Email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+        expect(user1Email.html).toContain('Identificador do evento');
+        expect(user1Email.html).toContain(lastEvent.id);
+        expect(user2Email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+        expect(user2Email.html).toContain('Identificador do evento');
+        expect(user2Email.html).toContain(lastEvent.id);
       });
     });
   });

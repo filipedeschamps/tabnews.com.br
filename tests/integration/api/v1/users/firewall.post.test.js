@@ -43,6 +43,8 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         }),
       });
 
+      await orchestrator.deleteAllEmails();
+
       const request3 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'post',
         headers: {
@@ -94,15 +96,46 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       const events = await event.findAll();
       expect(events.length).toEqual(3);
 
-      expect(uuidVersion(events[2].id)).toEqual(4);
-      expect(events[2].type).toEqual('firewall:block_users');
-      expect(events[2].originator_user_id).toEqual(null);
-      expect(events[2].originator_ip).toEqual('127.0.0.1');
-      expect(events[2].metadata).toEqual({
+      const lastEvent = events.at(-1);
+      expect(uuidVersion(lastEvent.id)).toEqual(4);
+      expect(lastEvent.type).toEqual('firewall:block_users');
+      expect(lastEvent.originator_user_id).toBeNull();
+      expect(lastEvent.originator_ip).toEqual('127.0.0.1');
+      expect(lastEvent.metadata).toEqual({
         from_rule: 'create:user',
         users: [user1.id, user2.id],
       });
-      expect(Date.parse(events[2].created_at)).not.toEqual(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+
+      const allEmails = await orchestrator.getEmails();
+      expect(allEmails).toHaveLength(2);
+
+      const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));
+      const user2Email = allEmails.find((email) => email.recipients.includes(`<${user2.email}>`));
+
+      expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
+      expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
+
+      expect(user1Email.subject).toEqual('Sua conta foi desabilitada');
+      expect(user2Email.subject).toEqual('Sua conta foi desabilitada');
+
+      expect(user1Email.text).toContain(user1.username);
+      expect(user1Email.html).toContain(user1.username);
+      expect(user2Email.text).toContain(user2.username);
+      expect(user2Email.html).toContain(user2.username);
+
+      const userDeletedContentText = `Identificamos que você está tentando criar muitas contas, então a sua conta foi desabilitada.`;
+      expect(user1Email.text).toContain(userDeletedContentText);
+      expect(user1Email.html).toContain(userDeletedContentText);
+      expect(user2Email.text).toContain(userDeletedContentText);
+      expect(user2Email.html).toContain(userDeletedContentText);
+
+      expect(user1Email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+      expect(user1Email.html).toContain('Identificador do evento');
+      expect(user1Email.html).toContain(lastEvent.id);
+      expect(user2Email.text).toContain(`Identificador do evento: ${lastEvent.id}`);
+      expect(user2Email.html).toContain('Identificador do evento');
+      expect(user2Email.html).toContain(lastEvent.id);
     });
   });
 });
