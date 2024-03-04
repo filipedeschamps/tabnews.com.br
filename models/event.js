@@ -48,8 +48,67 @@ async function findAll() {
   return results.rows;
 }
 
+async function findOneById(eventId) {
+  const query = {
+    text: `
+      SELECT
+        *
+      FROM
+        events
+      WHERE
+        id = $1
+      LIMIT
+        1
+    ;`,
+    values: [eventId],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
+async function findOneByOriginalEventId(originalEventId, where = {}) {
+  let globalIndex = 2;
+  const whereClause = buildWhereClause();
+
+  const query = {
+    text: `
+      SELECT
+        *
+      FROM
+        events
+      WHERE
+        metadata->>'original_event_id' = $1
+        ${whereClause ? `AND ${whereClause}` : ''}
+      LIMIT
+        1
+    ;`,
+    values: [originalEventId, ...Object.values(where)],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+
+  function buildWhereClause() {
+    const columnMap = {
+      types: 'type',
+      originatorUserId: 'originator_user_id',
+      originatorIp: 'originator_ip',
+    };
+
+    const conditions = Object.entries(where).map(([key, value]) => {
+      const column = columnMap[key] ?? key;
+      return Array.isArray(value) ? `${column} = ANY ($${globalIndex++})` : `${column} = $${globalIndex++}`;
+    });
+
+    return `${conditions.join(' AND ')}`;
+  }
+}
+
 export default Object.freeze({
   create,
   updateMetadata,
   findAll,
+  findOneById,
+  findOneByOriginalEventId,
 });

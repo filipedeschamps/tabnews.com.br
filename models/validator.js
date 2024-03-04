@@ -691,6 +691,9 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'moderation:unblock_users',
+          'moderation:unblock_contents:text_root',
+          'moderation:unblock_contents:text_child',
           'reward:user:tabcoins',
           'system:update:tabcoins',
         )
@@ -764,6 +767,27 @@ const schemas = {
           is: 'firewall:block_contents:text_child',
           then: Joi.object({
             from_rule: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'moderation:unblock_users',
+          then: Joi.object({
+            original_event_id: Joi.string().required(),
+            users: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'moderation:unblock_contents:text_root',
+          then: Joi.object({
+            original_event_id: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'moderation:unblock_contents:text_child',
+          then: Joi.object({
+            original_event_id: Joi.string().required(),
             contents: Joi.array().required(),
           }),
         },

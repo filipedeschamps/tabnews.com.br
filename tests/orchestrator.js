@@ -150,7 +150,7 @@ async function createUser(userObject) {
 }
 
 async function addFeaturesToUser(userObject, features) {
-  return await user.addFeatures(userObject.id, features);
+  return (await user.addFeatures(userObject.id, features))[0];
 }
 
 async function removeFeaturesFromUser(userObject, features) {

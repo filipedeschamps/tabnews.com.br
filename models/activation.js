@@ -106,19 +106,21 @@ async function activateUserByUserId(userId, options = {}) {
   }
 
   await user.removeFeatures(userToActivate.id, ['read:activation_token'], options);
-  return await user.addFeatures(
-    userToActivate.id,
-    [
-      'create:session',
-      'read:session',
-      'create:content',
-      'create:content:text_root',
-      'create:content:text_child',
-      'update:content',
-      'update:user',
-    ],
-    options,
-  );
+  return (
+    await user.addFeatures(
+      userToActivate.id,
+      [
+        'create:session',
+        'read:session',
+        'create:content',
+        'create:content:text_root',
+        'create:content:text_child',
+        'update:content',
+        'update:user',
+      ],
+      options,
+    )
+  )[0];
 }
 
 async function findOneTokenById(tokenId) {

@@ -137,19 +137,60 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   };
 }
 
-async function undo(operationId, options = {}) {
-  const balanceOperation = await findOne(operationId, options);
+async function undo({ values = {}, where }, options = {}) {
+  let globalIndex = 1;
+  const selectFields = getSelectFields();
+  const whereClause = buildWhereClause();
 
-  const invertedBalanceOperation = {
-    balanceType: balanceOperation.balance_type,
-    recipientId: balanceOperation.recipient_id,
-    amount: balanceOperation.amount * -1,
-    originatorType: 'event',
-    originatorId: options.event.id,
+  const query = {
+    text: `
+      INSERT INTO balance_operations
+        (balance_type, recipient_id, amount, originator_type, originator_id)
+      SELECT
+        ${selectFields.text}
+      FROM
+        balance_operations
+      ${whereClause}
+      ;`,
+    values: [...selectFields.values, ...Object.values(where)],
   };
 
-  const newBalanceOperation = await create(invertedBalanceOperation, options);
-  return newBalanceOperation;
+  await database.query(query, options);
+
+  function getSelectFields() {
+    const text = `balance_type,
+        recipient_id,
+        -amount,
+        ${values.originatorType ? `$${globalIndex++}` : 'originator_type'},
+        ${values.originatorId ? `$${globalIndex++}` : 'originator_id'}`;
+
+    const selectValues = [];
+    if (values.originatorType) {
+      selectValues.push(values.originatorType);
+    }
+    if (values.originatorId) {
+      selectValues.push(values.originatorId);
+    }
+
+    return { text, values: selectValues };
+  }
+
+  function buildWhereClause() {
+    const columnMap = {
+      ids: 'id',
+      balanceType: 'balance_type',
+      recipientId: 'recipient_id',
+      originatorType: 'originator_type',
+      originatorId: 'originator_id',
+    };
+
+    const conditions = Object.entries(where).map(([key, value]) => {
+      const column = columnMap[key] ?? key;
+      return Array.isArray(value) ? `${column} = ANY ($${globalIndex++})` : `${column} = $${globalIndex++}`;
+    });
+
+    return `WHERE ${conditions.join(' AND ')}`;
+  }
 }
 
 export default Object.freeze({

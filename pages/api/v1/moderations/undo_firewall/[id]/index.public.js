@@ -1,0 +1,36 @@
+import nextConnect from 'next-connect';
+
+import authentication from 'models/authentication';
+import authorization from 'models/authorization';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller';
+import firewall from 'models/firewall';
+import validator from 'models/validator';
+
+export default nextConnect({
+  attachParams: true,
+  onNoMatch: controller.onNoMatchHandler,
+  onError: controller.onErrorHandler,
+})
+  .use(controller.injectRequestMetadata)
+  .use(controller.logRequest)
+  .use(authentication.injectAnonymousOrUser)
+  .post(cacheControl.noCache, postValidationHandler, authorization.canRequest('undo:firewall'), postHandler);
+
+function postValidationHandler(request, response, next) {
+  const cleanQueryValues = validator(request.query, {
+    id: 'required',
+  });
+
+  request.query = cleanQueryValues;
+
+  next();
+}
+
+async function postHandler(request, response) {
+  const eventId = request.query.id;
+
+  const data = await firewall.undoAllFirewallSideEffects(request.context, eventId);
+
+  return response.status(200).json(data);
+}

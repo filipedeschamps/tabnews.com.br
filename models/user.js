@@ -5,7 +5,10 @@ import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
 import validator from 'models/validator.js';
 
-async function findAll() {
+async function findAll(values = {}, options) {
+  const where = values.where ?? {};
+
+  const whereClause = buildWhereClause();
   const query = {
     text: `
       SELECT
@@ -17,12 +20,28 @@ async function findAll() {
           get_current_balance('user:tabcoin', users.id) as tabcoins,
           get_current_balance('user:tabcash', users.id) as tabcash
       ) as balance
+      ${whereClause}
       ORDER BY
         created_at ASC
       ;`,
+    values: Object.values(where),
   };
-  const results = await database.query(query);
+  const results = await database.query(query, options);
   return results.rows;
+
+  function buildWhereClause() {
+    const columnMap = {
+      ids: 'id',
+    };
+
+    const conditions = Object.entries(where).map(([key, value], index) => {
+      const valueIndex = index + 1;
+      const column = columnMap[key] ?? key;
+      return Array.isArray(value) ? `${column} = ANY ($${valueIndex})` : `${column} = $${valueIndex}`;
+    });
+
+    return conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  }
 }
 
 async function findOneByUsername(username, options = {}) {
@@ -393,25 +412,43 @@ async function removeFeatures(userId, features, options = {}) {
   return lastUpdatedUser;
 }
 
-async function addFeatures(userId, features, options) {
+async function addFeatures(userId, features, options = {}) {
+  const whereClause = buildWhereClause();
+
+  const baseQuery = `WITH updated_user AS (
+    UPDATE
+      users
+    SET
+      features = array_cat(features, $1),
+      updated_at = (now() at time zone 'utc')
+    ${whereClause}
+    RETURNING
+      *)`;
+
+  const balanceQuery = `
+    SELECT
+      updated_user.*,
+      get_current_balance('user:tabcoin', updated_user.id) as tabcoins,
+      get_current_balance('user:tabcash', updated_user.id) as tabcash
+    FROM
+      updated_user
+    `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM updated_user;`;
+
   const query = {
-    text: `
-      UPDATE
-        users
-      SET
-        features = array_cat(features, $1),
-        updated_at = (now() at time zone 'utc')
-      WHERE
-        id = $2
-      RETURNING
-        *
-    ;`,
+    text: queryText,
     values: [features, userId],
   };
 
   const results = await database.query(query, options);
 
-  return results.rows[0];
+  return results.rows;
+
+  function buildWhereClause() {
+    const condition = Array.isArray(userId) ? 'id = ANY ($2)' : 'id = $2';
+    return `WHERE ${condition}`;
+  }
 }
 
 async function updateRewardedAt(userId, options) {

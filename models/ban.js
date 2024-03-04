@@ -8,7 +8,7 @@ async function nuke(userId, options = {}) {
   await session.expireAllFromUserId(userId, options);
   await unpublishAllContent(userId, options);
   await undoAllRatingOperations(userId, options);
-  const nukedUser = await user.addFeatures(userId, ['nuked'], options);
+  const nukedUser = (await user.addFeatures(userId, ['nuked'], options))[0];
   return nukedUser;
 
   async function unpublishAllContent(userId, options = {}) {
@@ -35,9 +35,15 @@ async function nuke(userId, options = {}) {
     for (const userEvent of userEvents) {
       const eventBalanceOperations = await getRatingBalanceOperationsFromEvent(userEvent.id, options);
 
-      for (const eventBalanceOperation of eventBalanceOperations) {
-        await balance.undo(eventBalanceOperation.id, options);
-      }
+      const ids = eventBalanceOperations.map((event) => event.id);
+      await balance.undo(
+        {
+          where: {
+            ids: ids,
+          },
+        },
+        options,
+      );
     }
 
     async function getAllRatingEventsFromUser(userId, options = {}) {
