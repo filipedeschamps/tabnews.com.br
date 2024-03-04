@@ -6,7 +6,10 @@ import emailConfirmation from 'models/email-confirmation.js';
 import pagination from 'models/pagination.js';
 import validator from 'models/validator.js';
 
-async function findAll() {
+async function findAll(values = {}, options) {
+  const where = values.where ?? {};
+
+  const whereClause = buildWhereClause(where);
   const query = {
     text: `
       SELECT
@@ -18,12 +21,33 @@ async function findAll() {
           get_user_current_tabcoins(users.id) as tabcoins,
           get_user_current_tabcash(users.id) as tabcash
       ) as balance
+      ${whereClause.text}
       ORDER BY
         created_at ASC
       ;`,
+    values: whereClause.values,
   };
-  const results = await database.query(query);
+  const results = await database.query(query, options);
   return results.rows;
+}
+
+function buildWhereClause(where, nextArgumentIndex = 1) {
+  const columnMap = {
+    ids: 'id',
+  };
+
+  const values = [];
+  const conditions = Object.entries(where).map(([key, value]) => {
+    const column = columnMap[key] ?? key;
+    values.push(value);
+    return Array.isArray(value) ? `${column} = ANY ($${nextArgumentIndex++})` : `${column} = $${nextArgumentIndex++}`;
+  });
+
+  return {
+    text: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '',
+    values: values,
+    nextArgumentIndex: nextArgumentIndex,
+  };
 }
 
 async function findAllWithPagination(values) {
@@ -443,25 +467,40 @@ async function removeFeatures(userId, features, options = {}) {
   return lastUpdatedUser;
 }
 
-async function addFeatures(userId, features, options) {
+async function addFeatures(userId, features, options = {}) {
+  const where = { id: userId };
+  const firstWhereArgumentIndex = 2;
+  const whereClause = buildWhereClause(where, firstWhereArgumentIndex);
+
+  const baseQuery = `WITH updated_user AS (
+    UPDATE
+      users
+    SET
+      features = array_cat(features, $1),
+      updated_at = (now() at time zone 'utc')
+    ${whereClause.text}
+    RETURNING
+      *)`;
+
+  const balanceQuery = `
+    SELECT
+      updated_user.*,
+      get_user_current_tabcoins(updated_user.id) as tabcoins,
+      get_user_current_tabcash(updated_user.id) as tabcash
+    FROM
+      updated_user
+    `;
+
+  const queryText = options.withBalance ? `${baseQuery} ${balanceQuery};` : `${baseQuery} SELECT * FROM updated_user;`;
+
   const query = {
-    text: `
-      UPDATE
-        users
-      SET
-        features = array_cat(features, $1),
-        updated_at = (now() at time zone 'utc')
-      WHERE
-        id = $2
-      RETURNING
-        *
-    ;`,
-    values: [features, userId],
+    text: queryText,
+    values: [features, ...whereClause.values],
   };
 
   const results = await database.query(query, options);
 
-  return results.rows[0];
+  return Array.isArray(userId) ? results.rows : results.rows[0];
 }
 
 async function updateRewardedAt(userId, options) {

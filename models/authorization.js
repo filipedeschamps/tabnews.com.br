@@ -41,6 +41,7 @@ const availableFeatures = new Set([
   'update:user:others',
   'ban:user',
   'create:recovery_token:username',
+  'undo:firewall',
 ]);
 
 function can(user, feature, resource) {

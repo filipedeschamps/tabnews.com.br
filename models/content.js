@@ -710,6 +710,34 @@ async function update(contentId, postedContent, options = {}) {
   }
 }
 
+async function undoDeleted(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = 'published',
+          deleted_at = NULL,
+          updated_at = (now() at time zone 'utc')
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *)
+      
+      SELECT
+        updated_contents.*,
+        tabcoins_count.*
+      FROM
+        updated_contents
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
     slug: 'optional',
@@ -937,5 +965,6 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  undoDeleted,
   creditOrDebitTabCoins,
 });
