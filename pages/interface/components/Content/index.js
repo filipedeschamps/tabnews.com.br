@@ -181,6 +181,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   return (
     <Box
       as="article"
+      id={`${contentObject.owner_username}-${contentObject.slug}`}
       sx={{
         display: 'flex',
         flexDirection: 'column',

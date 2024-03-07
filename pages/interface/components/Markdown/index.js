@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
 
+import { anchorHeadersPlugin } from './plugins/anchor-headers';
 import { copyCodeToClipboardPlugin } from './plugins/copy-code-to-clipboard';
 import { externalLinksPlugin } from './plugins/external-links';
 
@@ -29,25 +30,29 @@ const bytemdPluginBaseList = [
   copyCodeToClipboardPlugin(),
 ];
 
-function usePlugins({ areLinksTrusted }) {
+function usePlugins({ areLinksTrusted, clobberPrefix }) {
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
     const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
-    const pluginList = [...bytemdPluginBaseList, mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme })];
+    const pluginList = [
+      ...bytemdPluginBaseList,
+      mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme }),
+      anchorHeadersPlugin({ prefix: clobberPrefix ?? 'user-content-' }),
+    ];
 
     if (!areLinksTrusted) {
       pluginList.push(externalLinksPlugin());
     }
 
     return pluginList;
-  }, [areLinksTrusted, colorScheme]);
+  }, [areLinksTrusted, clobberPrefix, colorScheme]);
 
   return plugins;
 }
 
-export default function Viewer({ value: _value, areLinksTrusted, ...props }) {
-  const bytemdPluginList = usePlugins({ areLinksTrusted });
+export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, ...props }) {
+  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const [value, setValue] = useState(_value);
 
   useEffect(() => {
@@ -63,7 +68,11 @@ export default function Viewer({ value: _value, areLinksTrusted, ...props }) {
 
   useEffect(() => setValue(_value), [_value]);
 
-  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} value={value} {...props} />;
+  function sanitizeContent(defaultSchema) {
+    return sanitize({ ...defaultSchema, clobberPrefix: clobberPrefix ?? 'user-content-' });
+  }
+
+  return <ByteMdViewer sanitize={sanitizeContent} plugins={bytemdPluginList} value={value} {...props} />;
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually

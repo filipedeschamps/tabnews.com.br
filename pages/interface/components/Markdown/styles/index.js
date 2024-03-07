@@ -1531,17 +1531,6 @@ export function ViewerStyles() {
           color: ${colors.danger.fg};
         }
 
-        .markdown-body .anchor {
-          float: left;
-          padding-right: 4px;
-          margin-left: -20px;
-          line-height: 1;
-        }
-
-        .markdown-body .anchor:focus {
-          outline: none;
-        }
-
         .markdown-body p,
         .markdown-body blockquote,
         .markdown-body ul,
@@ -1579,15 +1568,17 @@ export function ViewerStyles() {
           color: ${colors.fg.default};
           vertical-align: middle;
           visibility: hidden;
+          margin-left: 4px;
+          position: absolute;
         }
 
-        .markdown-body h1:hover .anchor,
-        .markdown-body h2:hover .anchor,
-        .markdown-body h3:hover .anchor,
-        .markdown-body h4:hover .anchor,
-        .markdown-body h5:hover .anchor,
-        .markdown-body h6:hover .anchor {
-          text-decoration: none;
+        .markdown-body h1 .anchor,
+        .markdown-body h2 .anchor,
+        .markdown-body h3 .anchor,
+        .markdown-body h4 .anchor,
+        .markdown-body h5 .anchor,
+        .markdown-body h6 .anchor {
+          color: inherit;
         }
 
         .markdown-body h1:hover .anchor .octicon-link,

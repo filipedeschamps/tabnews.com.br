@@ -35,9 +35,10 @@ export default function Page() {
 
   ## Alterações nos Termos de Uso
 
-  1. Os termos naturalmente poderão ser alterados quando necessário e estas alterações serão acompanhadas de publicações dentro do próprio TabNews. Iremos sempre destacar com linguajar simples e com total clareza quais alterações foram realizadas.`;
+  1. Os termos naturalmente poderão ser alterados quando necessário e estas alterações serão acompanhadas de publicações dentro do próprio TabNews. Iremos sempre destacar com linguajar simples e com total clareza quais alterações foram realizadas.
+  
+  ## Histórico de alterações
 
-  const changelog = `
   * 2022-09-11 - Criação do documento através do PR [#728](https://github.com/filipedeschamps/tabnews.com.br/issues/728).
   `;
 
@@ -45,12 +46,7 @@ export default function Page() {
     <DefaultLayout metadata={{ title: 'Termos de Uso' }}>
       <Box>
         <Heading as="h1">Termos de Uso</Heading>
-        <Viewer areLinksTrusted value={body} />
-      </Box>
-
-      <Box sx={{ mt: 5 }}>
-        <Heading as="h2">Histórico de alterações</Heading>
-        <Viewer areLinksTrusted value={changelog} />
+        <Viewer areLinksTrusted value={body} clobberPrefix="" />
       </Box>
     </DefaultLayout>
   );
