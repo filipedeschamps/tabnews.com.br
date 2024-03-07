@@ -13,18 +13,31 @@ import {
   FormControl,
   Heading,
   IconButton,
+  Label,
+  LabelGroup,
   Link,
-  PublishedSince,
+  PastTime,
   ReadTime,
   Text,
   TextInput,
+  Tooltip,
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
-import { useUser } from 'pages/interface';
+import { isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
-export default function Content({ content, mode = 'view', viewFrame = false }) {
+const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
+  'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
+  'e.g. Desafios ao empreender como desenvolvedor',
+  'e.g. Como funciona o conceito de ownership em Rust',
+  'e.g. 5 livros fundamentais para desenvolvedores',
+  'e.g. Como os jogos de Atari eram desenvolvidos',
+  'e.g. Ferramentas para melhorar sua produtividade',
+  'e.g. Como renomear uma branch local no Git?',
+];
+
+export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -50,7 +63,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [contentObject]);
 
   useEffect(() => {
-    if (user && contentObject?.owner_id === user?.id) {
+    if (user && contentObject?.owner_id === user.id) {
       const localStorageContent = localStorage.getItem(localStorageKey);
       if (isValidJsonString(localStorageContent)) {
         setComponentMode('edit');
@@ -59,7 +72,14 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [localStorageKey, user, contentObject]);
 
   if (componentMode === 'view') {
-    return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
+    return (
+      <ViewMode
+        setComponentMode={setComponentMode}
+        contentObject={contentObject}
+        isPageRootOwner={isPageRootOwner}
+        viewFrame={viewFrame}
+      />
+    );
   } else if (componentMode === 'compact') {
     return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
   } else if (componentMode === 'edit') {
@@ -78,10 +98,10 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   return (
-    <Box sx={{ position: 'relative' }}>
+    <Box sx={{ position: 'relative', minWidth: '28px' }}>
       <Box sx={{ position: 'absolute', right: 0 }}>
         {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
-          flickering after this menu appears */}
+        flickering after this menu appears, because without `position: absolute` it increases the row height */}
         <ActionMenu>
           <ActionMenu.Anchor>
             <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
@@ -109,7 +129,7 @@ function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   );
 }
 
-function ViewMode({ setComponentMode, contentObject, viewFrame }) {
+function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
@@ -156,8 +176,11 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
     }
   };
 
+  const isOptionsMenuVisible = user?.id === contentObject.owner_id || user?.features?.includes('update:content:others');
+
   return (
     <Box
+      as="article"
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -185,12 +208,18 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
               alignItems: 'center',
               whiteSpace: 'nowrap',
               gap: 1,
-              mt: '2px',
               color: 'fg.muted',
             }}>
-            <BranchName as={Link} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
+            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
+              <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
             </BranchName>
+            <LabelGroup>
+              {isPageRootOwner && (
+                <Tooltip aria-label="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                  <Label>Autor</Label>
+                </Tooltip>
+              )}
+            </LabelGroup>
             {!contentObject.parent_id && (
               <>
                 <ReadTime text={contentObject.body} />
@@ -200,16 +229,16 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', py: '2px', height: '22px' }}>
-              <PublishedSince direction="n" date={contentObject.published_at} />
+              sx={{ fontSize: 0, color: 'fg.muted' }}>
+              <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
             </Link>
           </Box>
-          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) && (
+          {isOptionsMenuVisible && (
             <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
           )}
         </Box>
 
-        {!contentObject?.parent_id && contentObject?.title && (
+        {!contentObject.parent_id && contentObject.title && (
           <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
             {contentObject.title}
           </Heading>
@@ -221,7 +250,12 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
       {contentObject.source_url && (
         <Box>
           <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
-            <LinkIcon size={16} /> Fonte: <Link href={contentObject.source_url}>{contentObject.source_url}</Link>
+            <LinkIcon size={16} /> Fonte:{' '}
+            <Link
+              href={contentObject.source_url}
+              rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
+              {contentObject.source_url}
+            </Link>
           </Text>
         </Box>
       )}
@@ -240,6 +274,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
   });
+  const [titlePlaceholder, setTitlePlaceholder] = useState('');
 
   const confirm = useConfirm();
 
@@ -264,6 +299,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     addEventListener('focus', onFocus);
     return () => removeEventListener('focus', onFocus);
   }, [localStorageKey]);
+
+  useEffect(() => {
+    setTitlePlaceholder(randomTitlePlaceholder());
+  }, []);
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -325,63 +364,78 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         requestBody.parent_id = contentObject.parent_id;
       }
 
-      try {
-        const response = await fetch(requestUrl, {
-          method: requestMethod,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
+      fetch(requestUrl, {
+        method: requestMethod,
+        headers: {
+          Accept: 'application/json, application/x-ndjson',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+        .then(processResponse)
+        .catch(() => {
+          setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+          setIsPosting(false);
         });
 
+      function processResponse(response) {
         setGlobalErrorMessage(undefined);
-
-        const responseBody = await response.json();
         fetchUser();
 
-        if (response.status === 200) {
+        if (response.ok) {
           localStorage.removeItem(localStorageKey);
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
+        } else {
+          setIsPosting(false);
+        }
+
+        processNdJsonStream(response.body, getResponseBodyCallback(response));
+      }
+
+      function getResponseBodyCallback(response) {
+        if (response.status === 200) {
+          return (responseBody) => {
+            setContentObject(responseBody);
+            setComponentMode('view');
+          };
         }
 
         if (response.status === 201) {
-          localStorage.removeItem(localStorageKey);
+          return (responseBody) => {
+            if (responseBody.message) {
+              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+              console.error(responseBody);
+              return;
+            }
 
-          if (!responseBody.parent_id) {
-            localStorage.setItem('justPublishedNewRootContent', true);
-            router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
-            return;
-          }
+            if (!responseBody.parent_id) {
+              localStorage.setItem('justPublishedNewRootContent', true);
+              router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
+              return;
+            }
 
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
+            setContentObject(responseBody);
+            setComponentMode('view');
+          };
         }
 
         if (response.status === 400) {
-          setErrorObject(responseBody);
+          return (responseBody) => {
+            setErrorObject(responseBody);
 
-          if (responseBody.key === 'slug') {
-            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-          }
-          setIsPosting(false);
-          return;
+            if (responseBody.key === 'slug') {
+              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+            }
+          };
         }
 
         if (response.status >= 401) {
-          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
-          setIsPosting(false);
-          return;
+          return (responseBody) => {
+            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+          };
         }
-      } catch (error) {
-        setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-        setIsPosting(false);
       }
     },
-    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser]
+    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
   );
 
   const handleChange = useCallback(
@@ -393,7 +447,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         return newData;
       });
     },
-    [localStorageKey]
+    [localStorageKey],
   );
 
   const handleCancel = useCallback(async () => {
@@ -431,18 +485,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         handleCancel();
       }
     },
-    [handleCancel, handleSubmit, isPosting]
+    [handleCancel, handleSubmit, isPosting],
   );
 
   return (
     <Box sx={{ mb: 4, width: '100%' }}>
-      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+      <form onSubmit={handleSubmit} style={{ width: '100%' }} noValidate>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
           {!contentObject?.parent_id && (
-            <FormControl id="title">
-              <FormControl.Label visuallyHidden>Título</FormControl.Label>
+            <FormControl id="title" required>
+              <FormControl.Label>Título</FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -453,8 +507,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Título"
-                aria-label="Título"
+                placeholder={titlePlaceholder}
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
@@ -467,8 +520,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             </FormControl>
           )}
 
-          <FormControl id="body">
-            <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
+          <FormControl id="body" required={!contentObject?.parent_id}>
+            <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
             <Editor
               isValid={errorObject?.key === 'body'}
               value={newData.body}
@@ -484,7 +537,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
+              <FormControl.Label>Fonte</FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -495,8 +548,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Fonte (opcional)"
-                aria-label="Fonte (opcional)"
+                placeholder="https://origem.site/noticia"
                 block={true}
                 value={newData.source_url}
               />
@@ -505,6 +557,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
             </FormControl>
+          )}
+
+          {!contentObject?.parent_id && (
+            <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -598,15 +654,6 @@ function DeletedMode({ viewFrame }) {
   );
 }
 
-function isValidJsonString(jsonString) {
-  if (!(jsonString && typeof jsonString === 'string')) {
-    return false;
-  }
-
-  try {
-    JSON.parse(jsonString);
-    return true;
-  } catch (error) {
-    return false;
-  }
+function randomTitlePlaceholder() {
+  return CONTENT_TITLE_PLACEHOLDER_EXAMPLES[Math.floor(Math.random() * CONTENT_TITLE_PLACEHOLDER_EXAMPLES.length)];
 }

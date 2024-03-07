@@ -31,7 +31,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -73,7 +73,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
             cookie: `session_id=${secondUserSession.token}`,
           },
           body: JSON.stringify({}),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -117,7 +117,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const responseBody = await response.json();
@@ -165,7 +165,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponseBody = await postTabCoinsResponse.json();
@@ -174,6 +174,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       expect(postTabCoinsResponseBody).toStrictEqual({
         tabcoins: 2,
+        tabcoins_credit: 1,
+        tabcoins_debit: 0,
       });
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -231,7 +233,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponseBody = await postTabCoinsResponse.json();
@@ -240,6 +242,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       expect(postTabCoinsResponseBody).toStrictEqual({
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: -1,
       });
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -298,7 +302,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse1.status).toBe(201);
@@ -315,7 +319,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse2.status).toBe(201);
@@ -332,7 +336,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse3.status).toBe(201);
@@ -349,7 +353,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'credit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
@@ -420,7 +424,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse1.status).toBe(201);
@@ -437,7 +441,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse2.status).toBe(201);
@@ -454,7 +458,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       expect(postTabCoinsResponse3.status).toBe(201);
@@ -471,7 +475,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
@@ -542,7 +546,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse1Body = await postTabCoinsResponse1.json();
@@ -551,6 +555,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       expect(postTabCoinsResponse1Body).toStrictEqual({
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: -1,
       });
 
       const firstUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -589,7 +595,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           body: JSON.stringify({
             transaction_type: 'debit',
           }),
-        }
+        },
       );
 
       const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
@@ -598,6 +604,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       expect(postTabCoinsResponse2Body).toStrictEqual({
         tabcoins: -1,
+        tabcoins_credit: 0,
+        tabcoins_debit: -2,
       });
 
       const firstUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -625,11 +633,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponse2Body.tabcash).toStrictEqual(2);
     });
 
-    // This tests are beign temporarly skipped because of the new feature of not allowing
-    // to credit/debit four times the same content. This feature is just a temporary test
-    // to a more sofisticated feature that will be implemented in the future.
-
-    test.skip('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
+    test('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
       const timesToFetch = 20;
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
@@ -663,18 +667,18 @@ describe('POST /api/v1/contents/tabcoins', () => {
               body: JSON.stringify({
                 transaction_type: 'credit',
               }),
-            }
-          )
+            },
+          ),
         );
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
       const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json()
+        postTabCoinsResponse.json(),
       );
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status
+        (postTabCoinsResponse) => postTabCoinsResponse.status,
       );
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
@@ -687,7 +691,9 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(postTabCoinsResponsesStatus[successPostIndex1]).toEqual(201);
 
       expect(postTabCoinsResponsesBody[successPostIndex1]).toStrictEqual({
-        tabcoins: 2,
+        tabcoins: 1,
+        tabcoins_credit: 1,
+        tabcoins_debit: 0,
       });
 
       postTabCoinsResponsesStatus.splice(successPostIndex1, 1);
@@ -714,7 +720,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const firstUserResponseBody = await firstUserResponse.json();
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
       const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -730,6 +736,11 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
     });
 
+    // This tests are being temporarily skipped because of the new feature of not allowing
+    // to credit/debit four times the same content. This feature is just a temporary test
+    // to a more sophisticated feature that will be implemented in the future.
+
+    // eslint-disable-next-line jest/no-disabled-tests
     test.skip('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
       const timesToFetch = 100;
       const timesSuccessfully = 6;
@@ -766,18 +777,18 @@ describe('POST /api/v1/contents/tabcoins', () => {
               body: JSON.stringify({
                 transaction_type: 'credit',
               }),
-            }
-          )
+            },
+          ),
         );
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
       const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json()
+        postTabCoinsResponse.json(),
       );
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status
+        (postTabCoinsResponse) => postTabCoinsResponse.status,
       );
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
@@ -814,7 +825,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           error_id: responseBody.error_id,
           request_id: responseBody.request_id,
           error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
-        })
+        }),
       );
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -842,6 +853,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toStrictEqual(timesSuccessfully);
     });
 
+    // eslint-disable-next-line jest/no-disabled-tests
     test.skip('With 100 simultaneous posts, enough TabCoins for 90, no db resources, but only responses 201 or 422', async () => {
       const timesToFetch = 100;
       const timesSuccessfully = 90;
@@ -878,18 +890,18 @@ describe('POST /api/v1/contents/tabcoins', () => {
               body: JSON.stringify({
                 transaction_type: 'credit',
               }),
-            }
-          )
+            },
+          ),
         );
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
       const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json()
+        postTabCoinsResponse.json(),
       );
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status
+        (postTabCoinsResponse) => postTabCoinsResponse.status,
       );
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
@@ -903,7 +915,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           action: 'Tente realizar esta operação mais tarde.',
           status_code: 422,
           error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
-        })
+        }),
       );
     });
   });

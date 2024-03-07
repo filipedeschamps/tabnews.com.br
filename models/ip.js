@@ -27,7 +27,9 @@ function extractFromRequest(request) {
   if (!realIp) {
     // local development
     realIp = request.socket?.remoteAddress || '127.0.0.1';
+  }
 
+  if (!webserver.isServerlessRuntime) {
     // Localhost loopback in IPv6
     if (realIp === '::1') {
       realIp = '127.0.0.1';

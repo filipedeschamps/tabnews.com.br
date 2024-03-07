@@ -46,6 +46,20 @@ async function getTotal({ balanceType, recipientId }, options = {}) {
   return results.rows[0].get_current_balance;
 }
 
+async function getContentTabcoinsCreditDebit({ recipientId }, options = {}) {
+  const query = {
+    text: 'SELECT * FROM get_content_balance_credit_debit($1);',
+    values: [recipientId],
+  };
+
+  const results = await database.query(query, options);
+  return {
+    tabcoins: results.rows[0].total_balance,
+    tabcoins_credit: results.rows[0].total_credit,
+    tabcoins_debit: results.rows[0].total_debit,
+  };
+}
+
 async function rateContent({ contentId, contentOwnerId, fromUserId, transactionType }, options = {}) {
   const tabCoinsToDebitFromUser = -2;
   const tabCashToCreditToUser = 1;
@@ -53,6 +67,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
   const originatorType = 'event';
   const originatorId = options.eventId;
+  const contentBalanceType = transactionType === 'credit' ? 'content:tabcoin:credit' : 'content:tabcoin:debit';
 
   const query = {
     text: `
@@ -70,16 +85,19 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
         INSERT INTO balance_operations
           (balance_type, recipient_id, amount, originator_type, originator_id)
         VALUES
-          ('content:tabcoin', $4, $5, $8, $9)
+          ($10, $4, $5, $8, $9)
         RETURNING
           *
       )
       SELECT
         get_current_balance('user:tabcoin', $1) AS user_current_tabcoin_balance,
-        get_current_balance('content:tabcoin', $4) AS content_current_tabcoin_balance
+        tabcoins_count.total_balance as content_current_tabcoin_balance,
+        tabcoins_count.total_credit as content_current_tabcoin_credit,
+        tabcoins_count.total_debit as content_current_tabcoin_debit 
       FROM
         users_inserts,
-        content_insert
+        content_insert,
+        get_content_balance_credit_debit(content_insert.recipient_id) tabcoins_count
       LIMIT
         1
     ;`,
@@ -96,6 +114,8 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
 
       originatorType, // $8
       originatorId, // $9
+
+      contentBalanceType, // $10
     ],
   };
 
@@ -112,6 +132,8 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
 
   return {
     tabcoins: currentBalances.content_current_tabcoin_balance,
+    tabcoins_credit: currentBalances.content_current_tabcoin_credit,
+    tabcoins_debit: currentBalances.content_current_tabcoin_debit,
   };
 }
 
@@ -134,6 +156,7 @@ export default Object.freeze({
   findOne,
   create,
   getTotal,
+  getContentTabcoinsCreditDebit,
   rateContent,
   undo,
 });

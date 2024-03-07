@@ -28,8 +28,6 @@ async function listPendingMigrations() {
     });
 
     return pendingMigrations;
-  } catch (error) {
-    throw error;
   } finally {
     await databaseClient.end();
   }
@@ -47,8 +45,6 @@ async function runPendingMigrations() {
     });
 
     return migratedMigrations;
-  } catch (error) {
-    throw error;
   } finally {
     await databaseClient.end();
   }

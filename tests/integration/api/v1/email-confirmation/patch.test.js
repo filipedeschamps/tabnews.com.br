@@ -185,15 +185,18 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
       const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
-        tokenObjectInDatabase.id
+        tokenObjectInDatabase.id,
       );
 
       expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');
       expect(confirmationEmail.recipients).toEqual(['<new@email.com>']);
       expect(confirmationEmail.subject).toEqual('Confirme seu novo email');
-      expect(confirmationEmail.text.includes(defaultUser.username)).toBe(true);
-      expect(confirmationEmail.text.includes('uma alteração de email foi solicitada')).toBe(true);
-      expect(confirmationEmail.text.includes(emailConfirmationPageEndpoint)).toBe(true);
+      expect(confirmationEmail.text).toContain(defaultUser.username);
+      expect(confirmationEmail.html).toContain(defaultUser.username);
+      expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
+      expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
 
       // 3) USE CONFIRMATION TOKEN
       const emailConfirmationResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/email-confirmation`, {
@@ -369,7 +372,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const emailConfirmationToken = await emailConfirmation.create(
         defaultUser.id,
-        'expired.token.will.reject@email.com'
+        'expired.token.will.reject@email.com',
       );
 
       await emailConfirmation.update(emailConfirmationToken.id, {

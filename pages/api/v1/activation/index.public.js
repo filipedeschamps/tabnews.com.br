@@ -34,7 +34,7 @@ async function patchHandler(request, response) {
   const secureInputValues = authorization.filterInput(
     userTryingToActivate,
     'read:activation_token',
-    insecureInputValues
+    insecureInputValues,
   );
 
   const tokenObject = await activation.activateUserUsingTokenId(secureInputValues.tokenId);
@@ -42,7 +42,7 @@ async function patchHandler(request, response) {
   const authorizedValuesToReturn = authorization.filterOutput(
     userTryingToActivate,
     'read:activation_token',
-    tokenObject
+    tokenObject,
   );
 
   return response.status(200).json(authorizedValuesToReturn);

@@ -1,5 +1,5 @@
 import cookie from 'cookie';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 import { UnauthorizedError } from 'errors';
 import database from 'infra/database.js';
@@ -95,7 +95,7 @@ async function findOneValidByToken(sessionToken) {
     },
     {
       session_id: 'required',
-    }
+    },
   );
 
   const query = {

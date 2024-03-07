@@ -140,7 +140,7 @@ function RecoverPasswordForm() {
             <FormControl.Label>Digite seu e-mail</FormControl.Label>
             <TextInput
               contrast
-              sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
               ref={userInputRef}
               onChange={clearErrors}
               name="userInput"

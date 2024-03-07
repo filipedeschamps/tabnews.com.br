@@ -81,7 +81,7 @@ describe('GET /api/v1/migrations', () => {
     });
 
     describe('Same user after losing "read:migration" feature', () => {
-      test('Retrieving pending migrations ', async () => {
+      test('Retrieving pending migrations', async () => {
         await orchestrator.removeFeaturesFromUser(privilegedUser, ['read:migration']);
 
         const responseAfter = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {

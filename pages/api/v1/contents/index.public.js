@@ -10,6 +10,7 @@ import controller from 'models/controller.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall.js';
 import notification from 'models/notification.js';
+import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
@@ -27,7 +28,7 @@ export default nextConnect({
     postValidationHandler,
     authorization.canRequest('create:content'),
     firewallValidationHandler,
-    postHandler
+    postHandler,
   );
 
 function getValidationHandler(request, response, next) {
@@ -35,6 +36,8 @@ function getValidationHandler(request, response, next) {
     page: 'optional',
     per_page: 'optional',
     strategy: 'optional',
+    with_root: 'optional',
+    with_children: 'optional',
   });
 
   request.query = cleanValues;
@@ -48,11 +51,12 @@ async function getHandler(request, response) {
   const results = await content.findWithStrategy({
     strategy: request.query.strategy,
     where: {
-      parent_id: null,
+      parent_id: request.query.with_children ? undefined : null,
       status: 'published',
+      $not_null: request.query.with_root === false ? ['parent_id'] : undefined,
     },
     attributes: {
-      exclude: ['body'],
+      exclude: request.query.with_children ? undefined : ['body'],
     },
     page: request.query.page,
     per_page: request.query.per_page,
@@ -61,6 +65,16 @@ async function getHandler(request, response) {
   const contentList = results.rows;
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:content:list', contentList);
+
+  if (request.query.with_children) {
+    for (const content of secureOutputValues) {
+      if (content.parent_id) {
+        content.body = removeMarkdown(content.body, { maxLength: 255 });
+      } else {
+        delete content.body;
+      }
+    }
+  }
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
 
@@ -97,7 +111,7 @@ async function postHandler(request, response) {
   let secureInputValues;
 
   if (!insecureInputValues.parent_id) {
-    if (!authorization.can(userTryingToCreate, 'create:content:text_root', insecureInputValues)) {
+    if (!authorization.can(userTryingToCreate, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para criar conteúdos na raiz do site.',
         action: 'Verifique se você possui a feature "create:content:text_root".',
@@ -106,10 +120,8 @@ async function postHandler(request, response) {
     }
 
     secureInputValues = authorization.filterInput(userTryingToCreate, 'create:content:text_root', insecureInputValues);
-  }
-
-  if (insecureInputValues.parent_id) {
-    if (!authorization.can(userTryingToCreate, 'create:content:text_child', insecureInputValues)) {
+  } else {
+    if (!authorization.can(userTryingToCreate, 'create:content:text_child')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
         action: 'Verifique se você possui a feature "create:content:text_child".',
@@ -135,7 +147,7 @@ async function postHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     const createdContent = await content.create(secureInputValues, {
@@ -152,19 +164,35 @@ async function postHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     await transaction.query('COMMIT');
     await transaction.release();
 
-    if (createdContent.parent_id) {
-      await notification.sendReplyEmailToParentUser(createdContent);
+    const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+    const sendStream = !!insecureInputValues.parent_id && request.headers.accept?.includes('application/x-ndjson');
+
+    response.status(201);
+
+    if (sendStream) {
+      response.setHeader('Content-Type', 'application/x-ndjson');
+      response.write(JSON.stringify(secureOutputValues) + '\n');
     }
 
-    const secureOutputValues = authorization.filterOutput(userTryingToCreate, 'read:content', createdContent);
+    if (createdContent.parent_id) {
+      try {
+        await notification.sendReplyEmailToParentUser(createdContent);
+      } catch (error) {
+        if (sendStream) throw error;
+      }
+    }
 
-    return response.status(201).json(secureOutputValues);
+    if (sendStream) {
+      response.end();
+    } else {
+      response.json(secureOutputValues);
+    }
   } catch (error) {
     await transaction.query('ROLLBACK');
     await transaction.release();

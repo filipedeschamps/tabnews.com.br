@@ -34,10 +34,12 @@ const cache = {
   reservedConnections: null,
   openedConnections: null,
   openedConnectionsLastUpdate: null,
+  poolQueryCount: 0,
 };
 
 async function query(query, options = {}) {
   let client;
+  cache.poolQueryCount += 1;
 
   try {
     client = options.transaction ? options.transaction : await tryToGetNewClientFromPool();
@@ -48,11 +50,7 @@ async function query(query, options = {}) {
     if (client && !options.transaction) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
-      client.release();
-      if (tooManyConnections && webserver.isServerlessRuntime) {
-        await cache.pool.end();
-        cache.pool = null;
-      }
+      client.release(tooManyConnections && webserver.isServerlessRuntime);
     }
   }
 }
@@ -83,16 +81,23 @@ async function checkForTooManyConnections(client) {
   const openedConnectionsMaxAge = 5000;
   const maxConnectionsTolerance = 0.8;
 
-  if (cache.maxConnections === null || cache.reservedConnections === null) {
-    const [maxConnections, reservedConnections] = await getConnectionLimits();
-    cache.maxConnections = maxConnections;
-    cache.reservedConnections = reservedConnections;
-  }
+  try {
+    if (cache.maxConnections === null || cache.reservedConnections === null) {
+      const [maxConnections, reservedConnections] = await getConnectionLimits();
+      cache.maxConnections = maxConnections;
+      cache.reservedConnections = reservedConnections;
+    }
 
-  if (cache.openedConnections === null || currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge) {
-    const openedConnections = await getOpenedConnections();
-    cache.openedConnections = openedConnections;
-    cache.openedConnectionsLastUpdate = currentTime;
+    if (cache.openedConnections === null || currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge) {
+      const openedConnections = await getOpenedConnections();
+      cache.openedConnections = openedConnections;
+      cache.openedConnectionsLastUpdate = currentTime;
+    }
+  } catch (error) {
+    if (error.code === 'ECONNRESET') {
+      return true;
+    }
+    throw error;
   }
 
   if (cache.openedConnections > (cache.maxConnections - cache.reservedConnections) * maxConnectionsTolerance) {
@@ -103,7 +108,7 @@ async function checkForTooManyConnections(client) {
 
   async function getConnectionLimits() {
     const [maxConnectionsResult, reservedConnectionResult] = await client.query(
-      'SHOW max_connections; SHOW superuser_reserved_connections;'
+      'SHOW max_connections; SHOW superuser_reserved_connections;',
     );
     return [
       maxConnectionsResult.rows[0].max_connections,
@@ -168,6 +173,7 @@ function parseQueryErrorAndLog(error, query) {
     message: error.message,
     context: {
       query: query.text,
+      databaseCache: { ...cache, pool: !!cache.pool },
     },
     errorLocationCode: 'INFRA:DATABASE:QUERY',
     databaseErrorCode: error.code,

@@ -1,21 +1,26 @@
-import { Box, EmptyState, Link, PublishedSince, Text } from '@/TabNewsUI';
+import { Box, EmptyState, Link, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
 
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
-  const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
+  const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
 
-  const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
-  const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
+  const previousPageUrl = `${paginationBasePath}/${pagination.previousPage}`;
+  const nextPageUrl = `${paginationBasePath}/${pagination.nextPage}`;
 
   return (
     <>
       {list.length > 0 ? (
         <Box
+          as="ol"
           sx={{
             display: 'grid',
             gap: '0.5rem',
-            gridTemplateColumns: 'auto 1fr',
-          }}>
+            gridTemplateColumns: 'min-content minmax(0, 1fr)',
+            padding: 0,
+            margin: 0,
+          }}
+          key={`content-list-${listNumberStart}`}
+          start={listNumberStart}>
           <RenderItems />
           <EndOfRelevant />
         </Box>
@@ -29,6 +34,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
             display: 'flex',
             width: '100%',
             justifyContent: 'center',
+            whiteSpace: 'nowrap',
             gap: 4,
             m: 4,
             mb: 2,
@@ -70,75 +76,95 @@ export default function ContentList({ contentList: list, pagination, paginationB
       return count > 1 || count < -1 ? `${count} tabcoins` : `${count} tabcoin`;
     }
 
-    return list.map((contentObject, index) => {
-      const itemCount = index + 1 + listNumberOffset;
-      return [
-        <Box key={itemCount} sx={{ textAlign: 'right' }}>
-          <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
-            {itemCount}.
-          </Text>
-        </Box>,
-        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
-          <Box
-            sx={{
-              overflow: 'auto',
+    return list.map((contentObject) => {
+      return (
+        <Box
+          key={contentObject.id}
+          as="li"
+          sx={{
+            display: 'contents',
+            ':before': {
+              content: 'counter(list-item) "."',
+              counterIncrement: 'list-item',
               fontWeight: 'semibold',
-              fontSize: 2,
-              '> a': {
-                ':link': {
-                  color: 'fg.default',
+              width: 'min-content',
+              marginLeft: 'auto',
+            },
+          }}>
+          <Box as="article">
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+                '> a': {
+                  ':link': {
+                    color: 'fg.default',
+                  },
+                  ':visited': {
+                    color: 'fg.subtle',
+                  },
                 },
-                ':visited': {
-                  color: 'fg.subtle',
-                },
-              },
-            }}>
-            {contentObject.parent_id ? (
-              <Link
-                sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
-                href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                <CommentIcon verticalAlign="middle" size="small" />
-                {` "${contentObject.body}"`}
-              </Link>
-            ) : (
-              <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                {contentObject.title}
-              </Link>
-            )}
+              }}>
+              {contentObject.parent_id ? (
+                <Link
+                  sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
+                  href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  <CommentIcon verticalAlign="middle" size="small" />
+                  {` "${contentObject.body}"`}
+                </Link>
+              ) : (
+                <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  {contentObject.title}
+                </Link>
+              )}
+            </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 1,
+                gridTemplateColumns:
+                  'max-content max-content max-content max-content minmax(20px, max-content) max-content max-content',
+                fontSize: 0,
+                whiteSpace: 'nowrap',
+                color: 'neutral.emphasis',
+              }}>
+              <TabCoinBalanceTooltip
+                direction="ne"
+                credit={contentObject.tabcoins_credit}
+                debit={contentObject.tabcoins_debit}>
+                <TabCoinsText count={contentObject.tabcoins} />
+              </TabCoinBalanceTooltip>
+              {' · '}
+              <Text>
+                <ChildrenDeepCountText count={contentObject.children_deep_count} />
+              </Text>
+              {' · '}
+              <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
+                <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Text as="address" sx={{ fontStyle: 'normal' }}>
+                    <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                      {contentObject.owner_username}
+                    </Link>
+                  </Text>
+                </Box>
+              </Tooltip>
+              {' · '}
+              <Text>
+                <PastTime direction="nw" date={contentObject.published_at} />
+              </Text>
+            </Box>
           </Box>
-          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
-            <Text>
-              <TabCoinsText count={contentObject.tabcoins} />
-            </Text>
-            {' · '}
-            <Text>
-              <ChildrenDeepCountText count={contentObject.children_deep_count} />
-            </Text>
-            {' · '}
-            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
-            </Link>
-            {' · '}
-            <Text>
-              <PublishedSince direction="nw" date={contentObject.published_at} sx={{ position: 'absolute', ml: 1 }} />
-            </Text>
-          </Box>
-        </Box>,
-      ];
+        </Box>
+      );
     });
   }
 
   function EndOfRelevant() {
-    if (paginationBasePath == '/pagina' && !pagination.nextPage)
-      return [
-        <Box key={0} sx={{ textAlign: 'right' }}>
-          <Text
-            sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right', visibility: 'hidden' }}>
-            0.
-          </Text>
-        </Box>,
-        <Box key={-1}>
-          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+    if (paginationBasePath == '/pagina' && !pagination.nextPage) {
+      return (
+        <Box key="end-of-relevant" sx={{ gridColumnStart: 2 }}>
+          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes/pagina/1'}>
             <Box
               sx={{
                 overflow: 'auto',
@@ -149,8 +175,9 @@ export default function ContentList({ contentList: list, pagination, paginationB
             </Box>
             <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
           </Link>
-        </Box>,
-      ];
+        </Box>
+      );
+    }
     return null;
   }
 

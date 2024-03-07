@@ -262,7 +262,7 @@ describe('PATCH /api/v1/activation', () => {
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual('Você não pode mais ler tokens de ativação.');
       expect(responseBody.action).toEqual(
-        'Verifique se você já está logado ou tentando ativar novamente o seu ou outro usuário que já está ativo.'
+        'Verifique se você já está logado ou tentando ativar novamente o seu ou outro usuário que já está ativo.',
       );
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);

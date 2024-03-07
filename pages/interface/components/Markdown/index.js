@@ -14,6 +14,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
 
+import { copyCodeToClipboardPlugin } from './plugins/copy-code-to-clipboard';
+import { externalLinksPlugin } from './plugins/external-links';
+
 const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
   highlightSsrPlugin(),
@@ -23,22 +26,28 @@ const bytemdPluginBaseList = [
   }),
   breaksPlugin(),
   gemojiPlugin(),
+  copyCodeToClipboardPlugin(),
 ];
 
-function usePlugins() {
+function usePlugins({ areLinksTrusted }) {
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
     const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
+    const pluginList = [...bytemdPluginBaseList, mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme })];
 
-    return [...bytemdPluginBaseList, mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme })];
-  }, [colorScheme]);
+    if (!areLinksTrusted) {
+      pluginList.push(externalLinksPlugin());
+    }
+
+    return pluginList;
+  }, [areLinksTrusted, colorScheme]);
 
   return plugins;
 }
 
-export default function Viewer({ value: _value, ...props }) {
-  const bytemdPluginList = usePlugins();
+export default function Viewer({ value: _value, areLinksTrusted, ...props }) {
+  const bytemdPluginList = usePlugins({ areLinksTrusted });
   const [value, setValue] = useState(_value);
 
   useEffect(() => {
@@ -58,8 +67,8 @@ export default function Viewer({ value: _value, ...props }) {
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
-export function Editor({ isValid, onKeyDown, compact, ...props }) {
-  const bytemdPluginList = usePlugins();
+export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, ...props }) {
+  const bytemdPluginList = usePlugins({ areLinksTrusted });
   const editorMode = 'split'; // 'tab'
   const editorRef = useRef();
 
@@ -87,7 +96,7 @@ export function Editor({ isValid, onKeyDown, compact, ...props }) {
 
 function sanitize(defaultSchema) {
   const schema = { ...defaultSchema };
-  schema.attributes['*'] = schema.attributes['*'].filter((attr) => attr != 'className');
+  schema.attributes['*'] = schema.attributes['*'].filter((attr) => !['className', 'target'].includes(attr));
 
   schema.attributes['*'].push(['className', /^hljs|^language-|^bytemd-mermaid$|^math/]);
 

@@ -7,7 +7,7 @@ async function getByContentId(contentId, { transaction, database = db } = {}) {
       text: query.byContentId,
       values: [contentId],
     },
-    { transaction }
+    { transaction },
   );
 
   let initialTabcoins = 0;
@@ -34,14 +34,14 @@ async function getByUserId(
     limit = 20,
     transaction,
     database = db,
-  } = {}
+  } = {},
 ) {
   const result = await database.query(
     {
       text: query.byUserId,
       values: [userId, timeOffset, isRoot, limit, offset],
     },
-    { transaction }
+    { transaction },
   );
 
   const mean = calcTabcoinsAverage(result.rows);

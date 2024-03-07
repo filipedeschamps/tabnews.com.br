@@ -4,18 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { Tooltip } from '@/TabNewsUI';
 
-function formatPublishedSince(date) {
-  try {
-    const publishedSince = formatDistanceToNowStrict(new Date(date), {
-      locale: ptBR,
-    });
-
-    return `${publishedSince} atrás`;
-  } catch (e) {
-    return '';
-  }
-}
-
 function formatTooltipLabel(date, gmt = false) {
   const displayFormat = gmt ? "EEEE, d 'de' MMMM 'de' yyyy 'às' HH:mm z" : "EEEE, d 'de' MMMM 'de' yyyy 'às' HH:mm";
 
@@ -26,18 +14,30 @@ function formatTooltipLabel(date, gmt = false) {
   }
 }
 
-export default function PublishedSince({ date, ...props }) {
+export default function PastTime({ date, formatText, ...props }) {
   const [tooltipLabel, setTooltipLabel] = useState(formatTooltipLabel(date, true));
 
   useEffect(() => {
     setTooltipLabel(formatTooltipLabel(date));
   }, [date]);
 
+  function getText(date) {
+    try {
+      const formattedDate = formatDistanceToNowStrict(new Date(date), {
+        locale: ptBR,
+      });
+
+      return formatText ? formatText(formattedDate) : `${formattedDate} atrás`;
+    } catch (e) {
+      return '';
+    }
+  }
+
   return (
-    <Tooltip sx={{ position: 'absolute' }} aria-label={tooltipLabel} suppressHydrationWarning {...props}>
-      <span style={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
-        {formatPublishedSince(date)}
-      </span>
+    <Tooltip aria-label={tooltipLabel} suppressHydrationWarning {...props}>
+      <time dateTime={date} style={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
+        {getText(date)}
+      </time>
     </Tooltip>
   );
 }

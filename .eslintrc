@@ -1,5 +1,11 @@
 {
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
   "extends": [
+    "eslint:recommended",
     "next",
     "next/core-web-vitals",
     "prettier",
@@ -14,6 +20,22 @@
       }
     }
   },
+  "overrides": [
+    {
+      "files": ["tests/**"],
+      "plugins": ["jest"],
+      "extends": ["plugin:jest/recommended"],
+      "rules": {
+        "jest/no-conditional-in-test": "error"
+      }
+    },
+    {
+      "files": ["infra/scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
   "rules": {
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
@@ -48,6 +70,9 @@
         "ignoreDeclarationSort": true
       }
     ],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-control-regex": "off",
+    "no-sparse-arrays": "off",
     "no-unused-vars": [
       "error",
       {

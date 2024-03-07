@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -7,40 +6,50 @@ import {
   ActionList,
   ActionMenu,
   Box,
-  ContentList,
+  Button,
+  ButtonWithLoader,
   DefaultLayout,
+  Editor,
   Flash,
+  FormControl,
   IconButton,
   Label,
   LabelGroup,
-  Pagehead,
+  NavItem,
+  NavList,
+  PastTime,
+  TabCashCount,
+  TabCoinCount,
+  Text,
   useConfirm,
+  UserHeader,
   Viewer,
 } from '@/TabNewsUI';
-import { FaUser, KebabHorizontalIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { CircleSlashIcon, GearIcon, KebabHorizontalIcon } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
-import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { useUser } from 'pages/interface';
 
-export default function Home({ contentListFound, pagination, userFound: userFoundFallback }) {
+export default function Page({ userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
     fallbackData: userFoundFallback,
     revalidateOnMount: false,
   });
 
-  const { user, isLoading } = useUser();
-  const { push } = useRouter();
+  const { user } = useUser();
   const confirm = useConfirm();
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
+  const [globalMessageObject, setGlobalMessageObject] = useState(null);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
 
   const isAuthenticatedUser = user && user.username === userFound.username;
+  const canUpdate = isAuthenticatedUser && user?.features?.includes('update:user');
+  const canUpdateDescription = canUpdate || user?.features?.includes('update:user:others');
 
   async function handleClickNuke() {
-    setGlobalErrorMessage(null);
+    setGlobalMessageObject(null);
 
     const confirmDelete1 = await confirm({
       title: `Atenção: Você está realizando um Nuke!`,
@@ -76,37 +85,66 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     const responseBody = await response.json();
 
     if (response.status === 200) {
-      userFoundMutate(responseBody);
+      userFoundMutate(responseBody, { revalidate: false });
       return;
     }
 
-    setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+    setGlobalMessageObject({
+      type: 'danger',
+      position: 'main',
+      text: `${responseBody.message} ${responseBody.action}`,
+    });
     return;
   }
 
+  function handleEditDescription() {
+    setGlobalMessageObject(null);
+    setIsEditingDescription(true);
+  }
+
+  function handleEditSuccess(newUser) {
+    setIsEditingDescription(false);
+    userFoundMutate(newUser, { revalidate: false });
+  }
+
   function OptionsMenu() {
+    const canNuke =
+      !isAuthenticatedUser && user?.features?.includes('ban:user') && !userFound?.features?.includes('nuked');
+    if (!canNuke && !canUpdate) {
+      return null;
+    }
+
     return (
-      <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0, top: 2 }}>
-          <ActionMenu>
-            <ActionMenu.Anchor>
-              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar usuário" />
-            </ActionMenu.Anchor>
-            <ActionMenu.Overlay>
-              <ActionList>
-                {!userFound?.features?.includes('nuked') && (
-                  <ActionList.Item variant="danger" onClick={handleClickNuke}>
-                    <ActionList.LeadingVisual>
-                      <TrashIcon />
-                    </ActionList.LeadingVisual>
-                    Nuke
-                  </ActionList.Item>
-                )}
-              </ActionList>
-            </ActionMenu.Overlay>
-          </ActionMenu>
-        </Box>
-      </Box>
+      <ActionMenu>
+        <ActionMenu.Anchor>
+          <IconButton
+            sx={{ ml: 'auto', px: 1, alignSelf: 'center' }}
+            size="small"
+            icon={KebabHorizontalIcon}
+            aria-label="Editar usuário"
+          />
+        </ActionMenu.Anchor>
+        <ActionMenu.Overlay>
+          <ActionList>
+            {canUpdate && (
+              <NavItem href="/perfil">
+                <NavList.LeadingVisual>
+                  <GearIcon />
+                </NavList.LeadingVisual>
+                Editar perfil
+              </NavItem>
+            )}
+            {canNuke && (
+              <ActionList.Item variant="danger" onClick={handleClickNuke}>
+                <ActionList.LeadingVisual>
+                  <CircleSlashIcon />
+                </ActionList.LeadingVisual>
+                Nuke
+              </ActionList.Item>
+            )}
+          </ActionList>
+        </ActionMenu.Overlay>
+      </ActionMenu>
     );
   }
 
@@ -114,60 +152,270 @@ export default function Home({ contentListFound, pagination, userFound: userFoun
     if (!userFound?.features?.length) return null;
 
     return (
-      <LabelGroup sx={{ display: 'flex', ml: 2 }}>
+      <LabelGroup sx={{ display: 'flex', alignSelf: 'center' }}>
         {userFound.features.includes('nuked') && <Label variant="danger">nuked</Label>}
       </LabelGroup>
     );
   }
 
   return (
-    <>
-      <DefaultLayout metadata={{ title: `${userFound.username}` }}>
-        {globalErrorMessage && (
-          <Flash variant="danger" sx={{ width: '100%', mb: 4 }}>
-            {globalErrorMessage}
-          </Flash>
-        )}
+    <DefaultLayout metadata={{ title: `${userFound.username}` }}>
+      {globalMessageObject?.position === 'main' && (
+        <Flash variant={globalMessageObject.type} sx={{ width: '100%', mb: 4 }}>
+          {globalMessageObject.text}
+        </Flash>
+      )}
 
-        <Box sx={{ width: '100%', display: 'flex' }}>
-          <Pagehead as="h1" sx={{ width: '100%', mt: 0, pt: 0, pb: 3, mb: 3 }}>
-            {userFound.username} <UserFeatures />
-          </Pagehead>
-          {user?.features?.includes('ban:user') && OptionsMenu()}
+      <UserHeader username={userFound.username}>
+        <UserFeatures />
+        <OptionsMenu />
+      </UserHeader>
+
+      <Box
+        sx={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'end',
+          wordBreak: 'break-word',
+          flexWrap: 'wrap',
+          gap: 2,
+          mb: 2,
+        }}>
+        <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          {userFound.tabcoins !== undefined && <TabCoinCount amount={userFound.tabcoins} mode="full" />}
+
+          {userFound.tabcash !== undefined && <TabCashCount amount={userFound.tabcash} mode="full" />}
+
+          <Box sx={{ ml: 1 }}>
+            <PastTime date={userFound.created_at} formatText={(date) => `Membro há ${date}`} direction="ne" />
+          </Box>
         </Box>
+      </Box>
 
-        {userFound.description && (
+      {userFound.description && !isEditingDescription && (
+        <>
+          <Box
+            sx={{
+              display: 'flex',
+              width: '100%',
+              justifyContent: 'space-between',
+              mb: 1,
+              minHeight: '32px', // This is the button height, so it doesn't flick when the button is rendered
+            }}>
+            <Text sx={{ fontSize: 1, fontWeight: 'bold', mt: 'auto', pb: 1 }}>Descrição</Text>
+            {canUpdateDescription && (
+              <Button variant="invisible" onClick={handleEditDescription}>
+                Editar descrição
+              </Button>
+            )}
+          </Box>
+
           <Box
             sx={{
               borderWidth: 1,
               borderStyle: 'solid',
               borderColor: 'border.default',
-              borderRadius: '6px',
+              borderRadius: 2,
               width: '100%',
               p: 3,
-              mb: 3,
+              overflow: 'hidden',
             }}>
             <Viewer value={userFound.description} />
           </Box>
-        )}
+        </>
+      )}
 
-        <ContentList
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath={`/${userFound.username}/pagina`}
-          emptyStateProps={{
-            isLoading: isLoading,
-            title: 'Nenhum conteúdo encontrado',
-            description: `${isAuthenticatedUser ? 'Você' : userFound.username} ainda não fez nenhuma publicação.`,
-            icon: FaUser,
-            action: isAuthenticatedUser && {
-              text: 'Publicar conteúdo',
-              onClick: () => push('/publicar'),
-            },
-          }}
+      {!userFound.description && canUpdateDescription && !isEditingDescription && (
+        <Button sx={{ mx: 'auto', mt: 1 }} onClick={handleEditDescription}>
+          Criar descrição
+        </Button>
+      )}
+
+      {isEditingDescription && (
+        <DescriptionForm
+          user={userFound}
+          onCancel={() => setIsEditingDescription(false)}
+          onSuccess={handleEditSuccess}
+          globalMessageObject={globalMessageObject}
+          setGlobalMessageObject={setGlobalMessageObject}
+          isAuthenticatedUser={isAuthenticatedUser}
         />
-      </DefaultLayout>
-    </>
+      )}
+
+      {!isEditingDescription && globalMessageObject?.position === 'description' && (
+        <Flash variant={globalMessageObject.type} sx={{ width: '100%', mt: 3 }}>
+          {globalMessageObject.text}
+        </Flash>
+      )}
+    </DefaultLayout>
+  );
+}
+
+function DescriptionForm({
+  user,
+  onCancel,
+  onSuccess,
+  globalMessageObject,
+  setGlobalMessageObject,
+  isAuthenticatedUser,
+}) {
+  const [description, setDescription] = useState(user.description ?? '');
+  const [isPosting, setIsPosting] = useState(false);
+  const [errorObject, setErrorObject] = useState();
+
+  const confirm = useConfirm();
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    clearMessages();
+
+    if (user.description === description) {
+      setGlobalMessageObject({
+        type: 'warning',
+        position: 'description',
+        text: 'A descrição não foi alterada.',
+      });
+      return;
+    }
+
+    const confirmSubmit = !isAuthenticatedUser
+      ? await confirm({
+          title: 'Tem certeza que deseja salvar as alterações?',
+          content: (
+            <Text>
+              Você está editando a descrição do usuário &quot;<Text sx={{ fontWeight: 'bold' }}>{user.username}</Text>
+              &quot;.
+            </Text>
+          ),
+          cancelButtonContent: 'Cancelar',
+          confirmButtonContent: 'Sim',
+        })
+      : true;
+
+    if (!confirmSubmit) return;
+
+    setIsPosting(true);
+
+    try {
+      const response = await fetch(`/api/v1/users/${user.username}`, {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ description: description }),
+      });
+
+      const responseBody = await response.json();
+
+      if (response.status === 200) {
+        setGlobalMessageObject({
+          type: 'success',
+          position: 'description',
+          text: 'Descrição salva com sucesso!',
+        });
+        onSuccess(responseBody);
+        return;
+      }
+
+      if (response.status === 400) {
+        setErrorObject(responseBody);
+        return;
+      }
+
+      if (response.status >= 403) {
+        setGlobalMessageObject({
+          type: 'danger',
+          position: 'description',
+          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+        });
+      }
+    } catch (error) {
+      setGlobalMessageObject({
+        type: 'danger',
+        position: 'description',
+        text: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.',
+      });
+    } finally {
+      setIsPosting(false);
+    }
+  }
+
+  async function handleCancel() {
+    const confirmCancel =
+      description !== user.description
+        ? await confirm({
+            title: 'Tem certeza que deseja sair da edição?',
+            content: 'A alteração não foi salva e será perdida.',
+            cancelButtonContent: 'Cancelar',
+            confirmButtonContent: 'Sim',
+          })
+        : true;
+
+    if (!confirmCancel) return;
+
+    clearMessages();
+    onCancel();
+  }
+
+  function handleDescriptionChange(value) {
+    setDescription(value);
+    clearMessages();
+  }
+
+  function clearMessages() {
+    setErrorObject(undefined);
+    setGlobalMessageObject(null);
+  }
+
+  function handleKeyDown(event) {
+    if (isPosting) return;
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      handleSubmit(event);
+    } else if (event.key === 'Escape') {
+      handleCancel();
+    }
+  }
+
+  return (
+    <Box as="form" sx={{ width: '100%' }} onSubmit={handleSubmit}>
+      <FormControl id="description">
+        {/* Label styled similar to the "read" view so it is in the same position */}
+        <FormControl.Label sx={{ display: 'flex', alignItems: 'flex-end', pb: 1, minHeight: '32px' }}>
+          Descrição
+        </FormControl.Label>
+        <Editor
+          isValid={errorObject?.key === 'body'}
+          value={description}
+          onChange={handleDescriptionChange}
+          onKeyDown={handleKeyDown}
+          compact
+        />
+      </FormControl>
+
+      {globalMessageObject?.position === 'description' && (
+        <Flash variant={globalMessageObject.type} sx={{ mt: 3 }}>
+          {globalMessageObject.text}
+        </Flash>
+      )}
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, mt: 3 }}>
+        <Button
+          variant="invisible"
+          type="button"
+          disabled={isPosting}
+          sx={{ fontWeight: 'normal', color: 'fg.muted' }}
+          aria-label="Cancelar alteração"
+          onClick={handleCancel}>
+          Cancelar
+        </Button>
+
+        <ButtonWithLoader variant="primary" type="submit" aria-label="Salvar" isLoading={isPosting}>
+          Salvar
+        </ButtonWithLoader>
+      </Box>
+    </Box>
   );
 }
 
@@ -214,23 +462,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     };
   }
 
-  let results;
   let secureUserFound;
 
   try {
-    const userFound = await user.findOneByUsername(context.params.username);
+    const userFound = await user.findOneByUsername(context.params.username, { withBalance: true });
 
     secureUserFound = authorization.filterOutput(userTryingToGet, 'read:user', userFound);
-
-    results = await content.findWithStrategy({
-      strategy: 'new',
-      where: {
-        owner_id: secureUserFound.id,
-        status: 'published',
-      },
-      page: context.params.page,
-      per_page: context.params.per_page,
-    });
   } catch (error) {
     // `user` model will throw a `NotFoundError` if the user is not found.
     if (error instanceof NotFoundError) {
@@ -243,23 +480,10 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     throw error;
   }
 
-  const contentListFound = results.rows;
-
-  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
-  for (const content of secureContentListFound) {
-    if (content.parent_id) {
-      content.body = removeMarkdown(content.body, { maxLength: 255 });
-    } else {
-      delete content.body;
-    }
-  }
-
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentListFound)),
-      pagination: results.pagination,
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
+      key: secureUserFound.id,
     },
 
     revalidate: 10,

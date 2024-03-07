@@ -3,7 +3,7 @@ import { useRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
 
-import { Box, IconButton, Text, Tooltip } from '@/TabNewsUI';
+import { Box, IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { useUser } from 'pages/interface';
 
@@ -89,7 +89,6 @@ export default function TabCoinButtons({ content }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        mt: contentObject.title ? '9px' : '0px',
       }}>
       <Tooltip aria-label="Achei relevante" direction="ne">
         <IconButton
@@ -102,24 +101,29 @@ export default function TabCoinButtons({ content }) {
           disabled={isInAction}
         />
       </Tooltip>
-      <Box>
-        <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px', width: '1px' }}></div>
-        <Text
-          sx={{
-            fontSize: 0,
-            fontWeight: 'bold',
-            color: 'accent.emphasis',
-          }}>
-          {contentObject.tabcoins}
-        </Text>
-      </Box>
+      <TabCoinBalanceTooltip
+        direction="ne"
+        sx={{
+          width: '100%',
+          textAlign: 'center',
+          fontSize: 0,
+          fontWeight: 'bold',
+          my: 2,
+          py: 1,
+          color: 'accent.emphasis',
+        }}
+        credit={contentObject.tabcoins_credit}
+        debit={contentObject.tabcoins_debit}>
+        <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
+        {contentObject.tabcoins}
+      </TabCoinBalanceTooltip>
       <Tooltip aria-label="Não achei relevante" direction="ne">
         <IconButton
           variant="invisible"
           aria-label="Debitar TabCoin"
           icon={ChevronDownIcon}
           size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+          sx={{ color: 'fg.subtle', lineHeight: '18px', mb: 2 }}
           onClick={() => transactTabCoin('debit')}
           disabled={isInAction}
         />

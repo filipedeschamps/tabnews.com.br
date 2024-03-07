@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
 import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
-import fetch from 'cross-fetch';
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 
 import database from 'infra/database.js';
@@ -41,7 +42,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 
@@ -59,7 +60,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 
@@ -76,7 +77,7 @@ async function waitForAllServices() {
         minTimeout: 10,
         maxTimeout: 1000,
         factor: 1.1,
-      }
+      },
     );
   }
 }
@@ -112,12 +113,16 @@ async function getLastEmail() {
   const emailText = await emailTextResponse.text();
   lastEmailItem.text = emailText;
 
+  const emailHtmlResponse = await fetch(`${emailServiceUrl}/messages/${lastEmailItem.id}.html`);
+  const emailHtml = await emailHtmlResponse.text();
+  lastEmailItem.html = emailHtml;
+
   return lastEmailItem;
 }
 
 async function createUser(userObject) {
   return await user.create({
-    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', ''),
+    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', '').replace('-', ''),
     email: userObject?.email || faker.internet.email(),
     password: userObject?.password || 'password',
     description: userObject?.description || '',
@@ -162,7 +167,7 @@ async function createContent(contentObject) {
     },
     {
       eventId: currentEvent.id,
-    }
+    },
   );
 
   await event.updateMetadata(currentEvent.id, {
@@ -196,34 +201,49 @@ async function createBalance(balanceObject) {
   });
 }
 
-async function createRate(contentObject, amount) {
-  const currentEvent = await event.create({
-    type: 'update:content:tabcoins',
-    metadata: {
-      transaction_type: amount < 0 ? 'debit' : 'credit',
-      content_owner_id: contentObject.owner_id,
-      content_id: contentObject.id,
-      amount: amount,
-    },
-  });
+async function createRate(contentObject, amount, fromUserId) {
+  const tabCoinsRequiredAmount = 2;
+  const originatorIp = faker.internet.ip();
+  const transactionType = amount < 0 ? 'debit' : 'credit';
 
-  await balance.create({
-    balanceType: 'content:tabcoin',
-    recipientId: contentObject.id,
-    amount: amount,
-    originatorType: 'event',
-    originatorId: currentEvent.id,
-  });
+  if (!fromUserId) {
+    fromUserId = randomUUID();
 
-  await balance.create({
-    balanceType: 'user:tabcoin',
-    recipientId: contentObject.owner_id,
-    amount: amount,
-    originatorType: 'event',
-    originatorId: currentEvent.id,
-  });
+    await createBalance({
+      balanceType: 'user:tabcoin',
+      recipientId: fromUserId,
+      amount: tabCoinsRequiredAmount * Math.abs(amount),
+      originatorType: 'orchestrator',
+      originatorId: fromUserId,
+    });
+  }
 
-  return currentEvent;
+  for (let i = 0; i < Math.abs(amount); i++) {
+    const currentEvent = await event.create({
+      type: 'update:content:tabcoins',
+      originatorUserId: fromUserId,
+      originatorIp,
+      metadata: {
+        transaction_type: transactionType,
+        from_user_id: fromUserId,
+        content_owner_id: contentObject.owner_id,
+        content_id: contentObject.id,
+        amount: tabCoinsRequiredAmount,
+      },
+    });
+
+    await balance.rateContent(
+      {
+        contentId: contentObject.id,
+        contentOwnerId: contentObject.owner_id,
+        fromUserId: fromUserId,
+        transactionType,
+      },
+      {
+        eventId: currentEvent.id,
+      },
+    );
+  }
 }
 
 async function createRecoveryToken(userObject) {
@@ -248,7 +268,7 @@ async function createPrestige(
     rootPrestigeDenominator = 4,
     childPrestigeNumerator = 0,
     childPrestigeDenominator = 1,
-  } = {}
+  } = {},
 ) {
   if (
     rootPrestigeDenominator < 0 ||
@@ -274,7 +294,7 @@ async function createPrestige(
         title: faker.lorem.words(3),
         body: faker.lorem.paragraphs(1),
         status: 'published',
-      })
+      }),
     );
   }
 
@@ -298,7 +318,7 @@ async function createPrestige(
         owner_id: userId,
         body: faker.lorem.paragraphs(1),
         status: 'published',
-      })
+      }),
     );
   }
 
@@ -306,7 +326,7 @@ async function createPrestige(
 
   if (rootContents.length) {
     await createBalance({
-      balanceType: 'content:tabcoin',
+      balanceType: rootPrestigeNumerator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
       recipientId: rootContents[0].id,
       amount: rootPrestigeNumerator,
       originatorType: 'orchestrator',
@@ -316,7 +336,8 @@ async function createPrestige(
 
   if (childContents.length) {
     await createBalance({
-      balanceType: 'content:tabcoin',
+      balanceType:
+        childPrestigeNumerator + childPrestigeDenominator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
       recipientId: childContents[0].id,
       amount: childPrestigeNumerator + childPrestigeDenominator,
       originatorType: 'orchestrator',

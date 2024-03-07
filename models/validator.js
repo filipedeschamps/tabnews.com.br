@@ -4,6 +4,9 @@ import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
 import removeMarkdown from 'models/remove-markdown';
 
+const MAX_INTEGER = 2147483647;
+const MIN_INTEGER = -2147483648;
+
 export default function validator(object, keys) {
   // Force the clean up of "undefined" values since JSON
   // doesn't support them and Joi doesn't clean
@@ -237,7 +240,7 @@ const schemas = {
     return Joi.object({
       slug: Joi.string()
         .min(1)
-        .max(255, 'utf8')
+        .max(226, 'utf8')
         .trim()
         .truncate()
         .invalid(null)
@@ -259,7 +262,7 @@ const schemas = {
       title: Joi.string()
         .replace(
           /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
-          ''
+          '',
         )
         .allow(null)
         .min(1)
@@ -324,7 +327,7 @@ const schemas = {
         .replace(/\u0000/g, '')
         .trim()
         .max(2000)
-        .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([\/?#]\S*)?$/u)
+        .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([/?#]\S*)?$/u)
         .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"source_url" é um campo obrigatório.`,
@@ -521,6 +524,7 @@ const schemas = {
       'username',
       'owner_username',
       '$or',
+      '$not_null',
       'attributes',
     ]) {
       const keyValidationFunction = schemas[key];
@@ -563,6 +567,15 @@ const schemas = {
           'array.base': `"#or" deve ser do tipo Array.`,
         })
         .shared(statusSchemaWithId),
+    });
+  },
+
+  $not_null: function () {
+    return Joi.object({
+      $not_null: Joi.array().optional().items(Joi.string().valid('parent_id')).messages({
+        'array.base': `"#not_null" deve ser do tipo Array.`,
+        'any.only': `"#not_null" deve conter um dos seguintes valores: "parent_id".`,
+      }),
     });
   },
 
@@ -627,6 +640,8 @@ const schemas = {
       'owner_username',
       'children_deep_count',
       'tabcoins',
+      'tabcoins_credit',
+      'tabcoins_debit',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
@@ -635,11 +650,38 @@ const schemas = {
     return contentSchema;
   },
 
+  with_children: function () {
+    return Joi.object({
+      with_children: Joi.boolean()
+        .allow(false)
+        .when('$required.with_children', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"with_children" é um campo obrigatório.`,
+          'string.empty': `"with_children" não pode estar em branco.`,
+          'boolean.base': `"with_children" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
+  with_root: function () {
+    return Joi.object({
+      with_root: Joi.boolean()
+        .allow(false)
+        .when('$required.with_root', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"with_root" é um campo obrigatório.`,
+          'string.empty': `"with_root" não pode estar em branco.`,
+          'boolean.base': `"with_root" deve ser do tipo Boolean.`,
+        }),
+    });
+  },
+
   event: function () {
     return Joi.object({
       type: Joi.string()
         .valid(
           'create:user',
+          'update:user',
           'ban:user',
           'create:content:text_root',
           'create:content:text_child',
@@ -650,7 +692,7 @@ const schemas = {
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
           'reward:user:tabcoins',
-          'system:update:tabcoins'
+          'system:update:tabcoins',
         )
         .messages({
           'any.required': `"type" é um campo obrigatório.`,
@@ -733,17 +775,55 @@ const schemas = {
     return Joi.object({
       tabcoins: Joi.number()
         .integer()
-        .min(-2147483648)
-        .max(2147483647)
+        .min(MIN_INTEGER)
+        .max(MAX_INTEGER)
         .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"tabcoins" é um campo obrigatório.`,
           'string.empty': `"tabcoins" não pode estar em branco.`,
           'number.base': `"tabcoins" deve ser do tipo Number.`,
           'number.integer': `"tabcoins" deve ser um Inteiro.`,
-          'number.min': `"tabcoins" deve possuir um valor mínimo de -2147483648.`,
-          'number.max': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
-          'number.unsafe': `"tabcoins" deve possuir um valor máximo de 2147483647.`,
+          'number.min': `"tabcoins" deve possuir um valor mínimo de ${MIN_INTEGER}.`,
+          'number.max': `"tabcoins" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"tabcoins" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
+  tabcoins_credit: function () {
+    return Joi.object({
+      tabcoins_credit: Joi.number()
+        .integer()
+        .min(0)
+        .max(MAX_INTEGER)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins_credit" é um campo obrigatório.`,
+          'string.empty': `"tabcoins_credit" não pode estar em branco.`,
+          'number.base': `"tabcoins_credit" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins_credit" deve ser um Inteiro.`,
+          'number.min': `"tabcoins_credit" deve possuir um valor mínimo de 0.`,
+          'number.max': `"tabcoins_credit" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"tabcoins_credit" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
+  tabcoins_debit: function () {
+    return Joi.object({
+      tabcoins_debit: Joi.number()
+        .integer()
+        .min(MIN_INTEGER)
+        .max(0)
+        .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"tabcoins_debit" é um campo obrigatório.`,
+          'string.empty': `"tabcoins_debit" não pode estar em branco.`,
+          'number.base': `"tabcoins_debit" deve ser do tipo Number.`,
+          'number.integer': `"tabcoins_debit" deve ser um Inteiro.`,
+          'number.min': `"tabcoins_debit" deve possuir um valor mínimo de ${MIN_INTEGER}.`,
+          'number.max': `"tabcoins_debit" deve possuir um valor máximo de 0.`,
+          'number.unsafe': `"tabcoins_debit" deve possuir um valor máximo de 0.`,
         }),
     });
   },
@@ -752,17 +832,17 @@ const schemas = {
     return Joi.object({
       tabcash: Joi.number()
         .integer()
-        .min(-2147483648)
-        .max(2147483647)
+        .min(MIN_INTEGER)
+        .max(MAX_INTEGER)
         .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           'any.required': `"tabcash" é um campo obrigatório.`,
           'string.empty': `"tabcash" não pode estar em branco.`,
           'number.base': `"tabcash" deve ser do tipo Number.`,
           'number.integer': `"tabcash" deve ser um Inteiro.`,
-          'number.min': `"tabcash" deve possuir um valor mínimo de -2147483648.`,
-          'number.max': `"tabcash" deve possuir um valor máximo de 2147483647.`,
-          'number.unsafe': `"tabcash" deve possuir um valor máximo de 2147483647.`,
+          'number.min': `"tabcash" deve possuir um valor mínimo de ${MIN_INTEGER}.`,
+          'number.max': `"tabcash" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"tabcash" deve possuir um valor máximo de ${MAX_INTEGER}.`,
         }),
     });
   },
@@ -831,6 +911,7 @@ const reservedUsernames = [
   'ajuda',
   'alerta',
   'alertas',
+  'all',
   'analytics',
   'anonymous',
   'anunciar',
@@ -873,6 +954,8 @@ const reservedUsernames = [
   'contas',
   'contato',
   'contatos',
+  'content',
+  'conteudos',
   'contrato',
   'convite',
   'convites',
@@ -980,6 +1063,7 @@ const reservedUsernames = [
   'termos',
   'terms',
   'toc',
+  'todos',
   'trending',
   'upgrade',
   'username',

@@ -12,6 +12,7 @@ import {
   FormControl,
   Heading,
   Link,
+  Text,
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
@@ -34,34 +35,32 @@ function EditProfileForm() {
 
   const { user, fetchUser, isLoading: userIsLoading } = useUser();
 
-  const usernameRef = useRef('');
-  const emailRef = useRef('');
-  const notificationsRef = useRef('');
+  const usernameRef = useRef();
+  const emailRef = useRef();
+  const notificationsRef = useRef();
+
+  const [globalMessageObject, setGlobalMessageObject] = useState(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorObject, setErrorObject] = useState(undefined);
+  const [emailDisabled, setEmailDisabled] = useState(false);
+  const [description, setDescription] = useState(user?.description || '');
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
       router.push(`/login?redirect=${router.asPath}`);
     }
 
-    if (user && !userIsLoading) {
+    if (user && !userIsLoading && !usernameRef.current.value) {
+      setDescription(user.description);
       usernameRef.current.value = user.username;
       emailRef.current.value = user.email;
       notificationsRef.current.checked = user.notifications;
     }
   }, [user, router, userIsLoading]);
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorObject, setErrorObject] = useState(undefined);
-  const [emailDisabled, setEmailDisabled] = useState(false);
-  const [description, setDescription] = useState(user?.description || '');
-
-  function clearErrors() {
+  function clearMessages() {
     setErrorObject(undefined);
+    setGlobalMessageObject(undefined);
   }
 
   async function handleSubmit(event) {
@@ -74,25 +73,12 @@ function EditProfileForm() {
     setIsLoading(true);
     setErrorObject(undefined);
 
-    const suggestedEmail = suggestEmail(email);
-
-    if (suggestedEmail) {
-      setErrorObject({
-        suggestion: suggestedEmail,
-        key: 'email',
-        type: 'typo',
-      });
-
-      setIsLoading(false);
-      return;
-    }
-
     const payload = {};
 
     if (user.username !== username) {
       const confirmChangeUsername = await confirm({
         title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isto irá quebrar todas as URLs das suas publicações.`,
+        content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
         cancelButtonContent: 'Cancelar',
         confirmButtonContent: 'Sim',
       });
@@ -106,6 +92,19 @@ function EditProfileForm() {
     }
 
     if (user.email !== email) {
+      const suggestedEmail = suggestEmail(email);
+
+      if (suggestedEmail) {
+        setErrorObject({
+          suggestion: suggestedEmail,
+          key: 'email',
+          type: 'typo',
+        });
+
+        setIsLoading(false);
+        return;
+      }
+
       payload.email = email;
     }
 
@@ -118,6 +117,10 @@ function EditProfileForm() {
     }
 
     if (Object.keys(payload).length === 0) {
+      setGlobalMessageObject({
+        type: 'warning',
+        text: 'Nenhuma configuração foi alterada',
+      });
       setIsLoading(false);
       return;
     }
@@ -132,20 +135,23 @@ function EditProfileForm() {
         body: JSON.stringify(payload),
       });
 
-      setGlobalErrorMessage(undefined);
-
       const responseBody = await response.json();
 
       if (response.status === 200) {
         await fetchUser();
 
         if (user.email !== email) {
-          setErrorObject({
-            message: `Atenção: Um email de confirmação foi enviado para ${email}`,
-            key: 'email',
-            type: 'confirmation',
-          });
+          const hasSavedModifications = Object.keys(payload).length > 1;
+          const text = hasSavedModifications
+            ? `Alterações salvas. O email será alterado apenas após a confirmação pelo link enviado para "${email}".`
+            : `Alteração pendente. Um email de confirmação foi enviado para "${email}".`;
+          setGlobalMessageObject({ text, type: 'warning' });
           setEmailDisabled(true);
+        } else {
+          setGlobalMessageObject({
+            type: 'success',
+            text: 'Salvo com sucesso!',
+          });
         }
 
         setIsLoading(false);
@@ -159,26 +165,29 @@ function EditProfileForm() {
       }
 
       if (response.status >= 403) {
-        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+        setGlobalMessageObject({
+          type: 'danger',
+          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+        });
         setIsLoading(false);
         return;
       }
     } catch (error) {
-      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+      setGlobalMessageObject({
+        type: 'danger',
+        text: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.',
+      });
       setIsLoading(false);
     }
   }
 
   return (
-    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
+    <form style={{ width: '100%' }} onSubmit={handleSubmit} onChange={clearMessages}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
-
-        <FormControl id="username">
+        <FormControl id="username" required>
           <FormControl.Label>Nome de usuário</FormControl.Label>
           <TextInput
             ref={usernameRef}
-            onChange={clearErrors}
             name="username"
             size="large"
             autoCorrect="off"
@@ -187,7 +196,7 @@ function EditProfileForm() {
             block={true}
             aria-label="Seu nome de usuário"
             contrast
-            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -198,11 +207,10 @@ function EditProfileForm() {
           )}
         </FormControl>
 
-        <FormControl id="email" disabled={emailDisabled}>
+        <FormControl id="email" disabled={emailDisabled} required>
           <FormControl.Label>Email</FormControl.Label>
           <TextInput
             ref={emailRef}
-            onChange={clearErrors}
             name="email"
             size="large"
             autoCorrect="off"
@@ -211,12 +219,12 @@ function EditProfileForm() {
             block={true}
             aria-label="Seu email"
             contrast
-            sx={{ minHeight: '46px', px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
-          {errorObject?.key === 'email' && !errorObject?.type && (
+          {errorObject?.key === 'email' && errorObject.type !== 'typo' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
-          {errorObject?.key === 'email' && errorObject?.type === 'typo' && (
+          {errorObject?.key === 'email' && errorObject.type === 'typo' && (
             <FormControl.Validation variant="error">
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Box>Você quis dizer:</Box>
@@ -227,7 +235,7 @@ function EditProfileForm() {
                     sx={{ p: 1 }}
                     onClick={(event) => {
                       event.preventDefault();
-                      clearErrors();
+                      clearMessages();
                       emailRef.current.value = errorObject.suggestion;
                     }}>
                     {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
@@ -236,10 +244,6 @@ function EditProfileForm() {
               </Box>
             </FormControl.Validation>
           )}
-
-          {errorObject?.key === 'email' && errorObject?.type === 'confirmation' && (
-            <FormControl.Validation variant="warning">{errorObject.message}</FormControl.Validation>
-          )}
         </FormControl>
 
         <FormControl id="description">
@@ -247,7 +251,7 @@ function EditProfileForm() {
 
           <Editor
             onChange={(value) => {
-              clearErrors();
+              clearMessages();
               setDescription(value);
             }}
             value={description}
@@ -255,7 +259,7 @@ function EditProfileForm() {
             compact={true}
           />
 
-          {errorObject?.key === 'description' && errorObject?.type === 'string.max' && (
+          {errorObject?.key === 'description' && errorObject.type === 'string.max' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
@@ -266,7 +270,6 @@ function EditProfileForm() {
           <Checkbox
             sx={{ display: 'flex' }}
             ref={notificationsRef}
-            onChange={clearErrors}
             name="notifications"
             aria-label="Você deseja receber notificações?"
           />
@@ -282,6 +285,10 @@ function EditProfileForm() {
             Utilize o fluxo de recuperação de senha →
           </Link>
         </FormControl>
+
+        <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
+
+        {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.text}</Flash>}
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>

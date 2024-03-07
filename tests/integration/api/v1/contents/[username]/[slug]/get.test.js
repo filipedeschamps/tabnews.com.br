@@ -30,7 +30,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.activateUser(defaultUser);
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/esse-slug-nao-existe`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/esse-slug-nao-existe`,
       );
       const responseBody = await response.json();
 
@@ -56,7 +56,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -83,7 +83,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -98,6 +98,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         body: 'Conteúdo relevante deveria estar disponível para todos.',
         status: 'published',
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: 'https://www.tabnews.com.br/',
         created_at: defaultUserContent.created_at.toISOString(),
         updated_at: defaultUserContent.updated_at.toISOString(),
@@ -125,7 +127,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(defaultUserContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -188,7 +190,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(childContentLeve4.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -203,6 +205,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContent.updated_at.toISOString(),
@@ -235,7 +239,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -268,7 +272,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -283,6 +287,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         body: 'Conteúdo child',
         status: 'published',
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: childContent.created_at.toISOString(),
         updated_at: childContent.updated_at.toISOString(),
@@ -336,7 +342,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(childContentLeve3.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -351,6 +357,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         body: 'Conteúdo child',
         status: 'published',
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: childContent.created_at.toISOString(),
         updated_at: childContent.updated_at.toISOString(),
@@ -386,7 +394,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.updateContent(childContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
       );
       const responseBody = await response.json();
 
@@ -403,6 +411,51 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
 
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Content "root" with TabCoins credits and debits', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo com TabCoins',
+        body: 'Conteúdo que foi avaliado positiva e negativamente.',
+        status: 'published',
+      });
+
+      await orchestrator.createRate(defaultUserContent, 3);
+      await orchestrator.createRate(defaultUserContent, -1);
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: defaultUserContent.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'conteudo-com-tabcoins',
+        title: 'Conteúdo com TabCoins',
+        body: 'Conteúdo que foi avaliado positiva e negativamente.',
+        status: 'published',
+        tabcoins: 2,
+        tabcoins_credit: 3,
+        tabcoins_debit: -1,
+        source_url: null,
+        created_at: defaultUserContent.created_at.toISOString(),
+        updated_at: defaultUserContent.updated_at.toISOString(),
+        published_at: defaultUserContent.published_at.toISOString(),
+        deleted_at: null,
+        owner_username: defaultUser.username,
+        children_deep_count: 0,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
     });
   });
 });

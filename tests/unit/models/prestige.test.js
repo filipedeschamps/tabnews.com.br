@@ -18,7 +18,7 @@ describe('prestige model', () => {
           text: expect.any(String),
           values: [contentId],
         },
-        { transaction }
+        { transaction },
       );
     });
 
@@ -107,7 +107,7 @@ describe('prestige model', () => {
           text: expect.any(String),
           values: [userId, timeOffset, isRoot, limit, offset],
         },
-        { transaction }
+        { transaction },
       );
     });
 

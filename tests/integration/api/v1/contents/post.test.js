@@ -1,4 +1,5 @@
 import fetch from 'cross-fetch';
+import readline from 'node:readline';
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
@@ -65,7 +66,7 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND'
+        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       );
     });
   });
@@ -104,13 +105,13 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(403);
       expect(responseBody.name).toEqual('ForbiddenError');
       expect(responseBody.message).toEqual(
-        'Você não possui permissão para criar conteúdos dentro de outros conteúdos.'
+        'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
       );
       expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_child".');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual(
-        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND'
+        'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       );
     });
   });
@@ -202,6 +203,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: firstUser.username,
       });
 
@@ -387,6 +390,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -517,6 +522,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -590,6 +597,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -628,7 +637,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 255 bytes', async () => {
+    test('Content with "slug" containing more than 226 bytes', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const sessionObject = await orchestrator.createSession(defaultUser);
@@ -642,7 +651,7 @@ describe('POST /api/v1/contents', () => {
         body: JSON.stringify({
           title: 'Mini curso de Node.js',
           body: 'Instale o Node.js',
-          slug: 'this-slug-must-be-changed-to-255-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         }),
       });
 
@@ -654,7 +663,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-255-bytessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
@@ -664,6 +673,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -866,6 +877,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Outro body',
         status: 'published',
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         source_url: null,
         created_at: secondContentBody.created_at,
         updated_at: secondContentBody.updated_at,
@@ -964,7 +977,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-ocupando-menos-de-256-bytessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-ocupando-menos-de-256-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         title:
           'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
         body: 'Instale o Node.js',
@@ -975,6 +988,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1018,6 +1033,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1051,7 +1068,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: '4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pm',
+        slug: '4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4p',
         title: '♥'.repeat(255),
         body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
         status: 'draft',
@@ -1061,6 +1078,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1104,6 +1123,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1124,7 +1145,7 @@ describe('POST /api/v1/contents', () => {
           cookie: `session_id=${sessionObject.token}`,
         },
         body: JSON.stringify({
-          title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+          title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
           body: 'Qualquer coisa.',
         }),
       });
@@ -1138,7 +1159,7 @@ describe('POST /api/v1/contents', () => {
         owner_id: defaultUser.id,
         parent_id: null,
         slug: 'tab-e-news-conteudos-com-valor-strong-concreto-strong-e-massa-participe-o',
-        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\o/'`,
+        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
         body: 'Qualquer coisa.',
         status: 'draft',
         source_url: null,
@@ -1147,6 +1168,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1191,6 +1214,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1235,6 +1260,8 @@ describe('POST /api/v1/contents', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1302,7 +1329,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1334,7 +1361,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1366,7 +1393,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".'
+        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1410,6 +1437,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1454,6 +1483,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1498,6 +1529,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1542,6 +1575,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1574,7 +1609,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1606,7 +1641,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1638,7 +1673,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1670,7 +1705,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1702,7 +1737,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.'
+        '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1746,6 +1781,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1790,6 +1827,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1864,6 +1903,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1909,6 +1950,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -1959,6 +2002,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2065,6 +2110,8 @@ describe('POST /api/v1/contents', () => {
         published_at: null,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2124,6 +2171,8 @@ describe('POST /api/v1/contents', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2177,6 +2226,8 @@ describe('POST /api/v1/contents', () => {
         published_at: responseBody.published_at,
         deleted_at: null,
         tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         owner_username: defaultUser.username,
       });
 
@@ -2296,7 +2347,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.'
+        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.',
       );
       expect(responseBody.action).toEqual('Utilize um "parent_id" que aponte para um conteúdo que existe.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -2405,11 +2456,16 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título curto do conteúdo raiz"`);
-        expect(getLastEmail.text.includes(firstUser.username)).toBe(true);
-        expect(getLastEmail.text.includes(secondUser.username)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes('respondeu à sua publicação')).toBe(true);
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.text).toContain(secondUser.username);
+        expect(getLastEmail.html).toContain(secondUser.username);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain('respondeu à sua publicação');
+        expect(getLastEmail.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "root" content with long "title" replied by other user', async () => {
@@ -2450,12 +2506,17 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(
-          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`
+          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`,
         );
-        expect(getLastEmail.text.includes(`Olá, ${firstUser.username}`)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes(`"${secondUser.username}" respondeu à sua publicação`)).toBe(true);
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain(`Olá, ${firstUser.username}`);
+        expect(getLastEmail.html).toContain(`Olá, ${firstUser.username}`);
+        expect(getLastEmail.text).toContain(`"${secondUser.username}" respondeu à sua publicação`);
+        expect(getLastEmail.html).toContain(secondUser.username);
+        expect(getLastEmail.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "child" content replied by other user', async () => {
@@ -2503,12 +2564,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "Testando resposta ao conteúdo child"`);
-        expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail.text.includes(`"${firstUser.username}" respondeu ao seu comentário na publicação`)).toBe(
-          true
-        );
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.html).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain(`"${firstUser.username}" respondeu ao seu comentário na publicação`);
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain('respondeu ao seu comentário na publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "child" content replied by other user, but "root" with "deleted" status', async () => {
@@ -2560,14 +2624,18 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "[Não disponível]"`);
-        expect(getLastEmail.text.includes(`Olá, ${secondUser.username}`)).toBe(true);
-        expect(getLastEmail.text.includes(rootContent.title)).toBe(false);
-        expect(
-          getLastEmail.text.includes(
-            `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`
-          )
-        ).toBe(true);
-        expect(getLastEmail.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail.text).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.html).toContain(`Olá, ${secondUser.username}`);
+        expect(getLastEmail.text).not.toContain(rootContent.title);
+        expect(getLastEmail.html).not.toContain(rootContent.title);
+        expect(getLastEmail.text).toContain(
+          `"${firstUser.username}" respondeu ao seu comentário na publicação "[Não disponível]"`,
+        );
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain('respondeu ao seu comentário na publicação');
+        expect(getLastEmail.html).toContain('[Não disponível]');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
 
       test('My "root" content replied by other user (with "notifications" disabled)', async () => {
@@ -2683,11 +2751,94 @@ describe('POST /api/v1/contents', () => {
 
         expect(getLastEmail2.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail2.subject).toBe(`"${secondUser.username}" comentou em "Testando sistema de notificação"`);
-        expect(getLastEmail2.text.includes(firstUser.username)).toBe(true);
-        expect(getLastEmail2.text.includes(secondUser.username)).toBe(true);
-        expect(getLastEmail2.text.includes(rootContent.title)).toBe(true);
-        expect(getLastEmail2.text.includes('respondeu à sua publicação')).toBe(true);
-        expect(getLastEmail2.text.includes(childContentUrl)).toBe(true);
+        expect(getLastEmail2.text).toContain(firstUser.username);
+        expect(getLastEmail2.text).toContain(secondUser.username);
+        expect(getLastEmail2.text).toContain(rootContent.title);
+        expect(getLastEmail2.text).toContain('respondeu à sua publicação');
+        expect(getLastEmail2.text).toContain(childContentUrl);
+        expect(getLastEmail2.html).toContain(firstUser.username);
+        expect(getLastEmail2.html).toContain(secondUser.username);
+        expect(getLastEmail2.html).toContain(rootContent.title);
+        expect(getLastEmail2.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail2.html).toContain(childContentUrl);
+      });
+    });
+
+    describe('Stream Response', () => {
+      test('Reply with body containing 20k characters', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.activateUser(firstUser);
+        await orchestrator.activateUser(secondUser);
+        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Título do conteúdo raiz',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json, application/x-ndjson',
+            cookie: `session_id=${secondUserSessionObject.token}`,
+          },
+          body: JSON.stringify({
+            body: '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'.repeat(
+              200,
+            ),
+            parent_id: rootContent.id,
+            status: 'published',
+          }),
+        });
+
+        expect(response.ok).toBe(true);
+        expect(response.status).toBe(201);
+        expect(response.headers.get('content-Type')).toBe('application/x-ndjson');
+
+        const rl = readline.createInterface({
+          input: response.body,
+          crlfDelay: Infinity,
+        });
+
+        const streamData = [];
+        let responseBody;
+
+        await new Promise((resolve) => {
+          rl.on('line', (line) => {
+            streamData.push(JSON.parse(line));
+          }).on('close', () => {
+            responseBody = streamData[0];
+            resolve();
+          });
+        });
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
+
+        expect(responseBody.body).toBe(
+          '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'
+            .repeat(200)
+            .slice(0, 19999),
+        );
+        expect(responseBody.parent_id).toBe(rootContent.id);
+        expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
+        expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título do conteúdo raiz"`);
+        expect(getLastEmail.text).toContain(firstUser.username);
+        expect(getLastEmail.html).toContain(firstUser.username);
+        expect(getLastEmail.text).toContain(secondUser.username);
+        expect(getLastEmail.html).toContain(secondUser.username);
+        expect(getLastEmail.text).toContain(rootContent.title);
+        expect(getLastEmail.html).toContain(rootContent.title);
+        expect(getLastEmail.text).toContain('respondeu à sua publicação');
+        expect(getLastEmail.html).toContain('respondeu à sua publicação');
+        expect(getLastEmail.text).toContain(childContentUrl);
+        expect(getLastEmail.html).toContain(childContentUrl);
       });
     });
 
@@ -2923,15 +3074,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
         expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
         expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
         );
       });
 
@@ -2968,15 +3119,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
         expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
         expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
         );
       });
 
@@ -3017,6 +3168,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3082,6 +3235,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3139,6 +3294,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3204,6 +3361,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3261,6 +3420,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3326,6 +3487,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3373,15 +3536,15 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.'
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
         expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.'
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
         expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS'
+          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
         );
       });
 
@@ -3422,6 +3585,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3487,6 +3652,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3546,6 +3713,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
@@ -3611,6 +3780,8 @@ describe('POST /api/v1/contents', () => {
           published_at: responseBody.published_at,
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 

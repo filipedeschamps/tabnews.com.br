@@ -34,7 +34,7 @@ async function findAll(values = {}, options = {}) {
   }
 
   const selectClause = buildSelectClause(values);
-  const whereClause = buildWhereClause(values?.where);
+  const whereClause = buildWhereClause(values.where);
   const orderByClause = buildOrderByClause(values);
 
   query.text = `
@@ -54,6 +54,8 @@ async function findAll(values = {}, options = {}) {
 
   if (values.where) {
     Object.keys(values.where).forEach((key) => {
+      if (key === '$not_null') return;
+
       if (key === '$or') {
         values.where[key].forEach(($orObject) => {
           query.values.push(Object.values($orObject)[0]);
@@ -68,7 +70,7 @@ async function findAll(values = {}, options = {}) {
   return results.rows;
 
   async function replaceOwnerUsernameWithOwnerId(values) {
-    if (values?.where?.owner_username) {
+    if (values.where?.owner_username) {
       const userOwner = await user.findOneByUsername(values.where.owner_username);
       values.where.owner_id = userOwner.id;
       delete values.where.owner_username;
@@ -83,6 +85,7 @@ async function findAll(values = {}, options = {}) {
       where: 'optional',
       count: 'optional',
       $or: 'optional',
+      $not_null: 'optional',
       limit: 'optional',
       attributes: 'optional',
     });
@@ -107,7 +110,7 @@ async function findAll(values = {}, options = {}) {
         contents.parent_id,
         contents.slug,
         contents.title,
-        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
+        ${!values.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
         contents.status,
         contents.source_url,
         contents.created_at,
@@ -117,7 +120,9 @@ async function findAll(values = {}, options = {}) {
         contents.path,
         users.username as owner_username,
         content_window.total_rows,
-        get_current_balance('content:tabcoin', contents.id) as tabcoins,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
         (
           SELECT COUNT(*)
           FROM contents as children
@@ -130,6 +135,7 @@ async function findAll(values = {}, options = {}) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
+      LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
     `;
   }
 
@@ -165,6 +171,16 @@ async function findAll(values = {}, options = {}) {
             .join(' OR ');
 
           return `(${$orQuery})`;
+        }
+
+        if (columnName === '$not_null') {
+          const $notNullQuery = columnValue
+            .map((notColumnName) => {
+              return `contents.${notColumnName} IS NOT NULL`;
+            })
+            .join(' AND ');
+
+          return `(${$notNullQuery})`;
         }
 
         globalIndex += 1;
@@ -223,7 +239,7 @@ async function findWithStrategy(options = {}) {
     const results = {};
     const options = {};
 
-    if (!values?.where?.owner_username) {
+    if (!values.where?.owner_username && values.where?.parent_id === null) {
       options.strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';
@@ -292,15 +308,17 @@ async function create(postedContent, options = {}) {
     transaction: options.transaction,
   });
 
-  newContent.tabcoins = await balance.getTotal(
+  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
-      balanceType: 'content:tabcoin',
       recipientId: newContent.id,
     },
     {
       transaction: options.transaction,
-    }
+    },
   );
+  newContent.tabcoins = tabcoinsCount.tabcoins;
+  newContent.tabcoins_credit = tabcoinsCount.tabcoins_credit;
+  newContent.tabcoins_debit = tabcoinsCount.tabcoins_debit;
 
   return newContent;
 
@@ -396,9 +414,7 @@ function getSlug(title) {
     trim: true,
   });
 
-  const truncatedSlug = generatedSlug.substring(0, 255);
-
-  return truncatedSlug;
+  return generatedSlug;
 }
 
 function populateStatus(postedContent) {
@@ -412,7 +428,7 @@ async function checkIfParentIdExists(content, options) {
         id: content.parent_id,
       },
     },
-    options
+    options,
   );
 
   if (!existingContent) {
@@ -533,7 +549,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
     return;
   }
@@ -565,7 +581,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
             id: newContent.parent_id,
           },
         },
-        options
+        options,
       );
 
       // We should not credit if the parent content is from the same user.
@@ -574,7 +590,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
     // We should not credit if the content has little or no value.
     // Expected 5 or more words with 5 or more characters.
-    if (newContent.body.split(/[a-z]{5,}/i).length < 6) return;
+    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
   }
 
   if (userEarnings > 0) {
@@ -588,14 +604,14 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
   }
 
   if (contentEarnings > 0) {
     await balance.create(
       {
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:initial',
         recipientId: newContent.id,
         amount: contentEarnings,
         originatorType: options.eventId ? 'event' : 'content',
@@ -603,7 +619,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
   }
 }
@@ -617,7 +633,7 @@ async function update(contentId, postedContent, options = {}) {
         id: contentId,
       },
     },
-    options
+    options,
   );
 
   const newContent = { ...oldContent, ...validPostedContent };
@@ -645,15 +661,17 @@ async function update(contentId, postedContent, options = {}) {
     });
   }
 
-  updatedContent.tabcoins = await balance.getTotal(
+  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
-      balanceType: 'content:tabcoin',
       recipientId: updatedContent.id,
     },
     {
       transaction: options.transaction,
-    }
+    },
   );
+  updatedContent.tabcoins = tabcoinsCount.tabcoins;
+  updatedContent.tabcoins_credit = tabcoinsCount.tabcoins_credit;
+  updatedContent.tabcoins_debit = tabcoinsCount.tabcoins_debit;
 
   return updatedContent;
 
@@ -770,8 +788,8 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
   }
 }
 
-async function findTree(options) {
-  options.where = validateWhereSchema(options?.where);
+async function findTree(options = {}) {
+  options.where = validateWhereSchema(options.where);
   let values;
   if (options.where.parent_id) {
     values = [options.where.parent_id];
@@ -789,11 +807,15 @@ async function findTree(options) {
       SELECT
         *,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', contents.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
         contents
       INNER JOIN
         users ON owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(c.id) tabcoins_count ON true
       WHERE
         path @> ARRAY[$1]::uuid[] AND
         status = 'published';`;
@@ -809,24 +831,32 @@ async function findTree(options) {
       SELECT
         parent.*,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', parent.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
         parent
       INNER JOIN
         users ON parent.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(parent.id) tabcoins_count ON true
 
       UNION ALL
 
       SELECT
         c.*,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', c.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
         contents c
       INNER JOIN
         parent ON c.path @> ARRAY[parent.id]::uuid[]
       INNER JOIN
         users ON c.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(c.id) tabcoins_count ON true
       WHERE
         c.status = 'published';`;
 

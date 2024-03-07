@@ -22,7 +22,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
       const responseBody = await response.json();
 
@@ -55,7 +55,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
       const responseBody = await response.json();
 
@@ -96,7 +96,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       jest.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -112,8 +112,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'root-short-title-short-username-0-children.png'
-        )
+          'root-short-title-short-username-0-children.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
@@ -140,7 +140,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       jest.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -156,8 +156,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'root-long-title-long-username-0-children.png'
-        )
+          'root-long-title-long-username-0-children.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
@@ -198,7 +198,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -214,8 +214,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'root-long-title-long-username-2-children.png'
-        )
+          'root-long-title-long-username-2-children.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
@@ -248,7 +248,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       jest.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -264,8 +264,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-short-parent-title-short-body-0-children.png'
-        )
+          'child-short-parent-title-short-body-0-children.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
@@ -299,7 +299,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       jest.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -315,8 +315,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-long-parent-title-long-body-0-children.png'
-        )
+          'child-long-parent-title-long-body-0-children.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
@@ -356,7 +356,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       jest.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -372,8 +372,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-child-content-with-parent-title.png'
-        )
+          'child-child-content-with-parent-title.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
@@ -413,7 +413,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       jest.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
       );
 
       const responseBody = await response.buffer();
@@ -429,8 +429,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-child-content-without-parent-title.png'
-        )
+          'child-child-content-without-parent-title.png',
+        ),
       );
 
       expect(response.status).toEqual(200);
