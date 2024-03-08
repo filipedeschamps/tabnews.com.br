@@ -23,10 +23,17 @@
   "overrides": [
     {
       "files": ["tests/**"],
-      "plugins": ["jest"],
-      "extends": ["plugin:jest/recommended"],
+      "plugins": ["vitest"],
+      "extends": [
+        "plugin:vitest/recommended",
+        "plugin:vitest-globals/recommended"
+      ],
       "rules": {
-        "jest/no-conditional-in-test": "error"
+        "vitest/no-conditional-in-test": "error",
+        "vitest/no-disabled-tests": "warn"
+      },
+      "env": {
+        "vitest-globals/env": true
       }
     },
     {

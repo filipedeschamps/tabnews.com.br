@@ -4,22 +4,28 @@ import { ServiceError } from 'errors';
 import logger from 'infra/logger';
 import webserver from 'infra/webserver';
 
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn(),
+vi.mock('nodemailer', () => ({
+  default: {
+    createTransport: vi.fn(),
+  },
 }));
 
-jest.mock('infra/logger', () => ({
-  error: jest.fn(),
+vi.mock('infra/logger', () => ({
+  default: {
+    error: vi.fn(),
+  },
 }));
 
-jest.mock('infra/webserver', () => ({
-  isServerlessRuntime: false,
+vi.mock('infra/webserver', () => ({
+  default: {
+    isServerlessRuntime: false,
+  },
 }));
 
 describe('infra/email > send', () => {
   let send;
   let originalEnv;
-  const sendMail = jest.fn();
+  const sendMail = vi.fn();
 
   const defaultTestEnv = {
     EMAIL_SMTP_HOST: 'host.test',
@@ -51,7 +57,8 @@ describe('infra/email > send', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.resetModules();
+    vi.clearAllMocks();
     sendMail.mockResolvedValue();
     nodemailer.createTransport.mockReturnValue({ sendMail });
   });
@@ -61,17 +68,13 @@ describe('infra/email > send', () => {
   });
 
   describe('With single email service', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       process.env = {
         ...originalEnv,
         ...defaultTestEnv,
       };
 
-      jest.isolateModules(() => {
-        delete require.cache[require.resolve('infra/email')];
-        const { default: email } = require('infra/email');
-        send = email.send;
-      });
+      send = await import('infra/email').then((module) => module.default.send);
     });
 
     it('should send an email with the provided options', async () => {
@@ -125,18 +128,14 @@ describe('infra/email > send', () => {
       webserver.isServerlessRuntime = true;
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
       process.env = {
         ...originalEnv,
         ...defaultTestEnv,
         ...secondEmailServiceEnv,
       };
 
-      jest.isolateModules(() => {
-        delete require.cache[require.resolve('infra/email')];
-        const { default: email } = require('infra/email');
-        send = email.send;
-      });
+      send = await import('infra/email').then((module) => module.default.send);
     });
 
     it('should send an email with the provided options', async () => {

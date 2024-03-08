@@ -28,7 +28,7 @@ jobs:
           node-version: '18'
           cache: 'npm'
       - run: npm ci
-      - run: npm run dev & npx jest --runInBand
+      - run: npm run dev & npx vitest run
 
       - name: Stop containers
         if: always()

@@ -8,7 +8,7 @@ describe('prestige model', () => {
       const contentId = 'content_id';
       const transaction = null;
       const database = {
-        query: jest.fn().mockResolvedValue({ rows: [] }),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
 
       await prestige.getByContentId(contentId, { transaction, database });
@@ -24,7 +24,7 @@ describe('prestige model', () => {
 
     it('should return 0 and 0 for a content ID not found', async () => {
       const database = {
-        query: jest.fn().mockResolvedValue({ rows: [] }),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
 
       const result = await prestige.getByContentId('content_id', { database });
@@ -35,7 +35,7 @@ describe('prestige model', () => {
 
     it('should return the initial and total tabcoins for a "root" content', async () => {
       const database = {
-        query: jest.fn().mockResolvedValue({
+        query: vi.fn().mockResolvedValue({
           rows: [
             { type: 'create:content:text_root', amount: 2 },
             { type: 'other_type', amount: 1 },
@@ -53,7 +53,7 @@ describe('prestige model', () => {
 
     it('should return the initial and total tabcoins for a "child" content', async () => {
       const database = {
-        query: jest.fn().mockResolvedValue({
+        query: vi.fn().mockResolvedValue({
           rows: [
             { type: 'create:content:text_child', amount: 3 },
             { type: 'other_type', amount: -1 },
@@ -72,7 +72,7 @@ describe('prestige model', () => {
 
     it('should return initial equal to 0 if there is no initial tabcoin', async () => {
       const database = {
-        query: jest.fn().mockResolvedValue({
+        query: vi.fn().mockResolvedValue({
           rows: [
             { type: 'other_type', amount: 1 },
             { type: 'other_type', amount: -1 },
@@ -97,7 +97,7 @@ describe('prestige model', () => {
       const offset = 3;
       const transaction = null;
       const database = {
-        query: jest.fn().mockResolvedValue({ rows: [] }),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
 
       await prestige.getByUserId(userId, { timeOffset, isRoot, limit, transaction, database });
@@ -118,7 +118,7 @@ describe('prestige model', () => {
       const limit = 10;
       const transaction = null;
       const database = {
-        query: jest.fn().mockResolvedValue({ rows: [] }),
+        query: vi.fn().mockResolvedValue({ rows: [] }),
       };
 
       const result = await prestige.getByUserId(userId, { timeOffset, isRoot, limit, transaction, database });
@@ -133,7 +133,7 @@ describe('prestige model', () => {
       const limit = 10;
       const transaction = null;
       const database = {
-        query: jest.fn().mockResolvedValue({
+        query: vi.fn().mockResolvedValue({
           rows: [
             { tabcoins: 1 },
             { tabcoins: 2 },
@@ -161,7 +161,7 @@ describe('prestige model', () => {
       const limit = 10;
       const transaction = null;
       const database = {
-        query: jest.fn().mockResolvedValue({
+        query: vi.fn().mockResolvedValue({
           rows: [
             { tabcoins: 8 },
             { tabcoins: 7 },

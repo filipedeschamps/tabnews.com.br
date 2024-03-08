@@ -94,7 +94,7 @@ Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando 
 npm run test:watch:services
 ```
 
-Os logs do Serviço Web e Jest (dos testes) irão se misturar, então caso queira rodar eles de forma separada, abra dois terminais separados e rode o seguinte:
+Os logs do Serviço Web e Vitest (dos testes) irão se misturar, então caso queira rodar eles de forma separada, abra dois terminais separados e rode o seguinte:
 
 ```bash
 # Terminal 1
@@ -114,16 +114,16 @@ npm run test -- v1/users/ v1/status/
 npm run test -- registration-flow
 
 # Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/patch.test.js
-npm run test:watch:services -- username./patch
+npm run test:watch:services -- username]/patch
 
 # Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/[slug]/get.test.js
-npm run test:watch -- contents/.username./.slug./get
+npm run test:watch -- contents/[username]/[slug]/get
 ```
 
 Observações:
 
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
-- A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá usar `regex` para evitar usar esses caracteres, como por exemplo utilizar o `.` que representa o `match` com qualquer caractere. Isto foi utilizado nos exemplos acima para evitar os caracteres `[` e `]` dos arquivos.
+- A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar.
 
 ## Formas de contribuir
 
