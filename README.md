@@ -88,7 +88,7 @@ Há várias formas de rodar os testes dependendo do que você deseja fazer, mas 
 npm test
 ```
 
-Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o comando abaixo:
+Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o modo `watch` com o comando abaixo:
 
 ```bash
 npm run test:watch:services
@@ -104,17 +104,17 @@ npm run dev
 npm run test:watch
 ```
 
-Caso não queira dar `watch` em todos os testes e queira isolar arquivos específicos de teste, você pode utilizar uma expressão regular (`regex`) para dar `match` no que quiser. Não é necessário digitar o caminho inteiro para o arquivo, veja alguns exemplos abaixo:
+Caso não queira executar (ou dar `watch`) em todos os testes e queira isolar arquivos específicos de teste, você pode filtrar pelo caminho. Não é necessário digitar o caminho inteiro para o arquivo e você também pode fornecer mais de um caminho, veja alguns exemplos abaixo:
 
 ```bash
-# Rodar todos os testes de "users" da api "v1"
-npm run test:watch -- v1/users/
+# Rodar todos os testes de "users" e "status" da api "v1"
+npm run test -- v1/users/ v1/status/
 
 # Rodar apenas o arquivo tests/integration/api/v1/_use-cases/registration-flow.test.js
-npm run test:watch -- registration-flow
+npm run test -- registration-flow
 
 # Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/patch.test.js
-npm run test:watch -- username./patch
+npm run test:watch:services -- username./patch
 
 # Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/[slug]/get.test.js
 npm run test:watch -- contents/.username./.slug./get
