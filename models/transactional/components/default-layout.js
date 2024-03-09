@@ -55,6 +55,6 @@ const footer = {
   color: '#898989',
   fontSize: '12px',
   lineHeight: '22px',
-  marginTop: '12px',
+  marginTop: '24px',
   marginBottom: '4px',
 };
