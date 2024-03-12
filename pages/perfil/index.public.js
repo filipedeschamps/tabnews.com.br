@@ -257,6 +257,7 @@ function EditProfileForm() {
             value={description}
             isValid={errorObject?.key === 'description'}
             compact={true}
+            clobberPrefix={`${user?.username}-content-`}
           />
 
           {errorObject?.key === 'description' && errorObject.type === 'string.max' && (

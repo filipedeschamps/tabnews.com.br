@@ -14,8 +14,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
 
+import { anchorHeadersPlugin } from './plugins/anchor-headers';
 import { copyCodeToClipboardPlugin } from './plugins/copy-code-to-clipboard';
 import { externalLinksPlugin } from './plugins/external-links';
+import { removeDuplicateClobberPrefix } from './plugins/remove-duplicate-clobber-prefix';
 
 const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
@@ -29,25 +31,30 @@ const bytemdPluginBaseList = [
   copyCodeToClipboardPlugin(),
 ];
 
-function usePlugins({ areLinksTrusted }) {
+function usePlugins({ areLinksTrusted, clobberPrefix }) {
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
     const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
-    const pluginList = [...bytemdPluginBaseList, mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme })];
+    const pluginList = [
+      ...bytemdPluginBaseList,
+      mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme }),
+      anchorHeadersPlugin({ prefix: clobberPrefix ?? 'user-content-' }),
+      removeDuplicateClobberPrefix({ clobberPrefix }),
+    ];
 
     if (!areLinksTrusted) {
       pluginList.push(externalLinksPlugin());
     }
 
     return pluginList;
-  }, [areLinksTrusted, colorScheme]);
+  }, [areLinksTrusted, clobberPrefix, colorScheme]);
 
   return plugins;
 }
 
-export default function Viewer({ value: _value, areLinksTrusted, ...props }) {
-  const bytemdPluginList = usePlugins({ areLinksTrusted });
+export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, ...props }) {
+  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const [value, setValue] = useState(_value);
 
   useEffect(() => {
@@ -63,12 +70,20 @@ export default function Viewer({ value: _value, areLinksTrusted, ...props }) {
 
   useEffect(() => setValue(_value), [_value]);
 
-  return <ByteMdViewer sanitize={sanitize} plugins={bytemdPluginList} value={value} {...props} />;
+  return (
+    <ByteMdViewer
+      sanitize={sanitize({ clobberPrefix })}
+      remarkRehype={{ clobberPrefix }}
+      plugins={bytemdPluginList}
+      value={value}
+      {...props}
+    />
+  );
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
-export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, ...props }) {
-  const bytemdPluginList = usePlugins({ areLinksTrusted });
+export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, ...props }) {
+  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const editorMode = 'split'; // 'tab'
   const editorRef = useRef();
 
@@ -87,18 +102,28 @@ export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, ...props 
 
   return (
     <Box sx={{ width: '100%' }} ref={editorRef} className={isValid ? 'is-invalid' : ''}>
-      <ByteMdEditor plugins={bytemdPluginList} mode={editorMode} locale={byteMDLocale} sanitize={sanitize} {...props} />
+      <ByteMdEditor
+        plugins={bytemdPluginList}
+        mode={editorMode}
+        locale={byteMDLocale}
+        sanitize={sanitize({ clobberPrefix })}
+        remarkRehype={{ clobberPrefix }}
+        {...props}
+      />
       <EditorStyles compact={compact} mode={editorMode} />
       <EditorColors />
     </Box>
   );
 }
 
-function sanitize(defaultSchema) {
-  const schema = { ...defaultSchema };
-  schema.attributes['*'] = schema.attributes['*'].filter((attr) => !['className', 'target'].includes(attr));
+function sanitize(customSchema = {}) {
+  return (defaultSchema) => {
+    const schema = { ...defaultSchema, ...customSchema };
 
-  schema.attributes['*'].push(['className', /^hljs|^language-|^bytemd-mermaid$|^math/]);
+    schema.attributes['*'] = schema.attributes['*'].filter((attr) => !['className', 'target'].includes(attr));
 
-  return schema;
+    schema.attributes['*'].push(['className', /^hljs|^language-|^bytemd-mermaid$|^math/]);
+
+    return schema;
+  };
 }

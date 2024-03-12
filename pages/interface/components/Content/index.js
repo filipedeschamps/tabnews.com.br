@@ -181,6 +181,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   return (
     <Box
       as="article"
+      id={`${contentObject.owner_username}-${contentObject.slug}`}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -245,7 +246,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
         )}
       </Box>
       <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} />
+        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
       </Box>
       {contentObject.source_url && (
         <Box>
@@ -528,6 +529,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               onChange={handleChange}
               onKeyDown={onKeyDown}
               compact={!!contentObject?.parent_id}
+              clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
 
             {errorObject?.key === 'body' && (

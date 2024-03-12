@@ -220,7 +220,7 @@ export default function Page({ userFound: userFoundFallback }) {
               p: 3,
               overflow: 'hidden',
             }}>
-            <Viewer value={userFound.description} />
+            <Viewer value={userFound.description} clobberPrefix={`${userFound.username}-content-`} />
           </Box>
         </>
       )}
@@ -391,6 +391,7 @@ function DescriptionForm({
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
           compact
+          clobberPrefix={`${user.username}-content-`}
         />
       </FormControl>
 

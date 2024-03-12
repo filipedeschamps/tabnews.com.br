@@ -1,5 +1,4 @@
-import { Box, DefaultLayout, Heading, Link, Text, Viewer } from '@/TabNewsUI';
-import { LinkIcon } from '@/TabNewsUI/icons';
+import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const faqContent = [
@@ -128,35 +127,17 @@ Após o fechamento da falha, o TabNews se compromete em criar um Postmortem púb
 
   const tableOfContents = faqContent.map((faq) => `- [${faq.question}](#${faq.id})`).join('\n');
 
-  const introduction = `Esta página existe para responder as dúvidas mais frequentes sobre o TabNews.
+  const faqMarkdown = faqContent
+    .map(({ id, question, answer }) => `<h2 id="${id}">${question}</h2>\n\n${answer}`)
+    .join('\n');
 
-${tableOfContents}\n`;
+  const content = `${tableOfContents}\n\n${faqMarkdown}`;
 
   return (
     <DefaultLayout metadata={{ title: 'FAQ - Perguntas frequentes' }}>
       <Box sx={{ width: '100%' }}>
         <Heading as="h1">FAQ - Perguntas Frequentes</Heading>
-        <Viewer value={introduction} />
-        {faqContent.map((faq) => [
-          <Heading
-            key={`q-${faq.id}`}
-            id={faq.id}
-            sx={{
-              mt: 3,
-              mb: 3,
-              borderBottomStyle: 'solid',
-              borderBottomWidth: 1,
-              borderBottomColor: 'border.default',
-            }}>
-            <Link href={`#${faq.id}`} sx={{ color: 'fg.default' }}>
-              {faq.question}
-              <Text sx={{ ml: 2 }}>
-                <LinkIcon verticalAlign="middle" />
-              </Text>
-            </Link>
-          </Heading>,
-          <Viewer key={`a-${faq.id}`} areLinksTrusted value={faq.answer} />,
-        ])}
+        <Viewer areLinksTrusted value={content} clobberPrefix="" />
       </Box>
     </DefaultLayout>
   );
