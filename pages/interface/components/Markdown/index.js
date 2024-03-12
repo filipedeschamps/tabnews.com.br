@@ -54,6 +54,7 @@ function usePlugins({ areLinksTrusted, clobberPrefix }) {
 }
 
 export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, ...props }) {
+  clobberPrefix = clobberPrefix?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const [value, setValue] = useState(_value);
 
@@ -83,6 +84,7 @@ export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, 
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
 export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, ...props }) {
+  clobberPrefix = clobberPrefix?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const editorMode = 'split'; // 'tab'
   const editorRef = useRef();
