@@ -109,7 +109,7 @@ describe('GET /recentes/rss', () => {
             <guid>http://localhost:3000/${firstRootContent.owner_username}/${firstRootContent.slug}</guid>
             <pubDate>${new Date(firstRootContent.published_at).toUTCString()}</pubDate>
             <description><![CDATA[Corpo com HTML É importante lidar corretamente com o HTML, incluindo estilos especiais do GFM.]]></description>
-            <content:encoded><![CDATA[<div class="markdown-body"><h1 id="user-content-corpo-com-html">Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>, incluindo estilos <del>especiais</del> do <code>GFM</code>.</p></div>]]></content:encoded>
+            <content:encoded><![CDATA[<div class="markdown-body"><h1 id="${defaultUser.username}-content-corpo-com-html">Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>, incluindo estilos <del>especiais</del> do <code>GFM</code>.</p></div>]]></content:encoded>
         </item>
     </channel>
 </rss>`);

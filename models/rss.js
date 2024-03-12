@@ -34,7 +34,9 @@ function generateRss2(contentList) {
       id: contentUrl,
       link: contentUrl,
       description: removeMarkdown(contentObject.body, { maxLength: 190 }),
-      content: renderToStaticMarkup(<Viewer value={contentObject.body} />).replace(/[\r\n]/gm, ''),
+      content: renderToStaticMarkup(
+        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />,
+      ).replace(/[\r\n]/gm, ''),
       author: [
         {
           name: contentObject.owner_username,

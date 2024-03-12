@@ -128,7 +128,7 @@ Após o fechamento da falha, o TabNews se compromete em criar um Postmortem púb
   const tableOfContents = faqContent.map((faq) => `- [${faq.question}](#${faq.id})`).join('\n');
 
   const faqMarkdown = faqContent
-    .map(({ id, question, answer }) => `<h2 id="${id}">${question}</h2>\n\n` + `${answer}`)
+    .map(({ id, question, answer }) => `<h2 id="${id}">${question}</h2>\n\n${answer}`)
     .join('\n');
 
   const content = `${tableOfContents}\n\n${faqMarkdown}`;
