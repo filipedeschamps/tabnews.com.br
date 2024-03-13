@@ -8,6 +8,7 @@ import prestige from 'models/prestige';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import queries from 'queries/rankingQueries';
+import { isContentTooShort } from 'utils/content';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
@@ -589,8 +590,7 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     }
 
     // We should not credit if the content has little or no value.
-    // Expected 5 or more words with 5 or more characters.
-    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
+    if (isContentTooShort(newContent.body)) return;
   }
 
   if (userEarnings > 0) {
