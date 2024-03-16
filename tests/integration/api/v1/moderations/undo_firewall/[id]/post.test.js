@@ -232,7 +232,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const firewallUser = await orchestrator.createUser();
       await orchestrator.activateUser(firewallUser);
       const firewallUserSession = await orchestrator.createSession(firewallUser);
-      await orchestrator.addFeaturesToUser(firewallUser, ['undo:firewall']);
+      await orchestrator.addFeaturesToUser(firewallUser, ['read:firewall', 'undo:firewall']);
 
       // Create users
       const ignoredUser = await orchestrator.createUser();
@@ -293,32 +293,56 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toEqual({
-        users: [
+        affected: {
+          users: [
+            {
+              created_at: user1.created_at.toISOString(),
+              description: user1.description,
+              features: responseBody.affected.users[0].features,
+              id: user1.id,
+              tabcash: user1.tabcash,
+              tabcoins: user1.tabcoins,
+              updated_at: responseBody.affected.users[0].updated_at,
+              username: user1.username,
+            },
+            {
+              created_at: user2.created_at.toISOString(),
+              description: user2.description,
+              features: responseBody.affected.users[1].features,
+              id: user2.id,
+              tabcash: user2.tabcash,
+              tabcoins: user2.tabcoins,
+              updated_at: responseBody.affected.users[1].updated_at,
+              username: user2.username,
+            },
+          ],
+        },
+        events: [
           {
-            created_at: user1.created_at.toISOString(),
-            description: user1.description,
-            features: responseBody.users[0].features,
-            id: user1.id,
-            tabcash: user1.tabcash,
-            tabcoins: user1.tabcoins,
-            updated_at: responseBody.users[0].updated_at,
-            username: user1.username,
+            created_at: firewallEvent.created_at.toISOString(),
+            id: firewallEvent.id,
+            metadata: firewallEvent.metadata,
+            originator_user_id: firewallEvent.originator_user_id,
+            type: firewallEvent.type,
           },
           {
-            created_at: user2.created_at.toISOString(),
-            description: user2.description,
-            features: responseBody.users[1].features,
-            id: user2.id,
-            tabcash: user2.tabcash,
-            tabcoins: user2.tabcoins,
-            updated_at: responseBody.users[1].updated_at,
-            username: user2.username,
+            created_at: responseBody.events[1].created_at,
+            id: responseBody.events[1].id,
+            metadata: {
+              original_event_id: firewallEvent.id,
+              users: firewallEvent.metadata.users,
+            },
+            originator_user_id: firewallUser.id,
+            type: 'moderation:unblock_users',
           },
         ],
       });
 
-      const user1AfterUndoResponse = responseBody.users[0];
-      const user2AfterUndoResponse = responseBody.users[1];
+      const createdEventResponse = responseBody.events[1];
+      expect(Date.parse(createdEventResponse.created_at)).not.toEqual(NaN);
+
+      const user1AfterUndoResponse = responseBody.affected.users[0];
+      const user2AfterUndoResponse = responseBody.affected.users[1];
 
       expect(Date.parse(user1AfterUndoResponse.updated_at)).not.toEqual(NaN);
       expect(new Date(user1AfterUndoResponse.updated_at)).not.toEqual(user1.updated_at);
@@ -365,6 +389,60 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
         updated_at: new Date(user2AfterUndoResponse.updated_at),
       });
       expect(user2AfterUndo.features.sort()).toEqual(user2AfterUndoResponse.features.sort());
+    });
+
+    test('With a "firewall:block_users" event without "read:firewall" feature', async () => {
+      const firewallUser = await orchestrator.createUser();
+      await orchestrator.activateUser(firewallUser);
+      const firewallUserSession = await orchestrator.createSession(firewallUser);
+      await orchestrator.addFeaturesToUser(firewallUser, ['undo:firewall']);
+
+      // Create users
+      await createUserRequest({
+        username: 'firstUser',
+        email: 'first-user@gmail.com',
+      });
+
+      await createUserRequest({
+        username: 'secondUser',
+        email: 'second-user@gmail.com',
+      });
+
+      const user3Response = await createUserRequest({
+        username: 'thirdUser',
+        email: 'third-user@gmail.com',
+      });
+
+      expect(user3Response.status_code).toEqual(429);
+
+      // Check firewall side-effect
+      let allEvents = await event.findAll();
+      const firewallEvent = allEvents.at(-1);
+
+      expect(firewallEvent.type).toEqual('firewall:block_users');
+
+      // Undo firewall side-effect
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/moderations/undo_firewall/${firewallEvent.id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${firewallUserSession.token}`,
+          },
+        },
+      );
+
+      const responseBody = await response.json();
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toEqual({});
+
+      // Check "undo" event
+      allEvents = await event.findAll();
+      const undoEvent = allEvents.at(-1);
+      expect(undoEvent.type).toEqual('moderation:unblock_users');
     });
 
     test('Undo the same event twice', async () => {
@@ -442,7 +520,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const firewallUser = await orchestrator.createUser();
       await orchestrator.activateUser(firewallUser);
       const firewallUserSession = await orchestrator.createSession(firewallUser);
-      await orchestrator.addFeaturesToUser(firewallUser, ['undo:firewall']);
+      await orchestrator.addFeaturesToUser(firewallUser, ['read:firewall', 'undo:firewall']);
 
       // Create user and contents
       let user1 = await orchestrator.createUser();
@@ -491,52 +569,76 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toEqual({
-        contents: [
+        affected: {
+          contents: [
+            {
+              body: content1.body,
+              created_at: content1.created_at,
+              deleted_at: content1.deleted_at,
+              id: content1.id,
+              owner_id: content1.owner_id,
+              parent_id: content1.parent_id,
+              published_at: content1.published_at,
+              slug: content1.slug,
+              source_url: content1.source_url,
+              status: content1.status,
+              title: content1.title,
+              updated_at: responseBody.affected.contents[0].updated_at,
+            },
+            {
+              body: content2.body,
+              created_at: content2.created_at,
+              deleted_at: content2.deleted_at,
+              id: content2.id,
+              owner_id: content2.owner_id,
+              parent_id: content2.parent_id,
+              published_at: content2.published_at,
+              slug: content2.slug,
+              source_url: content2.source_url,
+              status: content2.status,
+              title: content2.title,
+              updated_at: responseBody.affected.contents[1].updated_at,
+            },
+          ],
+          users: [
+            {
+              created_at: user1.created_at.toISOString(),
+              description: user1.description,
+              features: user1.features,
+              id: user1.id,
+              tabcash: 0,
+              tabcoins: 0,
+              updated_at: user1.updated_at.toISOString(),
+              username: user1.username,
+            },
+          ],
+        },
+        events: [
           {
-            body: content1.body,
-            created_at: content1.created_at,
-            deleted_at: content1.deleted_at,
-            id: content1.id,
-            owner_id: content1.owner_id,
-            parent_id: content1.parent_id,
-            published_at: content1.published_at,
-            slug: content1.slug,
-            source_url: content1.source_url,
-            status: content1.status,
-            title: content1.title,
-            updated_at: responseBody.contents[0].updated_at,
+            created_at: firewallEvent.created_at.toISOString(),
+            id: firewallEvent.id,
+            metadata: firewallEvent.metadata,
+            originator_user_id: firewallEvent.originator_user_id,
+            type: firewallEvent.type,
           },
           {
-            body: content2.body,
-            created_at: content2.created_at,
-            deleted_at: content2.deleted_at,
-            id: content2.id,
-            owner_id: content2.owner_id,
-            parent_id: content2.parent_id,
-            published_at: content2.published_at,
-            slug: content2.slug,
-            source_url: content2.source_url,
-            status: content2.status,
-            title: content2.title,
-            updated_at: responseBody.contents[1].updated_at,
-          },
-        ],
-        users: [
-          {
-            created_at: user1.created_at.toISOString(),
-            description: user1.description,
-            features: user1.features,
-            id: user1.id,
-            tabcash: 0,
-            tabcoins: 0,
-            updated_at: user1.updated_at.toISOString(),
-            username: user1.username,
+            created_at: responseBody.events[1].created_at,
+            id: responseBody.events[1].id,
+            metadata: {
+              original_event_id: firewallEvent.id,
+              contents: firewallEvent.metadata.contents,
+            },
+            originator_user_id: firewallUser.id,
+            type: 'moderation:unblock_contents:text_root',
           },
         ],
       });
 
-      const content1AfterUndoResponse = responseBody.contents[0];
-      const content2AfterUndoResponse = responseBody.contents[1];
+      const createdEventResponse = responseBody.events[1];
+      expect(Date.parse(createdEventResponse.created_at)).not.toEqual(NaN);
+
+      const content1AfterUndoResponse = responseBody.affected.contents[0];
+      const content2AfterUndoResponse = responseBody.affected.contents[1];
 
       expect(Date.parse(content1AfterUndoResponse.updated_at)).not.toEqual(NaN);
       expect(new Date(content1AfterUndoResponse.updated_at)).not.toEqual(content1.updated_at);
@@ -589,7 +691,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const firewallUser = await orchestrator.createUser();
       await orchestrator.activateUser(firewallUser);
       const firewallUserSession = await orchestrator.createSession(firewallUser);
-      await orchestrator.addFeaturesToUser(firewallUser, ['undo:firewall']);
+      await orchestrator.addFeaturesToUser(firewallUser, ['read:firewall', 'undo:firewall']);
 
       // Create users and contents
       const user1 = await orchestrator.createUser();
@@ -647,56 +749,77 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toEqual({
-        contents: [
+        affected: {
+          contents: [
+            {
+              body: content1.body,
+              created_at: content1.created_at,
+              deleted_at: content1.deleted_at,
+              id: content1.id,
+              owner_id: content1.owner_id,
+              parent_id: content1.parent_id,
+              published_at: content1.published_at,
+              slug: content1.slug,
+              source_url: content1.source_url,
+              status: content1.status,
+              title: content1.title,
+              updated_at: responseBody.affected.contents[0].updated_at,
+            },
+            {
+              body: content2.body,
+              created_at: content2.created_at,
+              deleted_at: content2.deleted_at,
+              id: content2.id,
+              owner_id: content2.owner_id,
+              parent_id: content2.parent_id,
+              published_at: content2.published_at,
+              slug: content2.slug,
+              source_url: content2.source_url,
+              status: content2.status,
+              title: content2.title,
+              updated_at: responseBody.affected.contents[1].updated_at,
+            },
+          ],
+          users: [
+            {
+              created_at: user1AfterRate.created_at.toISOString(),
+              description: user1AfterRate.description,
+              features: user1AfterRate.features,
+              id: user1AfterRate.id,
+              tabcash: user1AfterRate.tabcash,
+              tabcoins: user1AfterRate.tabcoins,
+              updated_at: user1AfterRate.updated_at.toISOString(),
+              username: user1AfterRate.username,
+            },
+            {
+              created_at: user2AfterRate.created_at.toISOString(),
+              description: user2AfterRate.description,
+              features: user2AfterRate.features,
+              id: user2AfterRate.id,
+              tabcash: user2AfterRate.tabcash,
+              tabcoins: user2AfterRate.tabcoins,
+              updated_at: user2AfterRate.updated_at.toISOString(),
+              username: user2AfterRate.username,
+            },
+          ],
+        },
+        events: [
           {
-            body: content1.body,
-            created_at: content1.created_at,
-            deleted_at: content1.deleted_at,
-            id: content1.id,
-            owner_id: content1.owner_id,
-            parent_id: content1.parent_id,
-            published_at: content1.published_at,
-            slug: content1.slug,
-            source_url: content1.source_url,
-            status: content1.status,
-            title: content1.title,
-            updated_at: responseBody.contents[0].updated_at,
+            created_at: firewallEvent.created_at.toISOString(),
+            id: firewallEvent.id,
+            metadata: firewallEvent.metadata,
+            originator_user_id: firewallEvent.originator_user_id,
+            type: firewallEvent.type,
           },
           {
-            body: content2.body,
-            created_at: content2.created_at,
-            deleted_at: content2.deleted_at,
-            id: content2.id,
-            owner_id: content2.owner_id,
-            parent_id: content2.parent_id,
-            published_at: content2.published_at,
-            slug: content2.slug,
-            source_url: content2.source_url,
-            status: content2.status,
-            title: content2.title,
-            updated_at: responseBody.contents[1].updated_at,
-          },
-        ],
-        users: [
-          {
-            created_at: user1AfterRate.created_at.toISOString(),
-            description: user1AfterRate.description,
-            features: user1AfterRate.features,
-            id: user1AfterRate.id,
-            tabcash: user1AfterRate.tabcash,
-            tabcoins: user1AfterRate.tabcoins,
-            updated_at: user1AfterRate.updated_at.toISOString(),
-            username: user1AfterRate.username,
-          },
-          {
-            created_at: user2AfterRate.created_at.toISOString(),
-            description: user2AfterRate.description,
-            features: user2AfterRate.features,
-            id: user2AfterRate.id,
-            tabcash: user2AfterRate.tabcash,
-            tabcoins: user2AfterRate.tabcoins,
-            updated_at: user2AfterRate.updated_at.toISOString(),
-            username: user2AfterRate.username,
+            created_at: responseBody.events[1].created_at,
+            id: responseBody.events[1].id,
+            metadata: {
+              original_event_id: firewallEvent.id,
+              contents: firewallEvent.metadata.contents,
+            },
+            originator_user_id: firewallUser.id,
+            type: 'moderation:unblock_contents:text_root',
           },
         ],
       });
@@ -739,7 +862,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const firewallUser = await orchestrator.createUser();
       await orchestrator.activateUser(firewallUser);
       const firewallUserSession = await orchestrator.createSession(firewallUser);
-      await orchestrator.addFeaturesToUser(firewallUser, ['undo:firewall']);
+      await orchestrator.addFeaturesToUser(firewallUser, ['read:firewall', 'undo:firewall']);
 
       // Create user and contents
       let user1 = await orchestrator.createUser();
@@ -790,52 +913,76 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toEqual({
-        contents: [
+        affected: {
+          contents: [
+            {
+              body: content1.body,
+              created_at: content1.created_at,
+              deleted_at: content1.deleted_at,
+              id: content1.id,
+              owner_id: content1.owner_id,
+              parent_id: content1.parent_id,
+              published_at: content1.published_at,
+              slug: content1.slug,
+              source_url: content1.source_url,
+              status: content1.status,
+              title: content1.title,
+              updated_at: responseBody.affected.contents[0].updated_at,
+            },
+            {
+              body: content2.body,
+              created_at: content2.created_at,
+              deleted_at: content2.deleted_at,
+              id: content2.id,
+              owner_id: content2.owner_id,
+              parent_id: content2.parent_id,
+              published_at: content2.published_at,
+              slug: content2.slug,
+              source_url: content2.source_url,
+              status: content2.status,
+              title: content2.title,
+              updated_at: responseBody.affected.contents[1].updated_at,
+            },
+          ],
+          users: [
+            {
+              created_at: user1.created_at.toISOString(),
+              description: user1.description,
+              features: user1.features,
+              id: user1.id,
+              tabcash: 0,
+              tabcoins: 0,
+              updated_at: user1.updated_at.toISOString(),
+              username: user1.username,
+            },
+          ],
+        },
+        events: [
           {
-            body: content1.body,
-            created_at: content1.created_at,
-            deleted_at: content1.deleted_at,
-            id: content1.id,
-            owner_id: content1.owner_id,
-            parent_id: content1.parent_id,
-            published_at: content1.published_at,
-            slug: content1.slug,
-            source_url: content1.source_url,
-            status: content1.status,
-            title: content1.title,
-            updated_at: responseBody.contents[0].updated_at,
+            created_at: firewallEvent.created_at.toISOString(),
+            id: firewallEvent.id,
+            metadata: firewallEvent.metadata,
+            originator_user_id: firewallEvent.originator_user_id,
+            type: firewallEvent.type,
           },
           {
-            body: content2.body,
-            created_at: content2.created_at,
-            deleted_at: content2.deleted_at,
-            id: content2.id,
-            owner_id: content2.owner_id,
-            parent_id: content2.parent_id,
-            published_at: content2.published_at,
-            slug: content2.slug,
-            source_url: content2.source_url,
-            status: content2.status,
-            title: content2.title,
-            updated_at: responseBody.contents[1].updated_at,
-          },
-        ],
-        users: [
-          {
-            created_at: user1.created_at.toISOString(),
-            description: user1.description,
-            features: user1.features,
-            id: user1.id,
-            tabcash: 0,
-            tabcoins: 0,
-            updated_at: user1.updated_at.toISOString(),
-            username: user1.username,
+            created_at: responseBody.events[1].created_at,
+            id: responseBody.events[1].id,
+            metadata: {
+              original_event_id: firewallEvent.id,
+              contents: firewallEvent.metadata.contents,
+            },
+            originator_user_id: firewallUser.id,
+            type: 'moderation:unblock_contents:text_child',
           },
         ],
       });
 
-      const content1AfterUndoResponse = responseBody.contents[0];
-      const content2AfterUndoResponse = responseBody.contents[1];
+      const createdEventResponse = responseBody.events[1];
+      expect(Date.parse(createdEventResponse.created_at)).not.toEqual(NaN);
+
+      const content1AfterUndoResponse = responseBody.affected.contents[0];
+      const content2AfterUndoResponse = responseBody.affected.contents[1];
 
       expect(Date.parse(content1AfterUndoResponse.updated_at)).not.toEqual(NaN);
       expect(new Date(content1AfterUndoResponse.updated_at)).not.toEqual(content1.updated_at);
@@ -888,7 +1035,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const firewallUser = await orchestrator.createUser();
       await orchestrator.activateUser(firewallUser);
       const firewallUserSession = await orchestrator.createSession(firewallUser);
-      await orchestrator.addFeaturesToUser(firewallUser, ['undo:firewall']);
+      await orchestrator.addFeaturesToUser(firewallUser, ['read:firewall', 'undo:firewall']);
 
       // Create user and contents
       let user1 = await orchestrator.createUser();
@@ -939,32 +1086,53 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       expect(response.status).toEqual(200);
 
       expect(responseBody).toEqual({
-        contents: [
+        affected: {
+          contents: [
+            {
+              body: content1.body,
+              created_at: content1.created_at,
+              deleted_at: content1.deleted_at,
+              id: content1.id,
+              owner_id: content1.owner_id,
+              parent_id: content1.parent_id,
+              published_at: content1.published_at,
+              slug: content1.slug,
+              source_url: content1.source_url,
+              status: content1.status,
+              title: content1.title,
+              updated_at: responseBody.affected.contents[0].updated_at,
+            },
+          ],
+          users: [
+            {
+              created_at: user1.created_at.toISOString(),
+              description: user1.description,
+              features: user1.features,
+              id: user1.id,
+              tabcash: 0,
+              tabcoins: 0,
+              updated_at: user1.updated_at.toISOString(),
+              username: user1.username,
+            },
+          ],
+        },
+        events: [
           {
-            body: content1.body,
-            created_at: content1.created_at,
-            deleted_at: content1.deleted_at,
-            id: content1.id,
-            owner_id: content1.owner_id,
-            parent_id: content1.parent_id,
-            published_at: content1.published_at,
-            slug: content1.slug,
-            source_url: content1.source_url,
-            status: content1.status,
-            title: content1.title,
-            updated_at: responseBody.contents[0].updated_at,
+            created_at: firewallEvent.created_at.toISOString(),
+            id: firewallEvent.id,
+            metadata: firewallEvent.metadata,
+            originator_user_id: firewallEvent.originator_user_id,
+            type: firewallEvent.type,
           },
-        ],
-        users: [
           {
-            created_at: user1.created_at.toISOString(),
-            description: user1.description,
-            features: user1.features,
-            id: user1.id,
-            tabcash: 0,
-            tabcoins: 0,
-            updated_at: user1.updated_at.toISOString(),
-            username: user1.username,
+            created_at: responseBody.events[1].created_at,
+            id: responseBody.events[1].id,
+            metadata: {
+              original_event_id: firewallEvent.id,
+              contents: firewallEvent.metadata.contents,
+            },
+            originator_user_id: firewallUser.id,
+            type: 'moderation:unblock_contents:text_child',
           },
         ],
       });

@@ -15,24 +15,24 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .use(authentication.injectAnonymousOrUser)
-  .post(cacheControl.noCache, postValidationHandler, authorization.canRequest('undo:firewall'), postHandler);
+  .get(cacheControl.swrMaxAge(300), getValidationHandler, authorization.canRequest('read:firewall'), getHandler);
 
-function postValidationHandler(request, response, next) {
-  const cleanQueryValues = validator(request.query, {
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
     id: 'required',
   });
 
-  request.query = cleanQueryValues;
+  request.query = cleanValues;
 
   next();
 }
 
-async function postHandler(request, response) {
-  const eventId = request.query.id;
+async function getHandler(request, response) {
+  const userTryingToGet = request.context.user;
 
-  const data = await firewall.undoAllFirewallSideEffects(request.context, eventId);
+  const data = await firewall.findByEventId(request.query.id);
 
-  const secureOutputValues = authorization.filterOutput(request.context.user, 'read:firewall', data);
+  const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:firewall', data);
 
   return response.status(200).json(secureOutputValues);
 }
