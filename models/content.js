@@ -185,6 +185,11 @@ async function findAll(values = {}, options = {}) {
         }
 
         globalIndex += 1;
+
+        if (columnName === 'ids') {
+          return `contents.id = ANY ($${globalIndex})`;
+        }
+
         return `contents.${columnName} = $${globalIndex}`;
       }
     }, '');

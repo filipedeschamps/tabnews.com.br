@@ -1,6 +1,5 @@
 import { NotFoundError, TooManyRequestsError, ValidationError } from 'errors';
 import database from 'infra/database.js';
-import authorization from 'models/authorization.js';
 import balance from 'models/balance.js';
 import content from 'models/content.js';
 import event from 'models/event.js';
@@ -288,30 +287,30 @@ async function undoAllFirewallSideEffects(context, eventId) {
       },
     );
 
+    const events = [firewallEvent, createdEvent];
+
     if (firewallEvent.type === 'firewall:block_users') {
       const affectedUsers = await unblockUsers(firewallEvent, {
         transaction: transaction,
       });
 
-      const secureOutputValues = authorization.filterOutput(context.user, 'read:user:list', affectedUsers);
-
       await transaction.query('COMMIT');
       return {
-        users: secureOutputValues,
+        affected: {
+          users: affectedUsers,
+        },
+        events: events,
       };
     }
 
-    const affectedData = await unblockContents(createdEvent, firewallEvent, {
+    const affected = await unblockContents(createdEvent, firewallEvent, {
       transaction: transaction,
     });
 
-    const secureOutputContents = authorization.filterOutput(context.user, 'read:content:list', affectedData.contents);
-    const secureOutputUsers = authorization.filterOutput(context.user, 'read:user:list', affectedData.users);
-
     await transaction.query('COMMIT');
     return {
-      contents: secureOutputContents,
-      users: secureOutputUsers,
+      affected: affected,
+      events: events,
     };
   } catch (error) {
     await transaction.query('ROLLBACK');
@@ -391,7 +390,85 @@ async function unblockContents(createdEvent, firewallEvent, options) {
   };
 }
 
+async function findByEventId(eventId) {
+  const foundOriginalEvent = await event.findOneById(eventId);
+
+  const firewallEvents = [
+    'firewall:block_contents:text_child',
+    'firewall:block_contents:text_root',
+    'firewall:block_users',
+  ];
+
+  if (!foundOriginalEvent || !firewallEvents.includes(foundOriginalEvent.type)) {
+    throw new NotFoundError({
+      message: `O id "${eventId}" não foi encontrado no sistema.`,
+      action: 'Verifique se o "id" está digitado corretamente.',
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:FIREWALL:FIND_BY_EVENT_ID:NOT_FOUND',
+      key: 'id',
+    });
+  }
+
+  const reversedEventTypes = [
+    'moderation:unblock_users',
+    'moderation:unblock_contents:text_root',
+    'moderation:unblock_contents:text_child',
+  ];
+
+  const foundReversedEvent = await event.findOneByOriginalEventId(eventId, {
+    type: reversedEventTypes,
+  });
+
+  const events = [foundOriginalEvent];
+
+  if (foundReversedEvent) {
+    events.push(foundReversedEvent);
+  }
+  const affectedData = await getAffectedData(events.at(-1));
+
+  return {
+    affected: affectedData,
+    events: events,
+  };
+}
+
+async function getAffectedData(event) {
+  const usersEventTypes = ['firewall:block_users', 'moderation:unblock_users'];
+  if (usersEventTypes.includes(event.type)) {
+    const users = await user.findAll({
+      where: {
+        id: event.metadata.users,
+      },
+    });
+    return { users };
+  }
+
+  const contents = await content.findAll({
+    where: {
+      ids: event.metadata.contents,
+    },
+  });
+
+  const ownersIds = new Set();
+
+  for (const content of contents) {
+    ownersIds.add(content.owner_id);
+  }
+
+  const users = await user.findAll({
+    where: {
+      id: Array.from(ownersIds),
+    },
+  });
+
+  return {
+    contents: contents,
+    users: users,
+  };
+}
+
 export default Object.freeze({
   canRequest,
+  findByEventId,
   undoAllFirewallSideEffects,
 });

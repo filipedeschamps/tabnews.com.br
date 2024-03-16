@@ -171,6 +171,64 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(allEmails).toHaveLength(0);
       });
 
+      test('Spamming valid "root" contents deleted before the firewall catch', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
+
+        const { response: response1, responseBody: response1Body } = await createContentViaApi(contentsRequestBuilder);
+        const { response: response2, responseBody: response2Body } = await createContentViaApi(contentsRequestBuilder);
+
+        expect(response1.status).toBe(201);
+        expect(response2.status).toBe(201);
+
+        await orchestrator.updateContent(response1Body.id, { status: 'deleted' });
+        await orchestrator.updateContent(response2Body.id, { status: 'deleted' });
+
+        const { response: request3, responseBody: response3Body } = await createContentViaApi(contentsRequestBuilder);
+
+        expect(request3.status).toBe(429);
+
+        expect(response3Body).toStrictEqual({
+          name: 'TooManyRequestsError',
+          message:
+            'Identificamos a criação de muitas publicações em um curto período, então publicações criadas recentemente podem ter sido removidas.',
+          action: 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
+          status_code: 429,
+          error_id: response3Body.error_id,
+          request_id: response3Body.request_id,
+        });
+
+        const content1 = await content.findOne({
+          where: {
+            id: response1Body.id,
+          },
+        });
+
+        const content2 = await content.findOne({
+          where: {
+            id: response2Body.id,
+          },
+        });
+
+        const content3 = await content.findOne({
+          where: {
+            slug: 'titulo-3',
+          },
+        });
+
+        expect(content1.status).toEqual('deleted');
+        expect(content2.status).toEqual('deleted');
+        expect(content3).toBeUndefined();
+
+        const events = await event.findAll();
+        const lastEvent = events.at(-1);
+
+        expect(lastEvent.metadata).toStrictEqual({
+          from_rule: 'create:content:text_root',
+          contents: [],
+        });
+      });
+
       test('Spamming valid "root" contents with TabCoins earnings', async () => {
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
         const defaultUser = await contentsRequestBuilder.buildUser();
@@ -354,7 +412,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const email = allEmails[0];
 
         expect(allEmails).toHaveLength(1);
-        expect(email.recipients).toEqual([`<${user1.email}>`]);
+        expect(email.recipients).toStrictEqual([`<${user1.email}>`]);
         expect(email.subject).toEqual('Um conteúdo seu foi removido');
         expect(email.text).toContain(user1.username);
         expect(email.html).toContain(user1.username);
@@ -735,8 +793,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));
         const user2Email = allEmails.find((email) => email.recipients.includes(`<${user2.email}>`));
 
-        expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
-        expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
+        expect(user1Email.recipients).toStrictEqual([`<${user1.email}>`]);
+        expect(user2Email.recipients).toStrictEqual([`<${user2.email}>`]);
 
         expect(user1Email.subject).toEqual('Um conteúdo seu foi removido');
         expect(user2Email.subject).toEqual('Um conteúdo seu foi removido');

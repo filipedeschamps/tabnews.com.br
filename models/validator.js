@@ -3,6 +3,7 @@ import Joi from 'joi';
 import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
 import removeMarkdown from 'models/remove-markdown';
+import availableFeatures from 'models/user-features';
 
 const MAX_INTEGER = 2147483647;
 const MIN_INTEGER = -2147483648;
@@ -18,6 +19,7 @@ const defaultSchema = Joi.object()
     'any.only': '{#label} deve possuir um dos seguintes valores: {#valids}.',
     'any.required': '{#label} é um campo obrigatório.',
     'array.base': '{#label} deve ser do tipo Array.',
+    'array.min': `{#label} deve possuir ao menos {#limit} {if(#limit==1, "elemento", "elementos")}.`,
     'boolean.base': '{#label} deve ser do tipo Boolean.',
     'date.base': '{#label} deve conter uma data válida.',
     'markdown.empty': 'Markdown deve conter algum texto.',
@@ -107,6 +109,12 @@ const schemas = {
     });
   },
 
+  ids: function () {
+    return Joi.object({
+      ids: Joi.array().items(schemas.id().extract('id')),
+    });
+  },
+
   username: function () {
     return Joi.object({
       username: Joi.string()
@@ -161,6 +169,17 @@ const schemas = {
         .max(5000)
         .allow('')
         .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
+  features: function () {
+    return Joi.object({
+      features: Joi.array()
+        .when('$required.features', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .items(Joi.string().valid(...availableFeatures))
+        .messages({
+          'any.only': '{#label} não aceita o valor "{#value}".',
+        }),
     });
   },
 
@@ -388,6 +407,7 @@ const schemas = {
 
     for (const key of [
       'id',
+      'ids',
       'parent_id',
       'slug',
       'title',
@@ -522,6 +542,8 @@ const schemas = {
 
   event: function () {
     return Joi.object({
+      id: schemas.id().extract('id').optional(),
+      created_at: schemas.created_at().extract('created_at').optional(),
       type: Joi.string()
         .valid(
           'create:user',
@@ -544,8 +566,8 @@ const schemas = {
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',
         }),
-      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional(),
-      originatorIp: Joi.string()
+      originator_user_id: Joi.string().allow(null).guid({ version: 'uuidv4' }).optional(),
+      originator_ip: Joi.string()
         .ip({
           version: ['ipv4', 'ipv6'],
         })
@@ -625,6 +647,28 @@ const schemas = {
         },
       ]),
     });
+  },
+
+  firewall_event: function () {
+    return Joi.object({
+      affected: Joi.object({
+        contents: Joi.array().items(schemas.content().optional()),
+        users: Joi.array().items(schemas.user()).required(),
+      }),
+      events: Joi.array().items(schemas.event()).min(1).required(),
+    });
+  },
+
+  user: function () {
+    return Joi.object()
+      .concat(schemas.id())
+      .concat(schemas.created_at())
+      .concat(schemas.updated_at())
+      .concat(schemas.username())
+      .concat(schemas.description())
+      .concat(schemas.features())
+      .concat(schemas.tabcoins())
+      .concat(schemas.tabcash());
   },
 
   tabcoins: function () {
