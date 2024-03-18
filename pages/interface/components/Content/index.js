@@ -496,7 +496,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
 
           {!contentObject?.parent_id && (
-            <FormControl id="title" required>
+            <FormControl id="title">
               <FormControl.Label>Título</FormControl.Label>
               <TextInput
                 contrast
@@ -521,7 +521,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             </FormControl>
           )}
 
-          <FormControl id="body" required={!contentObject?.parent_id}>
+          <FormControl id="body">
             <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
             <Editor
               isValid={errorObject?.key === 'body'}
@@ -539,7 +539,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label>Fonte</FormControl.Label>
+              <FormControl.Label>
+                Fonte
+                <Text sx={{ fontSize: 'small', color: 'fg.muted', ml: '4px' }}>(Opcional)</Text>
+              </FormControl.Label>
               <TextInput
                 contrast
                 sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
@@ -559,10 +562,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
             </FormControl>
-          )}
-
-          {!contentObject?.parent_id && (
-            <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
