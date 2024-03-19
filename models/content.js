@@ -4,6 +4,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { ForbiddenError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
+import contentTabcoin from 'models/content-tabcoin.js';
 import prestige from 'models/prestige';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
@@ -120,7 +121,7 @@ async function findAll(values = {}, options = {}) {
         contents.path,
         users.username as owner_username,
         content_window.total_rows,
-        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_tabcoins as tabcoins,
         tabcoins_count.total_credit as tabcoins_credit,
         tabcoins_count.total_debit as tabcoins_debit,
         (
@@ -135,7 +136,7 @@ async function findAll(values = {}, options = {}) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
-      LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
+      LEFT JOIN LATERAL get_content_tabcoins_credit_debit(contents.id) tabcoins_count ON true
     `;
   }
 
@@ -308,9 +309,9 @@ async function create(postedContent, options = {}) {
     transaction: options.transaction,
   });
 
-  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
+  const tabcoinsCount = await contentTabcoin.getTabcoinsCreditDebit(
     {
-      recipientId: newContent.id,
+      contentId: newContent.id,
     },
     {
       transaction: options.transaction,
@@ -609,10 +610,10 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   }
 
   if (contentEarnings > 0) {
-    await balance.create(
+    await contentTabcoin.create(
       {
-        balanceType: 'content:tabcoin:initial',
-        recipientId: newContent.id,
+        balanceType: 'initial',
+        contentId: newContent.id,
         amount: contentEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
@@ -661,9 +662,9 @@ async function update(contentId, postedContent, options = {}) {
     });
   }
 
-  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
+  const tabcoinsCount = await contentTabcoin.getTabcoinsCreditDebit(
     {
-      recipientId: updatedContent.id,
+      contentId: updatedContent.id,
     },
     {
       transaction: options.transaction,
@@ -807,7 +808,7 @@ async function findTree(options = {}) {
       SELECT
         *,
         users.username as owner_username,
-        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_tabcoins as tabcoins,
         tabcoins_count.total_credit as tabcoins_credit,
         tabcoins_count.total_debit as tabcoins_debit
       FROM
@@ -815,7 +816,7 @@ async function findTree(options = {}) {
       INNER JOIN
         users ON owner_id = users.id
       LEFT JOIN LATERAL
-        get_content_balance_credit_debit(c.id) tabcoins_count ON true
+        get_content_tabcoins_credit_debit(c.id) tabcoins_count ON true
       WHERE
         path @> ARRAY[$1]::uuid[] AND
         status = 'published';`;
@@ -831,7 +832,7 @@ async function findTree(options = {}) {
       SELECT
         parent.*,
         users.username as owner_username,
-        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_tabcoins as tabcoins,
         tabcoins_count.total_credit as tabcoins_credit,
         tabcoins_count.total_debit as tabcoins_debit
       FROM
@@ -839,14 +840,14 @@ async function findTree(options = {}) {
       INNER JOIN
         users ON parent.owner_id = users.id
       LEFT JOIN LATERAL
-        get_content_balance_credit_debit(parent.id) tabcoins_count ON true
+        get_content_tabcoins_credit_debit(parent.id) tabcoins_count ON true
 
       UNION ALL
 
       SELECT
         c.*,
         users.username as owner_username,
-        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_tabcoins as tabcoins,
         tabcoins_count.total_credit as tabcoins_credit,
         tabcoins_count.total_debit as tabcoins_debit
       FROM
@@ -856,7 +857,7 @@ async function findTree(options = {}) {
       INNER JOIN
         users ON c.owner_id = users.id
       LEFT JOIN LATERAL
-        get_content_balance_credit_debit(c.id) tabcoins_count ON true
+        get_content_tabcoins_credit_debit(c.id) tabcoins_count ON true
       WHERE
         c.status = 'published';`;
 

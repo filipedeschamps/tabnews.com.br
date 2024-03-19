@@ -55,7 +55,7 @@ UNION
   LIMIT $4
 )
 SELECT
-  get_current_balance('content:tabcoin', content_window.id) as tabcoins
+  get_content_current_tabcoins(content_window.id) as tabcoins
 FROM
   content_window
 ORDER BY

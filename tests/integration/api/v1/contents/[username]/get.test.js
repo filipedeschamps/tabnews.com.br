@@ -509,38 +509,38 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: secondUserRootContent.id, // Conteúdo de outro usuário
+        balanceType: 'credit',
+        contentId: secondUserRootContent.id, // Conteúdo de outro usuário
         amount: 22,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[30].id, // Conteúdo #31
+        balanceType: 'credit',
+        contentId: contentList[30].id, // Conteúdo #31
         amount: 12,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[35].id, // Conteúdo #36
+        balanceType: 'credit',
+        contentId: contentList[35].id, // Conteúdo #36
         amount: 7,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[49].id, // Conteúdo #50
+        balanceType: 'debit',
+        contentId: contentList[49].id, // Conteúdo #50
         amount: -2,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[50].id, // Conteúdo #51
+        balanceType: 'debit',
+        contentId: contentList[50].id, // Conteúdo #51
         amount: -3,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[59].id, // Conteúdo #60
+        balanceType: 'debit',
+        contentId: contentList[59].id, // Conteúdo #60
         amount: -1,
       });
 
@@ -649,38 +649,38 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: secondUserRootContent.id, // Conteúdo de outro usuário
+        balanceType: 'credit',
+        contentId: secondUserRootContent.id, // Conteúdo de outro usuário
         amount: 22,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[30].id, // Conteúdo #31
+        balanceType: 'credit',
+        contentId: contentList[30].id, // Conteúdo #31
         amount: 12,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[35].id, // Conteúdo #36
+        balanceType: 'credit',
+        contentId: contentList[35].id, // Conteúdo #36
         amount: 7,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[49].id, // Conteúdo #50
+        balanceType: 'debit',
+        contentId: contentList[49].id, // Conteúdo #50
         amount: -2,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[50].id, // Conteúdo #51
+        balanceType: 'debit',
+        contentId: contentList[50].id, // Conteúdo #51
         amount: -3,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
-        recipientId: contentList[59].id, // Conteúdo #60
+        balanceType: 'debit',
+        contentId: contentList[59].id, // Conteúdo #60
         amount: -1,
       });
 

@@ -9,6 +9,7 @@ import migrator from 'infra/migrator.js';
 import webserver from 'infra/webserver.js';
 import activation from 'models/activation.js';
 import balance from 'models/balance.js';
+import contentTabcoin from 'models/content-tabcoin.js';
 import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
@@ -192,7 +193,17 @@ async function updateContent(contentId, contentObject) {
 }
 
 async function createBalance(balanceObject) {
-  return await balance.create({
+  if (balanceObject.balanceType === 'credit' || balanceObject.balanceType === 'debit') {
+    return contentTabcoin.create({
+      balanceType: balanceObject.balanceType,
+      contentId: balanceObject.contentId,
+      amount: balanceObject.amount,
+      originatorType: balanceObject.originatorType || 'orchestrator',
+      originatorId: balanceObject.originatorId || balanceObject.contentId,
+    });
+  }
+
+  return balance.create({
     balanceType: balanceObject.balanceType,
     recipientId: balanceObject.recipientId,
     amount: balanceObject.amount,
@@ -327,8 +338,8 @@ async function createPrestige(
 
   if (rootContents.length) {
     await createBalance({
-      balanceType: rootPrestigeNumerator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
-      recipientId: rootContents[0].id,
+      balanceType: rootPrestigeNumerator > 0 ? 'credit' : 'debit',
+      contentId: rootContents[0].id,
       amount: rootPrestigeNumerator,
       originatorType: 'orchestrator',
       originatorId: rootContents[0].id,
@@ -337,9 +348,8 @@ async function createPrestige(
 
   if (childContents.length) {
     await createBalance({
-      balanceType:
-        childPrestigeNumerator + childPrestigeDenominator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
-      recipientId: childContents[0].id,
+      balanceType: childPrestigeNumerator + childPrestigeDenominator > 0 ? 'credit' : 'debit',
+      contentId: childContents[0].id,
       amount: childPrestigeNumerator + childPrestigeDenominator,
       originatorType: 'orchestrator',
       originatorId: childContents[0].id,
