@@ -562,9 +562,8 @@ describe('GET /api/v1/user', () => {
         const defaultUserSession = await orchestrator.createSession(defaultUser);
         await orchestrator.createPrestige(defaultUser.id);
 
-        await orchestrator.createBalance({
-          balanceType: 'user:tabcoin',
-          recipientId: defaultUser.id,
+        await orchestrator.createUserTabcoin({
+          userId: defaultUser.id,
           amount: 1000,
         });
 

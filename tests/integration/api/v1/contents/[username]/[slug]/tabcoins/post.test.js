@@ -131,7 +131,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status_code: 422,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+        error_location_code: 'MODEL:CONTENT:RATE:NOT_ENOUGH',
       });
     });
 
@@ -148,9 +148,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 2,
       });
 
@@ -216,9 +215,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 2,
       });
 
@@ -284,9 +282,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 8,
       });
 
@@ -406,9 +403,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 8,
       });
 
@@ -528,9 +524,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 4,
       });
 
@@ -647,9 +642,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 2,
       });
 
@@ -708,7 +702,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status_code: 422,
         error_id: postTabCoinsResponsesBody[timesToFetch - 2].error_id,
         request_id: postTabCoinsResponsesBody[timesToFetch - 2].request_id,
-        error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+        error_location_code: 'MODEL:CONTENT:RATE:NOT_ENOUGH',
       });
 
       const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
@@ -757,9 +751,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 2 * timesSuccessfully,
       });
 
@@ -824,7 +817,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           status_code: 422,
           error_id: responseBody.error_id,
           request_id: responseBody.request_id,
-          error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+          error_location_code: 'MODEL:CONTENT:RATE:NOT_ENOUGH',
         }),
       );
 
@@ -870,9 +863,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      await orchestrator.createBalance({
-        balanceType: 'user:tabcoin',
-        recipientId: secondUser.id,
+      await orchestrator.createUserTabcoin({
+        userId: secondUser.id,
         amount: 2 * timesSuccessfully,
       });
 

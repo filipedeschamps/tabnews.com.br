@@ -1,9 +1,9 @@
 import database from 'infra/database';
-import balance from 'models/balance';
 import content from 'models/content.js';
 import event from 'models/event';
 import prestige from 'models/prestige';
 import user from 'models/user';
+import userTabcoin from 'models/user-tabcoin';
 
 const tabcoinsBase = 20;
 const contentAgeBase = 604_800_000; // one week in milliseconds
@@ -98,10 +98,9 @@ async function saveReward(request, reward, { transaction }) {
         { transaction },
       );
 
-      await balance.create(
+      await userTabcoin.create(
         {
-          balanceType: 'user:tabcoin',
-          recipientId: request.context.user.id,
+          userId: request.context.user.id,
           amount: reward,
           originatorType: 'event',
           originatorId: currentEvent.id,

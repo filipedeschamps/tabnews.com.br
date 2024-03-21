@@ -1,12 +1,12 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import database, { mockQuery, mockRelease } from 'infra/database';
-import balance from 'models/balance';
 import content from 'models/content';
 import event from 'models/event';
 import prestige from 'models/prestige';
 import reward from 'models/reward';
 import user from 'models/user';
+import userTabcoin from 'models/user-tabcoin';
 
 const tabcoinsBase = 20;
 const contentAgeBase = 1000 * 60 * 60 * 24 * 7; // one week in milliseconds
@@ -29,7 +29,7 @@ vi.mock('infra/database', () => {
   };
 });
 
-vi.mock('models/balance');
+vi.mock('models/user-tabcoin');
 
 vi.mock('models/content', () => ({
   default: {
@@ -85,7 +85,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -95,7 +95,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -106,7 +106,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -117,7 +117,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -128,7 +128,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -139,7 +139,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -150,7 +150,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -162,7 +162,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -174,7 +174,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).not.toHaveBeenCalled();
   });
 
@@ -200,7 +200,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
   });
 
@@ -213,7 +213,7 @@ describe('reward model', () => {
     const result = await reward(request);
 
     expect(result).toBe(0);
-    expect(balance.create).not.toHaveBeenCalled();
+    expect(userTabcoin.create).not.toHaveBeenCalled();
     expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
   });
 
@@ -233,13 +233,12 @@ describe('reward model', () => {
     expect(mockRelease).toHaveBeenCalled();
     expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
 
-    expect(balance.create).toHaveBeenCalledWith(
+    expect(userTabcoin.create).toHaveBeenCalledWith(
       {
         amount: result,
-        balanceType: 'user:tabcoin',
         originatorId: expect.any(String),
         originatorType: 'event',
-        recipientId: request.context.user.id,
+        userId: request.context.user.id,
       },
       { transaction: expect.any(Object) },
     );

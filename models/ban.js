@@ -1,7 +1,8 @@
 import database from 'infra/database.js';
-import balance from 'models/balance.js';
 import contentTabcoin from 'models/content-tabcoin.js';
 import session from 'models/session.js';
+import userTabcash from 'models/user-tabcash.js';
+import userTabcoin from 'models/user-tabcoin.js';
 import user from 'models/user.js';
 
 async function nuke(userId, options = {}) {
@@ -34,24 +35,13 @@ async function nuke(userId, options = {}) {
     const userEvents = await getAllRatingEventsFromUser(userId, options);
 
     for (const userEvent of userEvents) {
-      const userEventBalanceOperations = await getRatingUserBalanceOperationsFromEvent(userEvent.id, options);
+      const promises = [
+        userTabcoin.undoAllByOriginatorId(userEvent.id, options),
+        userTabcash.undoAllByOriginatorId(userEvent.id, options),
+        contentTabcoin.undoAllByOriginatorId(userEvent.id, options),
+      ];
 
-      const contentEventBalanceOperations = await contentTabcoin.findAll(
-        {
-          where: {
-            originatorId: userEvent.id,
-          },
-        },
-        options,
-      );
-
-      for (const eventBalanceOperation of userEventBalanceOperations) {
-        await balance.undo(eventBalanceOperation.id, options);
-      }
-
-      for (const eventBalanceOperation of contentEventBalanceOperations) {
-        await contentTabcoin.undo(eventBalanceOperation.id, options);
-      }
+      await Promise.all(promises);
     }
 
     async function getAllRatingEventsFromUser(userId, options = {}) {
@@ -69,26 +59,6 @@ async function nuke(userId, options = {}) {
             created_at ASC
         ;`,
         values: [userId],
-      };
-
-      const results = await database.query(query, options);
-
-      return results.rows;
-    }
-
-    async function getRatingUserBalanceOperationsFromEvent(eventId, options = {}) {
-      const query = {
-        text: `
-          SELECT
-            *
-          FROM
-            balance_operations
-          WHERE
-            originator_id = $1
-          ORDER BY
-            created_at ASC
-        ;`,
-        values: [eventId],
       };
 
       const results = await database.query(query, options);

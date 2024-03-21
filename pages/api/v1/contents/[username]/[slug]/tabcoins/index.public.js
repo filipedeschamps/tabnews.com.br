@@ -4,7 +4,6 @@ import { NotFoundError, UnprocessableEntityError, ValidationError } from 'errors
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import balance from 'models/balance.js';
 import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
 import controller from 'models/controller.js';
@@ -107,7 +106,7 @@ async function postHandler(request, response) {
         },
       );
 
-      currentContentTabCoinsBalance = await balance.rateContent(
+      currentContentTabCoinsBalance = await content.rate(
         {
           contentId: contentFound.id,
           contentOwnerId: contentFound.owner_id,

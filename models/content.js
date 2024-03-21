@@ -1,11 +1,11 @@
 import slug from 'slug';
 import { v4 as uuidV4 } from 'uuid';
 
-import { ForbiddenError, ValidationError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
-import balance from 'models/balance.js';
 import contentTabcoin from 'models/content-tabcoin.js';
 import prestige from 'models/prestige';
+import userTabcoin from 'models/user-tabcoin.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import queries from 'queries/rankingQueries';
@@ -540,10 +540,9 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 
     if (!amountToDebit) return;
 
-    await balance.create(
+    await userTabcoin.create(
       {
-        balanceType: 'user:tabcoin',
-        recipientId: newContent.owner_id,
+        userId: newContent.owner_id,
         amount: amountToDebit,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
@@ -595,10 +594,9 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   }
 
   if (userEarnings > 0) {
-    await balance.create(
+    await userTabcoin.create(
       {
-        balanceType: 'user:tabcoin',
-        recipientId: newContent.owner_id,
+        userId: newContent.owner_id,
         amount: userEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
@@ -967,6 +965,89 @@ function getContentScore(contentObject) {
   return finalScore;
 }
 
+async function rate({ contentId, contentOwnerId, fromUserId, transactionType }, options = {}) {
+  const tabCoinsToDebitFromUser = -2;
+  const tabCashToCreditToUser = 1;
+  const tabCoinsToTransactToContentOwner = transactionType === 'credit' ? 1 : -1;
+  const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
+  const originatorType = 'event';
+  const originatorId = options.eventId;
+
+  const query = {
+    text: `
+      WITH users_tabcoin_inserts AS (
+        INSERT INTO user_tabcoin_operations
+          (user_id, amount, originator_type, originator_id)
+        VALUES
+          ($1, $2, $8, $9),
+          ($6, $7, $8, $9)
+        RETURNING
+          *
+      ),
+      users_tabcash_insert AS (
+        INSERT INTO user_tabcash_operations
+          (user_id, amount, originator_type, originator_id)
+        VALUES
+          ($1, $3, $8, $9)
+        RETURNING
+          *
+      ),
+      content_insert AS (
+        INSERT INTO content_tabcoin_operations
+          (balance_type, content_id, amount, originator_type, originator_id)
+        VALUES
+          ($10, $4, $5, $8, $9)
+        RETURNING
+          *
+      )
+      SELECT
+        get_user_current_tabcoins($1) AS user_current_tabcoin_balance,
+        tabcoins_count.total_tabcoins as content_current_tabcoins,
+        tabcoins_count.total_credit as content_current_tabcoin_credit,
+        tabcoins_count.total_debit as content_current_tabcoin_debit 
+      FROM
+        users_tabcoin_inserts,
+        content_insert,
+        get_content_tabcoins_credit_debit(content_insert.content_id) tabcoins_count
+      LIMIT
+        1
+    ;`,
+    values: [
+      fromUserId, // $1
+      tabCoinsToDebitFromUser, // $2
+      tabCashToCreditToUser, // $3
+
+      contentId, // $4
+      tabCoinsToTransactToContent, // $5
+
+      contentOwnerId, // $6
+      tabCoinsToTransactToContentOwner, // $7
+
+      originatorType, // $8
+      originatorId, // $9
+
+      transactionType, // $10
+    ],
+  };
+
+  const results = await database.query(query, options);
+  const currentBalances = results.rows[0];
+
+  if (currentBalances.user_current_tabcoin_balance < 0) {
+    throw new UnprocessableEntityError({
+      message: `Não foi possível adicionar TabCoins nesta publicação.`,
+      action: `Você precisa de pelo menos ${Math.abs(tabCoinsToDebitFromUser)} TabCoins para realizar esta ação.`,
+      errorLocationCode: 'MODEL:CONTENT:RATE:NOT_ENOUGH',
+    });
+  }
+
+  return {
+    tabcoins: currentBalances.content_current_tabcoins,
+    tabcoins_credit: currentBalances.content_current_tabcoin_credit,
+    tabcoins_debit: currentBalances.content_current_tabcoin_debit,
+  };
+}
+
 export default Object.freeze({
   findAll,
   findOne,
@@ -974,4 +1055,5 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  rate,
 });

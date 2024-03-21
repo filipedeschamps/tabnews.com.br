@@ -2938,7 +2938,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBodyBefore.tabcoins).toEqual(8);
         expect(userResponseBodyBefore.tabcash).toEqual(0);
 
-        await orchestrator.createBalance({
+        await orchestrator.createContentTabcoin({
           balanceType: 'credit',
           contentId: prestigeContents[0].id,
           amount: 1,
@@ -3103,7 +3103,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           status: 'published',
         });
 
-        await orchestrator.createBalance({
+        await orchestrator.createContentTabcoin({
           balanceType: 'credit',
           contentId: prestigeContents[0].id,
           amount: 8,
@@ -3224,7 +3224,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           status: 'published',
         });
 
-        await orchestrator.createBalance({
+        await orchestrator.createContentTabcoin({
           balanceType: 'credit',
           contentId: prestigeContents[0].id,
           amount: 10,
