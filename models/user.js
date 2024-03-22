@@ -1,8 +1,9 @@
 import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
-import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
+import userTabcash from 'models/user-tabcash.js';
+import userTabcoin from 'models/user-tabcoin.js';
 import validator from 'models/validator.js';
 
 async function findAll() {
@@ -14,8 +15,8 @@ async function findAll() {
         users
       CROSS JOIN LATERAL (
         SELECT
-          get_current_balance('user:tabcoin', users.id) as tabcoins,
-          get_current_balance('user:tabcash', users.id) as tabcash
+          get_user_current_tabcoins(users.id) as tabcoins,
+          get_user_current_tabcash(users.id) as tabcash
       ) as balance
       ORDER BY
         created_at ASC
@@ -42,8 +43,8 @@ async function findOneByUsername(username, options = {}) {
   const balanceQuery = `
       SELECT
         user_found.*,
-        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
-        get_current_balance('user:tabcash', user_found.id) as tabcash
+        get_user_current_tabcoins(user_found.id) as tabcoins,
+        get_user_current_tabcash(user_found.id) as tabcash
       FROM
         user_found
       `;
@@ -86,8 +87,8 @@ async function findOneByEmail(email, options = {}) {
   const balanceQuery = `
       SELECT
         user_found.*,
-        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
-        get_current_balance('user:tabcash', user_found.id) as tabcash
+        get_user_current_tabcoins(user_found.id) as tabcoins,
+        get_user_current_tabcash(user_found.id) as tabcash
       FROM
         user_found
       `;
@@ -131,8 +132,8 @@ async function findOneById(userId, options = {}) {
   const balanceQuery = `
       SELECT
         user_found.*,
-        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
-        get_current_balance('user:tabcash', user_found.id) as tabcash
+        get_user_current_tabcoins(user_found.id) as tabcoins,
+        get_user_current_tabcash(user_found.id) as tabcash
       FROM
         user_found
       `;
@@ -275,17 +276,15 @@ async function update(username, postedUserData, options = {}) {
     const results = await database.query(query, options);
     const updatedUser = results.rows[0];
 
-    updatedUser.tabcoins = await balance.getTotal(
+    updatedUser.tabcoins = await userTabcoin.getTotal(
       {
-        balanceType: 'user:tabcoin',
-        recipientId: updatedUser.id,
+        userId: updatedUser.id,
       },
       options,
     );
-    updatedUser.tabcash = await balance.getTotal(
+    updatedUser.tabcash = await userTabcash.getTotal(
       {
-        balanceType: 'user:tabcash',
-        recipientId: updatedUser.id,
+        userId: updatedUser.id,
       },
       options,
     );

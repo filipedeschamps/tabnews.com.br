@@ -15,11 +15,11 @@ const rankedContent = `
             contents.id,
             contents.owner_id,
             contents.published_at,
-            tabcoins_count.total_balance as tabcoins,
+            tabcoins_count.total_tabcoins as tabcoins,
             tabcoins_count.total_credit as tabcoins_credit,
             tabcoins_count.total_debit as tabcoins_debit
         FROM contents
-        LEFT JOIN get_content_balance_credit_debit(contents.id) tabcoins_count ON true
+        LEFT JOIN get_content_tabcoins_credit_debit(contents.id) tabcoins_count ON true
         WHERE
             parent_id IS NULL
             AND status = 'published'
@@ -29,14 +29,14 @@ const rankedContent = `
             contents.id,
             contents.owner_id,
             contents.published_at,
-            tabcoins_count.total_balance as tabcoins,
+            tabcoins_count.total_tabcoins as tabcoins,
             tabcoins_count.total_credit as tabcoins_credit,
             tabcoins_count.total_debit as tabcoins_debit
         FROM contents
         INNER JOIN latest_published_child_contents
             ON latest_published_child_contents.path[1] = contents.id
             AND latest_published_child_contents.owner_id != contents.owner_id
-        LEFT JOIN get_content_balance_credit_debit(contents.id) tabcoins_count ON true
+        LEFT JOIN get_content_tabcoins_credit_debit(contents.id) tabcoins_count ON true
         WHERE
             parent_id IS NULL
             AND status = 'published'

@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
+import user from 'models/user';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -462,6 +463,14 @@ describe('DELETE /api/v1/users/[username]', () => {
       expect(uuidVersion(secondUserCheck2Body.error_id)).toEqual(4);
       expect(uuidVersion(secondUserCheck2Body.request_id)).toEqual(4);
       expect(secondUserCheck2Body.key).toEqual('username');
+
+      // 2 TabCoins (previous amount)
+      // +4 TabCoins from votes undone
+      // 2 TabCash (previous amount)
+      // -2 TabCash from votes undone
+      const nukedUser = await user.findOneById(secondUser.id, { withBalance: true });
+      expect(nukedUser.tabcoins).toEqual(6);
+      expect(nukedUser.tabcash).toEqual(0);
 
       // 14) CHECK FIRST USER ROOT CONTENT (POST-BAN)
       const firstUserRootContentCheck2 = await fetch(

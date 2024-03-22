@@ -8,11 +8,13 @@ import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
 import webserver from 'infra/webserver.js';
 import activation from 'models/activation.js';
-import balance from 'models/balance.js';
+import contentTabcoin from 'models/content-tabcoin.js';
 import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
+import userTabcash from 'models/user-tabcash.js';
+import userTabcoin from 'models/user-tabcoin.js';
 import user from 'models/user.js';
 
 if (process.env.NODE_ENV !== 'test') {
@@ -191,13 +193,31 @@ async function updateContent(contentId, contentObject) {
   });
 }
 
-async function createBalance(balanceObject) {
-  return await balance.create({
+function createContentTabcoin(balanceObject) {
+  return contentTabcoin.create({
     balanceType: balanceObject.balanceType,
-    recipientId: balanceObject.recipientId,
+    contentId: balanceObject.contentId,
     amount: balanceObject.amount,
     originatorType: balanceObject.originatorType || 'orchestrator',
-    originatorId: balanceObject.originatorId || balanceObject.recipientId,
+    originatorId: balanceObject.originatorId || balanceObject.contentId,
+  });
+}
+
+function createUserTabcoin(balanceObject) {
+  return userTabcoin.create({
+    userId: balanceObject.userId,
+    amount: balanceObject.amount,
+    originatorType: balanceObject.originatorType || 'orchestrator',
+    originatorId: balanceObject.originatorId || balanceObject.userId,
+  });
+}
+
+function createUserTabcash(balanceObject) {
+  return userTabcash.create({
+    userId: balanceObject.userId,
+    amount: balanceObject.amount,
+    originatorType: balanceObject.originatorType || 'orchestrator',
+    originatorId: balanceObject.originatorId || balanceObject.userId,
   });
 }
 
@@ -209,9 +229,8 @@ async function createRate(contentObject, amount, fromUserId) {
   if (!fromUserId) {
     fromUserId = randomUUID();
 
-    await createBalance({
-      balanceType: 'user:tabcoin',
-      recipientId: fromUserId,
+    await createUserTabcoin({
+      userId: fromUserId,
       amount: tabCoinsRequiredAmount * Math.abs(amount),
       originatorType: 'orchestrator',
       originatorId: fromUserId,
@@ -232,7 +251,7 @@ async function createRate(contentObject, amount, fromUserId) {
       },
     });
 
-    await balance.rateContent(
+    await content.rate(
       {
         contentId: contentObject.id,
         contentOwnerId: contentObject.owner_id,
@@ -326,9 +345,9 @@ async function createPrestige(
   vi.useRealTimers();
 
   if (rootContents.length) {
-    await createBalance({
-      balanceType: rootPrestigeNumerator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
-      recipientId: rootContents[0].id,
+    await createContentTabcoin({
+      balanceType: rootPrestigeNumerator > 0 ? 'credit' : 'debit',
+      contentId: rootContents[0].id,
       amount: rootPrestigeNumerator,
       originatorType: 'orchestrator',
       originatorId: rootContents[0].id,
@@ -336,10 +355,9 @@ async function createPrestige(
   }
 
   if (childContents.length) {
-    await createBalance({
-      balanceType:
-        childPrestigeNumerator + childPrestigeDenominator > 0 ? 'content:tabcoin:credit' : 'content:tabcoin:debit',
-      recipientId: childContents[0].id,
+    await createContentTabcoin({
+      balanceType: childPrestigeNumerator + childPrestigeDenominator > 0 ? 'credit' : 'debit',
+      contentId: childContents[0].id,
       amount: childPrestigeNumerator + childPrestigeDenominator,
       originatorType: 'orchestrator',
       originatorId: childContents[0].id,
@@ -384,7 +402,9 @@ const orchestrator = {
   updateContent,
   createRecoveryToken,
   createFirewallTestFunctions,
-  createBalance,
+  createContentTabcoin,
+  createUserTabcash,
+  createUserTabcoin,
   createPrestige,
   createRate,
   updateRewardedAt,
