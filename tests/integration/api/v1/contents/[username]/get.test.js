@@ -558,21 +558,21 @@ describe('GET /api/v1/contents/[username]', () => {
           per_page: '30',
           rel: 'first',
           strategy: 'new',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
           strategy: 'new',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'new',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
         },
       });
 
@@ -599,21 +599,21 @@ describe('GET /api/v1/contents/[username]', () => {
           per_page: '30',
           rel: 'first',
           strategy: 'new',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
         },
         prev: {
           page: '1',
           per_page: '30',
           rel: 'prev',
           strategy: 'new',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new&page=1&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'new',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new&page=2&per_page=30`,
         },
       });
 
@@ -700,21 +700,21 @@ describe('GET /api/v1/contents/[username]', () => {
           per_page: '30',
           rel: 'first',
           strategy: 'relevant',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=relevant&page=1&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant&page=1&per_page=30`,
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
           strategy: 'relevant',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=relevant&page=2&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant&page=2&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'relevant',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=relevant&page=2&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant&page=2&per_page=30`,
         },
       });
 
@@ -743,21 +743,21 @@ describe('GET /api/v1/contents/[username]', () => {
           per_page: '30',
           rel: 'first',
           strategy: 'relevant',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=relevant&page=1&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant&page=1&per_page=30`,
         },
         prev: {
           page: '1',
           per_page: '30',
           rel: 'prev',
           strategy: 'relevant',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=relevant&page=1&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant&page=1&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'relevant',
-          url: `http://localhost:3000/api/v1/contents/${defaultUser.username}?strategy=relevant&page=2&per_page=30`,
+          url: `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=relevant&page=2&per_page=30`,
         },
       });
 

@@ -12,13 +12,13 @@ import queries from 'queries/rankingQueries';
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
   await replaceOwnerUsernameWithOwnerId(values);
-  const offset = (values.page - 1) * values.per_page;
 
   const query = {
     values: [],
   };
 
   if (!values.count) {
+    const offset = (values.page - 1) * values.per_page;
     query.values = [values.limit || values.per_page, offset];
   }
 
