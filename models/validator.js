@@ -3,6 +3,7 @@ import Joi from 'joi';
 import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
 import removeMarkdown from 'models/remove-markdown';
+import availableFeatures from 'models/user-features';
 
 const MAX_INTEGER = 2147483647;
 const MIN_INTEGER = -2147483648;
@@ -69,6 +70,16 @@ const schemas = {
           'string.base': `"id" deve ser do tipo String.`,
           'string.guid': `"id" deve possuir um token UUID na versão 4.`,
         }),
+    });
+  },
+
+  ids: function () {
+    const idSchema = schemas.id();
+
+    return Joi.object({
+      ids: Joi.array().items(idSchema.extract('id')).messages({
+        'array.base': `"ids" deve ser do tipo Array.`,
+      }),
     });
   },
 
@@ -171,6 +182,23 @@ const schemas = {
           'string.base': `"description" deve ser do tipo String.`,
           'string.max': `"description" deve conter no máximo {#limit} caracteres.`,
           'any.invalid': `"description" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
+  features: function () {
+    const availableFeaturesString = Array.from(availableFeatures)
+      .map((feature) => `"${feature}"`)
+      .join(', ');
+
+    return Joi.object({
+      features: Joi.array()
+        .when('$required.features', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .items(Joi.string().valid(...availableFeatures))
+        .messages({
+          'any.required': `"features" é um campo obrigatório.`,
+          'array.base': `"features" deve ser do tipo Array.`,
+          'any.only': `"features" deve possuir apenas os seguintes valores: ${availableFeaturesString}.`,
         }),
     });
   },
@@ -514,6 +542,7 @@ const schemas = {
 
     for (const key of [
       'id',
+      'ids',
       'parent_id',
       'slug',
       'title',
@@ -677,7 +706,12 @@ const schemas = {
   },
 
   event: function () {
+    const idSchema = schemas.id();
+    const createdAtSchema = schemas.created_at();
+
     return Joi.object({
+      id: idSchema.extract('id').optional(),
+      created_at: createdAtSchema.extract('created_at').optional(),
       type: Joi.string()
         .valid(
           'create:user',
@@ -691,6 +725,9 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'moderation:unblock_users',
+          'moderation:unblock_contents:text_root',
+          'moderation:unblock_contents:text_child',
           'reward:user:tabcoins',
           'system:update:tabcoins',
         )
@@ -700,20 +737,20 @@ const schemas = {
           'string.base': `"type" deve ser do tipo String.`,
           'any.only': `"type" não possui um valor válido.`,
         }),
-      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional().messages({
-        'string.empty': `"originatorId" não pode estar em branco.`,
-        'string.base': `"originatorId" deve ser do tipo String.`,
-        'string.guid': `"originatorId" deve possuir um token UUID na versão 4.`,
+      originator_user_id: Joi.string().allow(null).guid({ version: 'uuidv4' }).optional().messages({
+        'string.empty': `"originator_user_id" não pode estar em branco.`,
+        'string.base': `"originator_user_id" deve ser do tipo String.`,
+        'string.guid': `"originator_user_id" deve possuir um token UUID na versão 4.`,
       }),
-      originatorIp: Joi.string()
+      originator_ip: Joi.string()
         .ip({
           version: ['ipv4', 'ipv6'],
         })
         .optional()
         .messages({
-          'string.empty': `"originatorIp" não pode estar em branco.`,
-          'string.base': `"originatorIp" deve ser do tipo String.`,
-          'string.ip': `"originatorIp" deve possuir um IP válido`,
+          'string.empty': `"originator_ip" não pode estar em branco.`,
+          'string.base': `"originator_ip" deve ser do tipo String.`,
+          'string.ip': `"originator_ip" deve possuir um IP válido`,
         }),
       metadata: Joi.when('type', [
         {
@@ -767,7 +804,57 @@ const schemas = {
             contents: Joi.array().required(),
           }),
         },
+        {
+          is: 'moderation:unblock_users',
+          then: Joi.object({
+            original_event_id: Joi.string().required(),
+            users: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'moderation:unblock_contents:text_root',
+          then: Joi.object({
+            original_event_id: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'moderation:unblock_contents:text_child',
+          then: Joi.object({
+            original_event_id: Joi.string().required(),
+            contents: Joi.array().required(),
+          }),
+        },
       ]),
+    });
+  },
+
+  events: function () {
+    return Joi.object({
+      affected: Joi.object({
+        contents: Joi.array().items(schemas.content()).messages({
+          'array.base': `"affected.contents" deve ser do tipo Array.`,
+        }),
+        users: Joi.array().items(schemas.user()).messages({
+          'array.base': `"affected.users" deve ser do tipo Array.`,
+        }),
+      }),
+      events: Joi.array().items(schemas.event()).messages({
+        'array.base': `"events" deve ser do tipo Array.`,
+      }),
+    });
+  },
+
+  user: function () {
+    return Joi.object({
+      id: schemas.id().extract('id'),
+      created_at: schemas.created_at().extract('created_at'),
+      updated_at: schemas.updated_at().extract('updated_at'),
+      username: schemas.username().extract('username'),
+      description: schemas.description().extract('description'),
+      features: schemas.features().extract('features'),
+      tabcoins: schemas.tabcoins().extract('tabcoins'),
+      tabcash: schemas.tabcash().extract('tabcash'),
     });
   },
 

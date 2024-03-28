@@ -1,47 +1,6 @@
 import { ForbiddenError, ValidationError } from 'errors';
+import availableFeatures from 'models/user-features.js';
 import validator from 'models/validator.js';
-
-const availableFeatures = new Set([
-  // USER
-  'create:user',
-  'read:user',
-  'read:user:self',
-  'update:user',
-
-  // MIGRATION
-  'read:migration',
-  'create:migration',
-
-  // ACTIVATION_TOKEN
-  'read:activation_token',
-
-  // RECOVERY_TOKEN
-  'read:recovery_token',
-
-  // EMAIL_CONFIRMATION_TOKEN
-  'read:email_confirmation_token',
-
-  // SESSION
-  'create:session',
-  'read:session',
-
-  // CONTENT
-  'read:content',
-  'update:content',
-  'create:content',
-  'create:content:text_root',
-  'create:content:text_child',
-  'read:content:list',
-  'read:content:tabcoins',
-
-  // MODERATION
-  'read:user:list',
-  'read:votes:others',
-  'update:content:others',
-  'update:user:others',
-  'ban:user',
-  'create:recovery_token:username',
-]);
 
 function can(user, feature, resource) {
   validateUser(user);
@@ -244,6 +203,24 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = validator(clonedOutput, {
       content: 'required',
     });
+  }
+
+  if (feature === 'read:firewall' && can(user, feature)) {
+    filteredOutputValues = validator(output, {
+      events: 'required',
+    });
+    filteredOutputValues.events.forEach((event) => delete event.originator_ip);
+    filteredOutputValues.affected = {};
+
+    if (output.affected.contents) {
+      filteredOutputValues.affected.contents = output.affected.contents.map((unfilteredContent) =>
+        filterOutput(user, 'read:content', unfilteredContent),
+      );
+    }
+
+    if (output.affected.users) {
+      filteredOutputValues.affected.users = filterOutput(user, 'read:user:list', output.affected.users);
+    }
   }
 
   if (feature === 'read:content:tabcoins') {

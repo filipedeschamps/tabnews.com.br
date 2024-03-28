@@ -24,7 +24,9 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION firewall_create_user_side_effect(clientIp inet) RETURNS TABLE (
-  user_id uuid
+  user_id uuid,
+  user_username varchar,
+  user_email varchar
 ) AS $$
 DECLARE
   users_to_block record;
@@ -49,9 +51,16 @@ BEGIN
           UPDATE
             users
           SET
-            features = array_remove(features, feature)
+            features = array_remove(features, feature),
+            updated_at = (NOW() AT TIME ZONE 'utc')
           WHERE
-            id = users_to_block.id::uuid;
+            id = users_to_block.id::uuid
+          RETURNING
+            username,
+            email
+          INTO
+            user_username,
+            user_email;
         END LOOP;
 
       RETURN NEXT;
