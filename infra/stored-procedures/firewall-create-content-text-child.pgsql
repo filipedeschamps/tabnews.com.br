@@ -26,6 +26,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION firewall_create_content_text_child_side_effect(clientIp inet) RETURNS TABLE (
   id uuid,
   published_at timestamp,
+  status_before_update varchar,
   status varchar,
   owner_id uuid,
   tabcoins integer
@@ -48,23 +49,23 @@ BEGIN
       UPDATE
         contents
       SET
-        status = 'deleted',
-        deleted_at = (NOW() AT TIME ZONE 'utc')
+        status = 'firewall'
       WHERE
         contents.id = contents_to_update.id::uuid
-        AND contents.status = 'published'
       RETURNING
         contents.id,
         contents.published_at,
         contents.status,
         contents.owner_id,
-        get_content_current_tabcoins(contents_to_update.id::uuid)
+        get_content_current_tabcoins(contents_to_update.id::uuid),
+        (SELECT contents.status FROM contents WHERE contents.id = contents_to_update.id::uuid)
       INTO
         id,
         published_at,
         status,
         owner_id,
-        tabcoins;
+        tabcoins,
+        status_before_update;
 
       IF FOUND THEN
         RETURN NEXT;

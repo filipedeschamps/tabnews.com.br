@@ -460,12 +460,12 @@ function validateCreateSchema(content) {
     source_url: 'optional',
   });
 
-  if (cleanValues.status === 'deleted') {
+  if (cleanValues.status === 'deleted' || cleanValues.status === 'firewall') {
     throw new ValidationError({
-      message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
+      message: `Não é possível criar um novo conteúdo diretamente com status "${cleanValues.status}".`,
       key: 'status',
       type: 'any.only',
-      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
     });
   }
 
@@ -506,16 +506,20 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   let userEarnings = 0;
 
   // We should not credit or debit if the content has never been published before
-  // and is being directly deleted, example: "draft" -> "deleted".
-  if (oldContent && !oldContent.published_at && newContent.status === 'deleted') {
+  // and is not published now, example: "draft" -> "deleted"
+  // or if it was deleted and is catch by firewall: "deleted" -> "firewall".
+  if (
+    oldContent &&
+    ((!oldContent.published_at && newContent.status !== 'published') || oldContent.status === 'deleted')
+  ) {
     return;
   }
 
-  // We should debit if the content was once "published", but now is being "deleted".
+  // We should debit if the content was once "published", but now it is not.
   // 1) If content `tabcoins` is positive, we need to debit all tabcoins earning by the user.
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
   // creation of the content represented by `initialTabcoins`.
-  if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
+  if (oldContent?.published_at && newContent.status !== 'published') {
     let amountToDebit;
 
     const userEarningsByContent = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
@@ -715,13 +719,15 @@ async function update(contentId, postedContent, options = {}) {
   }
 }
 
-async function undoDeleted(contentIds, options) {
+async function undoFirewallStatus(contentIds, options) {
   const query = {
     text: `
       WITH updated_contents AS (
         UPDATE contents SET
-          status = 'published',
-          deleted_at = NULL,
+          status = CASE
+            WHEN deleted_at IS NULL THEN 'published'
+            ELSE 'deleted'
+          END,
           updated_at = (now() at time zone 'utc')
         WHERE
           id = ANY ($1)
@@ -751,6 +757,15 @@ function validateUpdateSchema(content) {
     status: 'optional',
     source_url: 'optional',
   });
+
+  if (cleanValues.status === 'firewall') {
+    throw new ValidationError({
+      message: 'Não é possível atualizar um conteúdo para o status "firewall".',
+      key: 'status',
+      type: 'any.only',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_UPDATE_SCHEMA:INVALID_STATUS',
+    });
+  }
 
   return cleanValues;
 }
@@ -970,6 +985,6 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
-  undoDeleted,
+  undoFirewallStatus,
   creditOrDebitTabCoins,
 });

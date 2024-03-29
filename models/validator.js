@@ -265,7 +265,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published', 'deleted')
+        .valid('draft', 'published', 'deleted', 'firewall')
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
@@ -652,8 +652,8 @@ const schemas = {
   firewall_event: function () {
     return Joi.object({
       affected: Joi.object({
-        contents: Joi.array().items(schemas.content().optional()),
-        users: Joi.array().items(schemas.user()).required(),
+        contents: Joi.array().items(schemas.content()).min(1),
+        users: Joi.array().items(schemas.user()).min(1).required(),
       }),
       events: Joi.array().items(schemas.event()).min(1).required(),
     });

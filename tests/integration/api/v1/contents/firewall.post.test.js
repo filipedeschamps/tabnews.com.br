@@ -67,12 +67,14 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content1.deleted_at).toBeNull();
+        expect(Date.parse(content1.updated_at)).not.toEqual(NaN);
         expect(content1.updated_at.toISOString()).toEqual(response1Body.updated_at);
 
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content2.status).toEqual('firewall');
+        expect(content2.deleted_at).toBeNull();
+        expect(Date.parse(content2.updated_at)).not.toEqual(NaN);
         expect(content2.updated_at.toISOString()).toEqual(response2Body.updated_at);
 
         expect(content3).toBeUndefined();
@@ -107,7 +109,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(response1.status).toBe(201);
         expect(response2.status).toBe(201);
 
-        await orchestrator.updateContent(response2Body.id, {
+        const content2BeforeFirewall = await orchestrator.updateContent(response2Body.id, {
           status: 'deleted',
         });
 
@@ -145,10 +147,11 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
+        expect(content1.deleted_at).toBeNull();
+        expect(content2.deleted_at).toEqual(content2BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).not.toBeNull();
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -160,7 +163,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           originator_ip: '127.0.0.1',
           metadata: {
             from_rule: 'create:content:text_root',
-            contents: [content1.id],
+            contents: [content1.id, content2.id],
           },
           created_at: lastEvent.created_at,
         });
@@ -216,8 +219,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
         expect(content3).toBeUndefined();
 
         const events = await event.findAll();
@@ -225,7 +228,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
 
         expect(lastEvent.metadata).toStrictEqual({
           from_rule: 'create:content:text_root',
-          contents: [],
+          contents: [content1.id, content2.id],
         });
       });
 
@@ -240,7 +243,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 10);
-        await orchestrator.updateContent(response1Body.id, {
+        const content1BeforeFirewall = await orchestrator.updateContent(response1Body.id, {
           status: 'deleted',
         });
 
@@ -286,10 +289,11 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
+        expect(content1.deleted_at).toEqual(content1BeforeFirewall.deleted_at);
+        expect(content1.deleted_at).not.toBeNull();
+        expect(content2.deleted_at).toBeNull();
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -301,7 +305,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           originator_ip: '127.0.0.1',
           metadata: {
             from_rule: 'create:content:text_root',
-            contents: [content2.id],
+            contents: [content1.id, content2.id],
           },
           created_at: lastEvent.created_at,
         });
@@ -376,10 +380,10 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
+        expect(content1.deleted_at).toBeNull();
+        expect(content2.deleted_at).toBeNull();
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -477,12 +481,14 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content1.deleted_at).toBeNull();
+        expect(Date.parse(content1.updated_at)).not.toEqual(NaN);
         expect(content1.updated_at.toISOString()).toEqual(response1Body.updated_at);
 
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content2.status).toEqual('firewall');
+        expect(content2.deleted_at).toBeNull();
+        expect(Date.parse(content2.updated_at)).not.toEqual(NaN);
         expect(content2.updated_at.toISOString()).toEqual(response2Body.updated_at);
 
         expect(content3).toBeUndefined();
@@ -523,7 +529,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(response1.status).toBe(201);
         expect(response2.status).toBe(201);
 
-        await orchestrator.updateContent(response2Body.id, {
+        const content2BeforeFirewall = await orchestrator.updateContent(response2Body.id, {
           status: 'deleted',
         });
 
@@ -562,10 +568,11 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
+        expect(content1.deleted_at).toBeNull();
+        expect(content2.deleted_at).toEqual(content2BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).not.toBeNull();
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -577,7 +584,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           originator_ip: '127.0.0.1',
           metadata: {
             from_rule: 'create:content:text_child',
-            contents: [content1.id],
+            contents: [content1.id, content2.id],
           },
           created_at: lastEvent.created_at,
         });
@@ -605,7 +612,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 2);
-        await orchestrator.updateContent(response1Body.id, {
+        const content1BeforeFirewall = await orchestrator.updateContent(response1Body.id, {
           status: 'deleted',
         });
 
@@ -652,10 +659,10 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
+        expect(content1.deleted_at).toEqual(content1BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).toBeNull();
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -667,7 +674,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           originator_ip: '127.0.0.1',
           metadata: {
             from_rule: 'create:content:text_child',
-            contents: [content2.id],
+            contents: [content1.id, content2.id],
           },
           created_at: lastEvent.created_at,
         });
@@ -755,10 +762,10 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('deleted');
-        expect(content2.status).toEqual('deleted');
-        expect(Date.parse(content1.deleted_at)).not.toEqual(NaN);
-        expect(Date.parse(content2.deleted_at)).not.toEqual(NaN);
+        expect(content1.status).toEqual('firewall');
+        expect(content2.status).toEqual('firewall');
+        expect(content1.deleted_at).toBeNull(NaN);
+        expect(content2.deleted_at).toBeNull(NaN);
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();

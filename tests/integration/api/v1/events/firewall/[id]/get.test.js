@@ -441,6 +441,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
     });
 
     test('With a "firewall:block_contents:text_root" and contents deleted before the firewall catch', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
       await firewallRequestBuilder.buildUser({ with: ['read:firewall'] });
 
@@ -466,10 +467,15 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       expect(response.status).toEqual(200);
 
+      const { responseBody: user1AfterFirewall } = await usersRequestBuilder.get(`/${user1.username}`);
+
+      const content1AfterFirewall = await content.findOne({ where: { id: content1.id } });
+      const content2AfterFirewall = await content.findOne({ where: { id: content2.id } });
+
       expect(responseBody).toEqual({
         affected: {
-          contents: [],
-          users: [],
+          contents: [mapContentData(content1AfterFirewall), mapContentData(content2AfterFirewall)],
+          users: [user1AfterFirewall],
         },
         events: [
           {
@@ -477,7 +483,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:content:text_root',
-              contents: [],
+              contents: [content1.id, content2.id],
             },
             originator_user_id: user1.id,
             type: 'firewall:block_contents:text_root',

@@ -70,11 +70,11 @@ async function createUserRuleSideEffect(context) {
 async function sendUserNotification(userRows, event) {
   const notifications = [];
 
-  for (const user of userRows) {
+  for (const userObject of userRows) {
     notifications.push(
       notification.sendUserDisabled({
         eventId: event.id,
-        user: user,
+        user: userObject,
       }),
     );
   }
@@ -171,7 +171,7 @@ async function undoContentsTabcoins(contentRows, createdEvent) {
     await content.creditOrDebitTabCoins(
       {
         ...contentObject,
-        status: 'published',
+        status: contentObject.status_before_update,
       },
       contentObject,
       {
@@ -357,12 +357,12 @@ async function unblockUsers(firewallEvent, options = {}) {
 }
 
 async function unblockContents(createdEvent, firewallEvent, options) {
-  const affectedContents = await content.undoDeleted(firewallEvent.metadata.contents, options);
+  const affectedContents = await content.undoFirewallStatus(firewallEvent.metadata.contents, options);
 
-  const balanceOperations = await balance.findAllByOriginatorId(createdEvent.id, options);
+  const balanceOperations = await balance.findAllByOriginatorId(firewallEvent.id, options);
 
   for (const operation of balanceOperations) {
-    await balance.undo(operation, options);
+    await balance.undo(operation, { ...options, event: createdEvent });
   }
 
   const usersIds = new Set();

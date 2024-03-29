@@ -535,8 +535,8 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
       const content2AfterSideEffect = await content.findOne({ where: { id: content2.id } });
 
-      expect(content1AfterSideEffect.status).toEqual('deleted');
-      expect(content2AfterSideEffect.status).toEqual('deleted');
+      expect(content1AfterSideEffect.status).toEqual('firewall');
+      expect(content2AfterSideEffect.status).toEqual('firewall');
 
       const firewallEvent = await orchestrator.getLastEvent();
 
@@ -677,15 +677,15 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       expect(content2AfterUndo.updated_at).not.toEqual(content2AfterSideEffect.updated_at);
     });
 
-    test('With a "firewall:block_contents:text_root" event and TabCoins', async () => {
+    test('With a "firewall:block_contents:text_root" event with TabCoins and a deleted content', async () => {
       const firewallUser = await orchestrator.createUser();
       await orchestrator.activateUser(firewallUser);
       const firewallUserSession = await orchestrator.createSession(firewallUser);
       await orchestrator.addFeaturesToUser(firewallUser, ['read:firewall', 'undo:firewall']);
 
       // Create users and contents
-      const user1 = await orchestrator.createUser();
-      await orchestrator.activateUser(user1);
+      let user1 = await orchestrator.createUser();
+      user1 = await orchestrator.activateUser(user1);
       const user1Session = await orchestrator.createSession(user1);
 
       const user2 = await orchestrator.createUser();
@@ -700,9 +700,12 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       await orchestrator.createRate(content1, 8);
       await orchestrator.createRate(content2, 15);
 
-      const user1AfterRate = await user.findOneById(user1.id, { withBalance: true });
+      const content1Deleted = await orchestrator.updateContent(content1.id, { status: 'deleted' });
+
+      const user1AfterContentDeleted = await user.findOneById(user1.id, { withBalance: true });
+      expect(user1AfterContentDeleted.tabcoins).toEqual(0);
+
       const user2AfterRate = await user.findOneById(user2.id, { withBalance: true });
-      expect(user1AfterRate.tabcoins).toEqual(8);
       expect(user2AfterRate.tabcoins).toEqual(15);
 
       const content3 = await createContentViaApi(user1Session.token, { title: 'Título 3' });
@@ -713,8 +716,8 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
       const content2AfterSideEffect = await content.findOne({ where: { id: content2.id } });
 
-      expect(content1AfterSideEffect.status).toEqual('deleted');
-      expect(content2AfterSideEffect.status).toEqual('deleted');
+      expect(content1AfterSideEffect.status).toEqual('firewall');
+      expect(content2AfterSideEffect.status).toEqual('firewall');
 
       const firewallEvent = await orchestrator.getLastEvent();
 
@@ -741,17 +744,17 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
         affected: {
           contents: [
             {
-              body: content1.body,
-              created_at: content1.created_at,
-              deleted_at: content1.deleted_at,
-              id: content1.id,
-              owner_id: content1.owner_id,
-              parent_id: content1.parent_id,
-              published_at: content1.published_at,
-              slug: content1.slug,
-              source_url: content1.source_url,
-              status: content1.status,
-              title: content1.title,
+              body: content1Deleted.body,
+              created_at: content1Deleted.created_at.toISOString(),
+              deleted_at: content1Deleted.deleted_at.toISOString(),
+              id: content1Deleted.id,
+              owner_id: content1Deleted.owner_id,
+              parent_id: content1Deleted.parent_id,
+              published_at: content1Deleted.published_at.toISOString(),
+              slug: content1Deleted.slug,
+              source_url: content1Deleted.source_url,
+              status: content1Deleted.status,
+              title: content1Deleted.title,
               updated_at: responseBody.affected.contents[0].updated_at,
             },
             {
@@ -771,14 +774,14 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
           ],
           users: [
             {
-              created_at: user1AfterRate.created_at.toISOString(),
-              description: user1AfterRate.description,
-              features: user1AfterRate.features,
-              id: user1AfterRate.id,
-              tabcash: user1AfterRate.tabcash,
-              tabcoins: user1AfterRate.tabcoins,
-              updated_at: user1AfterRate.updated_at.toISOString(),
-              username: user1AfterRate.username,
+              created_at: user1.created_at.toISOString(),
+              description: user1.description,
+              features: user1.features,
+              id: user1.id,
+              tabcash: 0,
+              tabcoins: 0,
+              updated_at: user1.updated_at.toISOString(),
+              username: user1.username,
             },
             {
               created_at: user2AfterRate.created_at.toISOString(),
@@ -833,7 +836,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1AfterUndo = await content.findOne({ where: { id: content1.id } });
       const content2AfterUndo = await content.findOne({ where: { id: content2.id } });
 
-      expect(content1AfterUndo.status).toEqual('published');
+      expect(content1AfterUndo.status).toEqual('deleted');
       expect(content2AfterUndo.status).toEqual('published');
 
       // Check users
@@ -842,7 +845,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const user2AfterUndo = await user.findOneById(user2.id, { withBalance: true });
 
       expect(ignoredUserAfterUndo).toStrictEqual(ignoredUser);
-      expect(user1AfterUndo).toStrictEqual(user1AfterRate);
+      expect(user1AfterUndo).toStrictEqual(user1AfterContentDeleted);
       expect(user2AfterUndo).toStrictEqual(user2AfterRate);
     });
 
@@ -875,8 +878,8 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
       const content2AfterSideEffect = await content.findOne({ where: { id: content2.id } });
 
-      expect(content1AfterSideEffect.status).toEqual('deleted');
-      expect(content2AfterSideEffect.status).toEqual('deleted');
+      expect(content1AfterSideEffect.status).toEqual('firewall');
+      expect(content2AfterSideEffect.status).toEqual('firewall');
 
       const firewallEvent = await orchestrator.getLastEvent();
 
@@ -1036,7 +1039,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1 = await createContentViaApi(user1Session.token, { parent_id: rootContent.id });
       const content2 = await createContentViaApi(user1Session.token, { parent_id: rootContent.id });
 
-      await content.update(content2.id, { status: 'deleted' });
+      const content2Deleted = await content.update(content2.id, { status: 'deleted' });
 
       const content3 = await createContentViaApi(user1Session.token, { parent_id: rootContent.id });
 
@@ -1046,13 +1049,13 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
       const content2AfterSideEffect = await content.findOne({ where: { id: content2.id } });
 
-      expect(content1AfterSideEffect.status).toEqual('deleted');
-      expect(content2AfterSideEffect.status).toEqual('deleted');
+      expect(content1AfterSideEffect.status).toEqual('firewall');
+      expect(content2AfterSideEffect.status).toEqual('firewall');
 
       const firewallEvent = await orchestrator.getLastEvent();
 
       expect(firewallEvent).not.toBeUndefined();
-      expect(firewallEvent.metadata.contents).toStrictEqual([content1.id]);
+      expect(firewallEvent.metadata.contents).toStrictEqual([content1.id, content2.id]);
 
       // Undo firewall side-effect
       const response = await fetch(
@@ -1086,6 +1089,20 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
               status: content1.status,
               title: content1.title,
               updated_at: responseBody.affected.contents[0].updated_at,
+            },
+            {
+              body: content2Deleted.body,
+              created_at: content2Deleted.created_at.toISOString(),
+              deleted_at: content2Deleted.deleted_at.toISOString(),
+              id: content2Deleted.id,
+              owner_id: content2Deleted.owner_id,
+              parent_id: content2Deleted.parent_id,
+              published_at: content2Deleted.published_at.toISOString(),
+              slug: content2Deleted.slug,
+              source_url: content2Deleted.source_url,
+              status: content2Deleted.status,
+              title: content2Deleted.title,
+              updated_at: responseBody.affected.contents[1].updated_at,
             },
           ],
           users: [
@@ -1163,8 +1180,8 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1 = await createContentViaApi(user1Session.token, { parent_id: rootContent.id });
       const content2 = await createContentViaApi(user1Session.token, { parent_id: rootContent.id });
 
-      await content.update(content1.id, { status: 'deleted' });
-      await content.update(content2.id, { status: 'deleted' });
+      const content1Deleted = await content.update(content1.id, { status: 'deleted' });
+      const content2Deleted = await content.update(content2.id, { status: 'deleted' });
 
       const content3 = await createContentViaApi(user1Session.token, { parent_id: rootContent.id });
 
@@ -1174,14 +1191,14 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
       const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
       const content2AfterSideEffect = await content.findOne({ where: { id: content2.id } });
 
-      expect(content1AfterSideEffect.status).toEqual('deleted');
-      expect(content2AfterSideEffect.status).toEqual('deleted');
+      expect(content1AfterSideEffect.status).toEqual('firewall');
+      expect(content2AfterSideEffect.status).toEqual('firewall');
 
       let allEvents = await event.findAll();
       const firewallEvent = allEvents.find((event) => event.type === 'firewall:block_contents:text_child');
 
       expect(firewallEvent).not.toBeUndefined();
-      expect(firewallEvent.metadata.contents).toEqual([]);
+      expect(firewallEvent.metadata.contents).toEqual([content1.id, content2.id]);
 
       // Undo firewall side-effect
       const response = await fetch(
@@ -1201,8 +1218,48 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
 
       expect(responseBody).toStrictEqual({
         affected: {
-          contents: [],
-          users: [],
+          contents: [
+            {
+              body: content1Deleted.body,
+              created_at: content1Deleted.created_at.toISOString(),
+              deleted_at: content1Deleted.deleted_at.toISOString(),
+              id: content1Deleted.id,
+              owner_id: content1Deleted.owner_id,
+              parent_id: content1Deleted.parent_id,
+              published_at: content1Deleted.published_at.toISOString(),
+              slug: content1Deleted.slug,
+              source_url: content1Deleted.source_url,
+              status: content1Deleted.status,
+              title: content1Deleted.title,
+              updated_at: responseBody.affected.contents[0].updated_at,
+            },
+            {
+              body: content2Deleted.body,
+              created_at: content2Deleted.created_at.toISOString(),
+              deleted_at: content2Deleted.deleted_at.toISOString(),
+              id: content2Deleted.id,
+              owner_id: content2Deleted.owner_id,
+              parent_id: content2Deleted.parent_id,
+              published_at: content2Deleted.published_at.toISOString(),
+              slug: content2Deleted.slug,
+              source_url: content2Deleted.source_url,
+              status: content2Deleted.status,
+              title: content2Deleted.title,
+              updated_at: responseBody.affected.contents[1].updated_at,
+            },
+          ],
+          users: [
+            {
+              created_at: user1.created_at.toISOString(),
+              description: user1.description,
+              features: user1.features,
+              id: user1.id,
+              tabcash: 0,
+              tabcoins: 0,
+              updated_at: user1.updated_at.toISOString(),
+              username: user1.username,
+            },
+          ],
         },
         events: [
           {
@@ -1217,7 +1274,7 @@ describe('POST /api/v1/moderations/undo_firewall/[id]', () => {
             id: responseBody.events[1].id,
             metadata: {
               original_event_id: firewallEvent.id,
-              contents: [],
+              contents: [content1.id, content2.id],
             },
             originator_user_id: firewallUser.id,
             type: 'moderation:unblock_contents:text_child',
