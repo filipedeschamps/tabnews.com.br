@@ -15,7 +15,7 @@ import {
   Text,
   TextInput,
 } from '@/TabNewsUI';
-import { suggestEmail } from 'pages/interface';
+import { createErrorMessage, suggestEmail } from 'pages/interface';
 
 export default function Register() {
   return (
@@ -99,7 +99,7 @@ function SignUpForm() {
       }
 
       if (response.status >= 403) {
-        setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
+        setGlobalErrorMessage(createErrorMessage(responseBody));
         setIsLoading(false);
         return;
       }

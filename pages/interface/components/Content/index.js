@@ -25,7 +25,7 @@ import {
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
-import { isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
+import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
@@ -162,17 +162,8 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
 
     if (response.status === 200) {
       setComponentMode('deleted');
-      return;
-    }
-
-    if ([400, 401, 403].includes(response.status)) {
-      setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-      return;
-    }
-
-    if (response.status >= 500) {
-      setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
-      return;
+    } else {
+      setGlobalErrorMessage(createErrorMessage(responseBody));
     }
   };
 
@@ -403,7 +394,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         if (response.status === 201) {
           return (responseBody) => {
             if (responseBody.message) {
-              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+              setGlobalErrorMessage(createErrorMessage(responseBody));
               console.error(responseBody);
               return;
             }
@@ -424,14 +415,14 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             setErrorObject(responseBody);
 
             if (responseBody.key === 'slug') {
-              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+              setGlobalErrorMessage(createErrorMessage(responseBody, { omitErrorId: true }));
             }
           };
         }
 
         if (response.status >= 401) {
           return (responseBody) => {
-            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+            setGlobalErrorMessage(createErrorMessage(responseBody));
           };
         }
       }

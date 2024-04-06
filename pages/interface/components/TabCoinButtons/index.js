@@ -5,7 +5,7 @@ import { useReward } from 'react-rewards';
 
 import { Box, IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
-import { useUser } from 'pages/interface';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function TabCoinButtons({ content }) {
   const router = useRouter();
@@ -74,7 +74,12 @@ export default function TabCoinButtons({ content }) {
         return;
       }
 
-      alert(`${responseBody.message} ${responseBody.action}`);
+      alert(
+        createErrorMessage(responseBody, {
+          omitErrorId: response.status == 422,
+        }),
+      );
+
       setIsPosting(false);
     } catch (error) {
       setIsPosting(false);

@@ -31,7 +31,7 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
-import { useUser } from 'pages/interface';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function Page({ userFound: userFoundFallback }) {
   const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
@@ -92,9 +92,8 @@ export default function Page({ userFound: userFoundFallback }) {
     setGlobalMessageObject({
       type: 'danger',
       position: 'main',
-      text: `${responseBody.message} ${responseBody.action}`,
+      text: createErrorMessage(responseBody),
     });
-    return;
   }
 
   function handleEditDescription() {
@@ -328,7 +327,7 @@ function DescriptionForm({
         setGlobalMessageObject({
           type: 'danger',
           position: 'description',
-          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+          text: createErrorMessage(responseBody),
         });
       }
     } catch (error) {

@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
 import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
-import { useUser } from 'pages/interface';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
   return (
@@ -86,7 +86,7 @@ function RecoverPasswordForm() {
       }
 
       if (response.status >= 401) {
-        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} (${responseBody.error_id})`);
+        setGlobalErrorMessage(createErrorMessage(responseBody));
         setIsLoading(false);
         return;
       }

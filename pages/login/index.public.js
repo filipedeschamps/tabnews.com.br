@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
 } from '@/TabNewsUI';
-import { useUser } from 'pages/interface';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function Login() {
   return (
@@ -74,7 +74,7 @@ function LoginForm() {
       }
 
       if (response.status >= 401) {
-        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        setGlobalErrorMessage(createErrorMessage(responseBody));
         setIsLoading(false);
         return;
       }
