@@ -16,7 +16,7 @@ import {
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
-import { suggestEmail, useUser } from 'pages/interface';
+import { createErrorMessage, suggestEmail, useUser } from 'pages/interface';
 
 export default function EditProfile() {
   return (
@@ -167,7 +167,7 @@ function EditProfileForm() {
       if (response.status >= 403) {
         setGlobalMessageObject({
           type: 'danger',
-          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+          text: createErrorMessage(responseBody),
         });
         setIsLoading(false);
         return;

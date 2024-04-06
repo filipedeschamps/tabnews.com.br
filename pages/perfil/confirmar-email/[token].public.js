@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
+import { createErrorMessage } from 'pages/interface';
 
 export default function ActiveUser() {
   const router = useRouter();
@@ -34,7 +35,11 @@ export default function ActiveUser() {
 
       if (response.status >= 400 && response.status <= 503) {
         const responseBody = await response.json();
-        setGlobalMessage(`${responseBody.message} ${responseBody.action}`);
+        setGlobalMessage(
+          createErrorMessage(responseBody, {
+            omitErrorId: [400, 404].includes(response.status),
+          }),
+        );
         setIsSuccess(false);
         return;
       }
