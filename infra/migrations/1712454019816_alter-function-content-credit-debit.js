@@ -30,8 +30,6 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-  // Do not drop the created tables to avoid accidentally losing data.
-
   pgm.createFunction(
     'get_content_balance_credit_debit',
     [

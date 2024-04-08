@@ -14,8 +14,8 @@ async function findAll() {
         users
       CROSS JOIN LATERAL (
         SELECT
-          get_current_balance('user:tabcoin', users.id) as tabcoins,
-          get_current_balance('user:tabcash', users.id) as tabcash
+          get_user_current_tabcoins(users.id) as tabcoins,
+          get_user_current_tabcash(users.id) as tabcash
       ) as balance
       ORDER BY
         created_at ASC
@@ -42,8 +42,8 @@ async function findOneByUsername(username, options = {}) {
   const balanceQuery = `
       SELECT
         user_found.*,
-        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
-        get_current_balance('user:tabcash', user_found.id) as tabcash
+        get_user_current_tabcoins(user_found.id) as tabcoins,
+        get_user_current_tabcash(user_found.id) as tabcash
       FROM
         user_found
       `;
@@ -86,8 +86,8 @@ async function findOneByEmail(email, options = {}) {
   const balanceQuery = `
       SELECT
         user_found.*,
-        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
-        get_current_balance('user:tabcash', user_found.id) as tabcash
+        get_user_current_tabcoins(user_found.id) as tabcoins,
+        get_user_current_tabcash(user_found.id) as tabcash
       FROM
         user_found
       `;
@@ -131,8 +131,8 @@ async function findOneById(userId, options = {}) {
   const balanceQuery = `
       SELECT
         user_found.*,
-        get_current_balance('user:tabcoin', user_found.id) as tabcoins,
-        get_current_balance('user:tabcash', user_found.id) as tabcash
+        get_user_current_tabcoins(user_found.id) as tabcoins,
+        get_user_current_tabcash(user_found.id) as tabcash
       FROM
         user_found
       `;

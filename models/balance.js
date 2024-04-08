@@ -1,49 +1,86 @@
 import { UnprocessableEntityError } from 'errors';
 import database from 'infra/database.js';
 
-async function findOne(operationId, options = {}) {
+const tableNameMap = {
+  'user:tabcoin': 'user_tabcoin_operations',
+  'user:tabcash': 'user_tabcash_operations',
+  default: 'content_tabcoin_operations',
+};
+
+const balanceTypeMap = {
+  'content:tabcoin:credit': 'credit',
+  'content:tabcoin:debit': 'debit',
+  default: 'initial',
+};
+
+const sqlFunctionMap = {
+  'user:tabcoin': 'get_user_current_tabcoins',
+  'user:tabcash': 'get_user_current_tabcash',
+  default: 'get_content_current_tabcoins',
+};
+
+async function findAllByOriginatorId(originatorId, options) {
   const query = {
     text: `
-      SELECT
-        *
-      FROM
-        balance_operations
-      WHERE
-        id = $1
-      LIMIT
-        1
-    ;`,
-    values: [operationId],
+      SELECT * FROM (
+        SELECT id, recipient_id, amount, originator_type, originator_id,
+          'user:tabcoin' AS balance_type
+        FROM user_tabcoin_operations
+        WHERE originator_id = $1
+      UNION ALL
+        SELECT id, recipient_id, amount, originator_type, originator_id,
+          'user:tabcash' AS balance_type
+        FROM user_tabcash_operations
+        WHERE originator_id = $1
+      UNION ALL
+        SELECT id, recipient_id, amount, originator_type, originator_id,
+          CONCAT('content:tabcoin:', balance_type) AS balance_type
+        FROM content_tabcoin_operations
+        WHERE originator_id = $1
+      ) AS all_operations;
+    `,
+    values: [originatorId],
   };
 
   const results = await database.query(query, options);
-  return results.rows[0];
+  return results.rows;
 }
 
 async function create({ balanceType, recipientId, amount, originatorType, originatorId }, options = {}) {
+  const tableName = tableNameMap[balanceType] || tableNameMap.default;
+  const hasBalanceTypeColum = balanceType.startsWith('content:tabcoin');
+
   const query = {
     text: `
-      INSERT INTO balance_operations
-        (balance_type, recipient_id, amount, originator_type, originator_id)
+      INSERT INTO ${tableName}
+        (recipient_id, amount, originator_type, originator_id${hasBalanceTypeColum ? ', balance_type' : ''})
       VALUES
-        ($1, $2, $3, $4, $5)
+        ($1, $2, $3, $4${hasBalanceTypeColum ? ', $5' : ''})
       RETURNING * ;
       `,
-    values: [balanceType, recipientId, amount, originatorType, originatorId],
+    values: [recipientId, amount, originatorType, originatorId],
   };
+
+  if (hasBalanceTypeColum) {
+    const parsedBalanceType = balanceTypeMap[balanceType] || balanceTypeMap.default;
+
+    query.values.push(parsedBalanceType);
+  }
 
   const results = await database.query(query, options);
   return results.rows[0];
 }
 
-async function getTotal({ balanceType, recipientId }, options = {}) {
+async function getTotal({ balanceType, recipientId }, options) {
+  const sqlFunction = sqlFunctionMap[balanceType] || sqlFunctionMap.default;
+
   const query = {
-    text: 'SELECT get_current_balance($1, $2);',
-    values: [balanceType, recipientId],
+    text: `SELECT ${sqlFunction}($1) AS total;`,
+    values: [recipientId],
   };
 
   const results = await database.query(query, options);
-  return results.rows[0].get_current_balance;
+  return results.rows[0].total;
 }
 
 async function getContentTabcoinsCreditDebit({ recipientId }, options = {}) {
@@ -67,22 +104,26 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
   const originatorType = 'event';
   const originatorId = options.eventId;
-  const contentBalanceType = transactionType === 'credit' ? 'content:tabcoin:credit' : 'content:tabcoin:debit';
 
   const query = {
     text: `
-      WITH users_inserts AS (
-        INSERT INTO balance_operations
-          (balance_type, recipient_id, amount, originator_type, originator_id)
+      WITH users_tabcoin_inserts AS (
+        INSERT INTO user_tabcoin_operations
+          (recipient_id, amount, originator_type, originator_id)
         VALUES
-          ('user:tabcoin', $1, $2, $8, $9),
-          ('user:tabcash', $1, $3, $8, $9),
-          ('user:tabcoin', $6, $7, $8, $9)
+          ($1, $2, $8, $9),
+          ($6, $7, $8, $9)
         RETURNING
           *
       ),
+      users_tabcash_insert AS (
+        INSERT INTO user_tabcash_operations
+          (recipient_id, amount, originator_type, originator_id)
+        VALUES
+          ($1, $3, $8, $9)
+      ),
       content_insert AS (
-        INSERT INTO balance_operations
+        INSERT INTO content_tabcoin_operations
           (balance_type, recipient_id, amount, originator_type, originator_id)
         VALUES
           ($10, $4, $5, $8, $9)
@@ -90,12 +131,12 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
           *
       )
       SELECT
-        get_current_balance('user:tabcoin', $1) AS user_current_tabcoin_balance,
+        get_user_current_tabcoins($1) AS user_current_tabcoin_balance,
         tabcoins_count.total_balance as content_current_tabcoin_balance,
         tabcoins_count.total_credit as content_current_tabcoin_credit,
         tabcoins_count.total_debit as content_current_tabcoin_debit 
       FROM
-        users_inserts,
+        users_tabcoin_inserts,
         content_insert,
         get_content_balance_credit_debit(content_insert.recipient_id) tabcoins_count
       LIMIT
@@ -115,7 +156,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
       originatorType, // $8
       originatorId, // $9
 
-      contentBalanceType, // $10
+      transactionType, // $10
     ],
   };
 
@@ -137,9 +178,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   };
 }
 
-async function undo(operationId, options = {}) {
-  const balanceOperation = await findOne(operationId, options);
-
+async function undo(balanceOperation, options) {
   const invertedBalanceOperation = {
     balanceType: balanceOperation.balance_type,
     recipientId: balanceOperation.recipient_id,
@@ -153,7 +192,7 @@ async function undo(operationId, options = {}) {
 }
 
 export default Object.freeze({
-  findOne,
+  findAllByOriginatorId,
   create,
   getTotal,
   getContentTabcoinsCreditDebit,
