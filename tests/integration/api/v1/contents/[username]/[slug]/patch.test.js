@@ -2939,7 +2939,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponseBodyBefore.tabcash).toEqual(0);
 
         await orchestrator.createBalance({
-          balanceType: 'content:tabcoin',
+          balanceType: 'content:tabcoin:initial',
           recipientId: prestigeContents[0].id,
           amount: 1,
           originatorType: 'orchestrator',
@@ -3104,7 +3104,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         });
 
         await orchestrator.createBalance({
-          balanceType: 'content:tabcoin',
+          balanceType: 'content:tabcoin:credit',
           recipientId: prestigeContents[0].id,
           amount: 8,
           originatorType: 'orchestrator',
@@ -3225,7 +3225,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         });
 
         await orchestrator.createBalance({
-          balanceType: 'content:tabcoin',
+          balanceType: 'content:tabcoin:credit',
           recipientId: prestigeContents[0].id,
           amount: 10,
           originatorType: 'orchestrator',
