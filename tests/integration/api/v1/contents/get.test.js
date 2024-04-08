@@ -427,7 +427,7 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[0].id, // Conteúdo #1
         amount: 10, // -> with recent comment, but same user
       });
@@ -454,7 +454,7 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[1].id, // Conteúdo #2
         amount: 10, // -> score = 33, more than 7 days ago, but with recent comment
       });
@@ -481,7 +481,7 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[2].id, // Conteúdo #3
         amount: 9, // -> score = 30, more than 7 days ago, but with recent comment
       });
@@ -501,7 +501,7 @@ describe('GET /api/v1/contents', () => {
       vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[3].id, // Conteúdo #4
         amount: 9, // -> score = 30, but more than 7 days ago
       });
@@ -521,7 +521,7 @@ describe('GET /api/v1/contents', () => {
       vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[4].id, // Conteúdo #5
         amount: 8, // -> score = 27 and 3 days ago -> group_6
       });
@@ -541,7 +541,7 @@ describe('GET /api/v1/contents', () => {
       vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[5].id, // Conteúdo #6
         amount: 3, // score = 12 and less than 36 hours -> group_4
       });
@@ -561,7 +561,7 @@ describe('GET /api/v1/contents', () => {
       vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[6].id, // Conteúdo #7
         amount: 4, // score = 15 and more than 37 hours -> group_5
       });
@@ -581,7 +581,7 @@ describe('GET /api/v1/contents', () => {
       vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[7].id, // Conteúdo #8
         amount: 4, // score = 15 and more than 36 hours -> group_5
       });
@@ -601,7 +601,7 @@ describe('GET /api/v1/contents', () => {
       vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[8].id, // Conteúdo #9
         amount: 2, // score = 9 and more than 24 hours -> group_5
       });
@@ -698,25 +698,25 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[30].id, // Conteúdo #31
         amount: 5, // score = 18 -> group_1
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[35].id, // Conteúdo #36
         amount: 2, // score = 9 -> group_2
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:debit',
         recipientId: contentList[49].id, // Conteúdo #50
         amount: -2,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:debit',
         recipientId: contentList[50].id, // Conteúdo #51
         amount: -3,
       });
