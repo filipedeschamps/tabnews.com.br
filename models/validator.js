@@ -499,6 +499,25 @@ const schemas = {
     return contentSchema;
   },
 
+  visits: function () {
+    return Joi.object({
+      week_viewers: Joi.number()
+        .integer()
+        .min(0)
+        .max(MAX_INTEGER)
+        .when('$required.week_viewers', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"week_viewers" é um campo obrigatório.`,
+          'string.empty': `"week_viewers" não pode estar em branco.`,
+          'number.base': `"week_viewers" deve ser do tipo Number.`,
+          'number.integer': `"week_viewers" deve ser um Inteiro.`,
+          'number.min': `"week_viewers" deve possuir um valor mínimo de 0.`,
+          'number.max': `"week_viewers" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+          'number.unsafe': `"week_viewers" deve possuir um valor máximo de ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
   with_children: function () {
     return Joi.object({
       with_children: Joi.boolean().when('$required.with_children', {

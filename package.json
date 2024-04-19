@@ -20,6 +20,7 @@
     "cookie": "0.6.0",
     "date-fns": "3.3.1",
     "feed": "4.2.2",
+    "graphql-request": "6.1.0",
     "is-in-subnet": "4.0.1",
     "joi": "17.12.1",
     "next": "14.1.0",

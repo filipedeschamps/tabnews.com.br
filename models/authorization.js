@@ -33,6 +33,7 @@ const availableFeatures = new Set([
   'create:content:text_child',
   'read:content:list',
   'read:content:tabcoins',
+  'read:content:visits',
 
   // MODERATION
   'read:user:list',
@@ -251,6 +252,12 @@ function filterOutput(user, feature, output) {
       tabcoins: 'required',
       tabcoins_credit: 'required',
       tabcoins_debit: 'required',
+    });
+  }
+
+  if (feature === 'read:content:visits') {
+    filteredOutputValues = validator(output, {
+      visits: 'required',
     });
   }
 
