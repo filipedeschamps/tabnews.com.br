@@ -8,11 +8,13 @@ config();
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
+    environmentMatchGlobs: [['**/interface/**/*', 'jsdom']],
     globals: true,
     fileParallelism: false,
     isolate: false,
     testTimeout: 60_000,
     hookTimeout: 30_000,
+    setupFiles: ['tests/setup.js'],
   },
   esbuild: {
     loader: 'jsx',

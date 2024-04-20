@@ -1,11 +1,8 @@
-import { Box, EmptyState, Link, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
-import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
+import { Box, EmptyState, Link, Pagination, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
+import { CommentIcon } from '@/TabNewsUI/icons';
 
 export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
-
-  const previousPageUrl = `${paginationBasePath}/${pagination.previousPage}`;
-  const nextPageUrl = `${paginationBasePath}/${pagination.nextPage}`;
 
   return (
     <>
@@ -28,42 +25,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
         <RenderEmptyMessage {...emptyStateProps} />
       )}
 
-      {list.length > 0 ? (
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'center',
-            whiteSpace: 'nowrap',
-            gap: 4,
-            m: 4,
-            mb: 2,
-          }}>
-          {pagination.previousPage ? (
-            <Link href={previousPageUrl} scroll={false}>
-              <ChevronLeftIcon size={16} />
-              Anterior
-            </Link>
-          ) : (
-            <Text color="fg.muted">
-              <ChevronLeftIcon size={16} />
-              Anterior
-            </Text>
-          )}
-
-          {pagination.nextPage ? (
-            <Link href={nextPageUrl}>
-              Próximo
-              <ChevronRightIcon size={16} />
-            </Link>
-          ) : (
-            <Text color="fg.muted">
-              Próximo
-              <ChevronRightIcon size={16} />
-            </Text>
-          )}
-        </Box>
-      ) : null}
+      {list.length > 0 ? <Pagination {...pagination} basePath={paginationBasePath} /> : null}
     </>
   );
 
