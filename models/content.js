@@ -4,6 +4,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { ForbiddenError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
+import pagination from 'models/pagination.js';
 import prestige from 'models/prestige';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
@@ -218,7 +219,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at DESC';
     results.rows = await findAll(options);
-    options.totalRows = results.rows[0]?.total_rows;
+    options.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -229,7 +230,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at ASC';
     results.rows = await findAll(options);
-    options.totalRows = results.rows[0]?.total_rows;
+    options.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -252,34 +253,17 @@ async function findWithStrategy(options = {}) {
       results.rows = rankContentListByRelevance(contentList);
     }
 
-    values.totalRows = results.rows[0]?.total_rows;
+    values.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(values, options);
 
     return results;
   }
 }
 
-async function getPagination(values, options = {}) {
+async function getPagination(values, options) {
   values.count = true;
-
-  const totalRows = values.totalRows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
-  const perPage = values.per_page;
-  const firstPage = 1;
-  const lastPage = Math.ceil(totalRows / values.per_page);
-  const nextPage = values.page >= lastPage ? null : values.page + 1;
-  const previousPage = values.page <= 1 ? null : values.page > lastPage ? lastPage : values.page - 1;
-  const strategy = values.strategy;
-
-  return {
-    currentPage: values.page,
-    totalRows: totalRows,
-    perPage: perPage,
-    firstPage: firstPage,
-    nextPage: nextPage,
-    previousPage: previousPage,
-    lastPage: lastPage,
-    strategy: strategy,
-  };
+  values.total_rows = values.total_rows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
+  return pagination.get(values);
 }
 
 async function create(postedContent, options = {}) {

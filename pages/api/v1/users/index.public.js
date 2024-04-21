@@ -19,7 +19,7 @@ export default nextConnect({
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
-  .get(authorization.canRequest('read:user:list'), getHandler)
+  .get(getValidationHandler, authorization.canRequest('read:user:list'), getHandler)
   .post(
     postValidationHandler,
     authorization.canRequest('create:user'),
@@ -27,12 +27,30 @@ export default nextConnect({
     postHandler,
   );
 
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    page: 'optional',
+    per_page: 'optional',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
+
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
 
-  const userList = await user.findAll();
+  const results = await user.findAllWithPagination({
+    page: request.query.page,
+    per_page: request.query.per_page,
+  });
+
+  const userList = results.rows;
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
+
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/users', response);
 
   return response.status(200).json(secureOutputValues);
 }
