@@ -4,6 +4,7 @@ import { v4 as uuidV4 } from 'uuid';
 import {
   ForbiddenError,
   InternalServerError,
+  MethodNotAllowedError,
   NotFoundError,
   TooManyRequestsError,
   UnauthorizedError,
@@ -33,7 +34,11 @@ async function onNoMatchHandler(request, response) {
   }
 
   injectRequestMetadata(request);
-  const publicErrorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
+  const publicErrorObject = new MethodNotAllowedError({
+    message: `Método "${request.method}" não permitido para "${request.url}".`,
+    action: 'Utilize um método HTTP válido para este recurso.',
+    requestId: request.context?.requestId || uuidV4(),
+  });
 
   const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
   logger.info(snakeize(privateErrorObject));
@@ -44,6 +49,7 @@ async function onNoMatchHandler(request, response) {
 function onErrorHandler(error, request, response) {
   if (
     error instanceof ValidationError ||
+    error instanceof MethodNotAllowedError ||
     error instanceof NotFoundError ||
     error instanceof ForbiddenError ||
     error instanceof UnprocessableEntityError ||
