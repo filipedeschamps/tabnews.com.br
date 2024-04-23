@@ -28,6 +28,10 @@ async function injectRequestMetadata(request, response, next) {
 }
 
 async function onNoMatchHandler(request, response) {
+  if (request.method === 'OPTIONS') {
+    return response.status(200).end();
+  }
+
   injectRequestMetadata(request);
   const publicErrorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
 
