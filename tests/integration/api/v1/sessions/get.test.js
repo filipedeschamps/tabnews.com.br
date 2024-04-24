@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
@@ -16,13 +15,13 @@ describe('GET /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toEqual(405);
 
       expect(responseBody).toStrictEqual({
-        name: 'NotFoundError',
-        message: 'Não foi possível encontrar este recurso no sistema.',
-        action: 'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.',
-        status_code: 404,
+        name: 'MethodNotAllowedError',
+        message: 'Método "GET" não permitido para "/api/v1/sessions".',
+        action: 'Utilize um método HTTP válido para este recurso.',
+        status_code: 405,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
       });
