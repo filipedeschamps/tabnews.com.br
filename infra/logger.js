@@ -8,16 +8,21 @@ function getLogger() {
         environment: process.env.VERCEL_ENV,
       },
       nestedKey: 'payload',
-      redact: [
-        'headers.cookie',
-        'password',
-        'email',
-        'body.password',
-        'body.email',
-        'context.user.password',
-        'context.user.email',
-        'context.session.token',
-      ],
+      redact: {
+        paths: [
+          'headers.cookie',
+          'headers["x-vercel-ip-continent"]',
+          'headers["x-vercel-ip-as-number"]',
+          'password',
+          'email',
+          'body.password',
+          'body.email',
+          'context.user.password',
+          'context.user.email',
+          'context.session.token',
+        ],
+        remove: true,
+      },
     });
 
     return pinoLogger;
