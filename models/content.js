@@ -719,6 +719,36 @@ async function update(contentId, postedContent, options = {}) {
   }
 }
 
+async function confirmFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = 'deleted',
+          deleted_at = CASE
+            WHEN deleted_at IS NULL THEN (now() at time zone 'utc')
+            ELSE deleted_at
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *)
+      
+      SELECT
+        updated_contents.*,
+        tabcoins_count.*
+      FROM
+        updated_contents
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
 async function undoFirewallStatus(contentIds, options) {
   const query = {
     text: `
@@ -727,8 +757,7 @@ async function undoFirewallStatus(contentIds, options) {
           status = CASE
             WHEN deleted_at IS NULL THEN 'published'
             ELSE 'deleted'
-          END,
-          updated_at = (now() at time zone 'utc')
+          END
         WHERE
           id = ANY ($1)
         RETURNING
@@ -985,6 +1014,7 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  confirmFirewallStatus,
   undoFirewallStatus,
   creditOrDebitTabCoins,
 });

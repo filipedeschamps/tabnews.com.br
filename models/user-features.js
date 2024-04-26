@@ -39,7 +39,10 @@ const availableFeatures = new Set([
   'ban:user',
   'create:recovery_token:username',
   'read:firewall',
-  'undo:firewall',
+  'review:firewall',
+
+  // Banned
+  'nuked',
 ]);
 
 export default Object.freeze(availableFeatures);

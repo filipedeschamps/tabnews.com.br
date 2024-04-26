@@ -476,8 +476,8 @@ async function addFeatures(userId, features, options = {}) {
     UPDATE
       users
     SET
-      features = array_cat(features, $1),
-      updated_at = (now() at time zone 'utc')
+      ${options.ignoreUpdatedAt ? '' : "updated_at = (now() at time zone 'utc'),"}
+      features = array_cat(features, $1)
     ${whereClause.text}
     RETURNING
       *)`;

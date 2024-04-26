@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { version as uuidVersion } from 'uuid';
 
 import content from 'models/content';
-import event from 'models/event';
+import user from 'models/user';
 import orchestrator from 'tests/orchestrator';
 import RequestBuilder from 'tests/request-builder';
 
@@ -16,11 +16,24 @@ beforeAll(async () => {
 describe('GET /api/v1/events/firewall/[id]', () => {
   async function createContentViaApi(contentsRequestBuilder, body) {
     return contentsRequestBuilder.post({
-      title: body?.title ?? `New content - ${new Date().getTime()}`,
+      title: `New content - ${new Date().getTime()}`,
       body: 'body',
       status: 'published',
       parent_id: body?.parent_id,
     });
+  }
+
+  function mapUserData(user) {
+    return {
+      created_at: user.created_at.toISOString(),
+      description: user.description,
+      features: user.features,
+      id: user.id,
+      tabcash: +user.tabcash,
+      tabcoins: +user.tabcoins,
+      updated_at: user.updated_at.toISOString(),
+      username: user.username,
+    };
   }
 
   function mapContentData(content) {
@@ -157,15 +170,15 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         owner_id: user.id,
         title: 'Create event',
       });
-      const contentEvent = (await event.findAll())[0];
+      const lastEvent = await orchestrator.getLastEvent();
 
-      const { response, responseBody } = await firewallRequestBuilder.get(`/${contentEvent.id}`);
+      const { response, responseBody } = await firewallRequestBuilder.get(`/${lastEvent.id}`);
 
       expect(response.status).toEqual(404);
 
       expect(responseBody).toEqual({
         name: 'NotFoundError',
-        message: `O id "${contentEvent.id}" não foi encontrado no sistema.`,
+        message: `O id "${lastEvent.id}" não foi encontrado no sistema.`,
         action: 'Verifique se o "id" está digitado corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
@@ -203,8 +216,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(user3Response.status).toEqual(429);
 
       // Get firewall side-effect
-      const allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
@@ -237,10 +249,19 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
 
-    test('With a reversed "firewall:block_users" event', async () => {
+    test.each([
+      {
+        action: 'undo',
+        eventType: 'moderation:unblock_users',
+      },
+      {
+        action: 'confirm',
+        eventType: 'moderation:block_users',
+      },
+    ])('With a review $action "firewall:block_users" event', async ({ action, eventType }) => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
-      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'undo:firewall'] });
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
 
       // Create users
       const { responseBody: user1 } = await usersRequestBuilder.post({
@@ -262,32 +283,32 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(user3Response.status).toEqual(429);
 
       // Check firewall side-effect
-      let allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       expect(firewallEvent.type).toEqual('firewall:block_users');
       expect(firewallEvent.metadata.users).toEqual([user1.id, user2.id]);
 
-      // Undo firewall side-effect
-      const undoFirewallRequestBuilder = new RequestBuilder(`/api/v1/moderations/undo_firewall/${firewallEvent.id}`);
-      await undoFirewallRequestBuilder.setUser(firewallUser);
-      const { response: undoResponse } = await undoFirewallRequestBuilder.post();
-      expect(undoResponse.status).toEqual(200);
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
+      expect(reviewResponse.status).toEqual(200);
 
-      // Get reversed firewall event
-      allEvents = await event.findAll();
-      const reversedEvent = allEvents.at(-1);
+      // Get reviewed firewall event
+      const reviewEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
       expect(response.status).toEqual(200);
 
-      const { responseBody: user1AfterReverse } = await usersRequestBuilder.get(`/${user1.username}`);
-      const { responseBody: user2AfterReverse } = await usersRequestBuilder.get(`/${user2.username}`);
+      const user1AfterReview = await user.findOneById(user1.id, { withBalance: true });
+      const user2AfterReview = await user.findOneById(user2.id, { withBalance: true });
 
       expect(responseBody).toEqual({
         affected: {
-          users: [user1AfterReverse, user2AfterReverse],
+          users: [mapUserData(user1AfterReview), mapUserData(user2AfterReview)],
         },
         events: [
           {
@@ -295,20 +316,20 @@ describe('GET /api/v1/events/firewall/[id]', () => {
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:user',
-              users: [user1AfterReverse.id, user2AfterReverse.id],
+              users: [user1.id, user2.id],
             },
             originator_user_id: null,
             type: 'firewall:block_users',
           },
           {
             created_at: responseBody.events[1].created_at,
-            id: reversedEvent.id,
+            id: reviewEvent.id,
             metadata: {
               original_event_id: firewallEvent.id,
-              users: [user1AfterReverse.id, user2AfterReverse.id],
+              users: [user1AfterReview.id, user2AfterReview.id],
             },
             originator_user_id: firewallUser.id,
-            type: 'moderation:unblock_users',
+            type: eventType,
           },
         ],
       });
@@ -323,7 +344,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       // Create user and contents
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
-      let user1 = await contentsRequestBuilder.buildUser();
+      const user1 = await contentsRequestBuilder.buildUser();
 
       const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder);
       const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
@@ -332,8 +353,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(responseContent3.status).toEqual(429);
 
       // Get firewall side-effect
-      const allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
@@ -366,14 +386,23 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
 
-    test('With a reversed "firewall:block_contents:text_root" event', async () => {
+    test.each([
+      {
+        action: 'undo',
+        eventType: 'moderation:unblock_contents:text_root',
+      },
+      {
+        action: 'confirm',
+        eventType: 'moderation:block_contents:text_root',
+      },
+    ])('With a review $action "firewall:block_contents:text_root" event', async ({ action, eventType }) => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
-      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'undo:firewall'] });
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
 
       // Create users and contents
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
-      let user1 = await contentsRequestBuilder.buildUser();
+      const user1 = await contentsRequestBuilder.buildUser();
 
       const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder);
       const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
@@ -382,22 +411,22 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(responseContent3.status).toEqual(429);
 
       // Check firewall side-effect
-      let allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       expect(firewallEvent.type).toEqual('firewall:block_contents:text_root');
       expect(firewallEvent.metadata.contents).toEqual([content1.id, content2.id]);
 
-      // Undo firewall side-effect
-      const undoFirewallRequestBuilder = new RequestBuilder(`/api/v1/moderations/undo_firewall/${firewallEvent.id}`);
-      await undoFirewallRequestBuilder.setUser(firewallUser);
-      const { response: undoResponse } = await undoFirewallRequestBuilder.post();
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
 
-      expect(undoResponse.status).toEqual(200);
+      expect(reviewResponse.status).toEqual(200);
 
-      // Get reversed firewall event
-      allEvents = await event.findAll();
-      const reversedEvent = allEvents.at(-1);
+      // Get reviewed firewall event
+      const reviewEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
@@ -426,13 +455,13 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
           {
             created_at: responseBody.events[1].created_at,
-            id: reversedEvent.id,
+            id: reviewEvent.id,
             metadata: {
               contents: [content1AfterFirewall.id, content2AfterFirewall.id],
               original_event_id: firewallEvent.id,
             },
             originator_user_id: firewallUser.id,
-            type: 'moderation:unblock_contents:text_root',
+            type: eventType,
           },
         ],
       });
@@ -447,7 +476,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       // Create user and contents
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
-      let user1 = await contentsRequestBuilder.buildUser();
+      const user1 = await contentsRequestBuilder.buildUser();
 
       const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder);
       const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
@@ -460,8 +489,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(responseContent3.status).toEqual(429);
 
       // Get firewall side-effect
-      const allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
@@ -505,7 +533,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       const { responseBody: rootContent } = await createContentViaApi(contentsRequestBuilder);
 
-      let user1 = await contentsRequestBuilder.buildUser();
+      const user1 = await contentsRequestBuilder.buildUser();
 
       const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder, {
         parent_id: rootContent.id,
@@ -520,8 +548,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(responseContent3.status).toEqual(429);
 
       // Get firewall side-effect
-      const allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
@@ -554,10 +581,19 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
 
-    test('With a reversed "firewall:block_contents:text_child" event', async () => {
+    test.each([
+      {
+        action: 'undo',
+        eventType: 'moderation:unblock_contents:text_child',
+      },
+      {
+        action: 'confirm',
+        eventType: 'moderation:block_contents:text_child',
+      },
+    ])('With a review $action "firewall:block_contents:text_child" event', async ({ action, eventType }) => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
-      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'undo:firewall'] });
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
 
       // Create users and contents
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
@@ -565,7 +601,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       const { responseBody: rootContent } = await createContentViaApi(contentsRequestBuilder);
 
-      let user1 = await contentsRequestBuilder.buildUser();
+      const user1 = await contentsRequestBuilder.buildUser();
 
       const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder, {
         parent_id: rootContent.id,
@@ -580,22 +616,22 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(responseContent3.status).toEqual(429);
 
       // Check firewall side-effect
-      let allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       expect(firewallEvent.type).toEqual('firewall:block_contents:text_child');
       expect(firewallEvent.metadata.contents).toEqual([content1.id, content2.id]);
 
-      // Undo firewall side-effect
-      const undoFirewallRequestBuilder = new RequestBuilder(`/api/v1/moderations/undo_firewall/${firewallEvent.id}`);
-      await undoFirewallRequestBuilder.setUser(firewallUser);
-      const { response: undoResponse } = await undoFirewallRequestBuilder.post();
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
 
-      expect(undoResponse.status).toEqual(200);
+      expect(reviewResponse.status).toEqual(200);
 
-      // Get reversed firewall event
-      allEvents = await event.findAll();
-      const reversedEvent = allEvents.at(-1);
+      // Get reviewed firewall event
+      const reviewEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 
@@ -624,13 +660,13 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
           {
             created_at: responseBody.events[1].created_at,
-            id: reversedEvent.id,
+            id: reviewEvent.id,
             metadata: {
               contents: [content1AfterFirewall.id, content2AfterFirewall.id],
               original_event_id: firewallEvent.id,
             },
             originator_user_id: firewallUser.id,
-            type: 'moderation:unblock_contents:text_child',
+            type: eventType,
           },
         ],
       });
@@ -670,8 +706,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       expect(responseContent3.status).toEqual(429);
 
       // Get firewall side-effect
-      const allEvents = await event.findAll();
-      const firewallEvent = allEvents.at(-1);
+      const firewallEvent = await orchestrator.getLastEvent();
 
       const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
 

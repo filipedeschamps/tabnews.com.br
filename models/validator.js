@@ -557,6 +557,9 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'moderation:block_users',
+          'moderation:block_contents:text_root',
+          'moderation:block_contents:text_child',
           'moderation:unblock_users',
           'moderation:unblock_contents:text_root',
           'moderation:unblock_contents:text_child',
@@ -656,6 +659,15 @@ const schemas = {
         users: Joi.array().items(schemas.user()).min(1).required(),
       }),
       events: Joi.array().items(schemas.event()).min(1).required(),
+    });
+  },
+
+  firewall_review_action: function () {
+    return Joi.object({
+      action: Joi.string()
+        .trim()
+        .valid('confirm', 'undo')
+        .when('$required.action', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 

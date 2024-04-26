@@ -223,8 +223,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(content2.status).toEqual('firewall');
         expect(content3).toBeUndefined();
 
-        const events = await event.findAll();
-        const lastEvent = events.at(-1);
+        const lastEvent = await orchestrator.getLastEvent();
 
         expect(lastEvent.metadata).toStrictEqual({
           from_rule: 'create:content:text_root',

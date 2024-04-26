@@ -15,7 +15,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .use(authentication.injectAnonymousOrUser)
-  .get(cacheControl.swrMaxAge(300), getValidationHandler, authorization.canRequest('read:firewall'), getHandler);
+  .get(cacheControl.noCache, getValidationHandler, authorization.canRequest('read:firewall'), getHandler);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
