@@ -109,13 +109,13 @@ function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
 
           <ActionMenu.Overlay>
             <ActionList>
-              <ActionList.Item onClick={() => onComponentModeChange('edit')}>
+              <ActionList.Item onSelect={() => onComponentModeChange('edit')}>
                 <ActionList.LeadingVisual>
                   <PencilIcon />
                 </ActionList.LeadingVisual>
                 Editar
               </ActionList.Item>
-              <ActionList.Item variant="danger" onClick={onDelete}>
+              <ActionList.Item variant="danger" onSelect={onDelete}>
                 <ActionList.LeadingVisual>
                   <TrashIcon />
                 </ActionList.LeadingVisual>
