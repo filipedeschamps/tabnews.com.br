@@ -134,7 +134,7 @@ export default function Page({ userFound: userFoundFallback }) {
               </NavItem>
             )}
             {canNuke && (
-              <ActionList.Item variant="danger" onClick={handleClickNuke}>
+              <ActionList.Item variant="danger" onSelect={handleClickNuke}>
                 <ActionList.LeadingVisual>
                   <CircleSlashIcon />
                 </ActionList.LeadingVisual>
