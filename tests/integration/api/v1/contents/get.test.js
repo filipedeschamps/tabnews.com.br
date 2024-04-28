@@ -1107,7 +1107,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"page" deve possuir um valor máximo de 9007199254740990.',
+        message: `"page" deve possuir um valor entre 1 e 9007199254740990.`,
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
@@ -1217,7 +1217,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"per_page" deve possuir um valor máximo de 100.',
+        message: '"per_page" deve possuir um valor entre 1 e 100.',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
