@@ -59,10 +59,9 @@ const schemas = {
   id: function () {
     return Joi.object({
       id: Joi.string()
-        .allow(null)
         .trim()
         .guid({ version: 'uuidv4' })
-        .when('$required.id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"id" é um campo obrigatório.`,
           'string.empty': `"id" não pode estar em branco.`,
@@ -223,10 +222,9 @@ const schemas = {
   parent_id: function () {
     return Joi.object({
       parent_id: Joi.string()
-        .allow(null)
         .trim()
         .guid({ version: 'uuidv4' })
-        .when('$required.parent_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.parent_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"parent_id" é um campo obrigatório.`,
           'string.empty': `"parent_id" não pode estar em branco.`,
@@ -264,10 +262,9 @@ const schemas = {
           /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
           '',
         )
-        .allow(null)
         .min(1)
         .max(255)
-        .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"title" é um campo obrigatório.`,
           'string.empty': `"title" não pode estar em branco.`,
@@ -323,12 +320,11 @@ const schemas = {
   source_url: function () {
     return Joi.object({
       source_url: Joi.string()
-        .allow(null)
         .replace(/\u0000/g, '')
         .trim()
         .max(2000)
         .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([/?#]\S*)?$/u)
-        .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"source_url" é um campo obrigatório.`,
           'string.empty': `"source_url" não pode estar em branco.`,
@@ -343,10 +339,9 @@ const schemas = {
   owner_id: function () {
     return Joi.object({
       owner_id: Joi.string()
-        .allow(null)
         .trim()
         .guid({ version: 'uuidv4' })
-        .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"owner_id" é um campo obrigatório.`,
           'string.empty': `"owner_id" não pode estar em branco.`,
@@ -383,8 +378,7 @@ const schemas = {
   published_at: function () {
     return Joi.object({
       published_at: Joi.date()
-        .allow(null)
-        .when('$required.published_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.published_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"published_at" é um campo obrigatório.`,
           'string.empty': `"published_at" não pode estar em branco.`,
@@ -396,8 +390,7 @@ const schemas = {
   deleted_at: function () {
     return Joi.object({
       deleted_at: Joi.date()
-        .allow(null)
-        .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"deleted_at" é um campo obrigatório.`,
           'string.empty': `"deleted_at" não pode estar em branco.`,
@@ -409,8 +402,7 @@ const schemas = {
   expires_at: function () {
     return Joi.object({
       expires_at: Joi.date()
-        .allow(null)
-        .when('$required.expires_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .when('$required.expires_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
           'any.required': `"expires_at" é um campo obrigatório.`,
           'string.empty': `"expires_at" não pode estar em branco.`,
