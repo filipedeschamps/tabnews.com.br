@@ -98,7 +98,6 @@ const schemas = {
         .min(3)
         .max(30)
         .trim()
-        .invalid(null)
         .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
@@ -112,7 +111,6 @@ const schemas = {
         .min(3)
         .max(30)
         .trim()
-        .invalid(null)
         .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.owner_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
@@ -127,7 +125,6 @@ const schemas = {
         .max(254)
         .lowercase()
         .trim()
-        .invalid(null)
         .when('$required.email', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
     });
@@ -140,7 +137,6 @@ const schemas = {
         .min(8)
         .max(72)
         .trim()
-        .invalid(null)
         .when('$required.password', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
     });
@@ -151,7 +147,6 @@ const schemas = {
       description: Joi.string()
         .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
         .max(5000)
-        .invalid(null)
         .allow('')
         .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
@@ -161,7 +156,6 @@ const schemas = {
   notifications: function () {
     return Joi.object({
       notifications: Joi.boolean()
-        .invalid(null)
         .when('$required.notifications', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
     });
@@ -204,7 +198,6 @@ const schemas = {
         .max(226, 'utf8')
         .trim()
         .truncate()
-        .invalid(null)
         .pattern(/^[a-z0-9](-?[a-z0-9])*$/)
         .when('$required.slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -235,7 +228,6 @@ const schemas = {
         .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
         .min(1)
         .max(20000)
-        .invalid(null)
         .custom(withoutMarkdown, 'check if is empty without markdown')
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
@@ -250,7 +242,6 @@ const schemas = {
       status: Joi.string()
         .trim()
         .valid('draft', 'published', 'deleted')
-        .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           ...defaultValidationMessages,
@@ -327,7 +318,6 @@ const schemas = {
   used: function () {
     return Joi.object({
       used: Joi.boolean()
-        .allow(false)
         .when('$required.used', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
     });
@@ -373,7 +363,6 @@ const schemas = {
         .trim()
         .valid('new', 'old', 'relevant')
         .default('relevant')
-        .invalid(null)
         .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           ...defaultValidationMessages,
@@ -530,7 +519,6 @@ const schemas = {
   with_children: function () {
     return Joi.object({
       with_children: Joi.boolean()
-        .allow(false)
         .when('$required.with_children', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
     });
@@ -539,7 +527,6 @@ const schemas = {
   with_root: function () {
     return Joi.object({
       with_root: Joi.boolean()
-        .allow(false)
         .when('$required.with_root', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages(defaultValidationMessages),
     });
@@ -690,7 +677,6 @@ const schemas = {
       transaction_type: Joi.string()
         .trim()
         .valid('credit', 'debit')
-        .invalid(null)
         .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           ...defaultValidationMessages,
@@ -704,7 +690,6 @@ const schemas = {
       ban_type: Joi.string()
         .trim()
         .valid('nuke')
-        .invalid(null)
         .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
           ...defaultValidationMessages,
