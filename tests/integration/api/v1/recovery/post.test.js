@@ -222,7 +222,7 @@ describe('POST /api/v1/recovery', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: 'Body enviado deve ser do tipo Object.',
+        message: '"body" enviado deve ser do tipo Object.',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
