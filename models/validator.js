@@ -15,7 +15,7 @@ const defaultSchema = Joi.object()
   .min(1)
   .messages({
     'any.invalid': '{#label} possui o valor inválido "{#value}".',
-    'any.only': '{#label} não aceita o valor "{#value}".',
+    'any.only': '{#label} deve possuir um dos seguintes valores: {#valids}.',
     'any.required': '{#label} é um campo obrigatório.',
     'array.base': '{#label} deve ser do tipo Array.',
     'boolean.base': '{#label} deve ser do tipo Boolean.',
@@ -77,6 +77,10 @@ export default function validator(object, keys) {
     },
     errors: {
       escapeHtml: true,
+      wrap: {
+        array: false,
+        string: '"',
+      },
     },
   });
 
@@ -242,10 +246,7 @@ const schemas = {
       status: Joi.string()
         .trim()
         .valid('draft', 'published', 'deleted')
-        .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.only': `{#label} deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
-        }),
+        .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 
@@ -366,10 +367,7 @@ const schemas = {
         .trim()
         .valid('new', 'old', 'relevant')
         .default('relevant')
-        .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.only': `{#label} deve possuir um dos seguintes valores: "new", "old" ou "relevant".`,
-        }),
+        .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 
@@ -380,10 +378,7 @@ const schemas = {
       order: Joi.string()
         .trim()
         .valid('created_at DESC', 'created_at ASC', 'published_at DESC', 'published_at ASC')
-        .when('$required.order', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.only': `{#label} deve possuir um dos seguintes valores: "created_at DESC", "created_at ASC", "published_at DESC" ou "published_at ASC".`,
-        }),
+        .when('$required.order', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 
@@ -440,9 +435,7 @@ const schemas = {
 
   $not_null: function () {
     return Joi.object({
-      $not_null: Joi.array().optional().items(Joi.string().valid('parent_id')).messages({
-        'any.only': `{#label} deve conter um dos seguintes valores: "parent_id".`,
-      }),
+      $not_null: Joi.array().optional().items(Joi.string().valid('parent_id')),
     });
   },
 
@@ -528,21 +521,25 @@ const schemas = {
 
   event: function () {
     return Joi.object({
-      type: Joi.string().valid(
-        'create:user',
-        'update:user',
-        'ban:user',
-        'create:content:text_root',
-        'create:content:text_child',
-        'update:content:text_root',
-        'update:content:text_child',
-        'update:content:tabcoins',
-        'firewall:block_users',
-        'firewall:block_contents:text_root',
-        'firewall:block_contents:text_child',
-        'reward:user:tabcoins',
-        'system:update:tabcoins',
-      ),
+      type: Joi.string()
+        .valid(
+          'create:user',
+          'update:user',
+          'ban:user',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content:text_root',
+          'update:content:text_child',
+          'update:content:tabcoins',
+          'firewall:block_users',
+          'firewall:block_contents:text_root',
+          'firewall:block_contents:text_child',
+          'reward:user:tabcoins',
+          'system:update:tabcoins',
+        )
+        .messages({
+          'any.only': '{#label} não aceita o valor "{#value}".',
+        }),
       originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional(),
       originatorIp: Joi.string()
         .ip({
@@ -658,10 +655,7 @@ const schemas = {
       transaction_type: Joi.string()
         .trim()
         .valid('credit', 'debit')
-        .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.only': `{#label} deve possuir um dos seguintes valores: "credit" e "debit".`,
-        }),
+        .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 
@@ -670,10 +664,7 @@ const schemas = {
       ban_type: Joi.string()
         .trim()
         .valid('nuke')
-        .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.only': `{#label} deve possuir um dos seguintes valores: "nuke".`,
-        }),
+        .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 };

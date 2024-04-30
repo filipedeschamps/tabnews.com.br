@@ -1329,7 +1329,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1361,7 +1361,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1393,7 +1393,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);

@@ -73,7 +73,7 @@ describe('GET /api/v1/contents', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"strategy" deve possuir um dos seguintes valores: "new", "old" ou "relevant".',
+        message: '"strategy" deve possuir um dos seguintes valores: "new", "old", "relevant".',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
