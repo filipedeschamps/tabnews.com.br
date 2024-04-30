@@ -55,6 +55,31 @@ export default function validator(object, keys) {
   return value;
 }
 
+const defaultValidationMessages = {
+  'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+  'any.only': `{#label} não aceita o valor "{#value}".`,
+  'any.required': `{#label} é um campo obrigatório.`,
+  'array.base': `{#label} deve ser do tipo Array.`,
+  'boolean.base': `{#label} deve ser do tipo Boolean.`,
+  'date.base': `{#label} deve conter uma data válida.`,
+  'markdown.empty': `Markdown deve conter algum texto.`,
+  'number.base': `{#label} deve ser do tipo Number.`,
+  'number.integer': `{#label} deve ser um Inteiro.`,
+  'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+  'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
+  'object.base': `{#label} deve ser do tipo Object.`,
+  'string.alphanum': `{#label} deve conter apenas caracteres alfanuméricos.`,
+  'string.base': `{#label} deve ser do tipo String.`,
+  'string.email': `{#label} deve conter um email válido.`,
+  'string.empty': `{#label} não pode estar em branco.`,
+  'string.length': `{#label} deve possuir {#limit} {if(#limit==1, "caractere", "caracteres")}.`,
+  'string.ip': `{#label} deve possuir um IP válido.`,
+  'string.guid': `{#label} deve possuir um token UUID na versão 4.`,
+  'string.max': `{#label} deve conter no máximo {#limit} {if(#limit==1, "caractere", "caracteres")}.`,
+  'string.min': `{#label} deve conter no mínimo {#limit} {if(#limit==1, "caractere", "caracteres")}.`,
+  'username.reserved': `Este nome de usuário não está disponível para uso.`,
+};
+
 const schemas = {
   id: function () {
     return Joi.object({
@@ -62,12 +87,7 @@ const schemas = {
         .trim()
         .guid({ version: 'uuidv4' })
         .when('$required.id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.guid': `{#label} deve possuir um token UUID na versão 4.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -81,16 +101,7 @@ const schemas = {
         .invalid(null)
         .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.alphanum': `{#label} deve conter apenas caracteres alfanuméricos.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
-          'username.reserved': `Este nome de usuário não está disponível para uso.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -104,16 +115,7 @@ const schemas = {
         .invalid(null)
         .custom(checkReservedUsernames, 'check if username is reserved')
         .when('$required.owner_username', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.alphanum': `{#label} deve conter apenas caracteres alfanuméricos.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
-          'username.reserved': `Este nome de usuário não está disponível para uso.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -127,13 +129,7 @@ const schemas = {
         .trim()
         .invalid(null)
         .when('$required.email', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.email': `{#label} deve conter um email válido.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -146,14 +142,7 @@ const schemas = {
         .trim()
         .invalid(null)
         .when('$required.password', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -165,12 +154,7 @@ const schemas = {
         .invalid(null)
         .allow('')
         .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -179,12 +163,7 @@ const schemas = {
       notifications: Joi.boolean()
         .invalid(null)
         .when('$required.notifications', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'boolean.base': `{#label} deve ser do tipo Boolean.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -194,12 +173,7 @@ const schemas = {
         .trim()
         .guid({ version: 'uuidv4' })
         .when('$required.token_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.guid': `{#label} deve possuir um token UUID na versão 4.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -209,13 +183,7 @@ const schemas = {
         .length(96)
         .alphanum()
         .when('$required.session_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.length': `{#label} deve possuir {#limit} caracteres.`,
-          'string.alphanum': `{#label} deve conter apenas caracteres alfanuméricos.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -225,12 +193,7 @@ const schemas = {
         .trim()
         .guid({ version: 'uuidv4' })
         .when('$required.parent_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.guid': `{#label} deve possuir um token UUID na versão 4.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -245,12 +208,8 @@ const schemas = {
         .pattern(/^[a-z0-9](-?[a-z0-9])*$/)
         .when('$required.slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caractere.`,
+          ...defaultValidationMessages,
           'string.pattern.base': `{#label} está no formato errado.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
         }),
     });
   },
@@ -265,13 +224,7 @@ const schemas = {
         .min(1)
         .max(255)
         .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -286,14 +239,8 @@ const schemas = {
         .custom(withoutMarkdown, 'check if is empty without markdown')
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+          ...defaultValidationMessages,
           'string.pattern.invert.base': `{#label} deve começar com caracteres visíveis.`,
-          'markdown.empty': `Markdown deve conter algum texto.`,
         }),
     });
   },
@@ -306,12 +253,7 @@ const schemas = {
         .invalid(null)
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.min': `{#label} deve conter no mínimo {#limit} caracteres.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+          ...defaultValidationMessages,
           'any.only': `{#label} deve possuir um dos seguintes valores: "draft", "published" ou "deleted".`,
         }),
     });
@@ -326,11 +268,7 @@ const schemas = {
         .pattern(/^https?:\/\/([-\p{Ll}\d_]{1,255}\.)+[-a-z0-9]{2,24}(:[0-9]{1,5})?([/?#]\S*)?$/u)
         .when('$required.source_url', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.max': `{#label} deve conter no máximo {#limit} caracteres.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+          ...defaultValidationMessages,
           'string.pattern.base': `{#label} deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.`,
         }),
     });
@@ -342,12 +280,7 @@ const schemas = {
         .trim()
         .guid({ version: 'uuidv4' })
         .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.guid': `{#label} deve possuir um token UUID na versão 4.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -355,11 +288,7 @@ const schemas = {
     return Joi.object({
       created_at: Joi.date()
         .when('$required.created_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo Date.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -367,11 +296,7 @@ const schemas = {
     return Joi.object({
       updated_at: Joi.date()
         .when('$required.updated_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo Date.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -379,11 +304,7 @@ const schemas = {
     return Joi.object({
       published_at: Joi.date()
         .when('$required.published_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo Date.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -391,11 +312,7 @@ const schemas = {
     return Joi.object({
       deleted_at: Joi.date()
         .when('$required.deleted_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo Date.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -403,11 +320,7 @@ const schemas = {
     return Joi.object({
       expires_at: Joi.date()
         .when('$required.expires_at', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo Date.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -416,11 +329,7 @@ const schemas = {
       used: Joi.boolean()
         .allow(false)
         .when('$required.used', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'boolean.base': `{#label} deve ser do tipo Boolean.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -435,12 +344,7 @@ const schemas = {
         .default(1)
         .when('$required.page', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${max}.`,
         }),
     });
@@ -457,12 +361,7 @@ const schemas = {
         .default(30)
         .when('$required.per_page', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${max}.`,
         }),
     });
@@ -477,10 +376,7 @@ const schemas = {
         .invalid(null)
         .when('$required.strategy', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+          ...defaultValidationMessages,
           'any.only': `{#label} deve possuir um dos seguintes valores: "new", "old" ou "relevant".`,
         }),
     });
@@ -495,18 +391,14 @@ const schemas = {
         .valid('created_at DESC', 'created_at ASC', 'published_at DESC', 'published_at ASC')
         .when('$required.order', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
+          ...defaultValidationMessages,
           'any.only': `{#label} deve possuir um dos seguintes valores: "created_at DESC", "created_at ASC", "published_at DESC" ou "published_at ASC".`,
         }),
     });
   },
 
   where: function () {
-    let whereSchema = Joi.object({}).optional().min(1).messages({
-      'object.base': `{#label} deve ser do tipo Object.`,
-    });
+    let whereSchema = Joi.object({}).optional().min(1).messages(defaultValidationMessages);
 
     for (const key of [
       'id',
@@ -543,12 +435,7 @@ const schemas = {
         .default(null)
         .when('$required.limit', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${max}.`,
         }),
     });
@@ -561,19 +448,20 @@ const schemas = {
       $or: Joi.array()
         .optional()
         .items(Joi.link('#status'))
-        .messages({
-          'array.base': `{#label} deve ser do tipo Array.`,
-        })
+        .messages(defaultValidationMessages)
         .shared(statusSchemaWithId),
     });
   },
 
   $not_null: function () {
     return Joi.object({
-      $not_null: Joi.array().optional().items(Joi.string().valid('parent_id')).messages({
-        'array.base': `{#label} deve ser do tipo Array.`,
-        'any.only': `{#label} deve conter um dos seguintes valores: "parent_id".`,
-      }),
+      $not_null: Joi.array()
+        .optional()
+        .items(Joi.string().valid('parent_id'))
+        .messages({
+          ...defaultValidationMessages,
+          'any.only': `{#label} deve conter um dos seguintes valores: "parent_id".`,
+        }),
     });
   },
 
@@ -590,11 +478,7 @@ const schemas = {
       count: Joi.boolean()
         .default(false)
         .when('$required.count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'boolean.base': `{#label} deve ser do tipo Boolean.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -602,18 +486,13 @@ const schemas = {
     return Joi.object({
       children_deep_count: Joi.number()
         .when('$required.children_deep_count', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
   content: function () {
     let contentSchema = Joi.object({
-      children: Joi.array().optional().items(Joi.link('#content')).messages({
-        'array.base': `{#label} deve ser do tipo Array.`,
-      }),
+      children: Joi.array().optional().items(Joi.link('#content')).messages(defaultValidationMessages),
     })
       .required()
       .min(1)
@@ -653,11 +532,7 @@ const schemas = {
       with_children: Joi.boolean()
         .allow(false)
         .when('$required.with_children', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'boolean.base': `{#label} deve ser do tipo Boolean.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -666,11 +541,7 @@ const schemas = {
       with_root: Joi.boolean()
         .allow(false)
         .when('$required.with_root', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'boolean.base': `{#label} deve ser do tipo Boolean.`,
-        }),
+        .messages(defaultValidationMessages),
     });
   },
 
@@ -692,27 +563,14 @@ const schemas = {
           'reward:user:tabcoins',
           'system:update:tabcoins',
         )
-        .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'any.only': `{#label} não possui um valor válido.`,
-        }),
-      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional().messages({
-        'string.empty': `{#label} não pode estar em branco.`,
-        'string.base': `{#label} deve ser do tipo String.`,
-        'string.guid': `{#label} deve possuir um token UUID na versão 4.`,
-      }),
+        .messages(defaultValidationMessages),
+      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional().messages(defaultValidationMessages),
       originatorIp: Joi.string()
         .ip({
           version: ['ipv4', 'ipv6'],
         })
         .optional()
-        .messages({
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'string.ip': `{#label} deve possuir um IP válido.`,
-        }),
+        .messages(defaultValidationMessages),
       metadata: Joi.when('type', [
         {
           is: 'create:user',
@@ -777,12 +635,7 @@ const schemas = {
         .max(MAX_INTEGER)
         .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${MIN_INTEGER} e ${MAX_INTEGER}.`,
         }),
     });
@@ -797,12 +650,7 @@ const schemas = {
         .max(MAX_INTEGER)
         .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${MAX_INTEGER}.`,
         }),
     });
@@ -817,12 +665,7 @@ const schemas = {
         .max(max)
         .when('$required.tabcoins', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${MIN_INTEGER} e ${max}.`,
         }),
     });
@@ -836,12 +679,7 @@ const schemas = {
         .max(MAX_INTEGER)
         .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'number.base': `{#label} deve ser do tipo Number.`,
-          'number.integer': `{#label} deve ser um Inteiro.`,
-          'number.min': `{#label} deve possuir um valor mínimo de {#limit}.`,
-          'number.max': `{#label} deve possuir um valor máximo de {#limit}.`,
+          ...defaultValidationMessages,
           'number.unsafe': `{#label} deve possuir um valor entre ${MIN_INTEGER} e ${MAX_INTEGER}.`,
         }),
     });
@@ -855,10 +693,7 @@ const schemas = {
         .invalid(null)
         .when('$required.transaction_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+          ...defaultValidationMessages,
           'any.only': `{#label} deve possuir um dos seguintes valores: "credit" e "debit".`,
         }),
     });
@@ -872,10 +707,7 @@ const schemas = {
         .invalid(null)
         .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({
-          'any.required': `{#label} é um campo obrigatório.`,
-          'string.empty': `{#label} não pode estar em branco.`,
-          'string.base': `{#label} deve ser do tipo String.`,
-          'any.invalid': `{#label} possui o valor inválido "{#value}".`,
+          ...defaultValidationMessages,
           'any.only': `{#label} deve possuir um dos seguintes valores: "nuke".`,
         }),
     });
