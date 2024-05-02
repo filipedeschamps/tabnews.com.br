@@ -1,9 +1,24 @@
-import { Box, Footer, GoToTopButton, Header } from '@/TabNewsUI';
+import { useEffect, useRef, useState } from 'react';
+
+import { Box, DialogTopics, FloatingButton, Footer, GoToTopButton, Header, OpenDialogTopicsButton } from '@/TabNewsUI';
 import { Head } from 'pages/interface';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
+  const [isOpenDialogTopics, setOpenDialogTopics] = useState(false);
+  const returnFocusRefDialogTopics = useRef(null);
+
+  // set overflow on body to 'hidden' when dialog is open
+  useEffect(() => {
+    document.body.style.overflow = isOpenDialogTopics ? 'hidden' : 'auto';
+  }, [isOpenDialogTopics]);
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'canvas.default' }}>
+      <DialogTopics
+        isOpen={isOpenDialogTopics}
+        setIsOpen={setOpenDialogTopics}
+        returnFocusRef={returnFocusRefDialogTopics}
+      />
       {metadata && <Head metadata={metadata} />}
       <Header />
       <Box
@@ -26,15 +41,10 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           paddingTop: 3,
         }}
       />
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          padding: 3,
-        }}>
+      <FloatingButton>
+        <OpenDialogTopicsButton setIsOpen={setOpenDialogTopics} />
         <GoToTopButton />
-      </Box>
+      </FloatingButton>
     </Box>
   );
 }
