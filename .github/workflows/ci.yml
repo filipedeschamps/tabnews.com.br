@@ -70,8 +70,9 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '18'
           cache: 'npm'
+      - run: npm ci
 
       - name: Install Playwright
         run: playwright install --with-deps
