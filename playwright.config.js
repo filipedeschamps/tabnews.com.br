@@ -9,6 +9,7 @@ const baseURL = `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: 'tests/e2e',
   testMatch: '**/*.spec.js',
+  workers: 1,
   use: {
     baseURL,
   },
