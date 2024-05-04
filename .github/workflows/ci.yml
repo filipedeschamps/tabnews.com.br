@@ -72,7 +72,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
 
       - name: Install Playwright Dependencies
         run: npx playwright install --with-deps
