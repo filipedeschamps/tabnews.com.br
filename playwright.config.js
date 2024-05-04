@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { config } from 'dotenv';
 
+config({ path: './.env' });
 config({ path: './.env.test' });
 
 const PORT = process.env.PORT || 3000;
