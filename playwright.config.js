@@ -9,7 +9,6 @@ const baseURL = `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: 'tests/e2e',
   testMatch: '**/*.spec.js',
-  workers: process.env.CI ? 1 : undefined,
   use: {
     baseURL,
   },
