@@ -74,8 +74,8 @@ jobs:
           cache: 'npm'
       - run: npm install
 
-      - name: Install Playwright
-        run: playwright install --with-deps
+      - name: Install Playwright Dependencies
+        run: npx playwright install --with-deps
 
       - name: Run e2e tests
         run: npm run test:e2e
