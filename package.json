@@ -99,6 +99,8 @@
     "test": "npm run concurrently -- --hide next -- run",
     "test:watch": "vitest watch",
     "test:watch:services": "npm run concurrently -- -- watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "lint": "npm run lint:next && npm run lint:prettier",
     "lint:next": "next lint --max-warnings=0 --dir .",
     "lint:prettier": "prettier --check .",
