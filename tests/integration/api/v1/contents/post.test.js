@@ -1,9 +1,8 @@
-import fetch from 'cross-fetch';
-import readline from 'node:readline';
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -14,18 +13,12 @@ beforeAll(async () => {
 describe('POST /api/v1/contents', () => {
   describe('Anonymous user', () => {
     test('Content with minimum valid data', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: 'Anônimo tentando postar',
-          body: 'Não deveria conseguir.',
-        }),
-      });
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Anônimo tentando postar',
+        body: 'Não deveria conseguir.',
+      });
 
       expect(response.status).toEqual(403);
       expect(responseBody.status_code).toEqual(403);
@@ -40,23 +33,13 @@ describe('POST /api/v1/contents', () => {
 
   describe('User without "create:content:text_root" feature', () => {
     test('"root" content with valid data', async () => {
-      const userWithoutFeature = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithoutFeature);
-      await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['create:content:text_root']);
-      const sessionObject = await orchestrator.createSession(userWithoutFeature);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser({ without: ['create:content:text_root'] });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Usuário válido, tentando postar na raiz do site.',
-          body: 'Não deveria conseguir, pois não possui a feature "create:content:text_root".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Usuário válido, tentando postar na raiz do site.',
+        body: 'Não deveria conseguir, pois não possui a feature "create:content:text_root".',
       });
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(403);
       expect(responseBody.status_code).toEqual(403);
@@ -73,33 +56,23 @@ describe('POST /api/v1/contents', () => {
 
   describe('User without "create:content:text_child" feature', () => {
     test('"child" content with valid data', async () => {
-      const defaultUser = await orchestrator.createUser();
-      const userWithoutFeature = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithoutFeature);
-      await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['create:content:text_child']);
-      const sessionObject = await orchestrator.createSession(userWithoutFeature);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Usuário válido, tentando postar uma resposta.',
-          body: 'Não deveria conseguir, pois não possui a feature "create:content:text_child".',
-          parent_id: rootContent.id,
-          status: 'published',
-        }),
-      });
+      await contentsRequestBuilder.buildUser({ without: ['create:content:text_child'] });
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Usuário válido, tentando postar uma resposta.',
+        body: 'Não deveria conseguir, pois não possui a feature "create:content:text_child".',
+        parent_id: rootContent.id,
+        status: 'published',
+      });
 
       expect(response.status).toEqual(403);
       expect(responseBody.status_code).toEqual(403);
@@ -118,18 +91,11 @@ describe('POST /api/v1/contents', () => {
 
   describe('Default user', () => {
     test('Content without POST Body and "Content-Type"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+      contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-      });
-
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.post();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -142,19 +108,11 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with POST Body containing an invalid JSON string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+      contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: 'Texto corrido no lugar de um JSON',
-      });
-
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.post('Texto corrido no lugar de um JSON');
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -167,25 +125,17 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "owner_id" pointing to another user', async () => {
-      const firstUser = await orchestrator.createUser();
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const firstUser = await contentsRequestBuilder.buildUser();
+
       const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${firstUserSessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Tentando criar conteúdo em nome de outro usuário',
-          body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
-          owner_id: secondUser.id,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Tentando criar conteúdo em nome de outro usuário',
+        body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
+        owner_id: secondUser.id,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -214,22 +164,12 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" not declared', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Não deveria conseguir, falta o "body".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Não deveria conseguir, falta o "body".',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -242,23 +182,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" containing blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: '',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -271,19 +201,12 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" containing empty Markdown', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: `![](https://image-url.com/image.png)
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: `![](https://image-url.com/image.png)
           <div>\u00a0</div>
           <b>\u2800</b>
           <>\u200e</>
@@ -339,10 +262,7 @@ describe('POST /api/v1/contents', () => {
           </code></a></div></other>
           <code><a><div><other>
           `,
-        }),
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -355,24 +275,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title", "body" and "source_url" containing \\u0000 null characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '\u0000Começando com caractere proibido no Postgres',
-          body: 'Terminando com caractere proibido no Postgres\u0000',
-          source_url: 'https://teste-\u0000caractere.invalido/\u0000',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '\u0000Começando com caractere proibido no Postgres',
+        body: 'Terminando com caractere proibido no Postgres\u0000',
+        source_url: 'https://teste-\u0000caractere.invalido/\u0000',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -401,23 +311,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" and "body" containing invalid characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '\u200eTítulo começando e terminando com caracteres inválidos.\u2800',
-          body: '\u200fTexto começando e terminando com caracteres inválidos.\u200e',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '\u200eTítulo começando e terminando com caracteres inválidos.\u2800',
+        body: '\u200fTexto começando e terminando com caracteres inválidos.\u200e',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -430,23 +330,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" containing more than 20.000 characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: 'A'.repeat(20001),
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: 'A'.repeat(20001),
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -459,23 +349,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" containing untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: ' Espaço no início e no fim ',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: ' Espaço no início e no fim ',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -488,23 +368,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" ending with untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: 'Espaço só no fim ',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: 'Espaço só no fim ',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -533,23 +403,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "body" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: null,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -562,24 +422,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing a custom valid value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: 'nodejs',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'nodejs',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -608,24 +458,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: '',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -638,24 +478,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing more than 226 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -684,24 +514,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing special characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: 'slug-não-pode-ter-caracteres-especiais',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'slug-não-pode-ter-caracteres-especiais',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -714,24 +534,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: null,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -744,33 +554,22 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      await contentsRequestBuilder.post({
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
         slug: 'conteudo-existente',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Conteúdo existente',
-          body: 'Outro body',
-          slug: 'conteudo-existente',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        slug: 'conteudo-existente',
+        status: 'published',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
 
@@ -789,33 +588,22 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      await contentsRequestBuilder.post({
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
         slug: 'conteudo-existente',
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Conteúdo existente',
-          body: 'Outro body',
-          slug: 'conteudo-existente',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        slug: 'conteudo-existente',
+        status: 'published',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
 
@@ -834,12 +622,10 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const firstContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: firstContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
         slug: 'conteudo-existente',
@@ -850,26 +636,17 @@ describe('POST /api/v1/contents', () => {
         status: 'deleted',
       });
 
-      const secondContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Conteúdo existente',
-          body: 'Outro body',
-          slug: 'conteudo-existente',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        slug: 'conteudo-existente',
+        status: 'published',
       });
 
-      const secondContentBody = await secondContent.json();
+      expect(response.status).toEqual(201);
 
-      expect(secondContent.status).toEqual(201);
-
-      expect(secondContentBody).toStrictEqual({
-        id: secondContentBody.id,
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
         slug: 'conteudo-existente',
@@ -880,36 +657,26 @@ describe('POST /api/v1/contents', () => {
         tabcoins_credit: 0,
         tabcoins_debit: 0,
         source_url: null,
-        created_at: secondContentBody.created_at,
-        updated_at: secondContentBody.updated_at,
-        published_at: secondContentBody.published_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
         deleted_at: null,
         owner_username: defaultUser.username,
       });
 
-      expect(Date.parse(secondContentBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(secondContentBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(secondContentBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
     });
 
     test('Content with "title" containing a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '',
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '',
+        body: 'Qualquer coisa.',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -922,24 +689,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" containing more than 255 characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title:
-            'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title:
+          'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        body: 'Qualquer coisa.',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -952,24 +709,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" containing 255 characters but more than 255 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title:
-            'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-          body: 'Instale o Node.js',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title:
+          'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        body: 'Instale o Node.js',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -999,23 +746,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" containing Braille Pattern Blank Unicode Character', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '\u2800 Braille Pattern Blank Unicode Character \u2800',
-          body: 'Instale o Node.js',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '\u2800 Braille Pattern Blank Unicode Character \u2800',
+        body: 'Instale o Node.js',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1044,23 +781,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" containing special characters occupying more than 255 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '♥'.repeat(255),
-          body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '♥'.repeat(255),
+        body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1089,23 +816,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" containing untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: ' Título válido, mas com espaços em branco no início e no fim ',
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: ' Título válido, mas com espaços em branco no início e no fim ',
+        body: 'Qualquer coisa.',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1134,23 +851,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "title" containing unescaped characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
+        body: 'Qualquer coisa.',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1179,24 +886,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "status" set to "draft"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria criar um conteúdo com status "draft".',
-          body: 'Qualquer coisa.',
-          status: 'draft',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria criar um conteúdo com status "draft".',
+        body: 'Qualquer coisa.',
+        status: 'draft',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1225,24 +922,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "status" set to "published"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria criar um conteúdo com status "published".',
-          body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria criar um conteúdo com status "published".',
+        body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
+        status: 'published',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1272,24 +959,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "status" set to "deleted"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar a criação de um conteúdo direto em "deleted".',
-          body: 'Não faz sentido criar conteúdos deletados.',
-          status: 'deleted',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar a criação de um conteúdo direto em "deleted".',
+        body: 'Não faz sentido criar conteúdos deletados.',
+        status: 'deleted',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody).toStrictEqual({
@@ -1306,24 +983,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar.',
-          body: 'Qualquer coisa.',
-          status: 'inexisting_status',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar.',
+        body: 'Qualquer coisa.',
+        status: 'inexisting_status',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1338,24 +1005,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "status" set to Null', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar.',
-          body: 'Qualquer coisa.',
-          status: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar.',
+        body: 'Qualquer coisa.',
+        status: null,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1370,24 +1027,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "status" set a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar.',
-          body: 'Qualquer coisa.',
-          status: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar.',
+        body: 'Qualquer coisa.',
+        status: '',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1402,24 +1049,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a valid HTTP URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'TabNews',
-          body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
-          source_url: 'http://www.tabnews.com.br/',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'TabNews',
+        body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
+        source_url: 'http://www.tabnews.com.br/',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1448,24 +1085,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a valid HTTPS URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'TabNews: Onde Tudo Começou',
-          body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
-          source_url: 'https://www.tabnews.com.br/museu',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'TabNews: Onde Tudo Começou',
+        body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
+        source_url: 'https://www.tabnews.com.br/museu',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1494,24 +1121,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a valid long TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Um baita de um Top-Level Domain',
-          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
-          source_url: 'http://nic.xn--vermgensberatung-pwb/',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Um baita de um Top-Level Domain',
+        body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+        source_url: 'http://nic.xn--vermgensberatung-pwb/',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1540,24 +1157,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a valid short URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'URL bem curta',
-          body: 'Por exemplo o encurtador do Telegram',
-          source_url: 'https://t.me',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'URL bem curta',
+        body: 'Por exemplo o encurtador do Telegram',
+        source_url: 'https://t.me',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1586,24 +1193,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a invalid short TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Um Top-Level Domain menor que o permitido',
-          body: 'TLDs precisam ter pelo menos dois caracteres',
-          source_url: 'https://invalidtl.d',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Um Top-Level Domain menor que o permitido',
+        body: 'TLDs precisam ter pelo menos dois caracteres',
+        source_url: 'https://invalidtl.d',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1618,24 +1215,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a invalid long TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Um Top-Level Domain maior que o permitido',
-          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
-          source_url: 'http://tl.dcomvinteecincocaracteres',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Um Top-Level Domain maior que o permitido',
+        body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+        source_url: 'http://tl.dcomvinteecincocaracteres',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1650,24 +1237,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a not accepted Protocol', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'ftp://www.tabnews.com.br',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'ftp://www.tabnews.com.br',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1682,24 +1259,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" not containing a protocol', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'www.tabnews.com.br',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'www.tabnews.com.br',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1714,24 +1281,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing an incomplete URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'https://lol.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'https://lol.',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1746,24 +1303,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing query parameters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1792,24 +1339,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing fragment component', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1838,24 +1375,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing an empty String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: '',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -1868,24 +1395,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with "source_url" containing a Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: null,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1914,24 +1431,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"root" content with minimum valid data', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title:
-            'Deveria conseguir! E o campo "slug" é opcional & 95,5% dos usuários não usam :) [áéíóú?@#$*<>|+-=.,;:_] <- (caracteres especiais)',
-          body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title:
+          'Deveria conseguir! E o campo "slug" é opcional & 95,5% dos usuários não usam :) [áéíóú?@#$*<>|+-=.,;:_] <- (caracteres especiais)',
+        body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -1968,23 +1475,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"root" content with "title" containing custom slug special characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
-          body: 'Body',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
+        body: 'Body',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -2013,22 +1510,12 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"root" content with "title" not declared', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, falta o "title".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, falta o "title".',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -2041,23 +1528,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"root" content with "title" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: null,
-          body: 'Não deveria conseguir, falta o "title".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: null,
+        body: 'Não deveria conseguir, falta o "title".',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -2070,29 +1547,19 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with minimum valid data', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
-          parent_id: rootContent.id,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
+        parent_id: rootContent.id,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -2129,31 +1596,21 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with "title" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const defaultUser = await contentsRequestBuilder.buildUser();
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: null,
-          body: 'Deveria criar um slug com UUID V4',
-          parent_id: rootContent.id,
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: null,
+        body: 'Deveria criar um slug com UUID V4',
+        parent_id: rootContent.id,
+        status: 'published',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -2184,31 +1641,21 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with "title"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título em um child content! O que vai acontecer?',
-          body: 'Deveria criar um slug baseado no "title"',
-          parent_id: rootContent.id,
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título em um child content! O que vai acontecer?',
+        body: 'Deveria criar um slug baseado no "title"',
+        parent_id: rootContent.id,
+        status: 'published',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(201);
 
@@ -2238,23 +1685,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with "parent_id" containing a Number', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
-          parent_id: 123456,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+        parent_id: 123456,
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -2267,23 +1704,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with "parent_id" containing a blank string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
-          parent_id: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+        parent_id: '',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -2296,23 +1723,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with "parent_id" containing a malformatted UUIDV4', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
-          parent_id: 'isso não é um UUID válido',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+        parent_id: 'isso não é um UUID válido',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -2325,23 +1742,13 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('"child" content with "parent_id" that does not exists', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" aqui embaixo não existe.',
-          parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" aqui embaixo não existe.',
+        parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
       });
-
-      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
@@ -2359,21 +1766,13 @@ describe('POST /api/v1/contents', () => {
       test('Create "root" content', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Usuário não deveria receber email de notificação',
-            body: 'Ele não deveria ser notificado sobre suas próprias criações',
-            status: 'published',
-          }),
+        const { response } = await contentsRequestBuilder.post({
+          title: 'Usuário não deveria receber email de notificação',
+          body: 'Ele não deveria ser notificado sobre suas próprias criações',
+          status: 'published',
         });
 
         const getLastEmail = await orchestrator.getLastEmail();
@@ -2385,31 +1784,21 @@ describe('POST /api/v1/contents', () => {
       test('My "root" content replied by myself', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Novamente, não deveria receber notificação',
-            body: 'Continua não sendo notificado sobre suas próprias criações',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Novamente, não deveria receber notificação',
+          body: 'Continua não sendo notificado sobre suas próprias criações',
+          parent_id: rootContent.id,
+          status: 'published',
         });
-
-        const responseBody = await response.json();
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2421,32 +1810,22 @@ describe('POST /api/v1/contents', () => {
       test('My "root" content with short "title" replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Título curto do conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2471,32 +1850,22 @@ describe('POST /api/v1/contents', () => {
       test('My "root" content with long "title" replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Título longo do conteúdo raiz, deveria cortar o título para caber título no email',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2522,39 +1891,30 @@ describe('POST /api/v1/contents', () => {
       test('My "child" content replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Testando resposta ao conteúdo child',
+          body: 'Body.',
           status: 'published',
         });
 
-        const childContentFromSecondUser = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: childContentFromSecondUser } = await contentsRequestBuilder.post({
           parent_id: rootContent.id,
           body: 'Este conteúdo será respondido pelo "firstUser" no passo seguinte.',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
-            parent_id: childContentFromSecondUser.id,
-            status: 'published',
-          }),
-        });
+        await contentsRequestBuilder.setUser(firstUser);
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
+          parent_id: childContentFromSecondUser.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2578,20 +1938,18 @@ describe('POST /api/v1/contents', () => {
       test('My "child" content replied by other user, but "root" with "deleted" status', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Testando resposta ao conteúdo child',
+          body: 'Body',
           status: 'published',
         });
 
-        const childContentFromSecondUser = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: childContentFromSecondUser } = await contentsRequestBuilder.post({
           parent_id: rootContent.id,
           body: 'Este conteúdo será respondido pelo "firstUser" no passo seguinte.',
           status: 'published',
@@ -2601,20 +1959,13 @@ describe('POST /api/v1/contents', () => {
           status: 'deleted',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
-            parent_id: childContentFromSecondUser.id,
-            status: 'published',
-          }),
-        });
+        await contentsRequestBuilder.setUser(firstUser);
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
+          parent_id: childContentFromSecondUser.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2641,69 +1992,42 @@ describe('POST /api/v1/contents', () => {
       test('My "root" content replied by other user (with "notifications" disabled)', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+        const firstUser = await contentsRequestBuilder.buildUser();
+        await userRequestBuilder.setUser(firstUser);
+        await usersRequestBuilder.setUser(firstUser);
 
         // 1) CHECK IF BY DEFAULT FIRST USER HAS `notifications` ENABLED
-        const userGetResponseCheck1 = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-        });
+        const { responseBody: userGetResponseCheck1Body } = await userRequestBuilder.get();
 
-        const userGetResponseCheck1Body = await userGetResponseCheck1.json();
         expect(userGetResponseCheck1Body.notifications).toBe(true);
 
         // 2) DISABLE NOTIFICATIONS FOR FIRST USER
-        const userPatchResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            notifications: false,
-          }),
+        const { response: userPatchResponse1 } = await usersRequestBuilder.patch(`/${firstUser.username}`, {
+          notifications: false,
         });
 
         expect(userPatchResponse1.status).toBe(200);
 
-        const userGetResponseCheck2 = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-        });
+        const { responseBody: userGetResponseCheck2Body } = await userRequestBuilder.get();
 
-        const userGetResponseCheck2Body = await userGetResponseCheck2.json();
         expect(userGetResponseCheck2Body.notifications).toBe(false);
 
         // 3) CREATE A CONTENT WITH FIRST USER
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Testando sistema de notificação',
+          body: 'Body',
           status: 'published',
         });
 
         // 4) REPLY TO CONTENT WITH SECOND USER
-        const contentResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Autor do `parent_id` NÃO deve receber notificação avisando que eu respondi o conteúdo dele.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const { response: contentResponse1 } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` NÃO deve receber notificação avisando que eu respondi o conteúdo dele.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
         expect(contentResponse1.status).toBe(201);
@@ -2713,34 +2037,20 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail1).toBe(null);
 
         // 6) ENABLE NOTIFICATIONS FOR FIRST USER
-        await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            notifications: true,
-          }),
+        const { response: userPatchResponse2 } = await usersRequestBuilder.patch(`/${firstUser.username}`, {
+          notifications: true,
         });
 
-        expect(userPatchResponse1.status).toBe(200);
+        expect(userPatchResponse2.status).toBe(200);
 
         // 7) REPLY AGAIN TO CONTENT WITH SECOND USER
-        const contentResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Agora sim autor do `parent_id` deveria receber notificação.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        const contentResponse2Body = await contentResponse2.json();
+        const { response: contentResponse2, responseBody: contentResponse2Body } = await contentsRequestBuilder.post({
+          body: 'Agora sim autor do `parent_id` deveria receber notificação.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
 
         expect(contentResponse2.status).toBe(201);
 
@@ -2768,54 +2078,31 @@ describe('POST /api/v1/contents', () => {
       test('Reply with body containing 20k characters', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Título do conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json, application/x-ndjson',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'.repeat(
-              200,
-            ),
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        contentsRequestBuilder.buildHeaders({
+          Accept: 'application/json, application/x-ndjson',
+        });
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'.repeat(
+            200,
+          ),
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
         expect(response.ok).toBe(true);
         expect(response.status).toBe(201);
         expect(response.headers.get('content-Type')).toBe('application/x-ndjson');
-
-        const rl = readline.createInterface({
-          input: response.body,
-          crlfDelay: Infinity,
-        });
-
-        const streamData = [];
-        let responseBody;
-
-        await new Promise((resolve) => {
-          rl.on('line', (line) => {
-            streamData.push(JSON.parse(line));
-          }).on('close', () => {
-            responseBody = streamData[0];
-            resolve();
-          });
-        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2844,128 +2131,80 @@ describe('POST /api/v1/contents', () => {
 
     describe('TabCoins', () => {
       test('"root" content with "draft" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant text needs to contain a good amount of words.',
-          }),
+        const { responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with relevant text needs to contain a good amount of words.',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toEqual(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('"root" content with "published" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
         await orchestrator.createPrestige(defaultUser.id);
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant text needs to contain a good amount of words.',
-            status: 'published',
-          }),
+        const { responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with relevant text needs to contain a good amount of words.',
+          status: 'published',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toEqual(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(2);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('"child" content with "draft" status', async () => {
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
           body: 'Root - Body with relevant text needs to contain a good amount of words.',
           status: 'published',
         });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Child - Body with relevant text needs to contain a good amount of words.',
-            parent_id: rootContent.id,
-            status: 'draft',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody } = await contentsRequestBuilder.post({
+          body: 'Child - Body with relevant text needs to contain a good amount of words.',
+          parent_id: rootContent.id,
+          status: 'draft',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toEqual(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('"child" content with "published" status (same user)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
         await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
-        const rootContent = await orchestrator.createContent({
-          owner_id: defaultUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
           body: 'Root - Body with relevant text needs to contain a good amount of words.',
           status: 'published',
@@ -2973,75 +2212,43 @@ describe('POST /api/v1/contents', () => {
 
         // But user will not receive additional tabcoins for
         // publishing a child content to itself.
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Child - Body with relevant text needs to contain a good amount of words.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const { responseBody } = await contentsRequestBuilder.post({
+          body: 'Child - Body with relevant text needs to contain a good amount of words.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toEqual(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(2);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('"child" content with "published" status (different user)', async () => {
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
-        await orchestrator.createPrestige(secondUser.id);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
           body: 'Root - Body with relevant text needs to contain a good amount of words.',
           status: 'published',
         });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Child - Body with relevant text needs to contain a good amount of words.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id);
+
+        const { responseBody } = await contentsRequestBuilder.post({
+          body: 'Child - Body with relevant text needs to contain a good amount of words.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toEqual(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(2);
         expect(userResponseBody.tabcash).toEqual(0);
@@ -3050,27 +2257,17 @@ describe('POST /api/v1/contents', () => {
 
     describe('Prestige', () => {
       test('should not be able to create "root" content with negative prestige by more than threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1, rootPrestigeDenominator: 2 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant text needs to contain a good amount of words.',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with relevant text needs to contain a good amount of words.',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(403);
+        expect(response.status).toEqual(403);
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
@@ -3087,35 +2284,25 @@ describe('POST /api/v1/contents', () => {
       });
 
       test('should not be able to create "child" content with negative prestige by more than threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -5, childPrestigeDenominator: 1 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Não deveria conseguir por possuir comentários mal avaliados.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: -5, childPrestigeDenominator: 1 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Não deveria conseguir por possuir comentários mal avaliados.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(403);
+        expect(response.status).toEqual(403);
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
@@ -3132,27 +2319,18 @@ describe('POST /api/v1/contents', () => {
       });
 
       test('Should be able to create "root" content with negative prestige at the threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -9, rootPrestigeDenominator: 20 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant texts needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3177,53 +2355,37 @@ describe('POST /api/v1/contents', () => {
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should be able to create "child" content with negative prestige at the threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -6, childPrestigeDenominator: 6 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: -6, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
@@ -3237,48 +2399,32 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should not be able to earn tabcoins if it has less than threshold prestige in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant texts needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3303,53 +2449,37 @@ describe('POST /api/v1/contents', () => {
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should not be able to earn tabcoins if it has less than threshold prestige in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -1 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: -1 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
@@ -3363,48 +2493,32 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should be able to earn tabcoins if it has minimum prestige in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant texts needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with relevant texts needs to contain a good amount of words',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3429,53 +2543,37 @@ describe('POST /api/v1/contents', () => {
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should be able to earn tabcoins if it has minimum prestige in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
@@ -3489,21 +2587,14 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
@@ -3512,27 +2603,17 @@ describe('POST /api/v1/contents', () => {
 
     describe('No minimum amount of relevant words', () => {
       test('should not be able to create "root" content without prestige', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -6, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(403);
+        expect(response.status).toEqual(403);
         expect(responseBody.status_code).toEqual(403);
         expect(responseBody.name).toEqual('ForbiddenError');
         expect(responseBody.message).toEqual(
@@ -3549,27 +2630,18 @@ describe('POST /api/v1/contents', () => {
       });
 
       test('Should not be able to earn tabcoins in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with no minimum amount of relevant words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3594,53 +2666,37 @@ describe('POST /api/v1/contents', () => {
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should not be able to earn tabcoins in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Body with no minimum amount of relevant words',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id);
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Body with no minimum amount of relevant words',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
@@ -3654,21 +2710,14 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 0,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(0);
         expect(userResponseBody.tabcash).toEqual(0);
@@ -3677,27 +2726,18 @@ describe('POST /api/v1/contents', () => {
 
     describe('With minimal amount of relevant words', () => {
       test('Should be able to earn tabcoins in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Relevant text needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Relevant text needs to contain a good amount of words',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3722,53 +2762,37 @@ describe('POST /api/v1/contents', () => {
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
       });
 
       test('Should be able to earn tabcoins in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Relevant text needs to contain a good amount of words',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Relevant text needs to contain a good amount of words',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toEqual(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
@@ -3782,21 +2806,14 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
         expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
