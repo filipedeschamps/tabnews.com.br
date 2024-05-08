@@ -3,6 +3,7 @@ import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
+import pagination from 'models/pagination.js';
 import validator from 'models/validator.js';
 
 async function findAll() {
@@ -23,6 +24,55 @@ async function findAll() {
   };
   const results = await database.query(query);
   return results.rows;
+}
+
+async function findAllWithPagination(values) {
+  const offset = (values.page - 1) * values.per_page;
+
+  const query = {
+    text: `
+      WITH user_window AS (
+        SELECT
+          COUNT(*) OVER()::INTEGER as total_rows,
+          id
+        FROM users
+        ORDER BY updated_at DESC
+        LIMIT $1 OFFSET $2
+      )
+
+      SELECT
+        *
+      FROM
+        users
+      INNER JOIN
+        user_window ON users.id = user_window.id
+      CROSS JOIN LATERAL (
+        SELECT
+          get_user_current_tabcoins(users.id) as tabcoins,
+          get_user_current_tabcash(users.id) as tabcash
+      ) as balance
+      ORDER BY updated_at DESC
+    `,
+    values: [values.limit || values.per_page, offset],
+  };
+
+  const queryResults = await database.query(query);
+
+  const results = {
+    rows: queryResults.rows,
+  };
+
+  values.total_rows = results.rows[0]?.total_rows ?? (await countTotalRows());
+
+  results.pagination = await pagination.get(values);
+
+  return results;
+}
+
+async function countTotalRows() {
+  const countQuery = `SELECT COUNT(*) OVER()::INTEGER as total_rows FROM users`;
+  const countResult = await database.query(countQuery);
+  return countResult.rows[0].total_rows;
 }
 
 async function findOneByUsername(username, options = {}) {
@@ -446,6 +496,7 @@ async function updateRewardedAt(userId, options) {
 export default Object.freeze({
   create,
   findAll,
+  findAllWithPagination,
   findOneByUsername,
   findOneByEmail,
   findOneById,
