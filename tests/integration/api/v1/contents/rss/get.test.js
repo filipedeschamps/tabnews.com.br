@@ -1,6 +1,5 @@
-import fetch from 'cross-fetch';
-
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 describe('GET /recentes/rss', () => {
   beforeAll(async () => {
@@ -11,18 +10,20 @@ describe('GET /recentes/rss', () => {
 
   describe('Anonymous user', () => {
     test('With `/rss` alias`', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/rss`);
+      const rssRequestBuilder = new RequestBuilder('/rss');
+      const { response } = await rssRequestBuilder.get();
       expect(response.status).toEqual(200);
     });
 
     test('With `/rss.xml` alias`', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/rss.xml`);
+      const rssRequestBuilder = new RequestBuilder('/rss.xml');
+      const { response } = await rssRequestBuilder.get();
       expect(response.status).toEqual(200);
     });
 
     test('With 0 contents', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
-      const responseBody = await response.text();
+      const rssRequestBuilder = new RequestBuilder('/recentes/rss');
+      const { response, responseBody } = await rssRequestBuilder.get();
 
       const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
 
@@ -76,8 +77,8 @@ describe('GET /recentes/rss', () => {
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/rss`);
-      const responseBody = await response.text();
+      const rssRequestBuilder = new RequestBuilder('/rss');
+      const { response, responseBody } = await rssRequestBuilder.get();
 
       expect(response.status).toEqual(200);
       expect(responseBody).toStrictEqual(`<?xml version="1.0" encoding="utf-8"?>

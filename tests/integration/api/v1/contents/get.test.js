@@ -1,8 +1,8 @@
-import fetch from 'cross-fetch';
 import parseLinkHeader from 'parse-link-header';
 import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -11,6 +11,8 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/contents', () => {
+  const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+
   describe('Anonymous user (dropAllTables beforeEach)', () => {
     beforeEach(async () => {
       await orchestrator.dropAllTables();
@@ -18,11 +20,13 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With CORS and Security Headers enabled', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+      const { response } = await contentsRequestBuilder.get();
 
-      // https://github.com/facebook/jest/issues/8475#issuecomment-537830532
-      // to avoid "Received: serializes to the same string" error.
-      const responseHeaders = JSON.parse(JSON.stringify(response.headers.raw()));
+      const responseHeaders = {};
+
+      response.headers.forEach((value, key) => {
+        responseHeaders[key] = [value];
+      });
 
       const expectedHeaders = {
         'x-dns-prefetch-control': ['on'],
@@ -58,16 +62,14 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With no content', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get();
 
       expect(response.status).toEqual(200);
       expect(responseBody).toEqual([]);
     });
 
     test('With invalid strategy', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=invalid`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=invalid`);
 
       expect(response.status).toEqual(400);
 
@@ -133,8 +135,7 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=new`);
 
       expect(response.status).toEqual(200);
 
@@ -230,8 +231,7 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=old`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=old`);
 
       expect(response.status).toEqual(200);
 
@@ -320,8 +320,7 @@ describe('GET /api/v1/contents', () => {
       });
       await orchestrator.updateContent(level4ContentDeleted.id, { status: 'deleted' });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get();
 
       expect(response.status).toEqual(200);
 
@@ -359,9 +358,7 @@ describe('GET /api/v1/contents', () => {
           status: 'published',
         });
       }
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=new`);
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
@@ -721,8 +718,7 @@ describe('GET /api/v1/contents', () => {
         amount: -3,
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get();
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
@@ -791,8 +787,8 @@ describe('GET /api/v1/contents', () => {
       expect(responseBody[23].title).toEqual('Conteúdo #44');
       expect(responseBody[29].title).toEqual('Conteúdo #38');
 
-      const page2Response = await fetch(responseLinkHeader.next.url);
-      const page2ResponseBody = await page2Response.json();
+      const page2RequestBuilder = new RequestBuilder(responseLinkHeader.next.url);
+      const { response: page2Response, responseBody: page2ResponseBody } = await page2RequestBuilder.get();
 
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
@@ -845,8 +841,9 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1&per_page=3&strategy=new`);
-      const page1Body = await page1.json();
+      const { response: page1, responseBody: page1Body } = await contentsRequestBuilder.get(
+        `?page=1&per_page=3&strategy=new`,
+      );
 
       const page1LinkHeader = parseLinkHeader(page1.headers.get('Link'));
       const page1TotalRowsHeader = page1.headers.get('X-Pagination-Total-Rows');
@@ -882,8 +879,8 @@ describe('GET /api/v1/contents', () => {
       expect(page1Body[1].title).toEqual('Conteúdo #8');
       expect(page1Body[2].title).toEqual('Conteúdo #7');
 
-      const page2 = await fetch(page1LinkHeader.next.url);
-      const page2Body = await page2.json();
+      const page2RequestBuilder = new RequestBuilder(page1LinkHeader.next.url);
+      const { response: page2, responseBody: page2Body } = await page2RequestBuilder.get();
 
       const page2LinkHeader = parseLinkHeader(page2.headers.get('Link'));
       const page2TotalRowsHeader = page2.headers.get('X-Pagination-Total-Rows');
@@ -926,8 +923,8 @@ describe('GET /api/v1/contents', () => {
       expect(page2Body[1].title).toEqual('Conteúdo #5');
       expect(page2Body[2].title).toEqual('Conteúdo #4');
 
-      const page3 = await fetch(page2LinkHeader.next.url);
-      const page3Body = await page3.json();
+      const page3RequestBuilder = new RequestBuilder(page2LinkHeader.next.url);
+      const { response: page3, responseBody: page3Body } = await page3RequestBuilder.get();
 
       const page3LinkHeader = parseLinkHeader(page3.headers.get('Link'));
       const page3TotalRowsHeader = page3.headers.get('X-Pagination-Total-Rows');
@@ -964,8 +961,8 @@ describe('GET /api/v1/contents', () => {
       expect(page3Body[2].title).toEqual('Conteúdo #1');
 
       // FIRST AND LAST PAGE USING "PAGE 1" LINK HEADER
-      const firstPage = await fetch(page1LinkHeader.first.url);
-      const firstPageBody = await firstPage.json();
+      const firstPageRequestBuilder = new RequestBuilder(page1LinkHeader.first.url);
+      const { response: firstPage, responseBody: firstPageBody } = await firstPageRequestBuilder.get();
       const firstPageLinkHeader = parseLinkHeader(firstPage.headers.get('Link'));
       const firstPageTotalRowsHeader = firstPage.headers.get('X-Pagination-Total-Rows');
 
@@ -974,8 +971,8 @@ describe('GET /api/v1/contents', () => {
       expect(firstPageLinkHeader).toStrictEqual(page1LinkHeader);
       expect(firstPageBody).toEqual(page1Body);
 
-      const lastPage = await fetch(page1LinkHeader.last.url);
-      const lastPageBody = await lastPage.json();
+      const lastPageRequestBuilder = new RequestBuilder(page1LinkHeader.last.url);
+      const { response: lastPage, responseBody: lastPageBody } = await lastPageRequestBuilder.get();
       const lastPageLinkHeader = parseLinkHeader(lastPage.headers.get('Link'));
       const lastPageTotalRowsHeader = lastPage.headers.get('X-Pagination-Total-Rows');
 
@@ -998,8 +995,9 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page4 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=4&per_page=3`);
-      const page4Body = await page4.json();
+      const { response: page4, responseBody: page4Body } = await contentsRequestBuilder.get(
+        '?strategy=new&page=4&per_page=3',
+      );
 
       const page4LinkHeader = parseLinkHeader(page4.headers.get('Link'));
       const page4TotalRowsHeader = page4.headers.get('X-Pagination-Total-Rows');
@@ -1034,8 +1032,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "page" with a String', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=CINCO`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=CINCO');
 
       expect(response.status).toEqual(400);
 
@@ -1056,8 +1053,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "page" with an invalid minimum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=0`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=0');
 
       expect(response.status).toEqual(400);
 
@@ -1078,8 +1074,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "page" with an invalid maximum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=9007199254740991`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=9007199254740991');
 
       expect(response.status).toEqual(400);
 
@@ -1100,8 +1095,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "page" with an unsafe Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=9007199254740992`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=9007199254740992');
 
       expect(response.status).toEqual(400);
 
@@ -1122,8 +1116,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "page" with a Float Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1.5`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=1.5');
 
       expect(response.status).toEqual(400);
 
@@ -1144,8 +1137,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "per_page" with a String', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=SEIS`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=SEIS');
 
       expect(response.status).toEqual(400);
 
@@ -1166,8 +1158,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "per_page" with an invalid minimum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=0`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=0');
 
       expect(response.status).toEqual(400);
 
@@ -1188,8 +1179,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "per_page" with an invalid maximum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=9007199254740991`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=9007199254740991');
 
       expect(response.status).toEqual(400);
 
@@ -1210,8 +1200,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "per_page" with an unsafe Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=9007199254740992`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=9007199254740992');
 
       expect(response.status).toEqual(400);
 
@@ -1232,8 +1221,7 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With "per_page" with a Float Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=1.5`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=1.5');
 
       expect(response.status).toEqual(400);
 
@@ -1416,10 +1404,7 @@ describe('GET /api/v1/contents', () => {
           getExpected: () => rootSortedByNew,
         },
       ])('get $content with params: $params', async ({ params, getExpected }) => {
-        const url = `${orchestrator.webserverUrl}/api/v1/contents?${params.join('&')}`;
-
-        const response = await fetch(url);
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.get(`?${params.join('&')}`);
 
         expect(response.status).toEqual(200);
         expect(responseBody).toStrictEqual(getExpected());
