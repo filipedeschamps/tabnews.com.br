@@ -12,7 +12,6 @@ import {
   Heading,
   Link,
   PasswordInput,
-  Text,
   TextInput,
 } from '@/TabNewsUI';
 import { createErrorMessage, suggestEmail } from 'pages/interface';
@@ -188,12 +187,14 @@ function SignUpForm() {
           setErrorObject={setErrorObject}
         />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <Checkbox checked={isTermsAccepted} onClick={() => setIsTermsAccepted(!isTermsAccepted)} />
-          <Text>
-            Li e estou de acordo com os
-            <Link href="/termos-de-uso"> Termos de Uso.</Link>
-          </Text>
+        <Box>
+          <FormControl>
+            <Checkbox checked={isTermsAccepted} onClick={() => setIsTermsAccepted(!isTermsAccepted)} />
+            <FormControl.Label>
+              Li e estou de acordo com os
+              <Link href="/termos-de-uso"> Termos de Uso.</Link>
+            </FormControl.Label>
+          </FormControl>
         </Box>
 
         <FormControl>
