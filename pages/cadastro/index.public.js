@@ -128,7 +128,7 @@ function SignUpForm() {
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
-          {!(errorObject?.key === 'username') && (
+          {errorObject?.key !== 'username' && (
             <FormControl.Caption>Assim que os outros verão você na plataforma.</FormControl.Caption>
           )}
 
@@ -191,15 +191,13 @@ function SignUpForm() {
           setErrorObject={setErrorObject}
         />
 
-        <Box>
-          <FormControl>
-            <Checkbox checked={isTermsAccepted} onClick={() => setIsTermsAccepted(!isTermsAccepted)} />
-            <FormControl.Label>
-              Li e estou de acordo com os
-              <Link href="/termos-de-uso"> Termos de Uso.</Link>
-            </FormControl.Label>
-          </FormControl>
-        </Box>
+        <FormControl>
+          <Checkbox checked={isTermsAccepted} onChange={() => setIsTermsAccepted(!isTermsAccepted)} />
+          <FormControl.Label>
+            Li e estou de acordo com os
+            <Link href="/termos-de-uso"> Termos de Uso.</Link>
+          </FormControl.Label>
+        </FormControl>
 
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>

@@ -44,6 +44,7 @@ function EditProfileForm() {
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [description, setDescription] = useState(user?.description || '');
+  const [showUsernameCaption, setShowUsernameCaption] = useState(false);
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -78,7 +79,7 @@ function EditProfileForm() {
     if (user.username !== username) {
       const confirmChangeUsername = await confirm({
         title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isso irá quebrar todas as URLs dos seus conteúdos e comentários.`,
+        content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
         cancelButtonContent: 'Cancelar',
         confirmButtonContent: 'Sim',
       });
@@ -197,10 +198,12 @@ function EditProfileForm() {
             aria-label="Seu nome de usuário"
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            onFocus={() => setShowUsernameCaption(true)}
+            onBlur={() => setShowUsernameCaption(false)}
           />
-          {!(errorObject?.key === 'username') && (
+          {showUsernameCaption && (
             <FormControl.Caption>
-              Alterar o nome de usuário irá quebrar todas as URLs dos seus conteúdos e comentários.
+              Alterar o nome de usuário irá quebrar todas as URLs das suas publicações e comentários.
             </FormControl.Caption>
           )}
 
