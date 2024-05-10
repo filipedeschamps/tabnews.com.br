@@ -128,6 +128,10 @@ function SignUpForm() {
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
+          {!(errorObject?.key === 'username') && (
+            <FormControl.Caption>Assim que os outros verão você na plataforma.</FormControl.Caption>
+          )}
+
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
