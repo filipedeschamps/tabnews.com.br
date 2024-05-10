@@ -198,6 +198,12 @@ function EditProfileForm() {
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
+          {!(errorObject?.key === 'username') && (
+            <FormControl.Caption>
+              Alterar o nome de usuário irá quebrar todas as URLs dos seus conteúdos e comentários.
+            </FormControl.Caption>
+          )}
+
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
