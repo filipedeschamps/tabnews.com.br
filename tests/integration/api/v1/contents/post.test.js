@@ -979,7 +979,31 @@ describe('POST /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+        error_location_code: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
+        key: 'status',
+        type: 'any.only',
+      });
+    });
+
+    test('Content with "status" set to "sponsored"', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Invalid "status" = "sponsored".',
+        body: 'Body.',
+        status: 'sponsored',
+      });
+
+      expect(response.status).toEqual(400);
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Não é possível criar um novo conteúdo diretamente com status "sponsored".',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
         key: 'status',
         type: 'any.only',
       });
@@ -999,7 +1023,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "sponsored".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1021,7 +1045,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "sponsored".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1043,7 +1067,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "sponsored".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);

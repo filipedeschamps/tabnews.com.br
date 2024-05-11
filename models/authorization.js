@@ -33,6 +33,10 @@ const availableFeatures = new Set([
   'create:content:text_child',
   'read:content:list',
   'read:content:tabcoins',
+  'read:sponsored_content',
+
+  // SPONSORED CONTENT
+  'create:sponsored_content',
 
   // MODERATION
   'read:user:list',
@@ -130,6 +134,17 @@ function filterInput(user, feature, input, target) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
+    };
+  }
+
+  if (feature === 'create:sponsored_content' && can(user, feature)) {
+    filteredInputValues = {
+      slug: input.slug,
+      title: input.title,
+      body: input.body,
+      source_url: input.source_url,
+      deactivate_at: input.deactivate_at,
+      tabcash: input.tabcash,
     };
   }
 
@@ -243,6 +258,12 @@ function filterOutput(user, feature, output) {
 
     filteredOutputValues = validator(clonedOutput, {
       content: 'required',
+    });
+  }
+
+  if (feature === 'read:sponsored_content') {
+    filteredOutputValues = validator(output, {
+      sponsored_content: 'required',
     });
   }
 

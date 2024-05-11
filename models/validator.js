@@ -245,7 +245,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published', 'deleted')
+        .valid('draft', 'published', 'deleted', 'sponsored')
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
@@ -306,6 +306,16 @@ const schemas = {
   deleted_at: function () {
     return Joi.object({
       deleted_at: Joi.date().when('$required.deleted_at', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(null),
+      }),
+    });
+  },
+
+  deactivate_at: function () {
+    return Joi.object({
+      deactivate_at: Joi.date().when('$required.deactivate_at', {
         is: 'required',
         then: Joi.required(),
         otherwise: Joi.optional().allow(null),
@@ -499,6 +509,23 @@ const schemas = {
     return contentSchema;
   },
 
+  sponsored_content: function () {
+    return Joi.object()
+      .required()
+      .concat(schemas.id())
+      .concat(schemas.owner_id())
+      .concat(schemas.slug())
+      .concat(schemas.title())
+      .concat(schemas.body())
+      .concat(schemas.source_url())
+      .concat(schemas.created_at())
+      .concat(schemas.updated_at())
+      .concat(schemas.published_at())
+      .concat(schemas.deactivate_at())
+      .concat(schemas.owner_username())
+      .concat(schemas.tabcoins());
+  },
+
   with_children: function () {
     return Joi.object({
       with_children: Joi.boolean().when('$required.with_children', {
@@ -531,6 +558,7 @@ const schemas = {
           'update:content:text_root',
           'update:content:text_child',
           'update:content:tabcoins',
+          'create:sponsored_content',
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
@@ -647,6 +675,24 @@ const schemas = {
         .min(MIN_INTEGER)
         .max(MAX_INTEGER)
         .when('$required.tabcash', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
+  create_sponsored_content_tabcash: function () {
+    const min = 1;
+    return Joi.object({
+      tabcash: Joi.number()
+        .integer()
+        .min(min)
+        .max(MAX_INTEGER)
+        .when('$required.create_sponsored_content_tabcash', {
+          is: 'required',
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        })
+        .messages({
+          'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${MAX_INTEGER}.`,
+        }),
     });
   },
 
