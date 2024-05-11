@@ -583,5 +583,37 @@ describe('models/event', () => {
       expect(uuidVersion(lastEvent.id)).toBe(4);
       expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
     });
+
+    test('Create "create:sponsored_content" event', async () => {
+      const sponsoredContentsRequestBuilder = new RequestBuilder('/api/v1/sponsored_contents');
+      const privilegedUser = await sponsoredContentsRequestBuilder.buildUser({ with: ['create:sponsored_content'] });
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: privilegedUser.id,
+        amount: 30,
+      });
+
+      const { responseBody } = await sponsoredContentsRequestBuilder.post({
+        title: 'Sponsored content',
+        body: 'Body',
+        tabcash: 30,
+      });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'create:sponsored_content',
+        originator_user_id: privilegedUser.id,
+        originator_ip: '127.0.0.1',
+        created_at: lastEvent.created_at,
+        metadata: {
+          id: responseBody.id,
+        },
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+    });
   });
 });
