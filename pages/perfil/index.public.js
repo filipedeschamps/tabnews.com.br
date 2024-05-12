@@ -77,10 +77,30 @@ function EditProfileForm() {
 
     if (user.username !== username) {
       const confirmChangeUsername = await confirm({
-        title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
+        title: 'Realmente quer mudar seu nome de usuário?',
+        content: (
+          <Flash variant="danger">
+            ⚠ Atenção! Se você não ler isso, poderão ocorrer problemas inesperados!
+            <ul>
+              <li>
+                <strong>Não configuraremos</strong> redirecionamentos para a sua antiga página de perfil.
+              </li>
+              <li>
+                <strong>Criaremos</strong> redirecionamentos para os seus comentários e conteúdos.
+              </li>
+              <li>
+                <strong>Limitaremos</strong> a 5 trocas de nome de usuário por conta.
+              </li>
+              <li>
+                <strong>É importante notar que você pode apagar</strong> os conteúdos criados, incluindo comentários e
+                postagens, mesmo após a alteração.
+              </li>
+            </ul>
+          </Flash>
+        ),
         cancelButtonContent: 'Cancelar',
-        confirmButtonContent: 'Sim',
+        confirmButtonContent: 'Eu entendo, mude!',
+        confirmButtonType: 'danger',
       });
 
       if (!confirmChangeUsername) {

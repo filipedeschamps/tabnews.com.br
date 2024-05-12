@@ -17,8 +17,7 @@ export default function RootContent({ contentListFound, pagination, username }) 
 
   return (
     <DefaultLayout metadata={{ title: `Publicações · Página ${pagination.currentPage} · ${username}` }}>
-      <UserHeader username={username} rootContentCount={pagination.totalRows} />
-
+      <UserHeader username={username} rootContentCount={pagination.totalRoows} />
       <ContentList
         contentList={contentListFound}
         pagination={pagination}

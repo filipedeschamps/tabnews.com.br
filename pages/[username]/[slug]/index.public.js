@@ -303,10 +303,12 @@ export async function getStaticPaths() {
     per_page: 100,
   });
 
-  const paths = relevantResults.rows.map((content) => {
+  const paths = relevantResults.rows.map(async (content) => {
+    const oldUsernames = await content.checkOldsUsername(content.owner_username);
+
     return {
       params: {
-        username: content.owner_username,
+        username: oldUsernames ? oldUsernames.username : content.params.username,
         slug: content.slug,
       },
     };
@@ -323,10 +325,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   let contentTreeFound;
 
+  const oldUsernames = await content.checkOldsUsername(context.params.username);
+
   try {
     contentTreeFound = await content.findTree({
       where: {
-        owner_username: context.params.username,
+        owner_username: oldUsernames ? oldUsernames.username : context.params.username,
         slug: context.params.slug,
       },
     });

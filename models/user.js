@@ -290,12 +290,92 @@ async function update(username, postedUserData, options = {}) {
 
   const userWithUpdatedValues = { ...currentUser, ...validPostedUserData };
 
+  const oldUsername = currentUser.username;
+  const ownerId = currentUser.id;
+
+  async function saveUsernameChange(oldUsername, newUsername, ownerId, options) {
+    const newUsernameChangeLimit = await getUsernameChangeLimit(ownerId, options);
+
+    if (newUsernameChangeLimit === 0) {
+      throw new ValidationError({
+        message: 'Não é possível alterar o nome de usuário. Limite de alteração de nome de usuário excedido.',
+        stack: new Error().stack,
+        errorLocationCode: 'MODEL:USER:SAVE_USERNAME_CHANGE:LIMIT_EXCEEDED',
+        key: 'username',
+      });
+    }
+
+    const query = {
+      text: `
+      INSERT INTO users_username_changes (username, old_usernames, owner_id, updated_at)
+      VALUES ($1, $2, $3, now())
+      ON CONFLICT (owner_id)
+      DO UPDATE SET
+        username = EXCLUDED.username,
+        old_usernames = ARRAY_APPEND(users_username_changes.old_usernames, EXCLUDED.old_usernames[1]),
+        updated_at = EXCLUDED.updated_at
+    `,
+      values: [newUsername, [oldUsername], ownerId],
+    };
+
+    await database.query(query, options);
+
+    const remainingLimit = newUsernameChangeLimit - 1;
+
+    const updateQuery = {
+      text: `
+      UPDATE users_username_changes
+      SET new_username_change_limit = $1
+      WHERE owner_id = $2
+      RETURNING new_username_change_limit
+    `,
+      values: [remainingLimit, ownerId],
+    };
+
+    const updateResult = await database.query(updateQuery, options);
+
+    if (updateResult.rows.length === 0) {
+      throw new ValidationError({
+        message: 'Não é possível alterar o nome de usuário. Limite de alteração de nome de usuário excedido.',
+        stack: new Error().stack,
+        errorLocationCode: 'MODEL:USER:SAVE_USERNAME_CHANGE:LIMIT_EXCEEDED',
+        key: 'username',
+      });
+    }
+
+    return updateResult.rows[0].new_username_change_limit;
+  }
+
+  async function getUsernameChangeLimit(ownerId, options) {
+    const query = {
+      text: `
+        SELECT new_username_change_limit
+        FROM users_username_changes
+        WHERE owner_id = $1
+      `,
+      values: [ownerId],
+    };
+
+    const result = await database.query(query, options);
+
+    if (result.rows.length === 0) {
+      return 5;
+    }
+
+    return result.rows[0].new_username_change_limit;
+  }
+
   const updatedUser = await runUpdateQuery(currentUser, userWithUpdatedValues, {
     transaction: options.transaction,
   });
+
   return updatedUser;
 
   async function runUpdateQuery(currentUser, userWithUpdatedValues, options) {
+    if (userWithUpdatedValues.username) {
+      await saveUsernameChange(oldUsername, userWithUpdatedValues.username, ownerId, options);
+    }
+
     const query = {
       text: `
         UPDATE
@@ -357,14 +437,20 @@ async function validatePatchSchema(postedUserData) {
 }
 
 async function validateUniqueUsername(username, options) {
-  const query = {
+  const queryUsers = {
     text: 'SELECT username FROM users WHERE LOWER(username) = LOWER($1)',
     values: [username],
   };
 
-  const results = await database.query(query, options);
+  const queryChanges = {
+    text: 'SELECT * FROM users_username_changes WHERE $1 = ANY(old_usernames)',
+    values: [username],
+  };
 
-  if (results.rowCount > 0) {
+  const resultsUsers = await database.query(queryUsers, options);
+  const resultsChanges = await database.query(queryChanges, options);
+
+  if (resultsUsers.rowCount > 0 || resultsChanges.rowCount > 0) {
     throw new ValidationError({
       message: `O "username" informado já está sendo usado.`,
       stack: new Error().stack,

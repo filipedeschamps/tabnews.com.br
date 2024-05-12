@@ -32,9 +32,11 @@ function getValidationHandler(request, response, next) {
 async function getHandler(request, response) {
   const userTryingToGet = user.createAnonymous();
 
+  const oldUsernames = await content.checkOldsUsername(request.query.username);
+
   const contentFound = await content.findOne({
     where: {
-      owner_username: request.query.username,
+      owner_username: oldUsernames ? oldUsernames.username : request.query.username,
       slug: request.query.slug,
       status: 'published',
     },

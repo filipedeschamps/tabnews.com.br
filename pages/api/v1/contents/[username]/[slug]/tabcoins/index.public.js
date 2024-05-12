@@ -42,14 +42,15 @@ function postValidationHandler(request, response, next) {
 async function postHandler(request, response) {
   const userTryingToPost = request.context.user;
 
+  const oldUsernames = await content.checkOldsUsername(request.query.username);
+
   const contentFound = await content.findOne({
     where: {
-      owner_username: request.query.username,
+      owner_username: oldUsernames ? oldUsernames.username : request.query.username,
       slug: request.query.slug,
       status: 'published',
     },
   });
-
   if (!contentFound) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,

@@ -10,6 +10,28 @@ import user from 'models/user.js';
 import validator from 'models/validator.js';
 import queries from 'queries/rankingQueries';
 
+async function checkOldsUsername(username) {
+  const query = {
+    text: `
+      SELECT owner_id, username
+      FROM users_username_changes
+      WHERE $1 = ANY(old_usernames)
+    `,
+    values: [username],
+  };
+
+  const result = await database.query(query);
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return {
+    owner_id: result.rows[0].owner_id,
+    username: result.rows[0].username,
+  };
+}
+
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
   await replaceOwnerUsernameWithOwnerId(values);
@@ -957,4 +979,5 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  checkOldsUsername,
 });
