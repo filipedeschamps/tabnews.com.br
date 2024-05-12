@@ -2,6 +2,7 @@ export { default as ButtonWithLoader } from '@/ButtonWithLoader';
 export { default as Confetti } from '@/Confetti';
 export { default as Content } from '@/Content';
 export { default as ContentList } from '@/ContentList';
+export { default as CustomPaginationTable } from '@/CustomPaginationTable';
 export { default as DefaultLayout } from '@/DefaultLayout';
 export { default as EmptyState } from '@/EmptyState';
 export { default as Footer } from '@/Footer';
@@ -10,9 +11,10 @@ export { default as Header } from '@/Header';
 export { HeaderLink, Link, NavItem, default as NextLink, TabNavLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
+export { default as NotificationsUserCount } from '@/NotificationsUserCount';
+export { default as Pagination } from '@/Pagination';
 export { default as PasswordInput } from '@/PasswordInput';
 export { default as PastTime } from '@/PastTime';
-export { default as Pagination } from '@/Pagination';
 export { default as NextNProgress } from '@/Progressbar';
 export { default as ReadTime } from '@/ReadTime';
 export { default as RecentTabNav } from '@/RecentTabNav';
@@ -35,6 +37,7 @@ export {
   BranchName,
   Button,
   Checkbox,
+  CircleBadge,
   CounterLabel,
   Flash,
   FormControl,
@@ -50,6 +53,7 @@ export {
   TabNav as PrimerTabNav,
   ThemeProvider as PrimerThemeProvider,
   Tooltip as PrimerTooltip,
+  RelativeTime,
   SSRProvider,
   SegmentedControl,
   Spinner,
@@ -59,3 +63,5 @@ export {
   useConfirm,
   useTheme,
 } from '@primer/react';
+
+export { Blankslate, DataTable, Table } from '@primer/react/experimental';
