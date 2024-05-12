@@ -14,6 +14,7 @@ import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
+import sponsoredContent from 'models/sponsored-content.js';
 import user from 'models/user.js';
 
 if (process.env.NODE_ENV !== 'test') {
@@ -190,6 +191,36 @@ async function updateContent(contentId, contentObject) {
     status: contentObject?.status || undefined,
     source_url: contentObject?.source_url || undefined,
   });
+}
+
+async function createSponsoredContent(sponsoredContentObject) {
+  const currentEvent = await event.create({
+    type: 'create:sponsored_content',
+    originatorUserId: sponsoredContentObject.owner_id,
+  });
+
+  const createdSponsoredContent = await sponsoredContent.create(
+    {
+      owner_id: sponsoredContentObject.owner_id || undefined,
+      title: sponsoredContentObject.title || undefined,
+      slug: sponsoredContentObject.slug || undefined,
+      body: sponsoredContentObject.body || faker.lorem.paragraphs(5),
+      source_url: sponsoredContentObject.source_url || undefined,
+      deactivate_at: sponsoredContentObject.deactivate_at || undefined,
+      tabcash: sponsoredContentObject.tabcash || undefined,
+    },
+    {
+      eventId: currentEvent.id,
+    },
+  );
+
+  await event.updateMetadata(currentEvent.id, {
+    metadata: {
+      id: createdSponsoredContent.id,
+    },
+  });
+
+  return createdSponsoredContent;
 }
 
 async function createBalance(balanceObject) {
@@ -389,6 +420,7 @@ const orchestrator = {
   removeFeaturesFromUser,
   createContent,
   updateContent,
+  createSponsoredContent,
   createRecoveryToken,
   createFirewallTestFunctions,
   createBalance,

@@ -966,5 +966,82 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
     });
+
+    describe('Sponsored contents', () => {
+      test('"username" with contents and sponsored contents', async () => {
+        const defaultUser = await orchestrator.createUser();
+
+        const rootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Root content',
+          status: 'published',
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 10,
+        });
+
+        await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored content',
+          tabcash: 10,
+        });
+
+        const childContent = await orchestrator.createContent({
+          parent_id: rootContent.id,
+          owner_id: defaultUser.id,
+          body: 'Test body',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}?strategy=new`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toEqual([
+          {
+            id: childContent.id,
+            owner_id: defaultUser.id,
+            parent_id: rootContent.id,
+            slug: childContent.slug,
+            title: null,
+            body: childContent.body,
+            status: childContent.status,
+            source_url: null,
+            created_at: childContent.created_at.toISOString(),
+            updated_at: childContent.updated_at.toISOString(),
+            published_at: childContent.published_at.toISOString(),
+            deleted_at: null,
+            owner_username: defaultUser.username,
+            tabcoins: 0,
+            tabcoins_credit: 0,
+            tabcoins_debit: 0,
+            children_deep_count: 0,
+          },
+          {
+            id: rootContent.id,
+            owner_id: defaultUser.id,
+            parent_id: null,
+            slug: rootContent.slug,
+            title: rootContent.title,
+            status: rootContent.status,
+            source_url: null,
+            created_at: rootContent.created_at.toISOString(),
+            updated_at: rootContent.updated_at.toISOString(),
+            published_at: rootContent.published_at.toISOString(),
+            deleted_at: null,
+            owner_username: defaultUser.username,
+            tabcoins: 1,
+            tabcoins_credit: 0,
+            tabcoins_debit: 0,
+            children_deep_count: 1,
+          },
+        ]);
+      });
+    });
   });
 });

@@ -428,5 +428,157 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       expect(response.status).toEqual(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
     });
+
+    describe('Sponsored content', () => {
+      test('"root" sponsored content with 1 "child"', async () => {
+        const defaultUser = await orchestrator.createUser({
+          username: 'SponsoredContentOwner',
+        });
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 150,
+        });
+
+        vi.useFakeTimers({
+          now: Date.parse('2024-05-12T12:00:00.000Z'),
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored root content',
+          tabcash: 150,
+        });
+
+        vi.useRealTimers();
+
+        await orchestrator.createContent({
+          parent_id: rootContent.content_id,
+          owner_id: defaultUser.id,
+          body: 'body',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
+        );
+        const responseBody = Buffer.from(await response.arrayBuffer());
+
+        const benchmarkFile = readFileSync(
+          join(
+            resolve('.'),
+            'tests',
+            'integration',
+            'api',
+            'v1',
+            'contents',
+            '[username]',
+            '[slug]',
+            'thumbnail',
+            'root-sponsored-1-child.png',
+          ),
+        );
+
+        expect(response.status).toEqual(200);
+        expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      });
+
+      test('"child" content of a sponsored root content with 0 "children"', async () => {
+        const defaultUser = await orchestrator.createUser({
+          username: 'SponsoredContentOwner2',
+        });
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored root content #2',
+          tabcash: 100,
+        });
+
+        vi.useFakeTimers({
+          now: Date.parse('2024-05-12T12:00:00.000Z'),
+        });
+
+        const childContent = await orchestrator.createContent({
+          parent_id: rootContent.content_id,
+          owner_id: defaultUser.id,
+          body: 'Short body',
+          status: 'published',
+        });
+
+        vi.useRealTimers();
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
+        );
+        const responseBody = Buffer.from(await response.arrayBuffer());
+
+        const benchmarkFile = readFileSync(
+          join(
+            resolve('.'),
+            'tests',
+            'integration',
+            'api',
+            'v1',
+            'contents',
+            '[username]',
+            '[slug]',
+            'thumbnail',
+            'child-parent-sponsored-0-children.png',
+          ),
+        );
+
+        expect(response.status).toEqual(200);
+        expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      });
+
+      test('"root" sponsored content deactivated', async () => {
+        const defaultUser = await orchestrator.createUser({
+          username: 'OwnerOfDeactivatedContent',
+        });
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 100,
+        });
+
+        vi.useFakeTimers({
+          now: Date.parse('2024-05-10T12:00:00.000Z'),
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored root content deactivated',
+          tabcash: 100,
+          deactivate_at: '2024-05-11T12:00:00.000Z',
+        });
+
+        vi.useRealTimers();
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(404);
+        expect(responseBody).toStrictEqual({
+          name: 'NotFoundError',
+          message: 'Este conteúdo não está disponível.',
+          action:
+            'Verifique se o "slug" está digitado corretamente ou considere o fato do conteúdo ter sido despublicado.',
+          status_code: 404,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'CONTROLLER:CONTENT:THUMBNAIL:GET_HANDLER:SLUG_NOT_FOUND',
+          key: 'slug',
+        });
+        expect(uuidVersion(responseBody.error_id)).toEqual(4);
+        expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      });
+    });
   });
 });

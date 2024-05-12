@@ -112,5 +112,80 @@ describe('GET /recentes/rss', () => {
     </channel>
 </rss>`);
     });
+
+    describe('Sponsored content (dropAllTables beforeAll', () => {
+      beforeAll(async () => {
+        await orchestrator.dropAllTables();
+        await orchestrator.runPendingMigrations();
+      });
+
+      test('With 3 contents, 2 `published` and 1 `sponsored`', async () => {
+        const defaultUser = await orchestrator.createUser();
+
+        const firstRootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'First content #1',
+          status: 'published',
+          body: 'First body',
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 130,
+        });
+
+        await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored root content',
+          tabcash: 130,
+        });
+
+        const thirdRootContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Third content #3',
+          body: 'Third body',
+          status: 'published',
+        });
+
+        const response = await fetch(`${orchestrator.webserverUrl}/rss`);
+        const responseBody = await response.text();
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toStrictEqual(`<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>TabNews</title>
+        <link>${orchestrator.webserverUrl}/recentes/rss</link>
+        <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
+        <lastBuildDate>${new Date(thirdRootContent.published_at).toUTCString()}</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>pt</language>
+        <image>
+            <title>TabNews</title>
+            <url>${orchestrator.webserverUrl}/favicon-mobile.png</url>
+            <link>${orchestrator.webserverUrl}/recentes/rss</link>
+        </image>
+        <item>
+            <title><![CDATA[${thirdRootContent.title}]]></title>
+            <link>${orchestrator.webserverUrl}/${thirdRootContent.owner_username}/${thirdRootContent.slug}</link>
+            <guid>${orchestrator.webserverUrl}/${thirdRootContent.owner_username}/${thirdRootContent.slug}</guid>
+            <pubDate>${new Date(thirdRootContent.published_at).toUTCString()}</pubDate>
+            <description><![CDATA[${thirdRootContent.body}]]></description>
+            <content:encoded><![CDATA[<div class="markdown-body"><p>${thirdRootContent.body}</p></div>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[${firstRootContent.title}]]></title>
+            <link>${orchestrator.webserverUrl}/${firstRootContent.owner_username}/${firstRootContent.slug}</link>
+            <guid>${orchestrator.webserverUrl}/${firstRootContent.owner_username}/${firstRootContent.slug}</guid>
+            <pubDate>${new Date(firstRootContent.published_at).toUTCString()}</pubDate>
+            <description><![CDATA[${firstRootContent.body}]]></description>
+            <content:encoded><![CDATA[<div class="markdown-body"><p>${firstRootContent.body}</p></div>]]></content:encoded>
+        </item>
+    </channel>
+</rss>`);
+      });
+    });
   });
 });

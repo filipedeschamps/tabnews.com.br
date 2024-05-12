@@ -33,11 +33,13 @@ async function getHandler(request, response) {
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      status: 'published',
+      $or: [{ status: 'published' }, { status: 'sponsored' }],
     },
   });
 
-  if (!contentFound) {
+  const isDeactivated = contentFound?.deactivate_at && contentFound.deactivate_at < new Date();
+
+  if (!contentFound || isDeactivated) {
     throw new NotFoundError({
       message: `Este conteúdo não está disponível.`,
       action: 'Verifique se o "slug" está digitado corretamente ou considere o fato do conteúdo ter sido despublicado.',

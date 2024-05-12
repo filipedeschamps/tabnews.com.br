@@ -456,5 +456,141 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.id)).toEqual(4);
       expect(uuidVersion(responseBody.owner_id)).toEqual(4);
     });
+
+    describe('Sponsored contents', () => {
+      test('An active sponsored content', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: createdSponsoredContent.content_id,
+          parent_id: null,
+          owner_id: firstUser.id,
+          slug: 'root-content-title',
+          title: 'Root content title',
+          body: 'Body',
+          children_deep_count: 0,
+          status: 'sponsored',
+          source_url: null,
+          published_at: createdSponsoredContent.published_at.toISOString(),
+          created_at: createdSponsoredContent.created_at.toISOString(),
+          updated_at: createdSponsoredContent.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
+
+      test('A deactivated sponsored content', async () => {
+        vi.useFakeTimers({
+          now: new Date('2024-05-11T00:00:00.000Z'),
+        });
+
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+          deactivate_at: new Date('2024-05-20T00:00:00.000Z'),
+        });
+
+        vi.useRealTimers();
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(404);
+        expect(responseBody).toStrictEqual({
+          status_code: 404,
+          name: 'NotFoundError',
+          message: 'O conteúdo informado não foi encontrado no sistema.',
+          action: 'Verifique se o "slug" está digitado corretamente.',
+          error_location_code: 'CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND',
+          key: 'slug',
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+        });
+      });
+
+      test('Child of a sponsored content', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+        });
+
+        const secondUser = await orchestrator.createUser();
+        const childContent = await orchestrator.createContent({
+          parent_id: createdSponsoredContent.content_id,
+          owner_id: secondUser.id,
+          title: 'Child',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: childContent.id,
+          parent_id: createdSponsoredContent.content_id,
+          owner_id: secondUser.id,
+          slug: 'child',
+          title: 'Child',
+          body: childContent.body,
+          children_deep_count: 0,
+          status: 'published',
+          source_url: null,
+          published_at: childContent.published_at.toISOString(),
+          created_at: childContent.created_at.toISOString(),
+          updated_at: childContent.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: secondUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
+    });
   });
 });

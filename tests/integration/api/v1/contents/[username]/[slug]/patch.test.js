@@ -2925,6 +2925,213 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         expect(userResponse2Body.tabcash).toEqual(0);
       });
     });
+
+    describe('Sponsored contents', () => {
+      test('Updating a sponsored content "body"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored content title',
+          body: 'Body',
+          tabcash: 50,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${createdSponsoredContent.slug}`,
+          { body: 'Updated body' },
+        );
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: createdSponsoredContent.slug,
+          title: createdSponsoredContent.title,
+          body: 'Updated body',
+          status: 'sponsored',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: createdSponsoredContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(responseBody.updated_at > createdSponsoredContent.updated_at.toISOString()).toEqual(true);
+      });
+
+      test('Updating a sponsored content "title", "source_url" and "slug"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored content title',
+          body: 'Body',
+          tabcash: 50,
+          source_url: 'https://example.com',
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${createdSponsoredContent.slug}`,
+          { title: 'New title', slug: 'new-slug', source_url: 'https://example.com/new_url' },
+        );
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'new-slug',
+          title: 'New title',
+          body: 'Body',
+          status: 'sponsored',
+          source_url: 'https://example.com/new_url',
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: createdSponsoredContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+      });
+
+      test('Updating "status"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored content title',
+          body: 'Body',
+          tabcash: 50,
+          source_url: 'https://example.com',
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${createdSponsoredContent.slug}`,
+          { status: 'published' },
+        );
+
+        expect(response.status).toEqual(400);
+        expect(responseBody).toStrictEqual({
+          name: 'ValidationError',
+          message: 'Não é possível alterar o status de uma publicação patrocinada.',
+          action: 'Ajuste os dados enviados e tente novamente.',
+          status_code: 400,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:UPDATE_STATUS_FROM_SPONSORED',
+          key: 'status',
+        });
+        expect(uuidVersion(responseBody.error_id)).toEqual(4);
+        expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      });
+
+      test('Updating a deactivated sponsored content', async () => {
+        vi.useFakeTimers({
+          now: new Date('2024-05-15T00:00:00.000Z'),
+        });
+
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored content title',
+          tabcash: 50,
+          deactivate_at: new Date('2024-05-20T00:00:00.000Z'),
+        });
+
+        vi.useRealTimers();
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${createdSponsoredContent.slug}`,
+          { title: 'New title' },
+        );
+
+        expect(response.status).toEqual(404);
+        expect(responseBody).toStrictEqual({
+          status_code: 404,
+          name: 'NotFoundError',
+          message: 'O conteúdo informado não foi encontrado no sistema.',
+          action: 'Verifique se o "slug" está digitado corretamente.',
+          error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
+          key: 'slug',
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+        });
+      });
+
+      test('Updating a sponsored content from another user', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
+
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: secondUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: secondUser.id,
+          title: 'Sponsored content title',
+          tabcash: 50,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${createdSponsoredContent.slug}`,
+          { body: 'Updated body' },
+        );
+
+        expect(response.status).toEqual(403);
+        expect(responseBody).toStrictEqual({
+          status_code: 403,
+          name: 'ForbiddenError',
+          message: 'Você não possui permissão para atualizar o conteúdo de outro usuário.',
+          action: 'Verifique se você possui a feature "update:content:others".',
+          error_location_code: 'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+        });
+        expect(uuidVersion(responseBody.error_id)).toEqual(4);
+        expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      });
+    });
   });
 
   describe('User with "update:content:others" feature', () => {
@@ -2975,6 +3182,51 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
       expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
       expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
+    });
+
+    describe('Sponsored contents', () => {
+      test('Updating a sponsored content from another user', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser({ with: ['update:content:others'] });
+
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: secondUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: secondUser.id,
+          title: 'Sponsored content title',
+          tabcash: 50,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${createdSponsoredContent.slug}`,
+          { body: 'Body updated by another user' },
+        );
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toStrictEqual({
+          id: createdSponsoredContent.content_id,
+          owner_id: secondUser.id,
+          parent_id: null,
+          slug: createdSponsoredContent.slug,
+          title: createdSponsoredContent.title,
+          body: 'Body updated by another user',
+          status: 'sponsored',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: secondUser.username,
+        });
+      });
     });
   });
 });

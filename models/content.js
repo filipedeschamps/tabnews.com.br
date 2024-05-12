@@ -121,9 +121,19 @@ async function findAll(values = {}, options = {}) {
         contents.path,
         users.username as owner_username,
         content_window.total_rows,
-        tabcoins_count.total_balance as tabcoins,
-        tabcoins_count.total_credit as tabcoins_credit,
-        tabcoins_count.total_debit as tabcoins_debit,
+        sponsored_contents.deactivate_at,
+        CASE
+          WHEN contents.status = 'sponsored' THEN sponsored_content_tabcoins
+          ELSE tabcoins_count.total_balance
+        END as tabcoins,
+        CASE
+          WHEN contents.status = 'sponsored' THEN 0
+          ELSE tabcoins_count.total_credit
+        END as tabcoins_credit,
+        CASE
+          WHEN contents.status = 'sponsored' THEN 0
+          ELSE tabcoins_count.total_debit
+        END as tabcoins_debit,
         (
           SELECT COUNT(*)
           FROM contents as children
@@ -136,7 +146,12 @@ async function findAll(values = {}, options = {}) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
-      LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(contents.id) tabcoins_count ON contents.status <> 'sponsored'
+      LEFT JOIN 
+        sponsored_contents ON contents.status = 'sponsored' AND contents.id = sponsored_contents.content_id
+      LEFT JOIN
+        get_sponsored_content_current_tabcoins(sponsored_contents.id) sponsored_content_tabcoins ON contents.status = 'sponsored'
     `;
   }
 
@@ -624,6 +639,7 @@ async function update(contentId, postedContent, options = {}) {
 
   throwIfContentIsAlreadyDeleted(oldContent);
   throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
+  throwIfContentSponsoredIsChangedStatus(oldContent, newContent);
   checkRootContentTitle(newContent);
   checkForParentIdRecursion(newContent);
 
@@ -781,6 +797,18 @@ function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
   }
 }
 
+function throwIfContentSponsoredIsChangedStatus(oldContent, newContent) {
+  if (oldContent.status === 'sponsored' && newContent.status && newContent.status !== oldContent.status) {
+    throw new ValidationError({
+      message: 'Não é possível alterar o status de uma publicação patrocinada.',
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:UPDATE_STATUS_FROM_SPONSORED',
+      statusCode: 400,
+      key: 'status',
+    });
+  }
+}
+
 async function findTree(options = {}) {
   options.where = validateWhereSchema(options.where);
   let values;
@@ -814,25 +842,42 @@ async function findTree(options = {}) {
         status = 'published';`;
 
     const queryTree = `
-      WITH parent AS (SELECT * FROM contents
+      WITH parent AS (SELECT contents.* FROM contents
+        LEFT JOIN
+          sponsored_contents ON status = 'sponsored' AND contents.id = sponsored_contents.content_id
         WHERE
           ${options.where.id ? 'contents.id = $1 AND' : ''}
           ${options.where.owner_username ? `${whereOwnerUsername('$1')} AND` : ''}
           ${options.where.slug ? 'contents.slug = $2 AND' : ''}
-          contents.status = 'published')
+          (contents.status = 'published' OR contents.status = 'sponsored') AND
+          (sponsored_contents.deactivate_at IS NULL OR sponsored_contents.deactivate_at > NOW())
+      )
 
       SELECT
         parent.*,
         users.username as owner_username,
-        tabcoins_count.total_balance as tabcoins,
-        tabcoins_count.total_credit as tabcoins_credit,
-        tabcoins_count.total_debit as tabcoins_debit
+        CASE
+          WHEN parent.status = 'sponsored' THEN sponsored_content_tabcoins
+          ELSE tabcoins_count.total_balance
+        END as tabcoins,
+        CASE
+          WHEN parent.status = 'sponsored' THEN 0
+          ELSE tabcoins_count.total_credit
+        END as tabcoins_credit,
+        CASE
+          WHEN parent.status = 'sponsored' THEN 0
+          ELSE tabcoins_count.total_debit
+        END as tabcoins_debit
       FROM
         parent
       INNER JOIN
         users ON parent.owner_id = users.id
       LEFT JOIN LATERAL
-        get_content_balance_credit_debit(parent.id) tabcoins_count ON true
+        get_content_balance_credit_debit(parent.id) tabcoins_count ON parent.status <> 'sponsored'
+      LEFT JOIN 
+        sponsored_contents ON parent.status = 'sponsored' AND parent.id = sponsored_contents.content_id
+      LEFT JOIN
+        get_sponsored_content_current_tabcoins(sponsored_contents.id) sponsored_content_tabcoins ON parent.status = 'sponsored'
 
       UNION ALL
 

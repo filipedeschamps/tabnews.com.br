@@ -2846,5 +2846,120 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
     });
+
+    describe('Sponsored content parent', () => {
+      test('"child" content of a sponsored content with minimum valid data', async () => {
+        const sponsoredContentUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: sponsoredContentUser.id,
+          amount: 200,
+        });
+
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const sponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: sponsoredContentUser.id,
+          title: 'Sponsored root content',
+          tabcash: 150,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Comment on a sponsored post',
+          parent_id: sponsoredContent.content_id,
+          status: 'published',
+        });
+
+        expect(response.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: secondUser.id,
+          parent_id: sponsoredContent.content_id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Comment on a sponsored post',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: secondUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+
+        const contentInDatabase = await database.query({
+          text: 'SELECT * FROM contents WHERE id = $1',
+          values: [responseBody.id],
+        });
+
+        expect(contentInDatabase.rows[0].path).toEqual([sponsoredContent.content_id]);
+      });
+
+      test('Should earn tabcoins with minimum prestige in "child" content when commenting on a sponsored', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+        const sponsoredContentUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: sponsoredContentUser.id,
+          amount: 200,
+        });
+        const sponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: sponsoredContentUser.id,
+          title: 'Sponsored root content',
+          tabcash: 150,
+        });
+
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Should publish and earn TabCoins when commenting on a sponsored content.',
+          parent_id: sponsoredContent.content_id,
+          status: 'published',
+        });
+
+        expect(response.status).toEqual(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: secondUser.id,
+          parent_id: sponsoredContent.content_id,
+          slug: responseBody.slug,
+          title: null,
+          body: 'Should publish and earn TabCoins when commenting on a sponsored content.',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: secondUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toEqual(4);
+        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+        expect(userResponseBody.tabcoins).toEqual(1);
+        expect(userResponseBody.tabcash).toEqual(0);
+      });
+    });
   });
 });

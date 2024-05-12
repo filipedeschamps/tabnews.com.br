@@ -1412,5 +1412,109 @@ describe('GET /api/v1/contents', () => {
         expect(responseBody).toStrictEqual(getExpected());
       });
     });
+
+    describe('Sponsored content', () => {
+      const sortedByOld = [];
+      const sortedByNew = [];
+      const sortedByTabCoins = [];
+
+      beforeAll(async () => {
+        await orchestrator.dropAllTables();
+        await orchestrator.runPendingMigrations();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+
+        const firstRootContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'First content',
+          status: 'published',
+        });
+
+        sortedByOld.push({
+          id: firstRootContent.id,
+          owner_id: firstUser.id,
+          parent_id: null,
+          slug: firstRootContent.slug,
+          title: firstRootContent.title,
+          status: 'published',
+          source_url: null,
+          created_at: firstRootContent.created_at.toISOString(),
+          updated_at: firstRootContent.updated_at.toISOString(),
+          published_at: firstRootContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 2,
+          tabcoins_credit: 1,
+          tabcoins_debit: 0,
+          children_deep_count: 0,
+        });
+
+        await orchestrator.createRate(firstRootContent, 1);
+
+        const secondRootContent = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          title: 'Second content',
+          status: 'published',
+        });
+
+        sortedByOld.push({
+          id: secondRootContent.id,
+          owner_id: secondUser.id,
+          parent_id: null,
+          slug: secondRootContent.slug,
+          title: secondRootContent.title,
+          status: 'published',
+          source_url: null,
+          created_at: secondRootContent.created_at.toISOString(),
+          updated_at: secondRootContent.updated_at.toISOString(),
+          published_at: secondRootContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: secondUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          children_deep_count: 0,
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 150,
+        });
+
+        await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Sponsored root content',
+          tabcash: 150,
+        });
+
+        sortedByNew.push(...sortedByOld.slice().reverse());
+        sortedByTabCoins.push(...sortedByNew.slice().sort((a, b) => b.tabcoins - a.tabcoins));
+      });
+
+      test.each([
+        {
+          content: 'relevant',
+          params: [],
+          expected: sortedByTabCoins,
+        },
+        {
+          content: 'new',
+          params: ['strategy=new'],
+          expected: sortedByNew,
+        },
+        {
+          content: 'old',
+          params: ['strategy=old'],
+          expected: sortedByOld,
+        },
+      ])('get $content with params: $params', async ({ params, expected }) => {
+        const { response, responseBody } = await contentsRequestBuilder.get(`?${params.join('&')}`);
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toStrictEqual(expected);
+      });
+    });
   });
 });

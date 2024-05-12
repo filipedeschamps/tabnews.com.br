@@ -45,11 +45,13 @@ async function getHandler(request, response) {
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      status: 'published',
+      $or: [{ status: 'published' }, { status: 'sponsored' }],
     },
   });
 
-  if (!contentFound) {
+  const isDeactivated = contentFound?.deactivate_at && contentFound.deactivate_at < new Date();
+
+  if (!contentFound || isDeactivated) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
@@ -93,11 +95,13 @@ async function patchHandler(request, response) {
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      $or: [{ status: 'draft' }, { status: 'published' }],
+      $or: [{ status: 'draft' }, { status: 'published' }, { status: 'sponsored' }],
     },
   });
 
-  if (!contentToBeUpdated) {
+  const isDeactivated = contentToBeUpdated?.deactivate_at && contentToBeUpdated.deactivate_at < new Date();
+
+  if (!contentToBeUpdated || isDeactivated) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',

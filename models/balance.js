@@ -89,7 +89,16 @@ async function getTotal({ balanceType, recipientId }, options) {
 
 async function getContentTabcoinsCreditDebit({ recipientId }, options = {}) {
   const query = {
-    text: 'SELECT * FROM get_content_balance_credit_debit($1);',
+    text: `
+      SELECT
+        COALESCE(cb.total_balance, get_sponsored_content_current_tabcoins(sc.id)) AS total_balance,
+        COALESCE(cb.total_credit, 0) AS total_credit,
+        COALESCE(cb.total_debit, 0) AS total_debit
+      FROM contents c
+      LEFT JOIN sponsored_contents sc ON c.status = 'sponsored' AND c.id = sc.content_id
+      LEFT JOIN LATERAL get_content_balance_credit_debit(c.id) cb ON c.status <> 'sponsored'
+      WHERE c.id = $1
+    ;`,
     values: [recipientId],
   };
 

@@ -488,5 +488,189 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
         },
       ]);
     });
+
+    describe('Sponsored content', () => {
+      test('From "root" content with "sponsored" status with 4 "published" children', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+        });
+
+        const childBranchALevel1 = await orchestrator.createContent({
+          parent_id: rootContent.content_id,
+          owner_id: secondUser.id,
+          title: 'Child branch A [Level 1]',
+          status: 'published',
+        });
+
+        const childBranchBLevel1 = await orchestrator.createContent({
+          parent_id: rootContent.content_id,
+          owner_id: secondUser.id,
+          title: 'Child branch B [Level 1]',
+          status: 'published',
+        });
+
+        const childBranchBLevel2Content1 = await orchestrator.createContent({
+          parent_id: childBranchBLevel1.id,
+          owner_id: firstUser.id,
+          title: 'Child branch B [Level 2] #1',
+          status: 'published',
+        });
+
+        const childBranchBLevel2Content2 = await orchestrator.createContent({
+          parent_id: childBranchBLevel1.id,
+          owner_id: secondUser.id,
+          title: 'Child branch B [Level 2] #2',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${rootContent.slug}/children`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+        expect(responseBody.length).toEqual(2);
+        expect(responseBody).toStrictEqual([
+          {
+            id: childBranchBLevel1.id,
+            owner_id: secondUser.id,
+            parent_id: rootContent.content_id,
+            slug: childBranchBLevel1.slug,
+            title: childBranchBLevel1.title,
+            body: childBranchBLevel1.body,
+            tabcoins: 1,
+            tabcoins_credit: 0,
+            tabcoins_debit: 0,
+            status: childBranchBLevel1.status,
+            source_url: childBranchBLevel1.source_url,
+            created_at: childBranchBLevel1.created_at.toISOString(),
+            updated_at: childBranchBLevel1.updated_at.toISOString(),
+            published_at: childBranchBLevel1.published_at.toISOString(),
+            deleted_at: null,
+            owner_username: secondUser.username,
+            children: [
+              {
+                id: childBranchBLevel2Content1.id,
+                owner_id: firstUser.id,
+                parent_id: childBranchBLevel1.id,
+                slug: childBranchBLevel2Content1.slug,
+                title: childBranchBLevel2Content1.title,
+                body: childBranchBLevel2Content1.body,
+                tabcoins: 1,
+                tabcoins_credit: 0,
+                tabcoins_debit: 0,
+                status: childBranchBLevel2Content1.status,
+                source_url: childBranchBLevel2Content1.source_url,
+                created_at: childBranchBLevel2Content1.created_at.toISOString(),
+                updated_at: childBranchBLevel2Content1.updated_at.toISOString(),
+                published_at: childBranchBLevel2Content1.published_at.toISOString(),
+                deleted_at: null,
+                owner_username: firstUser.username,
+                children: [],
+                children_deep_count: 0,
+              },
+              {
+                id: childBranchBLevel2Content2.id,
+                owner_id: secondUser.id,
+                parent_id: childBranchBLevel1.id,
+                slug: childBranchBLevel2Content2.slug,
+                title: childBranchBLevel2Content2.title,
+                body: childBranchBLevel2Content2.body,
+                tabcoins: 0,
+                tabcoins_credit: 0,
+                tabcoins_debit: 0,
+                status: childBranchBLevel2Content2.status,
+                source_url: childBranchBLevel2Content2.source_url,
+                created_at: childBranchBLevel2Content2.created_at.toISOString(),
+                updated_at: childBranchBLevel2Content2.updated_at.toISOString(),
+                published_at: childBranchBLevel2Content2.published_at.toISOString(),
+                deleted_at: null,
+                owner_username: secondUser.username,
+                children: [],
+                children_deep_count: 0,
+              },
+            ],
+            children_deep_count: 2,
+          },
+          {
+            id: childBranchALevel1.id,
+            owner_id: secondUser.id,
+            parent_id: rootContent.content_id,
+            slug: childBranchALevel1.slug,
+            title: childBranchALevel1.title,
+            body: childBranchALevel1.body,
+            status: childBranchALevel1.status,
+            tabcoins: 1,
+            tabcoins_credit: 0,
+            tabcoins_debit: 0,
+            source_url: childBranchALevel1.source_url,
+            created_at: childBranchALevel1.created_at.toISOString(),
+            updated_at: childBranchALevel1.updated_at.toISOString(),
+            published_at: childBranchALevel1.published_at.toISOString(),
+            deleted_at: null,
+            owner_username: secondUser.username,
+            children: [],
+            children_deep_count: 0,
+          },
+        ]);
+      });
+
+      test('From "root" content with "sponsored" status and deactivated', async () => {
+        vi.useFakeTimers({
+          now: new Date('2024-05-01T00:00:00.000Z'),
+        });
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+          deactivate_at: '2024-05-10T15:19:23.000Z',
+        });
+
+        await orchestrator.createContent({
+          parent_id: rootContent.content_id,
+          owner_id: secondUser.id,
+          title: 'Child branch A [Level 1]',
+          status: 'published',
+        });
+
+        vi.useRealTimers();
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${rootContent.slug}/children`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(404);
+        expect(responseBody).toStrictEqual({
+          status_code: 404,
+          name: 'NotFoundError',
+          message: 'O conteúdo informado não foi encontrado no sistema.',
+          action: 'Verifique se o "slug" está digitado corretamente.',
+          error_location_code: 'CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND',
+          key: 'slug',
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+        });
+      });
+    });
   });
 });

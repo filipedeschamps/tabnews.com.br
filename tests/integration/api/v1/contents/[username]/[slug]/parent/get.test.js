@@ -483,5 +483,174 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         tabcoins_debit: -11,
       });
     });
+
+    describe('Sponsored content', () => {
+      test('Get the parent that is a sponsored content', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+        });
+
+        const childContentLevel1 = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.content_id,
+          body: 'Child content body Level 1',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: rootContent.content_id,
+          parent_id: null,
+          owner_id: firstUser.id,
+          slug: 'root-content-title',
+          title: 'Root content title',
+          body: 'Body',
+          children_deep_count: 1,
+          status: 'sponsored',
+          source_url: null,
+          published_at: rootContent.published_at.toISOString(),
+          created_at: rootContent.created_at.toISOString(),
+          updated_at: rootContent.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
+
+      test('Get the parent that is a child of a sponsored content', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+        });
+
+        const childContentLevel1 = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.content_id,
+          body: 'Child content body Level 1 - relevant content',
+          status: 'published',
+        });
+
+        const childContentLevel2 = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          parent_id: childContentLevel1.id,
+          body: 'Child content body Level 2 - relevant content',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${childContentLevel2.slug}/parent`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: childContentLevel1.id,
+          parent_id: rootContent.content_id,
+          owner_id: secondUser.id,
+          slug: childContentLevel1.slug,
+          title: null,
+          body: 'Child content body Level 1 - relevant content',
+          children_deep_count: 1,
+          status: 'published',
+          source_url: null,
+          published_at: childContentLevel1.published_at.toISOString(),
+          created_at: childContentLevel1.created_at.toISOString(),
+          updated_at: childContentLevel1.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: secondUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
+
+      test('Get the parent that is a sponsored content deactivated', async () => {
+        vi.useFakeTimers({
+          now: new Date('2024-05-05T00:00:00.000Z'),
+        });
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          body: 'body',
+          tabcash: 100,
+          deactivate_at: '2024-05-11T21:11:23.000Z',
+        });
+
+        const childContentLevel1 = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.content_id,
+          body: 'Child content body Level 1',
+          status: 'published',
+        });
+
+        vi.useRealTimers();
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/parent`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: rootContent.content_id,
+          parent_id: null,
+          owner_id: firstUser.id,
+          slug: 'nao-disponivel',
+          title: '[Não disponível]',
+          body: '[Não disponível]',
+          children_deep_count: 0,
+          status: 'sponsored',
+          source_url: null,
+          published_at: rootContent.published_at.toISOString(),
+          created_at: rootContent.created_at.toISOString(),
+          updated_at: rootContent.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
+    });
   });
 });

@@ -248,7 +248,10 @@ function filterOutput(user, feature, output) {
 
   if (feature === 'read:content') {
     const clonedOutput = { ...output };
-    if (output.status !== 'published' && user.id !== output.owner_id) {
+    const allowedStatus = ['published', 'sponsored'];
+    const isDeactivated = output.deactivate_at && output.deactivate_at < new Date();
+
+    if ((!allowedStatus.includes(output.status) && user.id !== output.owner_id) || isDeactivated) {
       clonedOutput.title = '[Não disponível]';
       clonedOutput.body = '[Não disponível]';
       clonedOutput.slug = 'nao-disponivel';
