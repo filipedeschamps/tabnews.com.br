@@ -128,16 +128,16 @@ function SignUpForm() {
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
-          {errorObject?.key !== 'username' && (
-            <FormControl.Caption>Assim que os outros verão você na plataforma.</FormControl.Caption>
+          <FormControl.Caption>Este nome será exibido publicamente.</FormControl.Caption>
+
+          {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
+            <FormControl.Validation variant="error">
+              Nome de usuário deve conter apenas letras e números. (ex: nomeSobrenome4)
+            </FormControl.Validation>
           )}
 
           {errorObject?.key === 'username' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
           )}
         </FormControl>
         <FormControl id="email">
