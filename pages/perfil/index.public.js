@@ -64,6 +64,12 @@ function EditProfileForm() {
     setGlobalMessageObject(undefined);
   }
 
+  function handleUsernameChange() {
+    const username = usernameRef.current.value;
+    const currentUser = user.username || '';
+    setShowUsernameCaption(username.toLowerCase() !== currentUser.toLowerCase());
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -77,12 +83,14 @@ function EditProfileForm() {
     const payload = {};
 
     if (user.username !== username) {
-      const confirmChangeUsername = await confirm({
-        title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
-        cancelButtonContent: 'Cancelar',
-        confirmButtonContent: 'Sim',
-      });
+      const confirmChangeUsername =
+        user.username.toLowerCase() === username.toLowerCase() ||
+        (await confirm({
+          title: `Você realmente deseja alterar seu nome de usuário?`,
+          content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
+          cancelButtonContent: 'Cancelar',
+          confirmButtonContent: 'Sim',
+        }));
 
       if (!confirmChangeUsername) {
         setIsLoading(false);
@@ -156,6 +164,7 @@ function EditProfileForm() {
         }
 
         setIsLoading(false);
+        setShowUsernameCaption(false);
         return;
       }
 
@@ -198,8 +207,7 @@ function EditProfileForm() {
             aria-label="Seu nome de usuário"
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
-            onFocus={() => setShowUsernameCaption(true)}
-            onBlur={() => setShowUsernameCaption(false)}
+            onChange={handleUsernameChange}
           />
           {showUsernameCaption && (
             <FormControl.Caption>
@@ -207,12 +215,14 @@ function EditProfileForm() {
             </FormControl.Caption>
           )}
 
-          {errorObject?.key === 'username' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+          {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
+            <FormControl.Validation variant="error">
+              Nome de usuário deve conter apenas letras e números. (ex: nomeSobrenome4)
+            </FormControl.Validation>
           )}
 
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
+          {errorObject?.key === 'username' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 
