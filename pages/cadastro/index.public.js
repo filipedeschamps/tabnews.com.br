@@ -128,11 +128,11 @@ function SignUpForm() {
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
-          <FormControl.Caption>Este nome será exibido publicamente.</FormControl.Caption>
+          <FormControl.Caption>Esse nome será exibido publicamente.</FormControl.Caption>
 
           {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
             <FormControl.Validation variant="error">
-              Nome de usuário deve conter apenas letras e números. (ex: nomeSobrenome4)
+              Nome de usuário deve conter apenas letras e números, por exemplo: &quot;nomeSobrenome4&quot;.
             </FormControl.Validation>
           )}
 

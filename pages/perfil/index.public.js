@@ -64,12 +64,6 @@ function EditProfileForm() {
     setGlobalMessageObject(undefined);
   }
 
-  function handleUsernameChange() {
-    const username = usernameRef.current.value;
-    const currentUser = user.username || '';
-    setShowUsernameCaption(username.toLowerCase() !== currentUser.toLowerCase());
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -164,7 +158,6 @@ function EditProfileForm() {
         }
 
         setIsLoading(false);
-        setShowUsernameCaption(false);
         return;
       }
 
@@ -207,17 +200,17 @@ function EditProfileForm() {
             aria-label="Seu nome de usuário"
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
-            onChange={handleUsernameChange}
+            onChange={() => setShowUsernameCaption(true)}
           />
           {showUsernameCaption && (
             <FormControl.Caption>
-              Alterar o nome de usuário irá quebrar todas as URLs das suas publicações e comentários.
+              Alterar o nome de usuário pode quebrar todas as URLs das suas publicações e comentários.
             </FormControl.Caption>
           )}
 
           {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
             <FormControl.Validation variant="error">
-              Nome de usuário deve conter apenas letras e números. (ex: nomeSobrenome4)
+              Nome de usuário deve conter apenas letras e números, por exemplo: &quot;nomeSobrenome4&quot;.
             </FormControl.Validation>
           )}
 
