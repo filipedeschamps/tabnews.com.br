@@ -12,7 +12,6 @@ import {
   Heading,
   Link,
   PasswordInput,
-  Text,
   TextInput,
 } from '@/TabNewsUI';
 import { createErrorMessage, suggestEmail } from 'pages/interface';
@@ -129,12 +128,16 @@ function SignUpForm() {
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
-          {errorObject?.key === 'username' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+          <FormControl.Caption>Esse nome será exibido publicamente.</FormControl.Caption>
+
+          {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
+            <FormControl.Validation variant="error">
+              Nome de usuário deve conter apenas letras e números, por exemplo: &quot;nomeSobrenome4&quot;.
+            </FormControl.Validation>
           )}
 
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
+          {errorObject?.key === 'username' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
         <FormControl id="email">
@@ -188,13 +191,13 @@ function SignUpForm() {
           setErrorObject={setErrorObject}
         />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-          <Checkbox checked={isTermsAccepted} onClick={() => setIsTermsAccepted(!isTermsAccepted)} />
-          <Text>
+        <FormControl>
+          <Checkbox checked={isTermsAccepted} onChange={() => setIsTermsAccepted(!isTermsAccepted)} />
+          <FormControl.Label>
             Li e estou de acordo com os
             <Link href="/termos-de-uso"> Termos de Uso.</Link>
-          </Text>
-        </Box>
+          </FormControl.Label>
+        </FormControl>
 
         <FormControl>
           <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
