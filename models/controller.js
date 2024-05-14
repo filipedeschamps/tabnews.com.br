@@ -107,20 +107,67 @@ function errorResponse(response, statusCode, publicErrorObject) {
 }
 
 function logRequest(request, response, next) {
-  const { method, url, headers, query, body, context } = request;
+  const { headers, body, context } = request;
 
   const log = {
-    method,
-    url,
-    headers,
-    query,
-    context,
-    body,
+    headers: clearHeaders(headers),
+    body: clearBody(body),
+    context: clearContext(context),
   };
 
   logger.info(log);
 
   next();
+}
+
+const headersToRedact = ['authorization', 'cookie'];
+const headerToOmit = ['access-control-allow-headers', 'forwarded', 'x-vercel-proxy-signature', 'x-vercel-sc-headers'];
+
+function clearHeaders(headers) {
+  const cleanHeaders = { ...headers };
+
+  headersToRedact.forEach((header) => {
+    if (cleanHeaders[header]) {
+      cleanHeaders[header] = '**';
+    }
+  });
+
+  headerToOmit.forEach((header) => {
+    delete cleanHeaders[header];
+  });
+
+  return [cleanHeaders];
+}
+
+const bodyToRedact = ['email', 'password'];
+
+function clearBody(requestBody) {
+  const cleanBody = { ...requestBody };
+
+  if (typeof cleanBody.body === 'string') {
+    cleanBody.body = cleanBody.body.substring(0, 300);
+  }
+
+  bodyToRedact.forEach((key) => {
+    if (cleanBody[key]) {
+      cleanBody[key] = '**';
+    }
+  });
+
+  return [cleanBody];
+}
+
+function clearContext(context) {
+  const cleanContext = { ...context };
+
+  if (cleanContext.user) {
+    cleanContext.user = {
+      id: context.user.id,
+      username: context.user.username,
+    };
+  }
+
+  return cleanContext;
 }
 
 function injectPaginationHeaders(pagination, endpoint, response) {
