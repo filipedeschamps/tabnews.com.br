@@ -667,6 +667,38 @@ const schemas = {
         .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
+
+  q: function () {
+    return Joi.object({
+      q: Joi.string()
+        .when('$required.query', {
+          is: 'required',
+          then: Joi.string().required(),
+          otherwise: Joi.optional(),
+        })
+        .trim()
+        .min(3)
+        .max(255)
+        .replace(
+          /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
+          '',
+        )
+        .messages({
+          'string.pattern.base': 'O campo query deve conter apenas letras, números e espaços.',
+        }),
+    });
+  },
+  sort: function () {
+    return Joi.object({
+      sort: Joi.string()
+        .when('$required.sort', {
+          is: 'required',
+          then: Joi.string().required(),
+          otherwise: Joi.optional(),
+        })
+        .trim(),
+    });
+  },
 };
 
 const withoutMarkdown = (value, helpers) => {

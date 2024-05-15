@@ -1,9 +1,9 @@
 import { Box, Link, Text } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/TabNewsUI/icons';
 
-export default function Pagination({ previousPage, nextPage, basePath }) {
-  const previousPageUrl = `${basePath}/${previousPage}`;
-  const nextPageUrl = `${basePath}/${nextPage}`;
+export default function Pagination({ previousPage, nextPage, basePath, baseQuery }) {
+  const previousPageUrl = `${basePath}/${previousPage}${baseQuery ? `/${baseQuery}` : ''}`;
+  const nextPageUrl = `${basePath}/${nextPage}${baseQuery ? `/${baseQuery}` : ''}`;
 
   return (
     <Box

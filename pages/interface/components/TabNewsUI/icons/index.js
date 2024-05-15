@@ -29,4 +29,5 @@ export {
   TrashIcon,
   UnfoldIcon,
   XCircleFillIcon,
+  ArrowUpLeftIcon,
 } from '@primer/octicons-react';
