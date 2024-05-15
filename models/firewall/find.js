@@ -36,8 +36,7 @@ async function findByEventId(eventId) {
 }
 
 async function getAffectedData(eventObject) {
-  const usersEvents = ['firewall:block_users', 'moderation:block_users', 'moderation:unblock_users'];
-  if (usersEvents.includes(eventObject.type)) {
+  if (eventTypes.users.includes(eventObject.type)) {
     const users = await user.findAll({
       where: {
         id: eventObject.metadata.users,

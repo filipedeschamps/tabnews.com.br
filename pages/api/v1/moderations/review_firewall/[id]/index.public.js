@@ -35,11 +35,14 @@ function postValidationHandler(request, response, next) {
 async function postHandler(request, response) {
   const eventId = request.query.id;
   const action = request.body.action;
+  const originatorIp = request.context.clientIp;
+  const originatorUserId = request.context.user.id;
 
   const firewallData = await firewall.reviewEvent({
-    context: request.context,
     eventId,
     action,
+    originatorIp,
+    originatorUserId,
   });
 
   const secureOutputValues = authorization.filterOutput(request.context.user, 'read:firewall', firewallData);

@@ -44,7 +44,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       expect(response3Body).toStrictEqual({
         name: 'TooManyRequestsError',
         message:
-          'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desabilitados.',
+          'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desativados.',
         action: 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
         status_code: 429,
         error_id: response3Body.error_id,

@@ -7,186 +7,55 @@ import user from 'models/user';
 
 import eventTypes from './event-types';
 
-async function reviewEvent({ context, eventId, action }) {
-  if (action === 'confirm') {
-    return confirmSideEffects(context, eventId);
-  }
-  return undoSideEffects(context, eventId);
-}
+const reviewFunctions = {
+  'moderation:block_users': confirmBlockUsers,
+  'moderation:block_contents:text_root': confirmBlockContents,
+  'moderation:block_contents:text_child': confirmBlockContents,
+  'moderation:unblock_users': unblockUsers,
+  'moderation:unblock_contents:text_root': unblockContents,
+  'moderation:unblock_contents:text_child': unblockContents,
+};
 
-async function confirmSideEffects(context, eventId) {
+async function reviewEvent({ action, eventId, originatorIp, originatorUserId }) {
   const firewallEvent = await validateAndGetFirewallEventToReview(eventId);
 
-  const transaction = await database.transaction();
-
-  try {
-    await transaction.query('BEGIN');
-
-    const metadata = { original_event_id: eventId };
-    let eventType;
-
-    if (firewallEvent.type === 'firewall:block_users') {
-      metadata.users = firewallEvent.metadata.users;
-      eventType = 'moderation:block_users';
-    } else if (firewallEvent.type === 'firewall:block_contents:text_root') {
-      metadata.contents = firewallEvent.metadata.contents;
-      eventType = 'moderation:block_contents:text_root';
-    } else {
-      metadata.contents = firewallEvent.metadata.contents;
-      eventType = 'moderation:block_contents:text_child';
-    }
-
-    const createdEvent = await event.create(
-      {
-        type: eventType,
-        originatorUserId: context.user.id,
-        originatorIp: context.clientIp,
-        metadata: metadata,
-      },
-      {
-        transaction: transaction,
-      },
-    );
-
-    const events = [firewallEvent, createdEvent];
-
-    if (firewallEvent.type === 'firewall:block_users') {
-      const affectedUsers = await confirmBlockUsers(firewallEvent, {
-        transaction: transaction,
-      });
-
-      await transaction.query('COMMIT');
-      return {
-        affected: {
-          users: affectedUsers,
-        },
-        events: events,
-      };
-    }
-
-    const affected = await confirmBlockContents(createdEvent, firewallEvent, {
-      transaction: transaction,
-    });
-
-    await transaction.query('COMMIT');
-    return {
-      affected: affected,
-      events: events,
-    };
-  } catch (error) {
-    await transaction.query('ROLLBACK');
-    throw error;
-  } finally {
-    await transaction.release();
-  }
-}
-
-async function confirmBlockUsers(firewallEvent, options = {}) {
-  const users = await user.findAll(
-    {
-      where: {
-        ids: firewallEvent.metadata.users,
-      },
-    },
-    options,
-  );
-
-  const ids = users.map((userData) => userData.id);
-
-  const affectedUsers = user.addFeatures(ids, ['nuked'], {
-    ...options,
-    withBalance: true,
-    ignoreUpdatedAt: true,
-  });
-  return affectedUsers;
-}
-
-async function confirmBlockContents(firewallEvent, options) {
-  const affectedContents = await content.confirmFirewallStatus(firewallEvent.metadata.contents, options);
-
-  const usersIds = new Set();
-
-  for (const content of affectedContents) {
-    usersIds.add(content.owner_id);
-  }
-
-  let affectedUsers = [];
-
-  if (usersIds.size) {
-    affectedUsers = await user.findAll(
-      {
-        where: {
-          ids: Array.from(usersIds),
-        },
-      },
-      options,
-    );
-  }
-
-  return {
-    contents: affectedContents,
-    users: affectedUsers,
+  const metadata = {
+    original_event_id: eventId,
+    users: firewallEvent.metadata.users,
+    contents: firewallEvent.metadata.contents,
   };
-}
 
-async function undoSideEffects(context, eventId) {
-  const firewallEvent = await validateAndGetFirewallEventToReview(eventId);
+  const eventType = eventTypes.reviewByAction[action][firewallEvent.type];
 
   const transaction = await database.transaction();
 
   try {
     await transaction.query('BEGIN');
 
-    const metadata = { original_event_id: eventId };
-    let eventType;
-
-    if (firewallEvent.type === 'firewall:block_users') {
-      metadata.users = firewallEvent.metadata.users;
-      eventType = 'moderation:unblock_users';
-    } else if (firewallEvent.type === 'firewall:block_contents:text_root') {
-      metadata.contents = firewallEvent.metadata.contents;
-      eventType = 'moderation:unblock_contents:text_root';
-    } else {
-      metadata.contents = firewallEvent.metadata.contents;
-      eventType = 'moderation:unblock_contents:text_child';
-    }
-
     const createdEvent = await event.create(
       {
         type: eventType,
-        originatorUserId: context.user.id,
-        originatorIp: context.clientIp,
-        metadata: metadata,
+        originatorUserId,
+        originatorIp,
+        metadata,
       },
       {
-        transaction: transaction,
+        transaction,
       },
     );
 
     const events = [firewallEvent, createdEvent];
 
-    if (firewallEvent.type === 'firewall:block_users') {
-      const affectedUsers = await unblockUsers(firewallEvent, {
-        transaction: transaction,
-      });
-
-      await transaction.query('COMMIT');
-      return {
-        affected: {
-          users: affectedUsers,
-        },
-        events: events,
-      };
-    }
-
-    const affected = await unblockContents(createdEvent, firewallEvent, {
-      transaction: transaction,
+    const affected = await reviewFunctions[eventType](firewallEvent, {
+      transaction,
+      event: createdEvent,
     });
 
     await transaction.query('COMMIT');
+
     return {
-      affected: affected,
-      events: events,
+      affected,
+      events,
     };
   } catch (error) {
     await transaction.query('ROLLBACK');
@@ -236,7 +105,57 @@ async function validateAndGetFirewallEventToReview(eventId) {
   return firewallEvent;
 }
 
-async function unblockUsers(firewallEvent, options = {}) {
+async function confirmBlockUsers(firewallEvent, options) {
+  const users = await user.findAll(
+    {
+      where: {
+        ids: firewallEvent.metadata.users,
+      },
+    },
+    options,
+  );
+
+  const ids = users.map((userData) => userData.id);
+
+  const affectedUsers = await user.addFeatures(ids, ['nuked'], {
+    ...options,
+    withBalance: true,
+    ignoreUpdatedAt: true,
+  });
+  return {
+    users: affectedUsers,
+  };
+}
+
+async function confirmBlockContents(firewallEvent, options) {
+  const affectedContents = await content.confirmFirewallStatus(firewallEvent.metadata.contents, options);
+
+  const usersIds = new Set();
+
+  for (const content of affectedContents) {
+    usersIds.add(content.owner_id);
+  }
+
+  let affectedUsers = [];
+
+  if (usersIds.size) {
+    affectedUsers = await user.findAll(
+      {
+        where: {
+          ids: Array.from(usersIds),
+        },
+      },
+      options,
+    );
+  }
+
+  return {
+    contents: affectedContents,
+    users: affectedUsers,
+  };
+}
+
+async function unblockUsers(firewallEvent, options) {
   const users = await user.findAll(
     {
       where: {
@@ -273,16 +192,18 @@ async function unblockUsers(firewallEvent, options = {}) {
     affectedUsers.push(...updatedUsers);
   }
 
-  return affectedUsers;
+  return {
+    users: affectedUsers,
+  };
 }
 
-async function unblockContents(createdEvent, firewallEvent, options) {
+async function unblockContents(firewallEvent, options) {
   const affectedContents = await content.undoFirewallStatus(firewallEvent.metadata.contents, options);
 
   const balanceOperations = await balance.findAllByOriginatorId(firewallEvent.id, options);
 
   for (const operation of balanceOperations) {
-    await balance.undo(operation, { ...options, event: createdEvent });
+    await balance.undo(operation, options);
   }
 
   const usersIds = new Set();

@@ -39,7 +39,7 @@ async function createUserRule(context) {
 
     throw new TooManyRequestsError({
       message:
-        'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desabilitados.',
+        'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desativados.',
     });
   }
 }
