@@ -10,15 +10,11 @@ function getLogger() {
       nestedKey: 'payload',
       redact: {
         paths: [
-          'headers.cookie',
-          'headers["x-vercel-ip-continent"]',
-          'headers["x-vercel-ip-as-number"]',
           'password',
           'email',
-          'body.password',
-          'body.email',
           'context.user.password',
           'context.user.email',
+          'context.user.description',
           'context.session.token',
         ],
         remove: true,
