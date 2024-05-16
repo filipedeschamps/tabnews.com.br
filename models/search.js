@@ -46,64 +46,60 @@ async function findAll({ searchTerm, sortBy = 'date', page = 1, perPage = 30 }) 
 
   const totalCountQuery = {
     text: `
-          SELECT COUNT(*) 
-          FROM contents 
-          WHERE to_tsvector('portuguese', title) @@ ${tsQuery}
-            AND status = 'published';
-        `,
+      SELECT COUNT(*) 
+      FROM contents 
+      WHERE to_tsvector('portuguese', title) @@ ${tsQuery}
+        AND status = 'published';
+    `,
   };
 
   const searchQuery = {
     text: `
-          WITH content_window AS (
-            SELECT
-              COUNT(*) OVER()::INTEGER as total_rows,
-              id
-            FROM 
-              contents
-            WHERE 
-              to_tsvector('portuguese', contents.title) @@ ${tsQuery}
-              AND contents.status = 'published'
-            ${generateOrderByClause(sortBy, tsQuery)}
-            LIMIT $1 OFFSET $2
-          )
-      
-          SELECT
-            contents.id,
-            contents.owner_id,
-            contents.parent_id,
-            contents.slug,
-            contents.title,
-            contents.status,
-            contents.source_url,
-            contents.created_at,
-            contents.updated_at,
-            contents.published_at,
-            contents.deleted_at,
-            contents.path,
-            users.username as owner_username,
-            tabcoins_count.total_balance as tabcoins,
-            tabcoins_count.total_credit as tabcoins_credit,
-            tabcoins_count.total_debit as tabcoins_debit,
-            (
-              SELECT COUNT(*)
-              FROM contents as children
-              WHERE children.path @> ARRAY[contents.id]
-                AND children.status = 'published'
-            ) as children_deep_count
-          FROM
-            contents
-          INNER JOIN
-            content_window ON contents.id = content_window.id
-          INNER JOIN
-            users ON contents.owner_id = users.id
-          LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
-          WHERE 
-            contents.status = 'published'
-          AND 
-            to_tsvector('portuguese', contents.title) @@ ${tsQuery}
-          ${generateOrderByClause(sortBy, tsQuery)}
-        `,
+      SELECT
+        contents.id,
+        contents.owner_id,
+        contents.parent_id,
+        contents.slug,
+        contents.title,
+        contents.status,
+        contents.source_url,
+        contents.created_at,
+        contents.updated_at,
+        contents.published_at,
+        contents.deleted_at,
+        contents.path,
+        users.username as owner_username,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[contents.id]
+            AND children.status = 'published'
+        ) as children_deep_count
+      FROM
+        contents
+      INNER JOIN (
+        SELECT
+          id
+        FROM 
+          contents
+        WHERE 
+          to_tsvector('portuguese', contents.title) @@ ${tsQuery}
+          AND contents.status = 'published'
+        ${generateOrderByClause(sortBy, tsQuery)}
+        LIMIT $1 OFFSET $2
+      ) AS content_window ON contents.id = content_window.id
+      INNER JOIN
+        users ON contents.owner_id = users.id
+      LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
+      WHERE 
+        contents.status = 'published'
+      AND 
+        to_tsvector('portuguese', contents.title) @@ ${tsQuery}
+      ${generateOrderByClause(sortBy, tsQuery)}
+    `,
     values: [perPage, offset],
   };
 
@@ -114,12 +110,21 @@ async function findAll({ searchTerm, sortBy = 'date', page = 1, perPage = 30 }) 
   if (searchResults.rows.length > 0) {
     const updateTrendsQuery = {
       text: `
-              INSERT INTO searches (search_term, search_count, updated_at)
-              VALUES ($1, 1, CURRENT_TIMESTAMP)
-              ON CONFLICT (search_term)
-              DO UPDATE SET search_count = searches.search_count + 1, updated_at = CURRENT_TIMESTAMP
-              WHERE searches.search_term = $1 AND (CURRENT_TIMESTAMP - searches.updated_at) > INTERVAL '3 minutes';
-          `,
+        INSERT INTO searches (search_term, search_count, updated_at)
+        VALUES ($1, 1, CURRENT_TIMESTAMP)
+        ON CONFLICT (search_term)
+        DO UPDATE SET search_count = 
+          CASE
+            WHEN (CURRENT_TIMESTAMP - searches.updated_at) > INTERVAL '3 minutes' THEN searches.search_count + 1
+            ELSE searches.search_count
+          END,
+          updated_at = 
+          CASE
+            WHEN (CURRENT_TIMESTAMP - searches.updated_at) > INTERVAL '3 minutes' THEN CURRENT_TIMESTAMP
+            ELSE searches.updated_at
+          END
+        WHERE searches.search_term = $1;
+      `,
       values: [searchTerm],
     };
 
@@ -159,13 +164,17 @@ async function findAllTrends() {
 
   const query = {
     text: `
-          SELECT *
-          FROM searches
-          WHERE updated_at >= CURRENT_DATE - INTERVAL '7 days'
-            AND search_count >= 20
-          ORDER BY search_count DESC
-          LIMIT 10;
-        `,
+      WITH recent_searches AS (
+        SELECT search_term, search_count, updated_at
+        FROM searches
+        WHERE updated_at >= CURRENT_DATE - INTERVAL '7 days'
+      )
+      SELECT search_term, search_count, updated_at
+      FROM recent_searches
+      WHERE search_count >= 20
+      ORDER BY search_count DESC
+      LIMIT 10;
+    `,
   };
 
   const res = await database.query(query);
