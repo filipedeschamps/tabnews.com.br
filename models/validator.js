@@ -174,6 +174,20 @@ const schemas = {
     });
   },
 
+  notifications_id: function () {
+    return Joi.object({
+      notifications_id: Joi.string()
+        .invalid(null)
+        .when('$required.notifications_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'any.required': `"notifications_id" é um campo obrigatório.`,
+          'string.empty': `"notifications_id" não pode estar em branco.`,
+          'string.base': `"notifications_id" deve ser do tipo UUID.`,
+          'any.invalid': `"notifications_id" possui o valor inválido "null".`,
+        }),
+    });
+  },
+
   token_id: function () {
     return Joi.object({
       token_id: Joi.string()
