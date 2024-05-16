@@ -1,7 +1,13 @@
 import { Box, EmptyState, Link, Pagination, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
 import { CommentIcon } from '@/TabNewsUI/icons';
 
-export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
+export default function ContentList({
+  contentList: list,
+  pagination,
+  paginationBasePath,
+  paginationBaseQuery,
+  emptyStateProps,
+}) {
   const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
 
   return (
@@ -25,7 +31,9 @@ export default function ContentList({ contentList: list, pagination, paginationB
         <RenderEmptyMessage {...emptyStateProps} />
       )}
 
-      {list.length > 0 ? <Pagination {...pagination} basePath={paginationBasePath} /> : null}
+      {list.length > 0 ? (
+        <Pagination {...pagination} baseQuery={paginationBaseQuery} basePath={paginationBasePath} />
+      ) : null}
     </>
   );
 

@@ -16,6 +16,7 @@ export { default as Pagination } from '@/Pagination';
 export { default as NextNProgress } from '@/Progressbar';
 export { default as ReadTime } from '@/ReadTime';
 export { default as RecentTabNav } from '@/RecentTabNav';
+export { default as SearchTabNav } from '@/SearchTabNav';
 export { default as useSearchBox } from '@/SearchBox';
 export { default as TabCashCount } from '@/TabCashCount';
 export { default as TabCoinBalanceTooltip } from '@/TabCoinBalanceTooltip';
@@ -58,4 +59,6 @@ export {
   Truncate,
   useConfirm,
   useTheme,
+  Dialog,
+  registerPortalRoot,
 } from '@primer/react';
