@@ -293,6 +293,8 @@ export default function useSearchBox() {
   }
 
   function SearchBoxMainSuggestions({ sx, ...props }) {
+    const showNoSuggestionsMessage = !isSuggestionsLoading && (!searchTrends || searchTrends.results?.length === 0);
+
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', px: 13, ...sx }} {...props}>
         {isSuggestionsLoading ? (
@@ -303,149 +305,144 @@ export default function useSearchBox() {
           <Box as="section" sx={{ width: '100%', maxHeight: 'calc(100vh - 64px)', height: 'auto' }}>
             <Box as="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1, padding: 0 }}>
               {searchTrends.results.map((x) => (
-                <Box
-                  as="li"
-                  sx={{
-                    listStyle: 'none',
-                    py: 2,
-                    px: 2,
-                    ':hover': {
-                      backgroundColor: 'border.default',
-                      opacity: 0.8,
-                    },
-                    ':hover > a': {
-                      color: 'fg.default',
-                    },
-                    borderRadius: 2,
-                  }}
-                  key={x.id}>
-                  <Link
-                    href={`/buscar/pagina/1?q=${x.search_term}`}
-                    passHref
-                    onClick={handleClick}
-                    sx={{
-                      fontSize: '16px',
-                      margin: 0,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignContent: 'center',
-                      alignItems: 'center',
-                      textDecoration: 'none',
-                      color: 'fg.default',
-                      fontWeight: 600,
-                      ':hover': {
-                        cursor: 'pointer',
-                      },
-                    }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                      <Box
-                        as="span"
-                        sx={{
-                          color: 'fg.muted',
-                          opacity: 0.4,
-                          ':hover': {
-                            color: 'fg.default',
-                            opacity: 1,
-                          },
-                        }}>
-                        <SearchIcon sx={{ opacity: 0.5 }} size={19} />
-                      </Box>
-
-                      <Box as="span">{x.search_term}</Box>
-                    </Box>
-                    {x.search_count >= 20 && (
-                      <Box
-                        as="span"
-                        sx={{
-                          color: 'fg.muted',
-                          opacity: 0.4,
-                          ':hover': {
-                            color: 'fg.default',
-                            opacity: 1,
-                          },
-                        }}>
-                        <ArrowUpLeftIcon size={24} />
-                      </Box>
-                    )}
-                  </Link>
-                </Box>
+                <SearchResultItem key={x.id} x={x} />
               ))}
             </Box>
           </Box>
-        ) : valueSearchEnd && !searchTrends.results?.length > 0 ? (
+        ) : valueSearchEnd && showNoSuggestionsMessage ? (
           <Box as="section" sx={{ width: '100%', maxHeight: 'calc(100vh - 64px)', height: 'auto', margin: 0 }}>
             <Box as="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1, margin: 0, padding: 0 }}>
               <Box as="p" sx={{ fontWeight: '500', padding: 0 }}>
-                <Box
-                  as="li"
-                  sx={{
-                    listStyle: 'none',
-                    py: 2,
-                    px: 2,
-                    ':hover': {
-                      backgroundColor: 'border.default',
-                      opacity: 0.8,
-                    },
-                    ':hover > a': {
-                      color: 'fg.default',
-                    },
-                    borderRadius: 2,
-                  }}>
-                  <Link
-                    href={`/buscar/pagina/1?q=${valueSearchEnd}`}
-                    passHref
-                    onClick={handleClick}
-                    sx={{
-                      fontSize: '16px',
-                      margin: 0,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      textDecoration: 'none',
-                      color: 'fg.default',
-                      fontWeight: 600,
-                      ':hover': {
-                        cursor: 'pointer',
-                      },
-                    }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                      <Box
-                        as="span"
-                        sx={{
-                          color: 'fg.muted',
-                          opacity: 0.4,
-                          ':hover': {
-                            color: 'fg.default',
-                            opacity: 1,
-                          },
-                        }}>
-                        <SearchIcon sx={{ opacity: 0.5 }} size={19} />
-                      </Box>
-                      <Box as="span">Nenhuma sugestão, seja o primeiro!</Box>
-                    </Box>
-                    <Box
-                      as="span"
-                      sx={{
-                        color: 'fg.muted',
-                        opacity: 0.4,
-                        ':hover': {
-                          color: 'fg.default',
-                          opacity: 1,
-                        },
-                      }}>
-                      <ArrowUpLeftIcon size={24} />
-                    </Box>
-                  </Link>
-                </Box>
+                <NoSuggestionsLink />
               </Box>
             </Box>
           </Box>
-        ) : (
+        ) : null}
+        {!valueSearchEnd && showNoSuggestionsMessage && (
           <Box as="p" sx={{ mt: 4, fontWeight: '500' }}>
             Quando eu cheguei era tudo mato...
           </Box>
         )}
       </Box>
+    );
+  }
+
+  function SearchResultItem({ x }) {
+    return (
+      <Box
+        as="li"
+        sx={{
+          listStyle: 'none',
+          py: 2,
+          px: 2,
+          ':hover': {
+            backgroundColor: 'border.default',
+            opacity: 0.8,
+          },
+          ':hover > a': {
+            color: 'fg.default',
+          },
+          borderRadius: 2,
+        }}>
+        <Link
+          href={`/buscar/pagina/1?q=${x.search_term}`}
+          passHref
+          onClick={handleClick}
+          sx={{
+            fontSize: '16px',
+            margin: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignContent: 'center',
+            alignItems: 'center',
+            textDecoration: 'none',
+            color: 'fg.default',
+            fontWeight: 600,
+            ':hover': {
+              cursor: 'pointer',
+            },
+          }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <Box
+              as="span"
+              sx={{
+                color: 'fg.muted',
+                opacity: 0.4,
+                ':hover': {
+                  color: 'fg.default',
+                  opacity: 1,
+                },
+              }}>
+              <SearchIcon sx={{ opacity: 0.5 }} size={19} />
+            </Box>
+            <Box as="span">{x.search_term}</Box>
+          </Box>
+          {x.search_count >= 20 && (
+            <Box
+              as="span"
+              sx={{
+                color: 'fg.muted',
+                opacity: 0.4,
+                ':hover': {
+                  color: 'fg.default',
+                  opacity: 1,
+                },
+              }}>
+              <ArrowUpLeftIcon size={24} />
+            </Box>
+          )}
+        </Link>
+      </Box>
+    );
+  }
+
+  function NoSuggestionsLink() {
+    return (
+      <Link
+        href={`/buscar/pagina/1?q=${valueSearchEnd}`}
+        passHref
+        onClick={handleClick}
+        sx={{
+          fontSize: '16px',
+          margin: 0,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          textDecoration: 'none',
+          color: 'fg.default',
+          fontWeight: 600,
+          ':hover': {
+            cursor: 'pointer',
+          },
+        }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          <Box
+            as="span"
+            sx={{
+              color: 'fg.muted',
+              opacity: 0.4,
+              ':hover': {
+                color: 'fg.default',
+                opacity: 1,
+              },
+            }}>
+            <SearchIcon sx={{ opacity: 0.5 }} size={19} />
+          </Box>
+          <Box as="span">Nenhuma sugestão, seja o primeiro!</Box>
+        </Box>
+        <Box
+          as="span"
+          sx={{
+            color: 'fg.muted',
+            opacity: 0.4,
+            ':hover': {
+              color: 'fg.default',
+              opacity: 1,
+            },
+          }}>
+          <ArrowUpLeftIcon size={24} />
+        </Box>
+      </Link>
     );
   }
 
