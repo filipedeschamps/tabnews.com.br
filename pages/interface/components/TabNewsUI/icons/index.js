@@ -1,7 +1,8 @@
-export { CgTab } from 'react-icons/cg';
-export { FaPause, FaPlay, FaTree, FaUser } from 'react-icons/fa';
 export {
   AlertFillIcon,
+  BellFillIcon,
+  BellIcon,
+  BellSlashIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -30,3 +31,5 @@ export {
   UnfoldIcon,
   XCircleFillIcon,
 } from '@primer/octicons-react';
+export { CgTab } from 'react-icons/cg';
+export { FaPause, FaPlay, FaTree, FaUser } from 'react-icons/fa';

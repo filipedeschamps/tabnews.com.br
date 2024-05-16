@@ -9,6 +9,7 @@ import {
   HeaderLink,
   NavItem,
   NavList,
+  NotificationsUserCount,
   PrimerHeader,
   TabCashCount,
   TabCoinCount,
@@ -27,11 +28,12 @@ import {
   SignOutIcon,
   ThreeBarsIcon,
 } from '@/TabNewsUI/icons';
-import { useMediaQuery, useUser } from 'pages/interface';
+import { useMediaQuery, useNotifications, useUser } from 'pages/interface';
 
 export default function HeaderComponent() {
   const isScreenSmall = useMediaQuery('(max-width: 440px)');
   const { user, isLoading, logout } = useUser();
+  const { notifications, isLoading: isLoadingNotifications } = useNotifications();
   const { asPath } = useRouter();
   const { SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } = useSearchBox();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
@@ -108,13 +110,26 @@ export default function HeaderComponent() {
       {user && (
         <>
           {!isScreenSmall && (
-            <PrimerHeader.Item sx={{ m: 2 }}>
-              <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
-                <HeaderLink href="/publicar">
-                  <PlusIcon />
-                </HeaderLink>
-              </Tooltip>
-            </PrimerHeader.Item>
+            <>
+              <PrimerHeader.Item sx={{ m: 2 }}>
+                <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
+                  <HeaderLink href="/publicar">
+                    <PlusIcon />
+                  </HeaderLink>
+                </Tooltip>
+              </PrimerHeader.Item>
+
+              <PrimerHeader.Item sx={{ m: 2 }}>
+                <NotificationsUserCount
+                  type="header"
+                  amount={
+                    !isLoadingNotifications && notifications
+                      ? notifications.filter((notification) => notification.status === 'unread').length
+                      : 0
+                  }
+                />
+              </PrimerHeader.Item>
+            </>
           )}
 
           <PrimerHeader.Item
@@ -171,6 +186,17 @@ export default function HeaderComponent() {
                         <PlusIcon />
                       </NavList.LeadingVisual>
                       Novo conteúdo
+                    </NavItem>
+
+                    <NavItem href="/notificacoes">
+                      <NotificationsUserCount
+                        type="menu"
+                        amount={
+                          !isLoadingNotifications && notifications
+                            ? notifications.filter((notification) => notification.status === 'unread').length
+                            : 0
+                        }
+                      />
                     </NavItem>
 
                     <NavItem href={`/${user.username}/conteudos/1`}>
