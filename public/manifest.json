@@ -13,5 +13,16 @@
       "type": "image/png",
       "sizes": "512x512"
     }
+  ],
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "lang": "pt",
+  "description": "O TabNews é um site focado na comunidade da área de tecnologia, destinado a debates e troca de conhecimentos por meio de publicações e comentários criados pelos próprios usuários.",
+  "shortcuts": [
+    {
+      "name": "Tabnews",
+      "url": "https://www.tabnews.com.br/",
+      "description": "O TabNews é um site focado na comunidade da área de tecnologia, destinado a debates e troca de conhecimentos por meio de publicações e comentários criados pelos próprios usuários."
+    }
   ]
 }
