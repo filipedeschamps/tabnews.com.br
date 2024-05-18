@@ -193,6 +193,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
       await orchestrator.createContent({
         owner_id: user.id,
         title: 'Create event',
+        status: 'published',
       });
       const lastEvent = await orchestrator.getLastEvent();
 
@@ -234,13 +235,13 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         email: 'second-user@gmail.com',
         password: 'password',
       });
-      const { responseBody: user3 } = await usersRequestBuilder.post({
+      const { response: user3Response } = await usersRequestBuilder.post({
         username: 'thirdUser',
         email: 'third-user@gmail.com',
         password: 'password',
       });
 
-      expect(user3.status_code).toEqual(429);
+      expect(user3Response.status).toEqual(429);
 
       // Check firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -262,6 +263,79 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
 
       // Review firewall again
       const { response: responseAgain, responseBody: responseAgainBody } = await reviewFirewallRequestBuilder.post({
+        action: 'undo',
+      });
+
+      expect(responseAgain.status).toEqual(400);
+
+      expect(responseAgainBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Você está tentando analisar um evento que já foi analisado.',
+        action: 'Utilize um "id" que aponte para um evento de firewall que ainda não foi analisado.',
+        status_code: 400,
+        error_id: responseAgainBody.error_id,
+        request_id: responseAgainBody.request_id,
+        error_location_code: 'MODEL:FIREWALL:VALIDATE_AND_GET_FIREWALL_EVENT_TO_REVIEW:EVENT_ALREADY_REVIEWED',
+        key: 'id',
+      });
+    });
+
+    test('Review related events twice', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+      // Create users
+      const { responseBody: user1 } = await usersRequestBuilder.post({
+        username: 'firstUser',
+        email: 'first-user@gmail.com',
+        password: 'password',
+      });
+      const { responseBody: user2 } = await usersRequestBuilder.post({
+        username: 'secondUser',
+        email: 'second-user@gmail.com',
+        password: 'password',
+      });
+      const { response: user3Response } = await usersRequestBuilder.post({
+        username: 'thirdUser',
+        email: 'third-user@gmail.com',
+        password: 'password',
+      });
+      const firewallEvent1 = await orchestrator.getLastEvent();
+
+      const { response: user4Response } = await usersRequestBuilder.post({
+        username: 'fourthUser',
+        email: 'fourth-user@gmail.com',
+        password: 'password',
+      });
+      const firewallEvent2 = await orchestrator.getLastEvent();
+
+      expect(user3Response.status).toEqual(429);
+      expect(user4Response.status).toEqual(429);
+
+      // Check firewall side-effect
+      expect(firewallEvent1.type).toEqual('firewall:block_users');
+      expect(firewallEvent2.type).toEqual('firewall:block_users');
+
+      expect(firewallEvent1.metadata.users).toStrictEqual([user1.id, user2.id]);
+
+      // Review firewall
+      const reviewFirstEventRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent1.id}`,
+      );
+      const firewallUser = await reviewFirstEventRequestBuilder.buildUser({ with: ['review:firewall'] });
+
+      const { response } = await reviewFirstEventRequestBuilder.post({
+        action: 'confirm',
+      });
+
+      expect(response.status).toEqual(200);
+
+      // Review related event
+      const reviewSecondEventRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent2.id}`,
+      );
+      await reviewSecondEventRequestBuilder.setUser(firewallUser);
+
+      const { response: responseAgain, responseBody: responseAgainBody } = await reviewSecondEventRequestBuilder.post({
         action: 'undo',
       });
 
@@ -489,6 +563,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         let ignoredContent = await orchestrator.createContent({
           owner_id: ignoredUser.id,
           title: 'Ignored content',
+          status: 'published',
         });
         ignoredContent = await content.findOne({ where: { id: ignoredContent.id } });
 
@@ -790,6 +865,181 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         expect(user2AfterUndo).toStrictEqual(user2AfterRate);
       });
 
+      test('With three "firewall:block_contents:text_root" events for the same contents', async () => {
+        // Create user and contents
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder);
+        const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
+        const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
+        const firewallEvent1 = await orchestrator.getLastEvent();
+        const { response: responseContent4 } = await createContentViaApi(contentsRequestBuilder);
+        const firewallEvent2 = await orchestrator.getLastEvent();
+        const { response: responseContent5 } = await createContentViaApi(contentsRequestBuilder);
+        const firewallEvent3 = await orchestrator.getLastEvent();
+
+        expect(responseContent3.status).toEqual(429);
+        expect(responseContent4.status).toEqual(429);
+        expect(responseContent5.status).toEqual(429);
+
+        // Check firewall side-effect
+        const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
+        const content2AfterSideEffect = await content.findOne({ where: { id: content2.id } });
+
+        expect(content1AfterSideEffect.status).toEqual('firewall');
+        expect(content2AfterSideEffect.status).toEqual('firewall');
+
+        expect(firewallEvent1.type).toEqual('firewall:block_contents:text_root');
+        expect(firewallEvent2.type).toEqual('firewall:block_contents:text_root');
+        expect(firewallEvent3.type).toEqual('firewall:block_contents:text_root');
+
+        expect(firewallEvent1.metadata.contents).toStrictEqual([content1.id, content2.id]);
+
+        expect(firewallEvent2).toEqual({
+          ...firewallEvent1,
+          id: firewallEvent2.id,
+          created_at: firewallEvent2.created_at,
+        });
+
+        expect(firewallEvent3).toEqual({
+          ...firewallEvent1,
+          id: firewallEvent3.id,
+          created_at: firewallEvent3.created_at,
+        });
+
+        expect(firewallEvent1.id).not.toEqual(firewallEvent2.id);
+        expect(firewallEvent1.id).not.toEqual(firewallEvent3.id);
+        expect(firewallEvent2.id).not.toEqual(firewallEvent3.id);
+
+        // Undo firewall side-effect from second event
+        const reviewFirewallRequestBuilder = new RequestBuilder(
+          `/api/v1/moderations/review_firewall/${firewallEvent2.id}`,
+        );
+        const firewallUser = await reviewFirewallRequestBuilder.buildUser({
+          with: ['read:firewall', 'review:firewall'],
+        });
+
+        const { response, responseBody } = await reviewFirewallRequestBuilder.post({
+          action: 'undo',
+        });
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          affected: {
+            contents: [
+              {
+                body: content1.body,
+                created_at: content1.created_at,
+                deleted_at: content1.deleted_at,
+                id: content1.id,
+                owner_id: content1.owner_id,
+                parent_id: content1.parent_id,
+                published_at: content1.published_at,
+                slug: content1.slug,
+                source_url: content1.source_url,
+                status: content1.status,
+                title: content1.title,
+                updated_at: content1.updated_at,
+              },
+              {
+                body: content2.body,
+                created_at: content2.created_at,
+                deleted_at: content2.deleted_at,
+                id: content2.id,
+                owner_id: content2.owner_id,
+                parent_id: content2.parent_id,
+                published_at: content2.published_at,
+                slug: content2.slug,
+                source_url: content2.source_url,
+                status: content2.status,
+                title: content2.title,
+                updated_at: content2.updated_at,
+              },
+            ],
+            users: [
+              {
+                created_at: defaultUser.created_at.toISOString(),
+                description: defaultUser.description,
+                features: defaultUser.features,
+                id: defaultUser.id,
+                tabcash: 0,
+                tabcoins: 0,
+                updated_at: defaultUser.updated_at.toISOString(),
+                username: defaultUser.username,
+              },
+            ],
+          },
+          events: [
+            {
+              created_at: firewallEvent1.created_at.toISOString(),
+              id: firewallEvent1.id,
+              metadata: firewallEvent1.metadata,
+              originator_user_id: firewallEvent1.originator_user_id,
+              type: firewallEvent1.type,
+            },
+            {
+              created_at: firewallEvent2.created_at.toISOString(),
+              id: firewallEvent2.id,
+              metadata: firewallEvent2.metadata,
+              originator_user_id: firewallEvent2.originator_user_id,
+              type: firewallEvent2.type,
+            },
+            {
+              created_at: firewallEvent3.created_at.toISOString(),
+              id: firewallEvent3.id,
+              metadata: firewallEvent3.metadata,
+              originator_user_id: firewallEvent3.originator_user_id,
+              type: firewallEvent3.type,
+            },
+            {
+              created_at: responseBody.events[3].created_at,
+              id: responseBody.events[3].id,
+              metadata: {
+                original_event_id: firewallEvent2.id,
+                contents: firewallEvent2.metadata.contents,
+              },
+              originator_user_id: firewallUser.id,
+              type: 'moderation:unblock_contents:text_root',
+            },
+          ],
+        });
+
+        const createdEventResponse = responseBody.events[1];
+        expect(Date.parse(createdEventResponse.created_at)).not.toEqual(NaN);
+
+        // Check "undo" event
+        const undoEvent = await orchestrator.getLastEvent();
+        expect(undoEvent).toStrictEqual({
+          created_at: expect.any(Date),
+          id: undoEvent.id,
+          metadata: {
+            original_event_id: firewallEvent2.id,
+            contents: firewallEvent2.metadata.contents,
+          },
+          originator_ip: '127.0.0.1',
+          originator_user_id: firewallUser.id,
+          type: 'moderation:unblock_contents:text_root',
+        });
+
+        expect(uuidVersion(undoEvent.id)).toEqual(4);
+
+        // Check contents
+        const content1AfterUndo = await content.findOne({ where: { id: content1.id } });
+        const content2AfterUndo = await content.findOne({ where: { id: content2.id } });
+
+        expect(content1AfterUndo).toStrictEqual({
+          ...content1AfterSideEffect,
+          status: 'published',
+        });
+
+        expect(content2AfterUndo).toStrictEqual({
+          ...content2AfterSideEffect,
+          status: 'published',
+        });
+      });
+
       test('With a "firewall:block_contents:text_child" event', async () => {
         // Create user and contents
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
@@ -799,6 +1049,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         let rootContent = await orchestrator.createContent({
           owner_id: ignoredUser.id,
           title: 'Ignored content',
+          status: 'published',
         });
 
         const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder, {
@@ -954,6 +1205,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: ignoredUser.id,
           title: 'Ignored content',
+          status: 'published',
         });
 
         const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder, {
@@ -1094,6 +1346,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: ignoredUser.id,
           title: 'Ignored content',
+          status: 'published',
         });
 
         const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder, {
@@ -1535,6 +1788,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         let rootContent = await orchestrator.createContent({
           owner_id: ignoredUser.id,
           title: 'Ignored content',
+          status: 'published',
         });
 
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');

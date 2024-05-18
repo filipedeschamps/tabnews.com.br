@@ -17,7 +17,9 @@ const reviewFunctions = {
 };
 
 async function reviewEvent({ action, eventId, originatorIp, originatorUserId }) {
-  const firewallEvent = await validateAndGetFirewallEventToReview(eventId);
+  const relatedEvents = await validateAndGetRelatedEventsToReview(eventId);
+
+  const firewallEvent = relatedEvents.find((e) => e.id === eventId);
 
   const metadata = {
     original_event_id: eventId,
@@ -44,7 +46,7 @@ async function reviewEvent({ action, eventId, originatorIp, originatorUserId }) 
       },
     );
 
-    const events = [firewallEvent, createdEvent];
+    const events = [...relatedEvents, createdEvent];
 
     const affected = await reviewFunctions[eventType](firewallEvent, {
       transaction,
@@ -65,10 +67,20 @@ async function reviewEvent({ action, eventId, originatorIp, originatorUserId }) 
   }
 }
 
-async function validateAndGetFirewallEventToReview(eventId) {
-  const reviewingEvent = await event.findOneByOriginalEventId(eventId, {
-    types: eventTypes.review,
-  });
+async function validateAndGetRelatedEventsToReview(eventId) {
+  const relatedEvents = await event.findAllRelatedEvents(eventId);
+
+  if (!relatedEvents.length) {
+    throw new NotFoundError({
+      message: `O id "${eventId}" não foi encontrado no sistema.`,
+      action: 'Verifique se o "id" está digitado corretamente.',
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:FIREWALL:VALIDATE_AND_GET_FIREWALL_EVENT_TO_REVIEW:NOT_FOUND',
+      key: 'id',
+    });
+  }
+
+  const reviewingEvent = relatedEvents.find((e) => eventTypes.review.includes(e.type));
 
   if (reviewingEvent) {
     throw new ValidationError({
@@ -80,17 +92,7 @@ async function validateAndGetFirewallEventToReview(eventId) {
     });
   }
 
-  const firewallEvent = await event.findOneById(eventId);
-
-  if (!firewallEvent) {
-    throw new NotFoundError({
-      message: `O id "${eventId}" não foi encontrado no sistema.`,
-      action: 'Verifique se o "id" está digitado corretamente.',
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:FIREWALL:VALIDATE_AND_GET_FIREWALL_EVENT_TO_REVIEW:NOT_FOUND',
-      key: 'id',
-    });
-  }
+  const firewallEvent = relatedEvents.find((e) => e.id === eventId);
 
   if (!eventTypes.firewall.includes(firewallEvent.type)) {
     throw new ValidationError({
@@ -102,7 +104,7 @@ async function validateAndGetFirewallEventToReview(eventId) {
     });
   }
 
-  return firewallEvent;
+  return relatedEvents;
 }
 
 async function confirmBlockUsers(firewallEvent, options) {

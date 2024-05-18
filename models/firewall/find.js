@@ -6,9 +6,10 @@ import user from 'models/user';
 import eventTypes from './event-types';
 
 async function findByEventId(eventId) {
-  const foundOriginalEvent = await event.findOneById(eventId);
+  const relatedEvents = await event.findAllRelatedEvents(eventId);
+  const foundRequestedEvent = relatedEvents.find((event) => event.id === eventId);
 
-  if (!foundOriginalEvent || !eventTypes.firewall.includes(foundOriginalEvent.type)) {
+  if (!foundRequestedEvent || !eventTypes.firewall.includes(foundRequestedEvent.type)) {
     throw new NotFoundError({
       message: `O id "${eventId}" não foi encontrado no sistema.`,
       action: 'Verifique se o "id" está digitado corretamente.',
@@ -18,20 +19,11 @@ async function findByEventId(eventId) {
     });
   }
 
-  const foundReviewedEvent = await event.findOneByOriginalEventId(eventId, {
-    type: eventTypes.review,
-  });
-
-  const events = [foundOriginalEvent];
-
-  if (foundReviewedEvent) {
-    events.push(foundReviewedEvent);
-  }
-  const affectedData = await getAffectedData(events.at(-1));
+  const affectedData = await getAffectedData(relatedEvents.at(-1));
 
   return {
     affected: affectedData,
-    events: events,
+    events: relatedEvents,
   };
 }
 

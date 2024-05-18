@@ -169,6 +169,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       await orchestrator.createContent({
         owner_id: user.id,
         title: 'Create event',
+        status: 'published',
       });
       const lastEvent = await orchestrator.getLastEvent();
 
@@ -234,7 +235,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
         events: [
           {
-            created_at: responseBody.events[0].created_at,
+            created_at: firewallEvent.created_at.toISOString(),
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:user',
@@ -245,8 +246,90 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
+    });
 
-      expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
+    test('With two consecutive "firewall:block_users" events from the same IP', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
+      await firewallRequestBuilder.buildUser({ with: ['read:firewall'] });
+
+      // Create users
+      const { responseBody: user1 } = await usersRequestBuilder.post({
+        username: 'firstUser',
+        email: 'first-user@gmail.com',
+        password: 'password',
+      });
+      const { responseBody: user2 } = await usersRequestBuilder.post({
+        username: 'secondUser',
+        email: 'second-user@gmail.com',
+        password: 'password',
+      });
+      const { response: user3Response } = await usersRequestBuilder.post({
+        username: 'thirdUser',
+        email: 'third-user@gmail.com',
+        password: 'password',
+      });
+
+      expect(user3Response.status).toEqual(429);
+
+      const firstFirewallEvent = await orchestrator.getLastEvent();
+
+      const { response: user4Response } = await usersRequestBuilder.post({
+        username: 'fourthUser',
+        email: 'fourth-user@gmail.com',
+        password: 'password',
+      });
+
+      expect(user4Response.status).toEqual(429);
+
+      const secondFirewallEvent = await orchestrator.getLastEvent();
+
+      expect(firstFirewallEvent.id).not.toEqual(secondFirewallEvent.id);
+
+      // Get firewall side-effects
+      const { response: firstFirewallResponse, responseBody: firstFirewallResponseBody } =
+        await firewallRequestBuilder.get(`/${firstFirewallEvent.id}`);
+      const { response: secondFirewallResponse, responseBody: secondFirewallResponseBody } =
+        await firewallRequestBuilder.get(`/${secondFirewallEvent.id}`);
+
+      expect(firstFirewallResponse.status).toEqual(200);
+      expect(secondFirewallResponse.status).toEqual(200);
+
+      await usersRequestBuilder.setUser(user1);
+      const { responseBody: user1AfterFirewall } = await usersRequestBuilder.get(`/${user1.username}`);
+
+      await usersRequestBuilder.setUser(user2);
+      const { responseBody: user2AfterFirewall } = await usersRequestBuilder.get(`/${user2.username}`);
+
+      expect(firstFirewallResponseBody).toEqual({
+        affected: {
+          users: [user1AfterFirewall, user2AfterFirewall],
+        },
+        events: [
+          {
+            created_at: firstFirewallEvent.created_at.toISOString(),
+            id: firstFirewallEvent.id,
+            metadata: {
+              from_rule: 'create:user',
+              users: [user1AfterFirewall.id, user2AfterFirewall.id],
+            },
+            originator_user_id: null,
+            type: 'firewall:block_users',
+          },
+          {
+            created_at: secondFirewallEvent.created_at.toISOString(),
+            id: secondFirewallEvent.id,
+            metadata: {
+              from_rule: 'create:user',
+              users: [user1AfterFirewall.id, user2AfterFirewall.id],
+            },
+            originator_user_id: null,
+            type: 'firewall:block_users',
+          },
+        ],
+      });
+
+      expect(firstFirewallResponseBody).toEqual(secondFirewallResponseBody);
     });
 
     test.each([
@@ -322,7 +405,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
             type: 'firewall:block_users',
           },
           {
-            created_at: responseBody.events[1].created_at,
+            created_at: reviewEvent.created_at.toISOString(),
             id: reviewEvent.id,
             metadata: {
               original_event_id: firewallEvent.id,
@@ -333,8 +416,116 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
+    });
 
-      expect(Date.parse(responseBody.events[1].created_at)).not.toEqual(NaN);
+    test('With two consecutive "firewall:block_users" events from the same IP reviewed', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      // Create users
+      const { responseBody: user1 } = await usersRequestBuilder.post({
+        username: 'firstUser',
+        email: 'first-user@gmail.com',
+        password: 'password',
+      });
+      const { responseBody: user2 } = await usersRequestBuilder.post({
+        username: 'secondUser',
+        email: 'second-user@gmail.com',
+        password: 'password',
+      });
+      const { response: user3Response } = await usersRequestBuilder.post({
+        username: 'thirdUser',
+        email: 'third-user@gmail.com',
+        password: 'password',
+      });
+
+      expect(user3Response.status).toEqual(429);
+
+      const firstFirewallEvent = await orchestrator.getLastEvent();
+
+      const { response: user4Response } = await usersRequestBuilder.post({
+        username: 'fourthUser',
+        email: 'fourth-user@gmail.com',
+        password: 'password',
+      });
+
+      expect(user4Response.status).toEqual(429);
+
+      const secondFirewallEvent = await orchestrator.getLastEvent();
+
+      expect(firstFirewallEvent.id).not.toEqual(secondFirewallEvent.id);
+
+      // Check firewall side-effect
+      expect(firstFirewallEvent.type).toEqual('firewall:block_users');
+      expect(firstFirewallEvent.metadata.users).toEqual([user1.id, user2.id]);
+      expect(secondFirewallEvent.type).toEqual(firstFirewallEvent.type);
+      expect(secondFirewallEvent.metadata.users).toEqual(firstFirewallEvent.metadata.users);
+
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firstFirewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: 'confirm' });
+      expect(reviewResponse.status).toEqual(200);
+
+      // Get reviewed firewall event from first event id
+      const reviewEvent = await orchestrator.getLastEvent();
+
+      const { response: responseFromFirstEvent, responseBody: responseBodyFromFirstEvent } =
+        await firewallRequestBuilder.get(`/${firstFirewallEvent.id}`);
+
+      expect(responseFromFirstEvent.status).toEqual(200);
+
+      const user1AfterReview = await user.findOneById(user1.id, { withBalance: true });
+      const user2AfterReview = await user.findOneById(user2.id, { withBalance: true });
+
+      expect(responseBodyFromFirstEvent).toEqual({
+        affected: {
+          users: [mapUserData(user1AfterReview), mapUserData(user2AfterReview)],
+        },
+        events: [
+          {
+            created_at: firstFirewallEvent.created_at.toISOString(),
+            id: firstFirewallEvent.id,
+            metadata: {
+              from_rule: 'create:user',
+              users: [user1.id, user2.id],
+            },
+            originator_user_id: null,
+            type: 'firewall:block_users',
+          },
+          {
+            created_at: secondFirewallEvent.created_at.toISOString(),
+            id: secondFirewallEvent.id,
+            metadata: {
+              from_rule: 'create:user',
+              users: [user1.id, user2.id],
+            },
+            originator_user_id: null,
+            type: 'firewall:block_users',
+          },
+          {
+            created_at: reviewEvent.created_at.toISOString(),
+            id: reviewEvent.id,
+            metadata: {
+              original_event_id: firstFirewallEvent.id,
+              users: [user1AfterReview.id, user2AfterReview.id],
+            },
+            originator_user_id: firewallUser.id,
+            type: 'moderation:block_users',
+          },
+        ],
+      });
+
+      // Get reviewed firewall event from second event id
+      const { response: responseFromSecondEvent, responseBody: responseBodyFromSecondEvent } =
+        await firewallRequestBuilder.get(`/${secondFirewallEvent.id}`);
+
+      expect(responseFromSecondEvent.status).toEqual(200);
+
+      expect(responseBodyFromSecondEvent).toEqual(responseBodyFromFirstEvent);
     });
 
     test('With a "firewall:block_contents:text_root" event', async () => {
@@ -371,7 +562,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
         events: [
           {
-            created_at: responseBody.events[0].created_at,
+            created_at: firewallEvent.created_at.toISOString(),
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:content:text_root',
@@ -382,8 +573,6 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
-
-      expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
 
     test.each([
@@ -454,7 +643,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
             type: 'firewall:block_contents:text_root',
           },
           {
-            created_at: responseBody.events[1].created_at,
+            created_at: reviewEvent.created_at.toISOString(),
             id: reviewEvent.id,
             metadata: {
               contents: [content1AfterFirewall.id, content2AfterFirewall.id],
@@ -465,8 +654,6 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
-
-      expect(Date.parse(responseBody.events[1].created_at)).not.toEqual(NaN);
     });
 
     test('With a "firewall:block_contents:text_root" and contents deleted before the firewall catch', async () => {
@@ -507,7 +694,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
         events: [
           {
-            created_at: responseBody.events[0].created_at,
+            created_at: firewallEvent.created_at.toISOString(),
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:content:text_root',
@@ -518,8 +705,6 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
-
-      expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
 
     test('With a "firewall:block_contents:text_child" event', async () => {
@@ -566,7 +751,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
         events: [
           {
-            created_at: responseBody.events[0].created_at,
+            created_at: firewallEvent.created_at.toISOString(),
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:content:text_child',
@@ -577,8 +762,6 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
-
-      expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
 
     test.each([
@@ -659,7 +842,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
             type: 'firewall:block_contents:text_child',
           },
           {
-            created_at: responseBody.events[1].created_at,
+            created_at: reviewEvent.created_at.toISOString(),
             id: reviewEvent.id,
             metadata: {
               contents: [content1AfterFirewall.id, content2AfterFirewall.id],
@@ -670,8 +853,6 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
-
-      expect(Date.parse(responseBody.events[1].created_at)).not.toEqual(NaN);
     });
 
     test('With a "firewall:block_contents:text_child" event involving multiple users', async () => {
@@ -686,6 +867,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firewallUser.id,
         title: 'Root content',
+        status: 'published',
       });
 
       const user1 = await contentsRequestBuilder.buildUser();
@@ -725,7 +907,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
         events: [
           {
-            created_at: responseBody.events[0].created_at,
+            created_at: firewallEvent.created_at.toISOString(),
             id: firewallEvent.id,
             metadata: {
               from_rule: 'create:content:text_child',
@@ -736,8 +918,6 @@ describe('GET /api/v1/events/firewall/[id]', () => {
           },
         ],
       });
-
-      expect(Date.parse(responseBody.events[0].created_at)).not.toEqual(NaN);
     });
   });
 });
