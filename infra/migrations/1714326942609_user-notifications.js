@@ -10,20 +10,12 @@ exports.up = (pgm) => {
       type: 'varchar(30)',
       notNull: true,
     },
-    from_id: {
+    event_type: {
+      type: 'varchar(50)',
+      notNull: true,
+    },
+    recipient_id: {
       type: 'uuid',
-      notNull: true,
-    },
-    to_id: {
-      type: 'uuid',
-      notNull: true,
-    },
-    to_username: {
-      type: 'varchar(30)',
-      notNull: true,
-    },
-    to_email: {
-      type: 'varchar(254)',
       notNull: true,
     },
     body_reply_line: {
@@ -38,7 +30,7 @@ exports.up = (pgm) => {
       type: 'varchar',
       default: 'unread',
       notNull: true,
-      check: "status IN ('unread', 'read')",
+      check: "status IN ('unread', 'read', 'draft')",
     },
     created_at: {
       type: 'timestamp with time zone',
@@ -53,6 +45,4 @@ exports.up = (pgm) => {
   });
 };
 
-exports.down = (pgm) => {
-  pgm.dropTable('user_notifications');
-};
+exports.down = false;

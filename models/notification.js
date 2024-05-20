@@ -2,11 +2,11 @@ import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
-import { NotificationWeb } from 'models/notifications';
+import { webNotify } from 'models/notifications';
 import { NotificationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
-async function commonData(createdContent) {
+async function prepareData(createdContent) {
   const anonymousUser = user.createAnonymous();
   const secureCreatedContent = authorization.filterOutput(anonymousUser, 'read:content', createdContent);
 
@@ -19,11 +19,11 @@ async function commonData(createdContent) {
   if (parentContent.owner_id !== secureCreatedContent.owner_id) {
     const parentContentUser = await user.findOneById(parentContent.owner_id);
 
-    if (parentContentUser.notifications === false) {
-      return null;
+    if (!parentContentUser.notifications) {
+      return;
     }
 
-    const childContentUrl = getChildContendUrl(secureCreatedContent);
+    const childContentUrl = getChildContentUrl(secureCreatedContent);
     const rootContent = parentContent.parent_id
       ? await content.findOne({
           where: {
@@ -35,30 +35,41 @@ async function commonData(createdContent) {
 
     const secureRootContent = authorization.filterOutput(anonymousUser, 'read:content', rootContent);
 
-    const subject = getSubject({
+    const details = getDetails({
       createdContent: secureCreatedContent,
       rootContent: secureRootContent,
     });
 
-    const bodyReplyLine = getBodyReplyLine({
-      createdContent: secureCreatedContent,
-      rootContent: secureRootContent,
-    });
-
-    const typeNotification = getTypeNotification({
-      createdContent: secureCreatedContent,
-      rootContent: secureRootContent,
-    });
-
-    return { parentContentUser, childContentUrl, subject, typeNotification, bodyReplyLine, secureCreatedContent };
+    return {
+      parentContentUser,
+      childContentUrl,
+      ...details,
+      secureCreatedContent,
+    };
   }
 }
 
-async function sendReplyEmailToParentUser(createdContent) {
-  const commonDataResult = await commonData(createdContent);
-  if (!commonDataResult) return;
+function getDetails({ createdContent, rootContent }) {
+  const sanitizedRootContentTitle =
+    rootContent.title.length > 55 ? `${rootContent.title.substring(0, 55)}...` : rootContent.title;
 
-  const { parentContentUser, childContentUrl, subject, bodyReplyLine } = commonDataResult;
+  const subject = `"${createdContent.owner_username}" comentou em "${sanitizedRootContentTitle}"`;
+
+  const bodyReplyLine =
+    createdContent.parent_id === rootContent.id
+      ? `"${createdContent.owner_username}" respondeu à sua publicação "${rootContent.title}".`
+      : `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}".`;
+
+  const type = createdContent.parent_id === rootContent.id ? 'root_content' : 'child_content';
+
+  return { subject, bodyReplyLine, type };
+}
+
+async function sendReplyEmailToParentUser(createdContent) {
+  const data = await prepareData(createdContent);
+  if (!data) return;
+
+  const { parentContentUser, childContentUrl, subject, bodyReplyLine } = data;
 
   const { html, text } = NotificationEmail({
     username: parentContentUser.username,
@@ -78,52 +89,27 @@ async function sendReplyEmailToParentUser(createdContent) {
   });
 }
 
-async function sendReplyNotificationWebToParentUser(createdContent) {
-  const commonDataResult = await commonData(createdContent);
-  if (!commonDataResult) return;
+async function sendReplyWebToParentUser(createdContent) {
+  const data = await prepareData(createdContent);
+  if (!data) return;
 
-  const { parentContentUser, childContentUrl, bodyReplyLine, secureCreatedContent, typeNotification } =
-    commonDataResult;
+  const { parentContentUser, childContentUrl, bodyReplyLine, secureCreatedContent, type } = data;
 
-  await NotificationWeb.send({
-    from: secureCreatedContent.owner_id,
-    type: typeNotification,
-    to_id: parentContentUser.id,
-    to_email: parentContentUser.email,
-    to_username: parentContentUser.username,
-    bodyReplyLine,
-    contentLink: childContentUrl,
+  await webNotify.send({
+    sender_id: secureCreatedContent.owner_id,
+    recipient_id: parentContentUser.id,
+    type: 'alert',
+    event_type: type,
+    body_reply_line: bodyReplyLine,
+    content_link: childContentUrl,
   });
 }
 
-function getSubject({ createdContent, rootContent }) {
-  const sanitizedRootContentTitle =
-    rootContent.title.length > 55 ? `${rootContent.title.substring(0, 55)}...` : rootContent.title;
-
-  return `"${createdContent.owner_username}" comentou em "${sanitizedRootContentTitle}"`;
-}
-
-function getBodyReplyLine({ createdContent, rootContent }) {
-  if (createdContent.parent_id === rootContent.id) {
-    return `"${createdContent.owner_username}" respondeu à sua publicação "${rootContent.title}".`;
-  }
-
-  return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}".`;
-}
-
-function getChildContendUrl({ owner_username, slug }) {
+function getChildContentUrl({ owner_username, slug }) {
   return `${webserver.host}/${owner_username}/${slug}`;
-}
-
-function getTypeNotification({ createdContent, rootContent }) {
-  if (createdContent.parent_id === rootContent.id) {
-    return 'post';
-  }
-
-  return 'comment';
 }
 
 export default Object.freeze({
   sendReplyEmailToParentUser,
-  sendReplyNotificationWebToParentUser,
+  sendReplyWebToParentUser,
 });

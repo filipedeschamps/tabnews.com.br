@@ -1,7 +1,7 @@
 import { NotFoundError } from 'errors';
 import database from 'infra/database';
 
-async function findOneById(notificationId) {
+async function findOneById(id) {
   const query = {
     text: `
       SELECT
@@ -13,14 +13,14 @@ async function findOneById(notificationId) {
       LIMIT
         1
     `,
-    values: [notificationId],
+    values: [id],
   };
 
   try {
     const result = await database.query(query);
     if (result.rowCount === 0) {
       throw new NotFoundError({
-        message: `Notificação com o ID "${notificationId}" não encontrada.`,
+        message: `Notificação com o ID "${id}" não encontrada.`,
         action: 'Verifique se o ID está correto.',
         stack: new Error().stack,
         errorLocationCode: 'MODEL:NOTIFICATIONS:FIND_ONE_BY_ID:NOT_FOUND',
@@ -34,20 +34,21 @@ async function findOneById(notificationId) {
   }
 }
 
-async function updateStatusToReadById(notificationId) {
+async function updateOneStatusById(status, id) {
   const query = {
     text: `
       UPDATE
         user_notifications
       SET
-        status = 'read',
+        status = $1,
         updated_at = NOW() AT TIME ZONE 'utc'
       WHERE
-        id = $1
+        id = $2
       RETURNING
+        id,
         status
     `,
-    values: [notificationId],
+    values: [status, id],
   };
 
   try {
@@ -59,68 +60,44 @@ async function updateStatusToReadById(notificationId) {
   }
 }
 
-async function deleteAllByUserId(userId) {
-  const query = {
-    text: `
-      DELETE FROM
-        user_notifications
-      WHERE
-        to_id = $1
-    `,
-    values: [userId],
-  };
-
-  try {
-    const result = await database.query(query);
-    if (result.rowCount === 0) {
-      throw new NotFoundError({
-        message: `Nenhuma notificação encontrada para o usuário com ID "${userId}".`,
-        action: 'Verifique se o ID está correto e se existem notificações para o usuário.',
-        stack: new Error().stack,
-        errorLocationCode: 'MODEL:NOTIFICATIONS:DELETE_ALL_BY_USER_ID:NOT_FOUND',
-        key: 'to_id',
-      });
-    }
-    return 'success';
-  } catch (error) {
-    console.error('Erro ao excluir todas as notificações do usuário:', error);
-    throw error;
-  }
-}
-
-async function markAllAsReadByUserId(userId) {
+async function updateAllStatusByUserId(status, id) {
   const query = {
     text: `
       UPDATE
         user_notifications
       SET
-        status = 'read',
+        status = $1,
         updated_at = NOW() AT TIME ZONE 'utc'
       WHERE
-        to_id = $1
+        recipient_id = $2
+      AND 
+        status != 'draft'
+      RETURNING
+        id,
+        status
     `,
-    values: [userId],
+    values: [status, id],
   };
 
   try {
     const result = await database.query(query);
     if (result.rowCount === 0) {
       throw new NotFoundError({
-        message: `Nenhuma notificação não lida encontrada para o usuário com ID "${userId}".`,
-        action: 'Verifique se o ID está correto e se existem notificações não lidas para o usuário.',
+        message: `Nenhuma notificação encontrada para o usuário com ID "${id}".`,
+        action: 'Verifique se o ID está correto e se existem notificações para o usuário.',
         stack: new Error().stack,
-        errorLocationCode: 'MODEL:NOTIFICATIONS:MARK_ALL_AS_READ_BY_USER_ID:NOT_FOUND',
-        key: 'to_id',
+        errorLocationCode: 'MODEL:NOTIFICATIONS:UPDATE_ALL_BY_USER_ID:NOT_FOUND',
+        key: 'recipient_id',
       });
     }
-    return 'success';
+    return result.rows;
   } catch (error) {
-    console.error('Erro ao marcar todas as notificações como lidas do usuário:', error);
+    console.error('Erro ao atualizar notificações do usuário:', error);
     throw error;
   }
 }
 
-async function findAllCountByUserId(userId) {
+async function findAllCountByUserId(id) {
   const query = {
     text: `
       SELECT
@@ -128,9 +105,10 @@ async function findAllCountByUserId(userId) {
       FROM
         user_notifications
       WHERE
-        to_id = $1
+        recipient_id = $1
+      AND status != 'draft'
     `,
-    values: [userId],
+    values: [id],
   };
 
   try {
@@ -139,11 +117,11 @@ async function findAllCountByUserId(userId) {
 
     if (count === 0) {
       throw new NotFoundError({
-        message: `Nenhuma notificação encontrada para o usuário com ID "${userId}".`,
+        message: `Nenhuma notificação encontrada para o usuário com ID "${id}".`,
         action: 'Verifique se o ID está correto e se existem notificações para o usuário.',
         stack: new Error().stack,
         errorLocationCode: 'MODEL:NOTIFICATIONS:CHECK_IF_NOTIFICATIONS_EXIST_FOR_USER:NOT_FOUND',
-        key: 'to_id',
+        key: 'recipient_id',
       });
     }
 
@@ -154,7 +132,7 @@ async function findAllCountByUserId(userId) {
   }
 }
 
-async function findAllByUserId(userId) {
+async function findAllByUserId(id) {
   const query = {
     text: `
       SELECT
@@ -162,9 +140,10 @@ async function findAllByUserId(userId) {
       FROM
         user_notifications
       WHERE
-        to_id = $1
+        recipient_id = $1
+      AND status != 'draft'
     `,
-    values: [userId],
+    values: [id],
   };
 
   try {
@@ -172,11 +151,46 @@ async function findAllByUserId(userId) {
 
     if (result.rows.length === 0) {
       throw new NotFoundError({
-        message: `Nenhuma notificação encontrada para o usuário com ID "${userId}".`,
+        message: `Nenhuma notificação encontrada para o usuário com ID "${id}".`,
         action: 'Verifique se o ID está correto e se existem notificações para o usuário.',
         stack: new Error().stack,
         errorLocationCode: 'MODEL:NOTIFICATIONS:CHECK_IF_NOTIFICATIONS_EXIST_FOR_USER:NOT_FOUND',
-        key: 'to_id',
+        key: 'recipient_id',
+      });
+    }
+
+    return result.rows;
+  } catch (error) {
+    console.error('Erro ao verificar se existem notificações para o usuário:', error);
+    throw error;
+  }
+}
+
+async function findOneByUserId(id) {
+  const query = {
+    text: `
+      SELECT
+        *
+      FROM
+        user_notifications
+      WHERE
+        recipient_id = $1
+      AND status != 'draft'
+      LIMIT 1
+    `,
+    values: [id],
+  };
+
+  try {
+    const result = await database.query(query);
+
+    if (result.rows.length === 0) {
+      throw new NotFoundError({
+        message: `Nenhuma notificação encontrada para o usuário com ID "${id}".`,
+        action: 'Verifique se o ID está correto e se existem notificações para o usuário.',
+        stack: new Error().stack,
+        errorLocationCode: 'MODEL:NOTIFICATIONS:CHECK_IF_NOTIFICATIONS_EXIST_FOR_USER:NOT_FOUND',
+        key: 'recipient_id',
       });
     }
 
@@ -189,9 +203,9 @@ async function findAllByUserId(userId) {
 
 export default Object.freeze({
   findOneById,
+  findOneByUserId,
   findAllByUserId,
   findAllCountByUserId,
-  updateStatusToReadById,
-  deleteAllByUserId,
-  markAllAsReadByUserId,
+  updateOneStatusById,
+  updateAllStatusByUserId,
 });

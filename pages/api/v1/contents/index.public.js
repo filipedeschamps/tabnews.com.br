@@ -183,7 +183,7 @@ async function postHandler(request, response) {
     if (createdContent.parent_id) {
       try {
         await notification.sendReplyEmailToParentUser(createdContent);
-        await notification.sendReplyNotificationWebToParentUser(createdContent);
+        await notification.sendReplyWebToParentUser(createdContent);
       } catch (error) {
         if (sendStream) throw error;
       }

@@ -1,2 +1,2 @@
-export { default as NotificationWeb } from './web';
-export { default as NotificationWebManage } from './web/manage';
+export { default as webNotify } from './web';
+export { default as webNotifyQueries } from './web/queries';

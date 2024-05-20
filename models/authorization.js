@@ -91,7 +91,6 @@ function filterInput(user, feature, input, target) {
       password: input.password,
       description: input.description,
       notifications: input.notifications,
-      notifications_id: input.notifications_id,
     };
   }
 
