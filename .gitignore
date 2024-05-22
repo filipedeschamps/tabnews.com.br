@@ -139,3 +139,6 @@ terraform.rc
 
 yarn.*
 .tool-versions
+
+# Playwright test results
+test-results/
