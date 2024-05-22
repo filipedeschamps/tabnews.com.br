@@ -1,21 +1,21 @@
-exports.UserPostPage = class UserPostPage {
+exports.UserContentPage = class UserContentPage {
   /**
    * @param {import('@playwright/test').Page} page
-   * @param {string} postTitle
+   * @param {string} contentTitle
    */
-  constructor(page, postTitle) {
+  constructor(page, contentTitle) {
     this.page = page;
-    this.postTitle = postTitle;
+    this.contentTitle = contentTitle;
   }
 
-  async getPostTitle() {
-    const postTitle = this.page.getByRole('heading', { name: this.postTitle });
-    await postTitle.waitFor({ state: 'visible' });
+  async getContentTitle() {
+    const contentTitle = this.page.getByRole('heading', { name: this.contentTitle });
+    await contentTitle.waitFor({ state: 'visible' });
 
-    return postTitle;
+    return contentTitle;
   }
 
-  async deletePost() {
+  async deleteContent() {
     const buttonEditContent = this.page.locator('button[aria-label="Editar conteúdo"]');
     await buttonEditContent.waitFor({ state: 'visible' });
     await buttonEditContent.click();

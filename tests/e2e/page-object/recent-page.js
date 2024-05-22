@@ -19,7 +19,7 @@ exports.RecentPage = class RecentPage {
     await this.relevantTab.click();
   }
 
-  async getPosts() {
+  async getContents() {
     const publishTab = this.page.locator('a', { hasText: 'Publicações' });
     await publishTab.waitFor({ state: 'visible' });
 
