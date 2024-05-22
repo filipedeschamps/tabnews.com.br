@@ -675,14 +675,12 @@ const schemas = {
           /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
           '',
         )
-        .pattern(/^[a-zA-Z0-9_]+$/)
+        .replace(/\s{2,}/g, ' ')
+        .pattern(/^[a-zA-Z0-9\s&|().'"-]*[a-zA-Z0-9][a-zA-Z0-9\s&|().'"-]*$/)
         .empty()
         .min(3)
         .max(255)
-        .when('$required.q', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
-        .messages({
-          'string.pattern.base': `{#label} deve conter apenas letras e números`,
-        }),
+        .when('$required.q', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 
