@@ -5,7 +5,7 @@ import orchestrator from 'tests/orchestrator';
 import { HomePage } from './page-object/home-page';
 import { LoginPage } from './page-object/login-page';
 import { PublishContentPage } from './page-object/publish-content-page';
-import { UserPostPage } from './page-object/user-post-page';
+import { UserContentPage } from './page-object/user-content-page';
 
 test.beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -38,12 +38,12 @@ test('should can be to publish content by header', async ({ page }) => {
   const title = await publishContentPage.getTitle();
   expect(title).toBe('Publicar novo conteúdo · TabNews');
 
-  const postTitleExpected = 'Publicação realizada por usuário padrão vindo pela header';
-  await publishContentPage.publish(postTitleExpected, 'body de conteúdo '.repeat(50));
+  const contentTitleExpected = 'Publicação realizada por usuário padrão vindo pela header';
+  await publishContentPage.publish(contentTitleExpected, 'body de conteúdo '.repeat(50));
 
-  const userPostPage = new UserPostPage(page, postTitleExpected);
-  let postTitle = await userPostPage.getPostTitle();
-  await expect(postTitle).toHaveText(postTitleExpected);
+  const userContentPage = new UserContentPage(page, contentTitleExpected);
+  let contentTitle = await userContentPage.getContentTitle();
+  await expect(contentTitle).toHaveText(contentTitleExpected);
 });
 
 test('should can be to publish content by menu', async ({ page }) => {
@@ -54,10 +54,10 @@ test('should can be to publish content by menu', async ({ page }) => {
   const title = await publishContentPage.getTitle();
   expect(title).toBe('Publicar novo conteúdo · TabNews');
 
-  const postTitleExpected = 'Publicação realizada por usuário padrão vindo pela menu do usuário';
-  await publishContentPage.publish(postTitleExpected, 'body de conteúdo '.repeat(50));
+  const contentTitleExpected = 'Publicação realizada por usuário padrão vindo pela menu do usuário';
+  await publishContentPage.publish(contentTitleExpected, 'body de conteúdo '.repeat(50));
 
-  const userPostPage = new UserPostPage(page, postTitleExpected);
-  let postTitle = await userPostPage.getPostTitle();
-  await expect(postTitle).toHaveText(postTitleExpected);
+  const userContentPage = new UserContentPage(page, contentTitleExpected);
+  let contentTitle = await userContentPage.getContentTitle();
+  await expect(contentTitle).toHaveText(contentTitleExpected);
 });
