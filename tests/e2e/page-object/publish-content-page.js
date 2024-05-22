@@ -10,7 +10,7 @@ exports.PublishContentPage = class PublishContentPage {
     const title = this.page.getByRole('heading', { name: 'Publicar novo conteúdo' });
     await title.waitFor({ state: 'visible' });
 
-    return await this.page.title();
+    return this.page.title();
   }
 
   async publish(title, content) {

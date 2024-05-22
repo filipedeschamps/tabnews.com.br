@@ -10,7 +10,7 @@ exports.RegisterPage = class RegisterPage {
     const title = this.page.getByRole('heading', { name: 'Cadastro' });
     await title.waitFor({ state: 'visible' });
 
-    return await this.page.title();
+    return this.page.title();
   }
 
   async fillField(id, value) {

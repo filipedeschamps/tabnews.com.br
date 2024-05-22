@@ -12,7 +12,7 @@ exports.RecentPage = class RecentPage {
     const publishTab = this.page.locator('a', { hasText: 'Publicações' });
     await publishTab.waitFor({ state: 'visible' });
 
-    return await this.page.title();
+    return this.page.title();
   }
 
   async goRelevantTab() {
