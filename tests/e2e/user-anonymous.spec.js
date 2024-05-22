@@ -45,7 +45,7 @@ test('should be able to register', async ({ page }) => {
   await expect(title).toBe('Cadastro · TabNews');
 });
 
-test('should be able to see relevant and recent tab', async ({ page }) => {
+test('should be able to see relevants and recents tab', async ({ page }) => {
   let homePage = new HomePage(page);
 
   let titleHomePage = await homePage.getTitle();
