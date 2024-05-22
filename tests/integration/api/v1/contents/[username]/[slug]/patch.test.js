@@ -853,7 +853,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const { response, responseBody } = await contentsRequestBuilder.patch(
         `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(227, 's'),
         },
       );
 
@@ -863,7 +863,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(226, 's'),
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',

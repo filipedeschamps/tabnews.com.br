@@ -484,7 +484,7 @@ describe('POST /api/v1/contents', () => {
       const { response, responseBody } = await contentsRequestBuilder.post({
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
-        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(227, 's'),
       });
 
       expect(response.status).toEqual(201);
@@ -493,7 +493,7 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(226, 's'),
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
