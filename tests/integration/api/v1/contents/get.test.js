@@ -43,7 +43,9 @@ describe('GET /api/v1/contents', () => {
         'access-control-allow-headers': [
           'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
         ],
-        link: [`<${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="first"`],
+        link: [
+          `<${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="first", <${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="last"`,
+        ],
         'x-pagination-total-rows': ['0'],
         'content-type': ['application/json; charset=utf-8'],
         etag: responseHeaders.etag,
