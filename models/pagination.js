@@ -1,4 +1,4 @@
-async function get({ total_rows, page, per_page, strategy }) {
+function get({ total_rows, page, per_page, strategy }) {
   const firstPage = 1;
   const lastPage = Math.ceil(total_rows / per_page);
   const nextPage = page >= lastPage ? null : page + 1;

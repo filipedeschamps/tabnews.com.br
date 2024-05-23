@@ -64,7 +64,7 @@ async function findAllWithPagination(values) {
 
   values.total_rows = results.rows[0]?.total_rows ?? (await countTotalRows());
 
-  results.pagination = await pagination.get(values);
+  results.pagination = pagination.get(values);
 
   return results;
 }
