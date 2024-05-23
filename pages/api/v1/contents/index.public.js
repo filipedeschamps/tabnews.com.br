@@ -85,7 +85,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     parent_id: 'optional',
     slug: 'optional',
-    title: request.body.parent_id ? 'optional' : 'required',
+    title: 'optional',
     body: 'required',
     status: 'optional',
     source_url: 'optional',
