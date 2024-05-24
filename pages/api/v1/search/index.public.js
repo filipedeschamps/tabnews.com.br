@@ -28,14 +28,12 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const results = await search.findAll({
+  const contentListFound = await search.findAll({
     q: request.query.q,
-    sort: request.query.sort || 'new',
-    page: request.query.page || 1,
-    per_page: request.query.per_page || 30,
+    sort: request.query.sort,
+    page: request.query.page,
+    per_page: request.query.per_page,
   });
-
-  const contentListFound = results;
 
   return response.status(200).json(contentListFound);
 }

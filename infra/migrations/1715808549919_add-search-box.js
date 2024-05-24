@@ -8,7 +8,7 @@ exports.up = async (pgm) => {
     ADD COLUMN ts tsvector 
     GENERATED ALWAYS AS (
       setweight(to_tsvector('portuguese', coalesce(title, '')), 'A') ||
-      setweight(to_tsvector('portuguese', coalesce(body, '')), 'B')
+      setweight(to_tsvector('portuguese', body), 'B')
     ) STORED;
   `);
 
