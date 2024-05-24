@@ -6,10 +6,11 @@ function generateSearchTerm(searchTerm) {
 }
 
 function generateTsQuery(cleanedSearchTerm) {
+  const escapedSearchTerm = cleanedSearchTerm.replace(/'/g, "''");
   if (cleanedSearchTerm.includes(' ')) {
-    return `to_tsquery('portuguese', websearch_to_tsquery('portuguese','${cleanedSearchTerm}')::text || ':*')`;
+    return `to_tsquery('portuguese', websearch_to_tsquery('portuguese','${escapedSearchTerm}')::text || ':*')`;
   } else {
-    return `to_tsquery('portuguese', '${cleanedSearchTerm}'|| ':*')`;
+    return `to_tsquery('portuguese', '''${escapedSearchTerm}'''|| ':*')`;
   }
 }
 
@@ -51,6 +52,8 @@ async function findAll(values = {}) {
         to_tsvector('portuguese', contents.title) @@ ${tsQuery}
       AND 
         contents.status = 'published'
+      AND
+        contents.parent_id IS NULL
       ${generateOrderByClause(values.sort, tsQuery)}
       ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
     )
@@ -104,6 +107,8 @@ async function findAll(values = {}) {
         contents.status = 'published'
       AND 
         to_tsvector('portuguese', contents.title) @@ ${tsQuery}
+      AND
+        contents.parent_id IS NULL
       ${generateOrderByClause(values.sort, tsQuery)}
     `;
   }
@@ -115,14 +120,10 @@ async function findAll(values = {}) {
   };
 
   values.total_rows = results.rows[0]?.total_rows;
-  results.pagination = await getPagination(values);
+
+  results.pagination = pagination.get(values);
 
   return results;
-}
-
-async function getPagination(values) {
-  values.count = true;
-  return pagination.get(values);
 }
 
 export default Object.freeze({
