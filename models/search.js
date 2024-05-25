@@ -42,7 +42,7 @@ async function findAll(values = {}) {
       FROM 
         contents
       WHERE
-        to_tsvector('portuguese', title || ' ' || slug) @@ ${tsQuery}
+        to_tsvector('portuguese', contents.title || ' ' || contents.slug) @@ ${tsQuery}
       AND 
         contents.status = 'published'
       AND
@@ -108,7 +108,7 @@ async function findAll(values = {}) {
       WHERE 
         contents.status = 'published'
       AND 
-        to_tsvector('portuguese', title || ' ' || slug) @@ ${tsQuery}
+        to_tsvector('portuguese', contents.title || ' ' || contents.slug) @@ ${tsQuery}
       AND
         contents.parent_id IS NULL
       ${orderByClause}
