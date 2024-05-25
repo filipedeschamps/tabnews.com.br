@@ -1,26 +1,26 @@
 exports.up = async (pgm) => {
   await pgm.db.query(`
-    CREATE INDEX idx_search ON contents USING GIN(to_tsvector('portuguese', title));
-  `);
+  CREATE INDEX idx_search ON contents USING GIN(to_tsvector('portuguese', title || ' ' || slug));
+`);
 
   await pgm.db.query(`
-    ALTER TABLE contents 
-    ADD COLUMN ts tsvector 
-    GENERATED ALWAYS AS (
-      setweight(to_tsvector('portuguese', coalesce(title, '')), 'A') ||
-      setweight(to_tsvector('portuguese', body), 'B')
-    ) STORED;
-  `);
+  ALTER TABLE contents ADD search tsvector GENERATED ALWAYS AS
+  (
+    setweight(to_tsvector('portuguese', coalesce(title, '')), 'A') || ' ' ||
+    setweight(to_tsvector('portuguese', regexp_replace(slug, '-', ' ', 'g')), 'B') || ' ' ||
+    setweight(to_tsvector('portuguese', body), 'C')
+  ) STORED;
+`);
 
   await pgm.db.query(`
-    CREATE INDEX idx_contents_ts ON contents USING GIN(ts);
-  `);
+  CREATE INDEX idx_contents_search ON contents USING GIN(search);
+`);
 };
 
-exports.down = async (pgm) => {
-  await pgm.dropColumn('contents', 'ts', { ifExists: true });
+exports.down = (pgm) => {
+  pgm.dropColumn('contents', 'search', { ifExists: true });
 
-  await pgm.dropIndex('contents', 'idx_search', { ifExists: true });
+  pgm.dropIndex('contents', 'idx_search', { ifExists: true });
 
-  await pgm.dropIndex('contents', 'idx_contents_ts', { ifExists: true });
+  pgm.dropIndex('contents', 'idx_contents_search', { ifExists: true });
 };

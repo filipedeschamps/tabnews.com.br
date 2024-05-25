@@ -1,17 +1,9 @@
 import database from 'infra/database';
 import pagination from 'models/pagination.js';
 
-function generateSearchTerm(searchTerm) {
-  return searchTerm.split(' ').join(':* | ');
-}
-
 function generateTsQuery(cleanedSearchTerm) {
   const escapedSearchTerm = cleanedSearchTerm.replace(/'/g, "''");
-  if (cleanedSearchTerm.includes(' ')) {
-    return `to_tsquery('portuguese', websearch_to_tsquery('portuguese','${escapedSearchTerm}')::text || ':*')`;
-  } else {
-    return `to_tsquery('portuguese', '''${escapedSearchTerm}'''|| ':*')`;
-  }
+  return `websearch_to_tsquery('portuguese', '${escapedSearchTerm}')`;
 }
 
 function generateOrderByClause(sortBy, tsQuery) {
@@ -19,7 +11,7 @@ function generateOrderByClause(sortBy, tsQuery) {
     case 'new':
       return 'ORDER BY created_at DESC';
     case 'relevant':
-      return `ORDER BY ts_rank(ts, ${tsQuery}) DESC`;
+      return `ORDER BY CASE WHEN ts_rank(search, ${tsQuery}) > 0.6 THEN ts_rank(search, ${tsQuery}) ELSE 0 END DESC`;
     case 'old':
       return 'ORDER BY created_at ASC';
     default:
@@ -37,8 +29,9 @@ async function findAll(values = {}) {
     query.values = [values.limit || values.per_page, offset];
   }
 
-  const separatedWords = generateSearchTerm(values.q);
-  const tsQuery = generateTsQuery(separatedWords);
+  const limitOffsetClause = values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2';
+  const tsQuery = generateTsQuery(values.q);
+  const orderByClause = generateOrderByClause(values.sort, tsQuery);
   const selectClause = buildSelectClause(values, tsQuery);
 
   query.text = `
@@ -49,13 +42,13 @@ async function findAll(values = {}) {
       FROM 
         contents
       WHERE
-        to_tsvector('portuguese', contents.title) @@ ${tsQuery}
+        to_tsvector('portuguese', title || ' ' || slug) @@ ${tsQuery}
       AND 
         contents.status = 'published'
       AND
         contents.parent_id IS NULL
-      ${generateOrderByClause(values.sort, tsQuery)}
-      ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
+      ${orderByClause}
+      ${limitOffsetClause}
     )
     ${selectClause}
   `;
@@ -70,7 +63,7 @@ async function findAll(values = {}) {
         `;
     }
 
-    return `
+    let selectClause = `
       SELECT
         contents.id,
         contents.owner_id,
@@ -86,15 +79,24 @@ async function findAll(values = {}) {
         contents.path,
         users.username as owner_username,
         content_window.total_rows,
-        tabcoins_count.total_balance as tabcoins,
-        tabcoins_count.total_credit as tabcoins_credit,
-        tabcoins_count.total_debit as tabcoins_debit,
+        tabcoins_count.total_balance::INTEGER as tabcoins,
+        tabcoins_count.total_credit::INTEGER as tabcoins_credit,
+        tabcoins_count.total_debit::INTEGER as tabcoins_debit,
         (
-          SELECT COUNT(*)
+          SELECT COUNT(*)::INTEGER
           FROM contents as children
           WHERE children.path @> ARRAY[contents.id]
            AND children.status = 'published'
         ) as children_deep_count
+    `;
+
+    if (values.sort === 'relevant') {
+      selectClause += `,
+        ts_rank(search, ${tsQuery}) as rank
+      `;
+    }
+
+    selectClause += `
       FROM
         contents
       INNER JOIN
@@ -106,11 +108,13 @@ async function findAll(values = {}) {
       WHERE 
         contents.status = 'published'
       AND 
-        to_tsvector('portuguese', contents.title) @@ ${tsQuery}
+        to_tsvector('portuguese', title || ' ' || slug) @@ ${tsQuery}
       AND
         contents.parent_id IS NULL
-      ${generateOrderByClause(values.sort, tsQuery)}
+      ${orderByClause}
     `;
+
+    return selectClause;
   }
 
   const queryResults = await database.query(query);
