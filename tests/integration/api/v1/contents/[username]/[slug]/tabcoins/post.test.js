@@ -1,3 +1,5 @@
+import balance from 'models/balance';
+import content from 'models/content';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -610,6 +612,492 @@ describe('POST /api/v1/contents/tabcoins', () => {
           error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
         }),
       );
+    });
+
+    describe('Sponsored content (dropAllTables beforeEach)', () => {
+      beforeEach(async () => {
+        await orchestrator.dropAllTables();
+        await orchestrator.runPendingMigrations();
+      });
+
+      test('With a sponsored content deactivated', async () => {
+        vi.useFakeTimers({
+          now: new Date('2024-05-01T00:00:00.000Z'),
+        });
+
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+          deactivate_at: '2024-05-10T00:00:00.000Z',
+        });
+
+        vi.useRealTimers();
+
+        const tabcoinsRequestBuilder = new RequestBuilder(
+          `/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}/tabcoins`,
+        );
+        const voterUser = await tabcoinsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: voterUser.id,
+          amount: 2,
+        });
+
+        const { response, responseBody } = await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+        expect(response.status).toBe(404);
+        expect(responseBody).toStrictEqual({
+          status_code: 404,
+          name: 'NotFoundError',
+          message: 'O conteúdo informado não foi encontrado no sistema.',
+          action: 'Verifique se o "slug" está digitado corretamente.',
+          error_location_code: 'CONTROLLER:CONTENT:TABCOINS:CONTENT_NOT_FOUND',
+          key: 'slug',
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+        });
+      });
+
+      test('With not enough TabCoins', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+        });
+
+        const tabcoinsRequestBuilder = new RequestBuilder(
+          `/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}/tabcoins`,
+        );
+        await tabcoinsRequestBuilder.buildUser();
+
+        const { response, responseBody } = await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+        expect(response.status).toBe(422);
+        expect(responseBody).toStrictEqual({
+          name: 'UnprocessableEntityError',
+          message: 'Não foi possível adicionar TabCoins nesta publicação.',
+          action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
+          status_code: 422,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:BALANCE:RATE_SPONSORED_CONTENT:NOT_ENOUGH',
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+        expect(firstUserResponseBody.tabcoins).toStrictEqual(0);
+        expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+        const sponsoredContentTabCash = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCash).toEqual(100);
+      });
+
+      test('With "transaction_type" set to "credit"', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+        });
+
+        const tabcoinsRequestBuilder = new RequestBuilder(
+          `/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}/tabcoins`,
+        );
+        const voterUser = await tabcoinsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: voterUser.id,
+          amount: 2,
+        });
+
+        const { response, responseBody } = await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+        expect(response.status).toBe(201);
+        expect(responseBody).toStrictEqual({
+          tabcoins: 2,
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+        expect(firstUserResponseBody.tabcoins).toStrictEqual(0);
+        expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+        const { responseBody: voterUserResponseBody } = await usersRequestBuilder.get(`/${voterUser.username}`);
+
+        expect(voterUserResponseBody.tabcoins).toStrictEqual(3);
+        expect(voterUserResponseBody.tabcash).toStrictEqual(0);
+
+        const sponsoredContentTabCash = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCash).toEqual(99);
+      });
+
+      test('Rating the same sponsored content twice', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+        });
+
+        const tabcoinsRequestBuilder = new RequestBuilder(
+          `/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}/tabcoins`,
+        );
+        const voterUser = await tabcoinsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: voterUser.id,
+          amount: 2,
+        });
+
+        const { response: postTabCoinsResponse1, responseBody: postTabCoinsResponse1Body } =
+          await tabcoinsRequestBuilder.post({
+            transaction_type: 'debit',
+          });
+
+        expect(postTabCoinsResponse1.status).toBe(201);
+        expect(postTabCoinsResponse1Body).toStrictEqual({
+          tabcoins: 1,
+        });
+
+        const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
+          await tabcoinsRequestBuilder.post({
+            transaction_type: 'credit',
+          });
+
+        expect(postTabCoinsResponse2.status).toBe(400);
+        expect(postTabCoinsResponse2Body).toStrictEqual({
+          name: 'ValidationError',
+          message: 'Você está tentando qualificar muitas vezes a mesma publicação patrocinada.',
+          action: 'Esta operação só pode ser feita uma vez.',
+          status_code: 400,
+          error_id: postTabCoinsResponse2Body.error_id,
+          request_id: postTabCoinsResponse2Body.request_id,
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+        expect(firstUserResponseBody.tabcoins).toStrictEqual(0);
+        expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+        const { responseBody: voterUserResponseBody } = await usersRequestBuilder.get(`/${voterUser.username}`);
+
+        expect(voterUserResponseBody.tabcoins).toStrictEqual(3);
+        expect(voterUserResponseBody.tabcash).toStrictEqual(0);
+
+        const sponsoredContentTabCash = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCash).toEqual(99);
+      });
+    });
+
+    test('Rating different sponsored contents with only 2 TabCoins', async () => {
+      const firstUser = await orchestrator.createUser();
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: firstUser.id,
+        amount: 100,
+      });
+      const firstSponsoredContent = await orchestrator.createSponsoredContent({
+        owner_id: firstUser.id,
+        title: 'root',
+        tabcash: 100,
+      });
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: secondUser.id,
+        amount: 150,
+      });
+      const secondSponsoredContent = await orchestrator.createSponsoredContent({
+        owner_id: secondUser.id,
+        title: 'Sponsored content',
+        tabcash: 120,
+      });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstSponsoredContent.slug}/tabcoins`,
+      );
+      const voterUser = await tabcoinsRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: voterUser.id,
+        amount: 2,
+      });
+
+      const { response: postTabCoinsResponse1, responseBody: postTabCoinsResponse1Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+      expect(postTabCoinsResponse1.status).toBe(201);
+      expect(postTabCoinsResponse1Body).toStrictEqual({
+        tabcoins: 2,
+      });
+
+      const tabcoins2RequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${secondUser.username}/${secondSponsoredContent.slug}/tabcoins`,
+      );
+      await tabcoins2RequestBuilder.setUser(voterUser);
+
+      const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
+        await tabcoins2RequestBuilder.post({
+          transaction_type: 'debit',
+        });
+
+      expect(postTabCoinsResponse2.status).toBe(201);
+      expect(postTabCoinsResponse2Body).toStrictEqual({
+        tabcoins: 1,
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(secondUserResponseBody.tabcash).toStrictEqual(30);
+
+      const { responseBody: voterUserResponseBody } = await usersRequestBuilder.get(`/${voterUser.username}`);
+
+      expect(voterUserResponseBody.tabcoins).toStrictEqual(4);
+      expect(voterUserResponseBody.tabcash).toStrictEqual(0);
+
+      const firstSponsoredContentTabCash = await balance.getTotal({
+        balanceType: 'sponsored_content:tabcash',
+        recipientId: firstSponsoredContent.id,
+      });
+      expect(firstSponsoredContentTabCash).toEqual(99);
+
+      const secondSponsoredContentTabCash = await balance.getTotal({
+        balanceType: 'sponsored_content:tabcash',
+        recipientId: secondSponsoredContent.id,
+      });
+      expect(secondSponsoredContentTabCash).toEqual(119);
+    });
+
+    test('Different users rating the same sponsored content with +2/-1', async () => {
+      const firstUser = await orchestrator.createUser();
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: firstUser.id,
+        amount: 100,
+      });
+      const createdSponsoredContent = await orchestrator.createSponsoredContent({
+        owner_id: firstUser.id,
+        title: 'root',
+        tabcash: 100,
+      });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}/tabcoins`,
+      );
+      const voterUser1 = await tabcoinsRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: voterUser1.id,
+        amount: 2,
+      });
+
+      const { response: postTabCoinsResponse1, responseBody: postTabCoinsResponse1Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+      expect(postTabCoinsResponse1.status).toBe(201);
+      expect(postTabCoinsResponse1Body).toStrictEqual({
+        tabcoins: 2,
+      });
+
+      const voterUser2 = await tabcoinsRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: voterUser2.id,
+        amount: 2,
+      });
+
+      const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+      expect(postTabCoinsResponse2.status).toBe(201);
+      expect(postTabCoinsResponse2Body).toStrictEqual({
+        tabcoins: 3,
+      });
+
+      const voterUser3 = await tabcoinsRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: voterUser3.id,
+        amount: 2,
+      });
+
+      const { response: postTabCoinsResponse3, responseBody: postTabCoinsResponse3Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
+
+      expect(postTabCoinsResponse3.status).toBe(201);
+      expect(postTabCoinsResponse3Body).toStrictEqual({
+        tabcoins: 3,
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+
+      const { responseBody: voterUser1ResponseBody } = await usersRequestBuilder.get(`/${voterUser1.username}`);
+
+      expect(voterUser1ResponseBody.tabcoins).toStrictEqual(3);
+      expect(voterUser1ResponseBody.tabcash).toStrictEqual(0);
+
+      const { responseBody: voterUser2ResponseBody } = await usersRequestBuilder.get(`/${voterUser2.username}`);
+
+      expect(voterUser2ResponseBody.tabcoins).toStrictEqual(3);
+      expect(voterUser2ResponseBody.tabcash).toStrictEqual(0);
+
+      const { responseBody: voterUser3ResponseBody } = await usersRequestBuilder.get(`/${voterUser3.username}`);
+
+      expect(voterUser3ResponseBody.tabcoins).toStrictEqual(3);
+      expect(voterUser3ResponseBody.tabcash).toStrictEqual(0);
+
+      const sponsoredContentTabCash = await balance.getTotal({
+        balanceType: 'sponsored_content:tabcash',
+        recipientId: createdSponsoredContent.id,
+      });
+      expect(sponsoredContentTabCash).toEqual(97);
+    });
+
+    test('A sponsored content being deactivated when its TabCash ends', async () => {
+      const firstUser = await orchestrator.createUser();
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: firstUser.id,
+        amount: 100,
+      });
+      const createdSponsoredContent = await orchestrator.createSponsoredContent({
+        owner_id: firstUser.id,
+        title: 'root',
+        tabcash: 10,
+      });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}/tabcoins`,
+      );
+
+      for (let i = 1; i <= 7; i++) {
+        const voterUser = await tabcoinsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: voterUser.id,
+          amount: 2,
+        });
+
+        const { response, responseBody } = await tabcoinsRequestBuilder.post({ transaction_type: 'credit' });
+
+        expect(response.status).toEqual(201);
+        expect(responseBody).toStrictEqual({
+          tabcoins: 1 + i,
+        });
+      }
+
+      for (let i = 1; i <= 3; i++) {
+        const voterUser = await tabcoinsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: voterUser.id,
+          amount: 2,
+        });
+
+        const { response, responseBody } = await tabcoinsRequestBuilder.post({ transaction_type: 'debit' });
+
+        expect(response.status).toEqual(201);
+        expect(responseBody).toStrictEqual({
+          tabcoins: 8,
+        });
+      }
+
+      const foundContent = await content.findOne({
+        where: {
+          id: createdSponsoredContent.content_id,
+        },
+      });
+
+      expect(Date.parse(foundContent.deactivate_at)).not.toEqual(NaN);
+
+      const voterUser = await tabcoinsRequestBuilder.buildUser();
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: voterUser.id,
+        amount: 2,
+      });
+
+      const { response } = await tabcoinsRequestBuilder.post({ transaction_type: 'credit' });
+      expect(response.status).toEqual(404);
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+      expect(firstUserResponseBody.tabcoins).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcash).toStrictEqual(90);
+
+      const sponsoredContentTabCash = await balance.getTotal({
+        balanceType: 'sponsored_content:tabcash',
+        recipientId: createdSponsoredContent.id,
+      });
+      expect(sponsoredContentTabCash).toEqual(0);
     });
   });
 });

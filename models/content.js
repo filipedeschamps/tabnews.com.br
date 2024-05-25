@@ -122,6 +122,7 @@ async function findAll(values = {}, options = {}) {
         users.username as owner_username,
         content_window.total_rows,
         sponsored_contents.deactivate_at,
+        sponsored_contents.id as sponsored_content_id,
         CASE
           WHEN contents.status = 'sponsored' THEN sponsored_content_tabcoins
           ELSE tabcoins_count.total_balance

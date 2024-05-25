@@ -191,6 +191,82 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   };
 }
 
+async function rateSponsoredContent({ sponsoredContentId, fromUserId, transactionType }, options = {}) {
+  const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
+  const tabCashToDeductFromSponsoredContent = -1;
+  const tabCoinsToCreditToUser = 1;
+  const originatorType = 'event';
+  const originatorId = options.eventId;
+
+  const query = {
+    text: `
+      WITH sponsored_content_tabcoin_insert AS (
+        INSERT INTO sponsored_content_tabcoin_operations
+          (recipient_id, balance_type, amount, originator_type, originator_id)
+        VALUES
+          ($3, $8, $4, $6, $7)
+        RETURNING
+          *
+      ),
+      sponsored_content_tabcash_insert AS (
+        INSERT INTO sponsored_content_tabcash_operations
+          (recipient_id, amount, originator_type, originator_id)
+        VALUES
+          ($3, $5, $6, $7)
+        RETURNING
+          *
+      ),
+      users_tabcoin_insert AS (
+        INSERT INTO user_tabcoin_operations
+          (recipient_id, amount, originator_type, originator_id)
+        VALUES
+          ($1, $2, $6, $7)
+      ),
+      update_deactivate_at AS (
+        UPDATE sponsored_contents
+        SET deactivate_at = NOW()
+        WHERE id = $3 AND get_sponsored_content_current_tabcash($3) <= 1
+      )
+      SELECT
+        get_user_current_tabcoins($1) AS user_current_tabcoin_balance,
+        get_sponsored_content_current_tabcoins($3) AS content_current_tabcoin_balance
+      FROM
+        sponsored_content_tabcoin_insert
+    ;`,
+    values: [
+      fromUserId, // $1
+      tabCoinsToCreditToUser, // $2
+
+      sponsoredContentId, // $3
+      tabCoinsToTransactToContent, // $4
+      
+      tabCashToDeductFromSponsoredContent, // $5
+      
+      originatorType, // $6
+      originatorId, // $7
+
+      transactionType, // $8
+    ],
+  };
+
+  const results = await database.query(query, options);
+  const currentBalances = results.rows[0];
+
+  const minUserTabCoins = 2;
+
+  if (currentBalances.user_current_tabcoin_balance < minUserTabCoins) {
+    throw new UnprocessableEntityError({
+      message: `Não foi possível adicionar TabCoins nesta publicação.`,
+      action: `Você precisa de pelo menos ${minUserTabCoins} TabCoins para realizar esta ação.`,
+      errorLocationCode: 'MODEL:BALANCE:RATE_SPONSORED_CONTENT:NOT_ENOUGH',
+    });
+  }
+
+  return {
+    tabcoins: currentBalances.content_current_tabcoin_balance,
+  };
+}
+
 async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, options) {
   const originatorType = 'event';
   const originatorId = options.eventId;
@@ -280,6 +356,7 @@ export default Object.freeze({
   getTotal,
   getContentTabcoinsCreditDebit,
   rateContent,
+  rateSponsoredContent,
   sponsorContent,
   undo,
 });

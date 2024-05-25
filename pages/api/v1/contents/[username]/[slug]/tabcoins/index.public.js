@@ -46,11 +46,13 @@ async function postHandler(request, response) {
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      status: 'published',
+      $or: [{ status: 'published' }, { status: 'sponsored' }],
     },
   });
 
-  if (!contentFound) {
+  const isDeactivated = contentFound?.deactivate_at && contentFound.deactivate_at < new Date();
+
+  if (!contentFound || isDeactivated) {
     throw new NotFoundError({
       message: `O conteúdo informado não foi encontrado no sistema.`,
       action: 'Verifique se o "slug" está digitado corretamente.',
@@ -70,89 +72,130 @@ async function postHandler(request, response) {
     });
   }
 
-  // TODO: Refactor firewall.js to accept other parameters such as content.id
-  // and move this function to there.
-  await canIpUpdateContentTabCoins(request.context.clientIp, contentFound.id);
-
   let currentContentTabCoinsBalance;
+  let feature;
 
-  await tabcoinsTransaction(null, 5);
+  if (contentFound.status === 'sponsored') {
+    await canUserUpdateSponsoredContentTabCoins(userTryingToPost.id, contentFound.sponsored_content_id);
 
-  async function tabcoinsTransaction(transaction, remainingAttempts) {
-    if (!transaction) {
-      transaction = await database.transaction();
-    }
+    currentContentTabCoinsBalance = await retryTransaction(5, rateSponsoredContent);
 
+    feature = 'read:sponsored_content:tabcoins';
+  } else {
+    // TODO: Refactor firewall.js to accept other parameters such as content.id
+    // and move this function to there.
+    await canIpUpdateContentTabCoins(request.context.clientIp, contentFound.id);
+
+    currentContentTabCoinsBalance = await retryTransaction(5, rateContent);
+
+    feature = 'read:content:tabcoins';
+  }
+
+  const secureOutputValues = authorization.filterOutput(userTryingToPost, feature, currentContentTabCoinsBalance);
+
+  return response.status(201).json(secureOutputValues);
+
+  async function rateContent(transaction) {
+    const tabCoinsRequiredAmount = 2;
+
+    const currentEvent = await event.create(
+      {
+        type: 'update:content:tabcoins',
+        originatorUserId: request.context.user.id,
+        originatorIp: request.context.clientIp,
+        metadata: {
+          transaction_type: request.body.transaction_type,
+          from_user_id: userTryingToPost.id,
+          content_owner_id: contentFound.owner_id,
+          content_id: contentFound.id,
+          amount: tabCoinsRequiredAmount,
+        },
+      },
+      {
+        transaction: transaction,
+      },
+    );
+
+    return balance.rateContent(
+      {
+        contentId: contentFound.id,
+        contentOwnerId: contentFound.owner_id,
+        fromUserId: userTryingToPost.id,
+        transactionType: request.body.transaction_type,
+      },
+      {
+        eventId: currentEvent.id,
+        transaction: transaction,
+      },
+    );
+  }
+
+  async function rateSponsoredContent(transaction) {
+    const tabCoinsRequiredAmount = 2;
+
+    const currentEvent = await event.create(
+      {
+        type: 'update:sponsored_content:tabcoins',
+        originatorUserId: request.context.user.id,
+        originatorIp: request.context.clientIp,
+        metadata: {
+          transaction_type: request.body.transaction_type,
+          sponsored_content_id: contentFound.sponsored_content_id,
+          amount: tabCoinsRequiredAmount,
+        },
+      },
+      {
+        transaction: transaction,
+      },
+    );
+
+    return balance.rateSponsoredContent(
+      {
+        sponsoredContentId: contentFound.sponsored_content_id,
+        fromUserId: userTryingToPost.id,
+        transactionType: request.body.transaction_type,
+      },
+      {
+        eventId: currentEvent.id,
+        transaction: transaction,
+      },
+    );
+  }
+}
+
+async function retryTransaction(attempts, callback) {
+  const transaction = await database.transaction();
+
+  for (let i = 0; i < attempts; i++) {
     try {
       await transaction.query('BEGIN');
       await transaction.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
 
-      const tabCoinsRequiredAmount = 2;
-
-      const currentEvent = await event.create(
-        {
-          type: 'update:content:tabcoins',
-          originatorUserId: request.context.user.id,
-          originatorIp: request.context.clientIp,
-          metadata: {
-            transaction_type: request.body.transaction_type,
-            from_user_id: userTryingToPost.id,
-            content_owner_id: contentFound.owner_id,
-            content_id: contentFound.id,
-            amount: tabCoinsRequiredAmount,
-          },
-        },
-        {
-          transaction: transaction,
-        },
-      );
-
-      currentContentTabCoinsBalance = await balance.rateContent(
-        {
-          contentId: contentFound.id,
-          contentOwnerId: contentFound.owner_id,
-          fromUserId: userTryingToPost.id,
-          transactionType: request.body.transaction_type,
-        },
-        {
-          eventId: currentEvent.id,
-          transaction: transaction,
-        },
-      );
+      const result = await callback(transaction);
 
       await transaction.query('COMMIT');
       await transaction.release();
+
+      return result;
     } catch (error) {
       await transaction.query('ROLLBACK');
 
       if (
-        error.databaseErrorCode === database.errorCodes.SERIALIZATION_FAILURE ||
-        error.stack?.startsWith('error: could not serialize access due to read/write dependencies among transaction')
+        error.databaseErrorCode !== database.errorCodes.SERIALIZATION_FAILURE &&
+        !error.stack?.startsWith('error: could not serialize access due to read/write dependencies among transaction')
       ) {
-        if (remainingAttempts > 0) {
-          await tabcoinsTransaction(transaction, remainingAttempts - 1);
-        } else {
-          await transaction.release();
-          throw new UnprocessableEntityError({
-            message: `Muitos votos ao mesmo tempo.`,
-            action: 'Tente realizar esta operação mais tarde.',
-            errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
-          });
-        }
-      } else {
         await transaction.release();
         throw error;
       }
     }
   }
 
-  const secureOutputValues = authorization.filterOutput(
-    userTryingToPost,
-    'read:content:tabcoins',
-    currentContentTabCoinsBalance,
-  );
-
-  return response.status(201).json(secureOutputValues);
+  await transaction.release();
+  throw new UnprocessableEntityError({
+    message: `Muitos votos ao mesmo tempo.`,
+    action: 'Tente realizar esta operação mais tarde.',
+    errorLocationCode: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
+  });
 }
 
 async function canIpUpdateContentTabCoins(clientIp, contentId) {
@@ -177,6 +220,30 @@ async function canIpUpdateContentTabCoins(clientIp, contentId) {
     throw new ValidationError({
       message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
       action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+    });
+  }
+}
+
+async function canUserUpdateSponsoredContentTabCoins(userId, sponsoredContentId) {
+  const results = await database.query({
+    text: `
+      SELECT
+        count(*)
+      FROM
+        events
+      WHERE
+        type = 'update:sponsored_content:tabcoins'
+        AND originator_user_id = $1
+        AND metadata->>'sponsored_content_id' = $2
+      ;`,
+    values: [userId, sponsoredContentId],
+  });
+  const pass = results.rows[0].count == 0;
+
+  if (!pass) {
+    throw new ValidationError({
+      message: 'Você está tentando qualificar muitas vezes a mesma publicação patrocinada.',
+      action: 'Esta operação só pode ser feita uma vez.',
     });
   }
 }

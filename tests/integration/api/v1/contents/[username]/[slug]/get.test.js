@@ -457,7 +457,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.owner_id)).toEqual(4);
     });
 
-    describe('Sponsored contents', () => {
+    describe('Sponsored content', () => {
       test('An active sponsored content', async () => {
         const firstUser = await orchestrator.createUser();
         await orchestrator.createBalance({
@@ -587,6 +587,52 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
           deleted_at: null,
           owner_username: secondUser.username,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
+
+      test('A sponsored content with TabCoins credits and debits', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+        });
+
+        await orchestrator.createRate(createdSponsoredContent, 1);
+        await orchestrator.createRate(createdSponsoredContent, -3);
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${createdSponsoredContent.slug}`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: createdSponsoredContent.content_id,
+          parent_id: null,
+          owner_id: firstUser.id,
+          slug: 'root-content-title',
+          title: 'Root content title',
+          body: 'Body',
+          children_deep_count: 0,
+          status: 'sponsored',
+          source_url: null,
+          published_at: createdSponsoredContent.published_at.toISOString(),
+          created_at: createdSponsoredContent.created_at.toISOString(),
+          updated_at: createdSponsoredContent.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 2,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
         });

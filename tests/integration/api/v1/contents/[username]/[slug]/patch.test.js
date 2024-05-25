@@ -2926,7 +2926,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
     });
 
-    describe('Sponsored contents', () => {
+    describe('Sponsored content (dropAllTables beforeEach)', () => {
+      beforeEach(async () => {
+        await orchestrator.dropAllTables();
+        await orchestrator.runPendingMigrations();
+      });
+
       test('Updating a sponsored content "body"', async () => {
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
         const defaultUser = await contentsRequestBuilder.buildUser();
@@ -3013,6 +3018,53 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           published_at: createdSponsoredContent.published_at.toISOString(),
           deleted_at: null,
           tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+      });
+
+      test('Updating a sponsored content with TabCash credits and debits', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 50,
+        });
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: defaultUser.id,
+          title: 'Sponsored content title',
+          body: 'Body',
+          tabcash: 50,
+          source_url: 'https://example.com',
+        });
+
+        await orchestrator.createRate(createdSponsoredContent, 10);
+        await orchestrator.createRate(createdSponsoredContent, -5);
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${createdSponsoredContent.slug}`,
+          { title: 'New title', slug: 'new-slug', source_url: 'https://example.com/new_url' },
+        );
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'new-slug',
+          title: 'New title',
+          body: 'Body',
+          status: 'sponsored',
+          source_url: 'https://example.com/new_url',
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: createdSponsoredContent.published_at.toISOString(),
+          deleted_at: null,
+          tabcoins: 11,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
           owner_username: defaultUser.username,
@@ -3184,7 +3236,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
     });
 
-    describe('Sponsored contents', () => {
+    describe('Sponsored content', () => {
       test('Updating a sponsored content from another user', async () => {
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
         await contentsRequestBuilder.buildUser({ with: ['update:content:others'] });

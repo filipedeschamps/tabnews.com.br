@@ -678,6 +678,60 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
           tabcoins_debit: 0,
         });
       });
+
+      test('Root that is a sponsored content with TabCoins credits and debits', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Root content title',
+          body: 'Body',
+          tabcash: 100,
+        });
+
+        await orchestrator.createRate(rootContent, 4);
+        await orchestrator.createRate(rootContent, -3);
+
+        const childContentLevel1 = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: rootContent.content_id,
+          body: 'Child content body Level 1',
+          status: 'published',
+        });
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+
+        expect(responseBody).toStrictEqual({
+          id: rootContent.content_id,
+          parent_id: null,
+          owner_id: firstUser.id,
+          slug: 'root-content-title',
+          title: 'Root content title',
+          body: 'Body',
+          children_deep_count: 1,
+          status: 'sponsored',
+          source_url: null,
+          published_at: rootContent.published_at.toISOString(),
+          created_at: rootContent.created_at.toISOString(),
+          updated_at: rootContent.updated_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 5,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+        });
+      });
     });
   });
 });

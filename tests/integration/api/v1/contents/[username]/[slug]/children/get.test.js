@@ -671,6 +671,61 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           request_id: responseBody.request_id,
         });
       });
+
+      test('From "root" content with "sponsored" status with 1 child with TabCoins credits and debits', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        const rootContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 100,
+        });
+
+        const childBranchALevel1 = await orchestrator.createContent({
+          parent_id: rootContent.content_id,
+          owner_id: secondUser.id,
+          title: 'Child branch A [Level 1]',
+          status: 'published',
+        });
+
+        await orchestrator.createRate(childBranchALevel1, 4);
+        await orchestrator.createRate(childBranchALevel1, -1);
+
+        const response = await fetch(
+          `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${rootContent.slug}/children`,
+        );
+        const responseBody = await response.json();
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toStrictEqual([
+          {
+            id: childBranchALevel1.id,
+            owner_id: secondUser.id,
+            parent_id: rootContent.content_id,
+            slug: childBranchALevel1.slug,
+            title: childBranchALevel1.title,
+            body: childBranchALevel1.body,
+            status: childBranchALevel1.status,
+            tabcoins: 4,
+            tabcoins_credit: 4,
+            tabcoins_debit: -1,
+            source_url: childBranchALevel1.source_url,
+            created_at: childBranchALevel1.created_at.toISOString(),
+            updated_at: childBranchALevel1.updated_at.toISOString(),
+            published_at: childBranchALevel1.published_at.toISOString(),
+            deleted_at: null,
+            owner_username: secondUser.username,
+            children: [],
+            children_deep_count: 0,
+          },
+        ]);
+      });
     });
   });
 });

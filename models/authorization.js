@@ -34,6 +34,7 @@ const availableFeatures = new Set([
   'read:content:list',
   'read:content:tabcoins',
   'read:sponsored_content',
+  'read:sponsored_content:tabcoins',
 
   // SPONSORED CONTENT
   'create:sponsored_content',
@@ -275,6 +276,12 @@ function filterOutput(user, feature, output) {
       tabcoins: 'required',
       tabcoins_credit: 'required',
       tabcoins_debit: 'required',
+    });
+  }
+
+  if (feature === 'read:sponsored_content:tabcoins') {
+    filteredOutputValues = validator(output, {
+      tabcoins: 'required',
     });
   }
 

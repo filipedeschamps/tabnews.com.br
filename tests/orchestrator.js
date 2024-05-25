@@ -234,6 +234,7 @@ async function createBalance(balanceObject) {
 }
 
 async function createRate(contentObject, amount, fromUserId) {
+  const isSponsoredContent = !!contentObject.content_id;
   const tabCoinsRequiredAmount = 2;
   const originatorIp = faker.internet.ip();
   const transactionType = amount < 0 ? 'debit' : 'credit';
@@ -241,40 +242,66 @@ async function createRate(contentObject, amount, fromUserId) {
   if (!fromUserId) {
     fromUserId = randomUUID();
 
+    const userTabCoins = isSponsoredContent ? tabCoinsRequiredAmount : tabCoinsRequiredAmount * Math.abs(amount);
+
     await createBalance({
       balanceType: 'user:tabcoin',
       recipientId: fromUserId,
-      amount: tabCoinsRequiredAmount * Math.abs(amount),
+      amount: userTabCoins,
       originatorType: 'orchestrator',
       originatorId: fromUserId,
     });
   }
 
   for (let i = 0; i < Math.abs(amount); i++) {
-    const currentEvent = await event.create({
-      type: 'update:content:tabcoins',
-      originatorUserId: fromUserId,
-      originatorIp,
-      metadata: {
-        transaction_type: transactionType,
-        from_user_id: fromUserId,
-        content_owner_id: contentObject.owner_id,
-        content_id: contentObject.id,
-        amount: tabCoinsRequiredAmount,
-      },
-    });
+    if (isSponsoredContent) {
+      const currentEvent = await event.create({
+        type: 'update:sponsored_content:tabcoins',
+        originatorUserId: fromUserId,
+        originatorIp,
+        metadata: {
+          transaction_type: transactionType,
+          sponsored_content_id: contentObject.id,
+          amount: tabCoinsRequiredAmount,
+        },
+      });
 
-    await balance.rateContent(
-      {
-        contentId: contentObject.id,
-        contentOwnerId: contentObject.owner_id,
-        fromUserId: fromUserId,
-        transactionType,
-      },
-      {
-        eventId: currentEvent.id,
-      },
-    );
+      await balance.rateSponsoredContent(
+        {
+          sponsoredContentId: contentObject.id,
+          fromUserId: fromUserId,
+          transactionType,
+        },
+        {
+          eventId: currentEvent.id,
+        },
+      );
+    } else {
+      const currentEvent = await event.create({
+        type: 'update:content:tabcoins',
+        originatorUserId: fromUserId,
+        originatorIp,
+        metadata: {
+          transaction_type: transactionType,
+          from_user_id: fromUserId,
+          content_owner_id: contentObject.owner_id,
+          content_id: contentObject.id,
+          amount: tabCoinsRequiredAmount,
+        },
+      });
+
+      await balance.rateContent(
+        {
+          contentId: contentObject.id,
+          contentOwnerId: contentObject.owner_id,
+          fromUserId: fromUserId,
+          transactionType,
+        },
+        {
+          eventId: currentEvent.id,
+        },
+      );
+    }
   }
 }
 
