@@ -1,7 +1,7 @@
+import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
-import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -10,15 +10,14 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/search', () => {
-  const contentsRequestBuilder = new RequestBuilder('/api/v1/search');
-
   describe('Anonymous user (dropAllTables beforeEach)', () => {
     beforeEach(async () => {
       await orchestrator.dropAllTables();
       await orchestrator.runPendingMigrations();
     });
     test('"q" is a required query params', async () => {
-      const { response, responseBody } = await contentsRequestBuilder.get();
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/search`);
+      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
       expect(responseBody).toEqual({
@@ -35,7 +34,8 @@ describe('GET /api/v1/search', () => {
     });
 
     test('With invalid sort', async () => {
-      const { response, responseBody } = await contentsRequestBuilder.get(`?q=test&sort=invalid`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/search?q=test&sort=invalid`);
+      const responseBody = await response.json();
 
       expect(response.status).toEqual(400);
 
@@ -87,7 +87,8 @@ describe('GET /api/v1/search', () => {
         status: 'draft',
       });
 
-      const { response, responseBody } = await contentsRequestBuilder.get(`?q=primeiro&sort=new`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/search?q=primeiro&sort=new`);
+      const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
       expect(responseBody).toStrictEqual({
@@ -145,7 +146,8 @@ describe('GET /api/v1/search', () => {
 
       const searchTerm = 'Título do conteúdo com pequena alteração';
 
-      const { response, responseBody } = await contentsRequestBuilder.get(`?q=${searchTerm}&sort=relevant`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/search?q=${searchTerm}&sort=relevant`);
+      const responseBody = await response.json();
 
       expect(response.status).toEqual(200);
       expect(responseBody).toStrictEqual({
