@@ -75,10 +75,8 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-      - run: npm install
-
-      - name: Install Playwright Dependencies
-        run: npx playwright install --with-deps
+      - run: npm ci
+      - run: npx playwright install --with-deps
 
       - name: Run e2e tests
         run: npm run dev & npm run test:e2e
