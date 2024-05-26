@@ -1,6 +1,6 @@
 name: CI
 
-on: [pull_request]
+on: [ pull_request ]
 
 concurrency:
   group: ci-${{ github.event.pull_request.title }}
@@ -61,6 +61,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Start containers
+        run: npm run services:up
+
       - uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/.next/cache
@@ -78,7 +81,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run e2e tests
-        run: npm run test:e2e
+        run:  npm run dev & npm run test:e2e
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -86,3 +89,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+      - name: Stop containers
+        if: always()
+        run: npm run services:down
