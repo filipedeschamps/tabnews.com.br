@@ -22,7 +22,7 @@ async function sendReplyEmailToParentUser(createdContent) {
       return;
     }
 
-    const childContendUrl = getChildContendUrl(secureCreatedContent);
+    const childContentUrl = getChildContentUrl(secureCreatedContent);
     const rootContent = parentContent.parent_id
       ? await content.findOne({
           where: {
@@ -47,7 +47,7 @@ async function sendReplyEmailToParentUser(createdContent) {
     const { html, text } = NotificationEmail({
       username: parentContentUser.username,
       bodyReplyLine: bodyReplyLine,
-      contentLink: childContendUrl,
+      contentLink: childContentUrl,
     });
 
     await email.send({
@@ -78,7 +78,7 @@ function getBodyReplyLine({ createdContent, rootContent }) {
   return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}".`;
 }
 
-function getChildContendUrl({ owner_username, slug }) {
+function getChildContentUrl({ owner_username, slug }) {
   return `${webserver.host}/${owner_username}/${slug}`;
 }
 
