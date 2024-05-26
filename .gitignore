@@ -142,3 +142,4 @@ yarn.*
 
 # Playwright test results
 test-results/
+playwright-report/
