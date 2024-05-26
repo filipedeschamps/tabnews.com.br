@@ -1,7 +1,8 @@
 import database from 'infra/database';
 import pagination from 'models/pagination.js';
 
-function generateTsQuery(cleanedSearchTerm) {
+function generateTsQuery(query) {
+  const cleanedSearchTerm = query.toLowerCase().trim();
   const escapedSearchTerm = cleanedSearchTerm.replace(/'/g, "''");
   return `websearch_to_tsquery('portuguese', '${escapedSearchTerm}')`;
 }
