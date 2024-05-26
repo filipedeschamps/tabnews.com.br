@@ -68,9 +68,7 @@ async function waitForAllServices() {
     return await retry(
       async (bail, tries) => {
         if (tries >= 25) {
-          console.log(
-            `> Trying to connect to Email Service #${tries} in url: ${emailServiceUrl}, Are you running the MailCatcher container?`,
-          );
+          console.log(`> Trying to connect to Email Service #${tries}, Are you running the MailCatcher container?`);
         }
         await fetch(emailServiceUrl);
       },
