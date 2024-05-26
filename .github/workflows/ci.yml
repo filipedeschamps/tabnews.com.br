@@ -1,6 +1,6 @@
 name: CI
 
-on: [ pull_request ]
+on: [ push, pull_request ]
 
 concurrency:
   group: ci-${{ github.event.pull_request.title }}
@@ -81,7 +81,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run e2e tests
-        run:  npm run dev & npm run test:e2e
+        run: npm run dev & npm run test:e2e
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
