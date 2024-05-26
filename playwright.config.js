@@ -11,6 +11,10 @@ export default defineConfig({
   testDir: 'tests/e2e',
   testMatch: '**/*.spec.js',
   workers: 1,
+  timeout: 30 * 1000,
+  expect: {
+    timeout: 5000,
+  },
   use: {
     baseURL,
   },
@@ -20,9 +24,4 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    reuseExistingServer: !process.env.CI,
-    url: baseURL,
-  },
 });
