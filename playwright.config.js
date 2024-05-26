@@ -10,7 +10,7 @@ const baseURL = `http://localhost:${PORT}`;
 export default defineConfig({
   testDir: 'tests/e2e',
   testMatch: '**/*.spec.js',
-  workers: 1,
+  workers: process.env.CI ? 1 : undefined,
   timeout: 30 * 1000,
   expect: {
     timeout: 5000,
