@@ -12,7 +12,7 @@ import {
   Text,
   TextInput,
 } from '@/TabNewsUI';
-import { createErrorMessage, useNotifications, useUser } from 'pages/interface';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function Login() {
   return (
@@ -24,7 +24,6 @@ export default function Login() {
 
 function LoginForm() {
   const { fetchUser } = useUser();
-  const { getAllNotifications } = useNotifications();
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
@@ -65,7 +64,6 @@ function LoginForm() {
 
       if (response.status === 201) {
         fetchUser();
-        getAllNotifications();
         return;
       }
 

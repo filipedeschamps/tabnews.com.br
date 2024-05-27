@@ -2,11 +2,10 @@ import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
-import { NotificationWeb } from 'models/notifications';
 import { NotificationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
-async function commonData(createdContent) {
+async function sendReplyEmailToParentUser(createdContent) {
   const anonymousUser = user.createAnonymous();
   const secureCreatedContent = authorization.filterOutput(anonymousUser, 'read:content', createdContent);
 
@@ -20,10 +19,10 @@ async function commonData(createdContent) {
     const parentContentUser = await user.findOneById(parentContent.owner_id);
 
     if (parentContentUser.notifications === false) {
-      return null;
+      return;
     }
 
-    const childContentUrl = getChildContendUrl(secureCreatedContent);
+    const childContendUrl = getChildContendUrl(secureCreatedContent);
     const rootContent = parentContent.parent_id
       ? await content.findOne({
           where: {
@@ -45,55 +44,23 @@ async function commonData(createdContent) {
       rootContent: secureRootContent,
     });
 
-    const typeNotification = getTypeNotification({
-      createdContent: secureCreatedContent,
-      rootContent: secureRootContent,
+    const { html, text } = NotificationEmail({
+      username: parentContentUser.username,
+      bodyReplyLine: bodyReplyLine,
+      contentLink: childContendUrl,
     });
 
-    return { parentContentUser, childContentUrl, subject, typeNotification, bodyReplyLine, secureCreatedContent };
+    await email.send({
+      to: parentContentUser.email,
+      from: {
+        name: 'TabNews',
+        address: 'contato@tabnews.com.br',
+      },
+      subject: subject,
+      html,
+      text,
+    });
   }
-}
-
-async function sendReplyEmailToParentUser(createdContent) {
-  const commonDataResult = await commonData(createdContent);
-  if (!commonDataResult) return;
-
-  const { parentContentUser, childContentUrl, subject, bodyReplyLine } = commonDataResult;
-
-  const { html, text } = NotificationEmail({
-    username: parentContentUser.username,
-    bodyReplyLine,
-    contentLink: childContentUrl,
-  });
-
-  await email.send({
-    to: parentContentUser.email,
-    from: {
-      name: 'TabNews',
-      address: 'contato@tabnews.com.br',
-    },
-    subject,
-    html,
-    text,
-  });
-}
-
-async function sendReplyNotificationWebToParentUser(createdContent) {
-  const commonDataResult = await commonData(createdContent);
-  if (!commonDataResult) return;
-
-  const { parentContentUser, childContentUrl, bodyReplyLine, secureCreatedContent, typeNotification } =
-    commonDataResult;
-
-  await NotificationWeb.send({
-    from: secureCreatedContent.owner_id,
-    type: typeNotification,
-    to_id: parentContentUser.id,
-    to_email: parentContentUser.email,
-    to_username: parentContentUser.username,
-    bodyReplyLine,
-    contentLink: childContentUrl,
-  });
 }
 
 function getSubject({ createdContent, rootContent }) {
@@ -115,15 +82,6 @@ function getChildContendUrl({ owner_username, slug }) {
   return `${webserver.host}/${owner_username}/${slug}`;
 }
 
-function getTypeNotification({ createdContent, rootContent }) {
-  if (createdContent.parent_id === rootContent.id) {
-    return 'post';
-  }
-
-  return 'comment';
-}
-
 export default Object.freeze({
   sendReplyEmailToParentUser,
-  sendReplyNotificationWebToParentUser,
 });

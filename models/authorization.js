@@ -91,7 +91,6 @@ function filterInput(user, feature, input, target) {
       password: input.password,
       description: input.description,
       notifications: input.notifications,
-      notifications_id: input.notifications_id,
     };
   }
 
@@ -200,7 +199,6 @@ function filterOutput(user, feature, output) {
         email: output.email,
         description: output.description,
         notifications: output.notifications,
-        user_notifications: output.user_notifications,
         features: output.features,
         tabcoins: output.tabcoins,
         tabcash: output.tabcash,

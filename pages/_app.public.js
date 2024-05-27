@@ -3,7 +3,7 @@ import { RevalidateProvider } from 'next-swr';
 import { SWRConfig } from 'swr';
 
 import { ThemeProvider, Turnstile } from '@/TabNewsUI';
-import { DefaultHead, NotificationsProvider, UserProvider } from 'pages/interface';
+import { DefaultHead, UserProvider } from 'pages/interface';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -22,23 +22,21 @@ function MyApp({ Component, pageProps }) {
     <ThemeProvider>
       <Turnstile />
       <UserProvider>
-        <NotificationsProvider>
-          <DefaultHead />
-          <SWRConfig value={{ fetcher: SWRFetcher }}>
-            <RevalidateProvider swr={{ swrPath: '/api/v1/swr', ...pageProps.swr }}>
-              <Component {...pageProps} />
-            </RevalidateProvider>
-          </SWRConfig>
-          <Analytics
-            beforeSend={(event) => {
-              const { pathname } = new URL(event.url);
-              if (['/', '/publicar'].includes(pathname)) {
-                return null;
-              }
-              return event;
-            }}
-          />
-        </NotificationsProvider>
+        <DefaultHead />
+        <SWRConfig value={{ fetcher: SWRFetcher }}>
+          <RevalidateProvider swr={{ swrPath: '/api/v1/swr', ...pageProps.swr }}>
+            <Component {...pageProps} />
+          </RevalidateProvider>
+        </SWRConfig>
+        <Analytics
+          beforeSend={(event) => {
+            const { pathname } = new URL(event.url);
+            if (['/', '/publicar'].includes(pathname)) {
+              return null;
+            }
+            return event;
+          }}
+        />
       </UserProvider>
     </ThemeProvider>
   );
