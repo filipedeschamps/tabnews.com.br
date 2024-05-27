@@ -139,3 +139,6 @@ terraform.rc
 
 yarn.*
 .tool-versions
+
+# Test
+tests/unit/models/transactional/__snapshots__/index.test.js.snap
