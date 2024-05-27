@@ -170,11 +170,15 @@ function clearContext(context) {
   return cleanContext;
 }
 
-function injectPaginationHeaders(pagination, endpoint, response) {
+function injectPaginationHeaders(pagination, endpoint, response, searchQuery) {
   const links = [];
   const baseUrl = `${webserver.host}${endpoint}`;
 
   const searchParams = new URLSearchParams();
+
+  if (searchQuery) {
+    searchParams.set('q', searchQuery);
+  }
 
   if (pagination.strategy) {
     searchParams.set('strategy', pagination.strategy);

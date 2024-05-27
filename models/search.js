@@ -2,75 +2,60 @@ import database from 'infra/database';
 import pagination from 'models/pagination.js';
 
 function generateTsQuery(query) {
-  const cleanedSearchTerm = query.toLowerCase().trim();
+  const cleanedSearchTerm = decodeURIComponent(query.toLowerCase().trim());
   const escapedSearchTerm = cleanedSearchTerm.replace(/'/g, "''");
   return `websearch_to_tsquery('portuguese', '${escapedSearchTerm}')`;
 }
 
-function generateOrderByClause(sortBy, tsQuery) {
-  switch (sortBy) {
+function generateOrderByClause(strategy, tsQuery) {
+  switch (strategy) {
     case 'new':
-      return 'ORDER BY created_at DESC';
+      return 'ORDER BY published_at DESC';
     case 'relevant':
       return `ORDER BY CASE WHEN ts_rank(search, ${tsQuery}) > 0.6 THEN ts_rank(search, ${tsQuery}) ELSE 0 END DESC`;
     case 'old':
-      return 'ORDER BY created_at ASC';
+      return 'ORDER BY published_at ASC';
     default:
       return '';
   }
 }
 
 async function findAll(values = {}) {
-  const query = {
-    values: [],
-  };
-
-  if (!values.count) {
-    const offset = (values.page - 1) * values.per_page;
-    query.values = [values.limit || values.per_page, offset];
-  }
-
-  const limitOffsetClause = values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2';
+  const offset = (values.page - 1) * (values.per_page || 10);
+  const limit = values.limit || values.per_page || 10;
   const tsQuery = generateTsQuery(values.q);
-  const orderByClause = generateOrderByClause(values.sort, tsQuery);
-  const selectClause = buildSelectClause(values, tsQuery);
+  const orderByClause = generateOrderByClause(values.strategy, tsQuery);
+  const withChildrenClause = values.only_children
+    ? 'AND contents.parent_id IS NOT NULL'
+    : values.with_children
+      ? ''
+      : 'AND contents.parent_id IS NULL';
+  const bodyClause = values.only_children || values.with_children ? " || ' ' || contents.body" : '';
 
-  query.text = `
-    WITH content_window AS (
-      SELECT
-        COUNT(*) OVER()::INTEGER as total_rows,
-        id
-      FROM 
-        contents
-      WHERE
-        to_tsvector('portuguese', contents.title || ' ' || contents.slug) @@ ${tsQuery}
-      AND 
-        contents.status = 'published'
-      AND
-        contents.parent_id IS NULL
-      ${orderByClause}
-      ${limitOffsetClause}
-    )
-    ${selectClause}
-  `;
-
-  function buildSelectClause(values, tsQuery) {
-    if (values.count) {
-      return `
+  const query = {
+    text: `
+      WITH content_window AS (
         SELECT
-          total_rows
-        FROM
-          content_window
-        `;
-    }
-
-    let selectClause = `
+          COUNT(*) OVER()::INTEGER AS total_rows,
+          contents.id
+        FROM 
+          contents
+        INNER JOIN
+          users ON contents.owner_id = users.id
+        WHERE
+          to_tsvector('portuguese', COALESCE(contents.title, '') || ' ' || contents.slug || ' ' || users.username ${bodyClause}) @@ ${tsQuery}
+          AND contents.status = 'published'
+          ${withChildrenClause}
+          ${orderByClause}
+        LIMIT $1 OFFSET $2
+      )
       SELECT
         contents.id,
         contents.owner_id,
         contents.parent_id,
         contents.slug,
         contents.title,
+        ${values.only_children || values.with_children ? 'contents.body,' : ''}
         contents.status,
         contents.source_url,
         contents.created_at,
@@ -78,45 +63,29 @@ async function findAll(values = {}) {
         contents.published_at,
         contents.deleted_at,
         contents.path,
-        users.username as owner_username,
+        users.username AS owner_username,
         content_window.total_rows,
-        tabcoins_count.total_balance::INTEGER as tabcoins,
-        tabcoins_count.total_credit::INTEGER as tabcoins_credit,
-        tabcoins_count.total_debit::INTEGER as tabcoins_debit,
+        tabcoins_count.total_balance::INTEGER AS tabcoins,
+        tabcoins_count.total_credit::INTEGER AS tabcoins_credit,
+        tabcoins_count.total_debit::INTEGER AS tabcoins_debit,
         (
           SELECT COUNT(*)::INTEGER
-          FROM contents as children
+          FROM contents AS children
           WHERE children.path @> ARRAY[contents.id]
-           AND children.status = 'published'
-        ) as children_deep_count
-    `;
-
-    if (values.sort === 'relevant') {
-      selectClause += `,
-        ts_rank(search, ${tsQuery}) as rank
-      `;
-    }
-
-    selectClause += `
+          AND children.status = 'published'
+        ) AS children_deep_count
+        ${values.strategy === 'relevant' ? `,ts_rank(search, ${tsQuery}) AS rank` : ''}
       FROM
-        contents
+        content_window
       INNER JOIN
-        content_window ON contents.id = content_window.id
+        contents ON content_window.id = contents.id
       INNER JOIN
         users ON contents.owner_id = users.id
       LEFT JOIN LATERAL 
         get_content_balance_credit_debit(contents.id) tabcoins_count ON true
-      WHERE 
-        contents.status = 'published'
-      AND 
-        to_tsvector('portuguese', contents.title || ' ' || contents.slug) @@ ${tsQuery}
-      AND
-        contents.parent_id IS NULL
-      ${orderByClause}
-    `;
-
-    return selectClause;
-  }
+    `,
+    values: [limit, offset],
+  };
 
   const queryResults = await database.query(query);
 
@@ -125,7 +94,6 @@ async function findAll(values = {}) {
   };
 
   values.total_rows = results.rows[0]?.total_rows;
-
   results.pagination = pagination.get(values);
 
   return results;

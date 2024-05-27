@@ -1,6 +1,6 @@
 exports.up = async (pgm) => {
   await pgm.db.query(`
-  CREATE INDEX idx_search ON contents USING GIN(to_tsvector('portuguese', title || ' ' || slug));
+  CREATE INDEX idx_search ON contents USING GIN(to_tsvector('portuguese', coalesce(title, '') || ' ' || body || ' ' || regexp_replace(slug, '-', ' ', 'g')));
 `);
 
   await pgm.db.query(`

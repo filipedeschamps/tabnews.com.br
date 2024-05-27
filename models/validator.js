@@ -201,6 +201,18 @@ const schemas = {
     });
   },
 
+  rank: function () {
+    return Joi.object({
+      rank: Joi.number()
+        .precision(4)
+        .when('$required.rank', {
+          is: 'required',
+          then: Joi.required(),
+          otherwise: Joi.optional().allow(null),
+        }),
+    });
+  },
+
   slug: function () {
     return Joi.object({
       slug: Joi.string()
@@ -491,12 +503,23 @@ const schemas = {
       'tabcoins',
       'tabcoins_credit',
       'tabcoins_debit',
+      'rank',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
     }
 
     return contentSchema;
+  },
+
+  only_children: function () {
+    return Joi.object({
+      only_children: Joi.boolean().when('$required.only_children', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
   },
 
   with_children: function () {
@@ -678,16 +701,6 @@ const schemas = {
         .min(3)
         .max(255)
         .when('$required.q', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
-    });
-  },
-
-  sort: function () {
-    return Joi.object({
-      sort: Joi.string()
-        .trim()
-        .valid('new', 'old', 'relevant')
-        .default('new')
-        .when('$required.sort', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 };
