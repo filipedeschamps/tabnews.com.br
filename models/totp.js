@@ -5,7 +5,7 @@ import QRCode from 'qrcode';
 import { ValidationError } from 'errors';
 
 const defaultTOTPConfigurations = {
-  issuer: 'TabNews.com.br',
+  issuer: 'TabNews',
   algorithm: 'SHA1',
   digits: 6,
 };
@@ -48,17 +48,9 @@ async function createQrCode(username) {
 }
 
 const cryptoConfigurations = {
-  algorithm: process.env.TOTP_ENCRYPTION_METHOD || 'aes-256-cbc',
-  key: crypto
-    .createHash('sha512')
-    .update(process.env.TOTP_SECRET_KEY || 'tabnews')
-    .digest('hex')
-    .substring(0, 32),
-  encryptionIV: crypto
-    .createHash('sha512')
-    .update(process.env.TOTP_SECRET_IV || 'tabnews')
-    .digest('hex')
-    .substring(0, 16),
+  algorithm: process.env.TOTP_ENCRYPTION_METHOD,
+  key: crypto.createHash('sha512').update(process.env.TOTP_SECRET_KEY).digest('hex').substring(0, 32),
+  encryptionIV: crypto.createHash('sha512').update(process.env.TOTP_SECRET_IV).digest('hex').substring(0, 16),
 };
 
 function encryptData(data) {
