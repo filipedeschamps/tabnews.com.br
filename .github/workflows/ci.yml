@@ -77,9 +77,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npx playwright install --with-deps
-      - run: npm run dev &
-        timeout-minutes: 5
-      - run: npx playwright test
+      - run: npm run dev & npx playwright test
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
