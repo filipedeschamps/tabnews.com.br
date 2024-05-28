@@ -79,8 +79,7 @@ jobs:
       - run: npx playwright install --with-deps
 
       - name: Run e2e tests
-        run: npm run dev
-      - run: playwright test
+        run: npm run dev & playwright test
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
