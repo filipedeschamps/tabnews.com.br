@@ -73,6 +73,8 @@ function filterInput(user, feature, input, target) {
     filteredInputValues = {
       email: input.email,
       password: input.password,
+      totp_enabled: input.totp_enabled,
+      totp_secret: input.totp_secret,
     };
   }
 
@@ -202,6 +204,7 @@ function filterOutput(user, feature, output) {
         features: output.features,
         tabcoins: output.tabcoins,
         tabcash: output.tabcash,
+        totp_enabled: output.totp_enabled,
         created_at: output.created_at,
         updated_at: output.updated_at,
       };

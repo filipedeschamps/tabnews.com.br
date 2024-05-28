@@ -147,6 +147,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -192,6 +193,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -235,6 +237,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -705,6 +708,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });

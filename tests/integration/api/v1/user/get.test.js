@@ -128,6 +128,7 @@ describe('GET /api/v1/user', () => {
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       });
@@ -244,6 +245,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -297,6 +299,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -349,6 +352,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });

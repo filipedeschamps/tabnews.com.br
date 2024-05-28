@@ -174,6 +174,32 @@ const schemas = {
     });
   },
 
+  totp_enabled: function () {
+    return Joi.object({
+      totp_enabled: Joi.boolean().when('$required.totp_enabled', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
+  },
+
+  totp_secret: function () {
+    return Joi.object({
+      totp_secret: Joi.string()
+        .max(128)
+        .when('$required.totp_secret', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
+  totp_token: function () {
+    return Joi.object({
+      totp_token: Joi.string()
+        .max(6)
+        .when('$required.totp_token', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
   token_id: function () {
     return Joi.object({
       token_id: Joi.string()
