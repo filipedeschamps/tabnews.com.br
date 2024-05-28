@@ -1416,14 +1416,51 @@ describe('GET /api/v1/contents', () => {
     describe('Sponsored content', () => {
       const sortedByOld = [];
       const sortedByNew = [];
-      const sortedByTabCoins = [];
+      const sortedByRelevant = [];
 
       beforeAll(async () => {
         await orchestrator.dropAllTables();
         await orchestrator.runPendingMigrations();
 
+        const deactivate_at = new Date();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+        });
+
         const firstUser = await orchestrator.createUser();
         const secondUser = await orchestrator.createUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+
+        await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Deactivated sponsored root content',
+          tabcash: 100,
+          deactivate_at: deactivate_at,
+        });
+
+        vi.setSystemTime(new Date(Date.now() - 10 * 60 * 60 * 1000)); // 10 hours ago
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 30,
+        });
+
+        const firstSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'First sponsored root content',
+          tabcash: 30,
+        });
+
+        await orchestrator.createRate(firstSponsoredContent, -16);
+
+        vi.useRealTimers();
 
         const firstRootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
@@ -1444,13 +1481,13 @@ describe('GET /api/v1/contents', () => {
           published_at: firstRootContent.published_at.toISOString(),
           deleted_at: null,
           owner_username: firstUser.username,
-          tabcoins: 2,
-          tabcoins_credit: 1,
+          tabcoins: 5,
+          tabcoins_credit: 4,
           tabcoins_debit: 0,
           children_deep_count: 0,
         });
 
-        await orchestrator.createRate(firstRootContent, 1);
+        await orchestrator.createRate(firstRootContent, 4);
 
         const secondRootContent = await orchestrator.createContent({
           owner_id: secondUser.id,
@@ -1479,25 +1516,71 @@ describe('GET /api/v1/contents', () => {
 
         await orchestrator.createBalance({
           balanceType: 'user:tabcash',
-          recipientId: firstUser.id,
+          recipientId: secondUser.id,
           amount: 150,
         });
 
-        await orchestrator.createSponsoredContent({
-          owner_id: firstUser.id,
-          title: 'Sponsored root content',
+        const secondSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: secondUser.id,
+          title: 'Second sponsored root content',
           tabcash: 150,
+          deactivate_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // tomorrow
         });
 
+        await orchestrator.createRate(secondSponsoredContent, 1);
+
         sortedByNew.push(...sortedByOld.slice().reverse());
-        sortedByTabCoins.push(...sortedByNew.slice().sort((a, b) => b.tabcoins - a.tabcoins));
+        sortedByRelevant.push(...sortedByNew.slice().sort((a, b) => b.tabcoins - a.tabcoins));
+
+        const expectedFirstSponsoredContent = {
+          id: firstSponsoredContent.content_id,
+          owner_id: firstSponsoredContent.owner_id,
+          parent_id: null,
+          slug: firstSponsoredContent.slug,
+          title: firstSponsoredContent.title,
+          status: 'sponsored',
+          source_url: null,
+          created_at: firstSponsoredContent.created_at.toISOString(),
+          updated_at: firstSponsoredContent.updated_at.toISOString(),
+          published_at: firstSponsoredContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          children_deep_count: 0,
+        };
+
+        // Despite being sponsored, it is the least relevant content
+        sortedByRelevant.push(expectedFirstSponsoredContent);
+
+        const expectedSecondSponsoredContent = {
+          id: secondSponsoredContent.content_id,
+          owner_id: secondSponsoredContent.owner_id,
+          parent_id: null,
+          slug: secondSponsoredContent.slug,
+          title: secondSponsoredContent.title,
+          status: 'sponsored',
+          source_url: null,
+          created_at: secondSponsoredContent.created_at.toISOString(),
+          updated_at: secondSponsoredContent.updated_at.toISOString(),
+          published_at: secondSponsoredContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: secondUser.username,
+          tabcoins: 2,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          children_deep_count: 0,
+        };
+
+        sortedByRelevant.unshift(expectedSecondSponsoredContent);
       });
 
       test.each([
         {
           content: 'relevant',
           params: [],
-          expected: sortedByTabCoins,
+          expected: sortedByRelevant,
         },
         {
           content: 'new',

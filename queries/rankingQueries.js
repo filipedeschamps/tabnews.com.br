@@ -41,19 +41,61 @@ const rankedContent = `
             parent_id IS NULL
             AND status = 'published'
     ),
-    ranked_published_root_contents AS (
+    active_sponsored_contents AS (
         SELECT
-            latest.*,
-            (3 * tabcoins + (
+            contents.id,
+            contents.owner_id,
+            contents.published_at,
+            get_sponsored_content_current_tabcoins(sponsored_contents.id) as tabcoins,
+            0 as tabcoins_credit,
+            0 as tabcoins_debit,
+            get_sponsored_content_current_tabcash(sponsored_contents.id) as tabcash
+        FROM contents
+        INNER JOIN sponsored_contents ON sponsored_contents.content_id = contents.id
+        WHERE
+            status = 'sponsored'
+            AND (
+                sponsored_contents.deactivate_at IS NULL
+                OR sponsored_contents.deactivate_at > NOW()
+            )
+    ),
+    ranked_sponsored_contents AS (
+        SELECT
+            active_sponsored_contents.*,
+            (3 * (
+                tabcoins
+                + POWER(tabcash, 0.6)/1.6
+                - EXTRACT(epoch FROM AGE(NOW(), active_sponsored_contents.published_at)/3600)
+            ) + (
                 SELECT COUNT(DISTINCT all_contents.owner_id)
                 FROM contents as all_contents
-                WHERE all_contents.path @> ARRAY[latest.id]
-                    AND all_contents.owner_id != latest.owner_id
+                WHERE all_contents.path @> ARRAY[active_sponsored_contents.id]
+                    AND all_contents.owner_id != active_sponsored_contents.owner_id
                     AND all_contents.status = 'published'
-            )) as score,
-            COUNT(*) OVER()::INTEGER as total_rows
-        FROM latest_interacted_root_contents AS latest
-        WHERE tabcoins > 0
+            )) as score
+        FROM active_sponsored_contents
+    ),
+    ranked_published_root_contents AS (
+        SELECT
+            *
+        FROM (
+            SELECT
+                latest.*,
+                (3 * tabcoins + (
+                    SELECT COUNT(DISTINCT all_contents.owner_id)
+                    FROM contents as all_contents
+                    WHERE all_contents.path @> ARRAY[latest.id]
+                        AND all_contents.owner_id != latest.owner_id
+                        AND all_contents.status = 'published'
+                )) as score,
+                COUNT(*) OVER()::INTEGER as total_rows
+            FROM latest_interacted_root_contents AS latest
+            WHERE tabcoins > 0
+            UNION ALL
+            SELECT
+                *
+            FROM ranked_sponsored_contents
+        ) AS all_ranked_contents
         ORDER BY
             tabcoins DESC,
             published_at DESC
