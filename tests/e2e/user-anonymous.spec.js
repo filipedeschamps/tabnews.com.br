@@ -19,19 +19,6 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('should be able to login', async ({ page }) => {
-  let homePage = new HomePage(page);
-
-  let title = await homePage.getTitle();
-  await expect(title).toBe(titleHome);
-
-  await homePage.goLogin();
-
-  const loginPage = new LoginPage(page);
-  title = await loginPage.getTitle();
-  await expect(title).toBe('Login · TabNews');
-});
-
 test('should be able to register', async ({ page }) => {
   let homePage = new HomePage(page);
 
@@ -60,20 +47,26 @@ test('should be able to see relevants and recents tab', async ({ page }) => {
   await recentPage.goRelevantTab();
 });
 
-test('should be login like user default', async ({ page }) => {
+test('should be able to login as user default', async ({ page }) => {
   const defaultUser = await orchestrator.createUser({
-    username: 'defaultuser',
-    email: 'emaildefaultuser@gmail.com',
-    password: 'passworddefaultuser',
+    username: 'default_user',
+    email: 'email_default_user@gmail.com',
+    password: 'password_default_user',
   });
   await orchestrator.activateUser(defaultUser);
 
   let homePage = new HomePage(page);
+
+  let title = await homePage.getTitle();
+  await expect(title).toBe(titleHome);
+
   await homePage.goLogin();
 
-  let loginPage = new LoginPage(page);
-  await loginPage.makeLoginUserDefault('emaildefaultuser@gmail.com', 'passworddefaultuser');
+  const loginPage = new LoginPage(page);
+  title = await loginPage.getTitle();
+  await expect(title).toBe('Login · TabNews');
+  await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
 
   let username = await homePage.getUserLogged();
-  expect(username).toBe('defaultuser');
+  expect(username).toBe('default_user');
 });
