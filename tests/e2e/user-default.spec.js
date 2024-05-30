@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
   await loginPage.makeLoginUserDefault('emaildefaultuser@gmail.com', 'passworddefaultuser');
 });
 
-test('should can be to publish content by header', async ({ page }) => {
+test.describe('should can be to publish content by header', async ({ page }) => {
   const homePage = new HomePage(page);
   await homePage.goPublishContent();
 
@@ -46,7 +46,7 @@ test('should can be to publish content by header', async ({ page }) => {
   await expect(contentTitle).toHaveText(contentTitleExpected);
 });
 
-test('should can be to publish content by menu', async ({ page }) => {
+test.describe('should can be to publish content by menu', async ({ page }) => {
   const homePage = new HomePage(page);
   await homePage.goPublishContent(false);
 

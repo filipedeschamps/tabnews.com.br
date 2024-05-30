@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('should be able to login', async ({ page }) => {
+test.describe('should be able to login', async ({ page }) => {
   let homePage = new HomePage(page);
 
   let title = await homePage.getTitle();
@@ -32,7 +32,7 @@ test('should be able to login', async ({ page }) => {
   await expect(title).toBe('Login · TabNews');
 });
 
-test('should be able to register', async ({ page }) => {
+test.describe('should be able to register', async ({ page }) => {
   let homePage = new HomePage(page);
 
   let title = await homePage.getTitle();
@@ -45,7 +45,7 @@ test('should be able to register', async ({ page }) => {
   await expect(title).toBe('Cadastro · TabNews');
 });
 
-test('should be able to see relevants and recents tab', async ({ page }) => {
+test.describe('should be able to see relevants and recents tab', async ({ page }) => {
   let homePage = new HomePage(page);
 
   let titleHomePage = await homePage.getTitle();
@@ -60,7 +60,7 @@ test('should be able to see relevants and recents tab', async ({ page }) => {
   await recentPage.goRelevantTab();
 });
 
-test('should be login like user default', async ({ page }) => {
+test.describe('should be login like user default', async ({ page }) => {
   const defaultUser = await orchestrator.createUser({
     username: 'defaultuser',
     email: 'emaildefaultuser@gmail.com',
