@@ -1,12 +1,12 @@
 import orchestrator from './orchestrator';
 
 export default class RequestBuilder {
-  url = '';
+  baseUrl = '';
   sessionObject;
   headers;
 
-  constructor(endpointPath) {
-    this.url = endpointPath.startsWith('http') ? endpointPath : `${orchestrator.webserverUrl}${endpointPath}`;
+  constructor(urlSegments = '') {
+    this.baseUrl = urlSegments.startsWith('http') ? urlSegments : `${orchestrator.webserverUrl}${urlSegments}`;
   }
 
   async buildUser(features = { with: [], without: [] }) {
@@ -46,26 +46,24 @@ export default class RequestBuilder {
     return this.headers;
   }
 
-  async get(urlParams) {
+  async get(route = '') {
     if (!this.headers) {
       this.buildHeaders();
     }
 
-    const url = urlParams ? `${this.url}${urlParams}` : this.url;
-
-    const response = await fetch(url, {
+    const response = await fetch(`${this.baseUrl}${route}`, {
       method: 'GET',
       headers: this.headers,
     });
 
-    let responseBody = response.headers.get('Content-Type').includes('text/')
-      ? await response.text()
-      : await response.json();
+    const responseBody = await response.json();
 
     return { response, responseBody };
   }
 
-  async post(requestBody) {
+  async post(routeOrRequestBody, inputRequestBody) {
+    const { route, requestBody } = this.getRouteAndRequestBody(routeOrRequestBody, inputRequestBody);
+
     if (!this.headers) {
       this.buildHeaders();
     }
@@ -79,14 +77,16 @@ export default class RequestBuilder {
       fetchData.body = typeof requestBody === 'object' ? JSON.stringify(requestBody) : requestBody;
     }
 
-    const response = await fetch(this.url, fetchData);
+    const response = await fetch(`${this.baseUrl}${route}`, fetchData);
 
     const responseBody = await response.json();
 
     return { response, responseBody };
   }
 
-  async patch(urlParams, requestBody) {
+  async patch(routeOrRequestBody, inputRequestBody) {
+    const { route, requestBody } = this.getRouteAndRequestBody(routeOrRequestBody, inputRequestBody);
+
     if (!this.headers) {
       this.buildHeaders();
     }
@@ -100,12 +100,25 @@ export default class RequestBuilder {
       fetchData.body = typeof requestBody === 'object' ? JSON.stringify(requestBody) : requestBody;
     }
 
-    const url = urlParams ? `${this.url}${urlParams}` : this.url;
-
-    const response = await fetch(url, fetchData);
+    const response = await fetch(`${this.baseUrl}${route}`, fetchData);
 
     const responseBody = await response.json();
 
     return { response, responseBody };
+  }
+
+  getRouteAndRequestBody(routeOrRequestBody = '', inputRequestBody) {
+    let route = routeOrRequestBody;
+    let requestBody = inputRequestBody;
+
+    if (typeof routeOrRequestBody === 'object') {
+      route = '';
+      requestBody = routeOrRequestBody;
+    }
+
+    return {
+      route: route,
+      requestBody: requestBody,
+    };
   }
 }
