@@ -88,7 +88,11 @@ function LoginForm() {
     <>
       <form style={{ width: '100%' }} onSubmit={handleSubmit}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+          {globalErrorMessage && (
+            <Flash variant="danger" data-test-id="global-error-message">
+              {globalErrorMessage}
+            </Flash>
+          )}
 
           <Heading as="h1" sx={{ mb: 3 }}>
             Login
