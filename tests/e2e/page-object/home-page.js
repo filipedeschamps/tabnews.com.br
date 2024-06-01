@@ -5,13 +5,13 @@ exports.HomePage = class HomePage {
   constructor(page) {
     this.page = page;
 
-    this.loginButton = this.page.locator('#header').getByText('Login');
-    this.registerButton = this.page.locator('#header').getByText('Cadastrar');
+    this.recentTab = this.page.locator('a[data-test-id=recents]');
 
-    this.recentTab = this.page.locator('a', { hasText: 'Recentes' });
+    this.buttonLogin = this.page.locator('a[data-test-id=login]');
+    this.buttonRegister = this.page.locator('a[data-test-id=register]');
 
-    this.buttonRegisterHeader = this.page.locator("a[href='/publicar']");
     this.buttonUserMenu = this.page.locator("button[aria-label='Abrir o menu']");
+    this.buttonRegisterHeader = this.page.locator('a[data-test-id=publish]');
   }
 
   async getTitle() {
@@ -22,11 +22,11 @@ exports.HomePage = class HomePage {
   }
 
   async goLogin() {
-    await this.loginButton.click();
+    await this.buttonLogin.click();
   }
 
   async goRegister() {
-    await this.registerButton.click();
+    await this.buttonRegister.click();
   }
 
   async goRecentTab() {
