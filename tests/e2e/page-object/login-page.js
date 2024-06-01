@@ -15,20 +15,22 @@ exports.LoginPage = class LoginPage {
     return this.page.title();
   }
 
-  async makeLoginUserDefault(email, password) {
+  async makeLoginUserDefault(email, password, validDetached = true) {
     await this.fillField('email', email);
     await this.fillField('password', password);
 
-    await this.makeLogin();
+    await this.makeLogin(validDetached);
   }
 
   async fillField(id, value) {
     await this.page.locator(`#${id}`).fill(value);
   }
 
-  async makeLogin() {
+  async makeLogin(validDetached = true) {
     await this.buttonLogin.click();
-    await this.buttonLogin.waitFor({ state: 'detached' });
+    if (validDetached) {
+      await this.buttonLogin.waitFor({ state: 'detached' });
+    }
   }
 
   async getGlobalErrorMessage() {
