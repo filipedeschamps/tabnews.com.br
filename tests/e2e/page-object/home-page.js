@@ -9,6 +9,9 @@ exports.HomePage = class HomePage {
     this.registerButton = this.page.locator('#header').getByText('Cadastrar');
 
     this.recentTab = this.page.locator('a', { hasText: 'Recentes' });
+
+    this.buttonRegisterHeader = this.page.locator("a[href='/publicar']");
+    this.buttonUserMenu = this.page.locator("button[aria-label='Abrir o menu']");
   }
 
   async getTitle() {
@@ -37,9 +40,9 @@ exports.HomePage = class HomePage {
 
   async goPublishContent(fromHeader = true) {
     if (fromHeader) {
-      await this.page.locator("a[href='/publicar']").click();
+      await this.buttonRegisterHeader.click();
     } else {
-      await this.page.locator("button[aria-label='Abrir o menu']").click();
+      await this.buttonUserMenu.click();
       await this.page.locator("ul[role='menu'] a[href='/publicar']").click();
     }
   }
