@@ -4,6 +4,7 @@ import orchestrator from 'tests/orchestrator';
 
 import { HomePage } from './page-object/home-page';
 import { LoginPage } from './page-object/login-page';
+import { RegisterConfirmPage } from './page-object/register-confirm-page';
 import { RegisterPage } from './page-object/register-page';
 
 test.beforeAll('Running orchestrator', async () => {
@@ -18,7 +19,7 @@ test.beforeEach('Navigating for home page', async ({ page }) => {
 
 test.describe('Register user', () => {
   test.describe('Anonymous user', () => {
-    test('should be able to register', async ({ page }) => {
+    test('should be able to register, validate email and log in', async ({ page }) => {
       let homePage = new HomePage(page);
 
       const titleHome = 'TabNews: Conteúdos para quem trabalha com Programação e Tecnologia';
@@ -31,7 +32,31 @@ test.describe('Register user', () => {
       title = await registerPage.getTitle();
       await expect(title).toBe('Cadastro · TabNews');
 
-      // TODO: preencher página e cadastrar usuário e fazer validações
+      await registerPage.makeRegisterUserDefault('e2etests', 'e2e_tests@playwright.com', 'e2e_tests');
+
+      const registerConfirmPage = new RegisterConfirmPage(page);
+      let message = await registerConfirmPage.getMessage();
+      expect(message).toContain('Confira seu e-mail: e2e_tests@playwright.com');
+      expect(message).toContain('Você receberá um link para confirmar seu cadastro e ativar a sua conta.');
+
+      await registerConfirmPage.goLogin();
+
+      const loginPage = new LoginPage(page);
+      await loginPage.makeLoginUserDefault('e2e_tests@playwright.com', 'e2e_tests', false);
+
+      let expectedMessage = await loginPage.getGlobalErrorMessage();
+      expect(expectedMessage).toContain(
+        'O seu usuário ainda não está ativado. Verifique seu email, pois acabamos de enviar um novo convite de ativação.',
+      );
+
+      const user = await orchestrator.findUserByEmail('e2e_tests@playwright.com');
+      await orchestrator.activateUser(user);
+
+      await loginPage.makeLoginUserDefault('e2e_tests@playwright.com', 'e2e_tests', true);
+
+      homePage = new HomePage(page);
+      let usernameUserLogged = await homePage.getUserLogged();
+      expect(usernameUserLogged).toBe('e2etests');
     });
   });
 
@@ -51,7 +76,7 @@ test.describe('Register user', () => {
       await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
 
       homePage = new HomePage(page);
-      await expect(homePage.registerButton).toHaveCount(0);
+      await expect(homePage.buttonRegister).toHaveCount(0);
     });
   });
 });
