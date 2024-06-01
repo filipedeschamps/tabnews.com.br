@@ -5,7 +5,7 @@ exports.RecentPage = class RecentPage {
   constructor(page) {
     this.page = page;
 
-    this.relevantTab = this.page.locator('header').locator('div', { hasText: 'Relevantes' }).nth(1);
+    this.relevantTab = this.page.locator('a[data-test-id=relevants]');
   }
 
   async getTitle() {

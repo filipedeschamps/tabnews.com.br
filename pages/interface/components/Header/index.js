@@ -54,7 +54,11 @@ export default function HeaderComponent() {
       <SearchBoxOverlay />
       <Box as="nav" sx={{ display: 'flex', flex: 1, margin: 0, padding: 0 }}>
         <PrimerHeader.Item sx={{ mr: 0 }}>
-          <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
+          <HeaderLink
+            href="/"
+            aria-label="Página inicial Relevantes"
+            aria-current={asPath === '/' ? 'page' : false}
+            data-test-id="relevants">
             <CgTab size={32} />
 
             <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
@@ -67,7 +71,8 @@ export default function HeaderComponent() {
           <HeaderLink
             href="/recentes/pagina/1"
             aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
-            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
+            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}
+            data-test-id="recents">
             Recentes
           </HeaderLink>
         </PrimerHeader.Item>
@@ -89,10 +94,14 @@ export default function HeaderComponent() {
           {!isScreenSmall && (
             <>
               <PrimerHeader.Item sx={{ ml: 2 }}>
-                <HeaderLink href={loginUrl}>Login</HeaderLink>
+                <HeaderLink href={loginUrl} data-test-id="login">
+                  Login
+                </HeaderLink>
               </PrimerHeader.Item>
               <PrimerHeader.Item sx={{ mr: 1 }}>
-                <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
+                <HeaderLink href="/cadastro" data-test-id="register">
+                  Cadastrar
+                </HeaderLink>
               </PrimerHeader.Item>
             </>
           )}
@@ -110,7 +119,7 @@ export default function HeaderComponent() {
           {!isScreenSmall && (
             <PrimerHeader.Item sx={{ m: 2 }}>
               <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
-                <HeaderLink href="/publicar">
+                <HeaderLink href="/publicar" data-test-id="publish">
                   <PlusIcon />
                 </HeaderLink>
               </Tooltip>

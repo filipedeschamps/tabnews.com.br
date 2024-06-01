@@ -6,6 +6,8 @@ exports.UserContentPage = class UserContentPage {
   constructor(page, contentTitle) {
     this.page = page;
     this.contentTitle = contentTitle;
+
+    this.buttonEditContent = this.page.locator('button[aria-label="Editar conteúdo"]');
   }
 
   async getContentTitle() {
@@ -16,9 +18,8 @@ exports.UserContentPage = class UserContentPage {
   }
 
   async deleteContent() {
-    const buttonEditContent = this.page.locator('button[aria-label="Editar conteúdo"]');
-    await buttonEditContent.waitFor({ state: 'visible' });
-    await buttonEditContent.click();
+    this.buttonEditContent.waitFor({ state: 'visible' });
+    this.buttonEditContent.click();
 
     await this.page.locator('ul[role="menu"] li[data-variant="danger"]').click();
     await this.page.locator('button', { hasText: 'Sim' }).click();

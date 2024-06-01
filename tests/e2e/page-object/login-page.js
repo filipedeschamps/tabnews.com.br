@@ -4,6 +4,8 @@ exports.LoginPage = class LoginPage {
    */
   constructor(page) {
     this.page = page;
+
+    this.buttonLogin = this.page.locator('button[type=submit]');
   }
 
   async getTitle() {
@@ -25,8 +27,11 @@ exports.LoginPage = class LoginPage {
   }
 
   async makeLogin() {
-    let buttonLogin = this.page.locator('button[type=submit]');
-    await buttonLogin.click();
-    await buttonLogin.waitFor({ state: 'detached' });
+    await this.buttonLogin.click();
+    await this.buttonLogin.waitFor({ state: 'detached' });
+  }
+
+  async getGlobalErrorMessage() {
+    return await this.page.locator('div[data-test-id=global-error-message]').textContent();
   }
 };
