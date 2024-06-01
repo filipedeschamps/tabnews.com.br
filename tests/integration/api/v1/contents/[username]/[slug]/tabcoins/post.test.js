@@ -1,6 +1,5 @@
-import fetch from 'cross-fetch';
-
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -21,20 +20,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}/tabcoins`,
       );
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
 
       expect(response.status).toBe(403);
 
@@ -53,10 +45,6 @@ describe('POST /api/v1/contents/tabcoins', () => {
   describe('Default user', () => {
     test('With no "transaction_type"', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
@@ -64,19 +52,12 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({}),
-        },
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
       );
+      await tabcoinsRequestBuilder.buildUser();
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await tabcoinsRequestBuilder.post({});
 
       expect(response.status).toBe(400);
 
@@ -95,10 +76,6 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
     test('With not enough TabCoins', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
@@ -106,21 +83,14 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
       );
+      await tabcoinsRequestBuilder.buildUser();
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
 
       expect(response.status).toBe(422);
 
@@ -137,10 +107,6 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
     test('With "transaction_type" set to "credit"', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
@@ -148,27 +114,21 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
+
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
         amount: 2,
       });
 
-      const postTabCoinsResponse = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
-      );
-
-      const postTabCoinsResponseBody = await postTabCoinsResponse.json();
+      const { response: postTabCoinsResponse, responseBody: postTabCoinsResponseBody } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
 
       expect(postTabCoinsResponse.status).toBe(201);
 
@@ -178,26 +138,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         tabcoins_debit: 0,
       });
 
-      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponseBody = await firstUserResponse.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
-      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponseBody = await secondUserResponse.json();
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
@@ -205,10 +152,6 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
     test('With "transaction_type" set to "debit"', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
@@ -216,27 +159,21 @@ describe('POST /api/v1/contents/tabcoins', () => {
         status: 'published',
       });
 
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
+
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
         amount: 2,
       });
 
-      const postTabCoinsResponse = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
-
-      const postTabCoinsResponseBody = await postTabCoinsResponse.json();
+      const { response: postTabCoinsResponse, responseBody: postTabCoinsResponseBody } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
 
       expect(postTabCoinsResponse.status).toBe(201);
 
@@ -246,26 +183,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         tabcoins_debit: -1,
       });
 
-      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponseBody = await firstUserResponse.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponseBody.tabcoins).toStrictEqual(-1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
-      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponseBody = await secondUserResponse.json();
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
@@ -273,16 +197,17 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
     test('With "transaction_type" set to "credit" four times (should be blocked)', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
         body: 'Body',
         status: 'published',
       });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
 
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
@@ -291,72 +216,31 @@ describe('POST /api/v1/contents/tabcoins', () => {
       });
 
       // ROUND 1 OF CREDIT
-      const postTabCoinsResponse1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
-      );
+      const { response: postTabCoinsResponse1 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
 
       expect(postTabCoinsResponse1.status).toBe(201);
 
       // ROUND 2 OF CREDIT
-      const postTabCoinsResponse2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
-      );
+      const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
 
       expect(postTabCoinsResponse2.status).toBe(201);
 
       // ROUND 3 OF CREDIT
-      const postTabCoinsResponse3 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
-      );
+      const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
 
       expect(postTabCoinsResponse3.status).toBe(201);
 
       // ROUND 4 OF CREDIT
-      const postTabCoinsResponse4 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'credit',
-          }),
-        },
-      );
-
-      const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
+      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
 
       expect(postTabCoinsResponse4.status).toBe(400);
       expect(postTabCoinsResponse4Body).toStrictEqual({
@@ -368,26 +252,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         request_id: postTabCoinsResponse4Body.request_id,
       });
 
-      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponseBody = await firstUserResponse.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
-      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponseBody = await secondUserResponse.json();
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
       expect(secondUserResponseBody.tabcash).toStrictEqual(3);
@@ -395,16 +266,17 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
     test('With "transaction_type" set to "debit" four times (should be blocked)', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
         body: 'Body',
         status: 'published',
       });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
 
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
@@ -413,72 +285,31 @@ describe('POST /api/v1/contents/tabcoins', () => {
       });
 
       // ROUND 1 OF DEBIT
-      const postTabCoinsResponse1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
+      const { response: postTabCoinsResponse1 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'debit',
+      });
 
       expect(postTabCoinsResponse1.status).toBe(201);
 
       // ROUND 2 OF DEBIT
-      const postTabCoinsResponse2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
+      const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'debit',
+      });
 
       expect(postTabCoinsResponse2.status).toBe(201);
 
       // ROUND 3 OF DEBIT
-      const postTabCoinsResponse3 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
+      const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'debit',
+      });
 
       expect(postTabCoinsResponse3.status).toBe(201);
 
       // ROUND 4 OF DEBIT
-      const postTabCoinsResponse4 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
-
-      const postTabCoinsResponse4Body = await postTabCoinsResponse4.json();
+      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
 
       expect(postTabCoinsResponse4.status).toBe(400);
       expect(postTabCoinsResponse4Body).toStrictEqual({
@@ -490,26 +321,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         request_id: postTabCoinsResponse4Body.request_id,
       });
 
-      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponseBody = await firstUserResponse.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponseBody.tabcoins).toStrictEqual(-3);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
-      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponseBody = await secondUserResponse.json();
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
       expect(secondUserResponseBody.tabcash).toStrictEqual(3);
@@ -517,16 +335,17 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
     test('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
         body: 'Body with relevant texts needs to contain a good amount of words',
         status: 'published',
       });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
 
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
@@ -535,21 +354,10 @@ describe('POST /api/v1/contents/tabcoins', () => {
       });
 
       // ROUND 1 OF DEBIT
-      const postTabCoinsResponse1 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
-
-      const postTabCoinsResponse1Body = await postTabCoinsResponse1.json();
+      const { response: postTabCoinsResponse1, responseBody: postTabCoinsResponse1Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
 
       expect(postTabCoinsResponse1.status).toBe(201);
 
@@ -559,46 +367,22 @@ describe('POST /api/v1/contents/tabcoins', () => {
         tabcoins_debit: -1,
       });
 
-      const firstUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponse1Body = await firstUserResponse1.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponse1Body } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponse1Body.tabcoins).toStrictEqual(-1);
       expect(firstUserResponse1Body.tabcash).toStrictEqual(0);
 
-      const secondUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponse1Body = await secondUserResponse1.json();
+      const { responseBody: secondUserResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponse1Body.tabcoins).toStrictEqual(2);
       expect(secondUserResponse1Body.tabcash).toStrictEqual(1);
 
       // ROUND 2 OF DEBIT
-      const postTabCoinsResponse2 = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSession.token}`,
-          },
-          body: JSON.stringify({
-            transaction_type: 'debit',
-          }),
-        },
-      );
-
-      const postTabCoinsResponse2Body = await postTabCoinsResponse2.json();
+      const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
 
       expect(postTabCoinsResponse2.status).toBe(201);
 
@@ -608,26 +392,12 @@ describe('POST /api/v1/contents/tabcoins', () => {
         tabcoins_debit: -2,
       });
 
-      const firstUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponse2Body = await firstUserResponse2.json();
+      const { responseBody: firstUserResponse2Body } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponse2Body.tabcoins).toStrictEqual(-2);
       expect(firstUserResponse2Body.tabcash).toStrictEqual(0);
 
-      const secondUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponse2Body = await secondUserResponse2.json();
+      const { responseBody: secondUserResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponse2Body.tabcoins).toStrictEqual(0);
       expect(secondUserResponse2Body.tabcash).toStrictEqual(2);
@@ -636,16 +406,17 @@ describe('POST /api/v1/contents/tabcoins', () => {
     test('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
       const timesToFetch = 20;
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
         body: 'Body',
         status: 'published',
       });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
 
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
@@ -655,33 +426,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const postTabCoinsPromises = Array(timesToFetch)
         .fill()
-        .map(() =>
-          fetch(
-            `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                cookie: `session_id=${secondUserSession.token}`,
-              },
-              body: JSON.stringify({
-                transaction_type: 'credit',
-              }),
-            },
-          ),
-        );
+        .map(() => tabcoinsRequestBuilder.post({ transaction_type: 'credit' }));
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
-      const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json(),
-      );
+      const postTabCoinsResponsesBody = postTabCoinsResponses.map(({ responseBody }) => responseBody);
 
-      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status,
-      );
-
-      const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
+      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(({ response }) => response.status);
 
       const successPostIndex1 = postTabCoinsResponsesStatus.indexOf(201);
       const successPostIndex2 = postTabCoinsResponsesStatus.indexOf(201, successPostIndex1 + 1);
@@ -711,26 +462,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
       });
 
-      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponseBody = await firstUserResponse.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
-      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponseBody = await secondUserResponse.json();
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
       expect(secondUserResponseBody.tabcash).toStrictEqual(1);
@@ -746,16 +484,17 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const timesSuccessfully = 6;
 
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
         body: 'Body',
         status: 'published',
       });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
 
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
@@ -765,33 +504,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const postTabCoinsPromises = Array(timesToFetch)
         .fill()
-        .map(() =>
-          fetch(
-            `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                cookie: `session_id=${secondUserSession.token}`,
-              },
-              body: JSON.stringify({
-                transaction_type: 'credit',
-              }),
-            },
-          ),
-        );
+        .map(() => tabcoinsRequestBuilder.post({ transaction_type: 'credit' }));
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
-      const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json(),
-      );
+      const postTabCoinsResponsesBody = postTabCoinsResponses.map(({ responseBody }) => responseBody);
 
-      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status,
-      );
-
-      const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
+      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(({ response }) => response.status);
 
       let successPostIndexes = [postTabCoinsResponsesStatus.indexOf(201)];
 
@@ -828,26 +547,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
         }),
       );
 
-      const firstUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const firstUserResponseBody = await firstUserResponse.json();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
       expect(firstUserResponseBody.tabcoins).toStrictEqual(2 + timesSuccessfully);
       expect(firstUserResponseBody.tabcash).toStrictEqual(0);
 
-      const secondUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const secondUserResponseBody = await secondUserResponse.json();
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
       expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
       expect(secondUserResponseBody.tabcash).toStrictEqual(timesSuccessfully);
@@ -859,16 +565,17 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const timesSuccessfully = 90;
 
       const firstUser = await orchestrator.createUser();
-      const secondUser = await orchestrator.createUser();
-      await orchestrator.activateUser(secondUser);
-      const secondUserSession = await orchestrator.createSession(secondUser);
-
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
         body: 'Body',
         status: 'published',
       });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
 
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
@@ -878,21 +585,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const postTabCoinsPromises = Array(timesToFetch)
         .fill()
-        .map(() =>
-          fetch(
-            `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                cookie: `session_id=${secondUserSession.token}`,
-              },
-              body: JSON.stringify({
-                transaction_type: 'credit',
-              }),
-            },
-          ),
-        );
+        .map(() => tabcoinsRequestBuilder.post({ transaction_type: 'credit' }));
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
