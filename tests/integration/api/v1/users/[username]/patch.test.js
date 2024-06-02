@@ -1,7 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
-import authentication from 'models/authentication';
 import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
 import user from 'models/user.js';
@@ -106,7 +105,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
       expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
       expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);

@@ -1,5 +1,3 @@
-import setCookieParser from 'set-cookie-parser';
-
 import { ForbiddenError, UnauthorizedError } from 'errors';
 import authorization from 'models/authorization.js';
 import password from 'models/password.js';
@@ -65,13 +63,6 @@ async function injectAnonymousOrUser(request, response, next, options = {}) {
   }
 }
 
-//TODO: this should be here or inside the session model?
-function parseSetCookies(response) {
-  const setCookieHeaderValues = response.headers.raw()['set-cookie'];
-  const parsedCookies = setCookieParser.parse(setCookieHeaderValues, { map: true });
-  return parsedCookies;
-}
-
 async function createSessionAndSetCookies(userId, response) {
   const sessionObject = await session.create(userId);
   session.setSessionIdCookieInResponse(sessionObject.token, response);
@@ -82,6 +73,5 @@ export default Object.freeze({
   hashPassword,
   comparePasswords,
   injectAnonymousOrUser,
-  parseSetCookies,
   createSessionAndSetCookies,
 });

@@ -1,7 +1,6 @@
 import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
-import authentication from 'models/authentication';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -26,7 +25,7 @@ describe('GET /api/v1/user', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
     });
 
@@ -50,7 +49,7 @@ describe('GET /api/v1/user', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('session_id');
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
     });
 
@@ -74,7 +73,7 @@ describe('GET /api/v1/user', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('session_id');
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
     });
 
@@ -98,7 +97,7 @@ describe('GET /api/v1/user', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toEqual('session_id');
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
     });
   });
@@ -132,7 +131,7 @@ describe('GET /api/v1/user', () => {
         updated_at: defaultUser.updated_at.toISOString(),
       });
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
 
       const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
@@ -167,7 +166,7 @@ describe('GET /api/v1/user', () => {
         'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
       );
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
     });
 
@@ -199,7 +198,7 @@ describe('GET /api/v1/user', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
       expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
       expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);
@@ -248,7 +247,7 @@ describe('GET /api/v1/user', () => {
           updated_at: defaultUser.updated_at.toISOString(),
         });
 
-        const parsedCookiesFromGet = authentication.parseSetCookies(response);
+        const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
         expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
         expect(parsedCookiesFromGet.session_id.value).toEqual(sessionObjectBeforeRenew.token);
         expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
@@ -301,7 +300,7 @@ describe('GET /api/v1/user', () => {
           updated_at: defaultUser.updated_at.toISOString(),
         });
 
-        const parsedCookiesFromGet = authentication.parseSetCookies(response);
+        const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
         expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
         expect(parsedCookiesFromGet.session_id.value).toEqual(sessionObjectBeforeRenew.token);
         expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
@@ -353,7 +352,7 @@ describe('GET /api/v1/user', () => {
           updated_at: defaultUser.updated_at.toISOString(),
         });
 
-        const parsedCookiesFromGet = authentication.parseSetCookies(response);
+        const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
         expect(parsedCookiesFromGet).toStrictEqual({});
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);

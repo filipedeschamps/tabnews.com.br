@@ -2,7 +2,6 @@ import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import activation from 'models/activation.js';
-import authentication from 'models/authentication';
 import password from 'models/password.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
@@ -128,7 +127,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.id);
     expect(sessionObjectInDatabase.user_id).toEqual(postUserResponseBody.id);
 
-    parsedCookiesFromPost = authentication.parseSetCookies(postSessionResponse);
+    parsedCookiesFromPost = orchestrator.parseSetCookies(postSessionResponse);
     expect(parsedCookiesFromPost.session_id.name).toEqual('session_id');
     expect(parsedCookiesFromPost.session_id.value).toEqual(postSessionResponseBody.token);
     expect(parsedCookiesFromPost.session_id.maxAge).toEqual(60 * 60 * 24 * 30);

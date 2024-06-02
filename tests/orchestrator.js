@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
+import setCookieParser from 'set-cookie-parser';
 
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
@@ -367,6 +368,12 @@ async function updateRewardedAt(userId, rewardedAt) {
   return await database.query(query);
 }
 
+function parseSetCookies(response) {
+  const setCookieHeaderValues = response.headers.get('set-cookie');
+  const parsedCookies = setCookieParser.parse(setCookieHeaderValues, { map: true });
+  return parsedCookies;
+}
+
 const orchestrator = {
   waitForAllServices,
   dropAllTables,
@@ -388,6 +395,7 @@ const orchestrator = {
   createPrestige,
   createRate,
   updateRewardedAt,
+  parseSetCookies,
 };
 
 export default orchestrator;
