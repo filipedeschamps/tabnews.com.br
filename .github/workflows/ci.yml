@@ -13,6 +13,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: 'Use .env.example'
+        run: |
+          touch .env
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^([A-Za-z_]+)=(.*)$ ]]; then
+              key="${BASH_REMATCH[1]}"
+              value="${BASH_REMATCH[2]}"
+              value=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')
+              echo "$key=$value" >> .env
+            fi
+          done < .env.example
+
       - name: Start containers
         run: npm run services:up
 
