@@ -346,11 +346,14 @@ async function create(postedContent, options = {}) {
         inserted_content.published_at,
         inserted_content.deleted_at,
         inserted_content.path,
-        users.username as owner_username
+        users.username as owner_username,
+        sponsored_contents.id AS root_sponsored_content_id
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
+      LEFT JOIN
+        sponsored_contents ON content_id = $11
       ;`,
       values: [
         content.id,
@@ -363,12 +366,28 @@ async function create(postedContent, options = {}) {
         content.source_url,
         content.published_at,
         content.path,
+
+        content.path[0], // $11
       ],
     };
 
     try {
       const results = await database.query(query, { transaction: options.transaction });
-      return results.rows[0];
+      const insertResponse = results.rows[0];
+
+      if (insertResponse.root_sponsored_content_id) {
+        await balance.updateSponsoredContentTabcash(
+          {
+            sponsoredContentId: insertResponse.root_sponsored_content_id,
+            originatorId: options.eventId ? options.eventId : insertResponse.id,
+            originatorType: options.eventId ? 'event' : 'content',
+            type: 'create:child',
+          },
+          { transaction: options.transaction },
+        );
+      }
+
+      return insertResponse;
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
     }
@@ -527,6 +546,29 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
   // creation of the content represented by `initialTabcoins`.
   if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
+    const originatorType = options.eventId ? 'event' : 'content';
+    const originatorId = options.eventId ? options.eventId : newContent.id;
+
+    if (newContent.parent_id) {
+      const rootContent = await findOne({
+        where: {
+          id: newContent.path[0],
+        },
+      });
+
+      if (rootContent.status === 'sponsored') {
+        await balance.updateSponsoredContentTabcash(
+          {
+            sponsoredContentId: rootContent.sponsored_content_id,
+            originatorType: originatorType,
+            originatorId: originatorId,
+            type: 'delete:child',
+          },
+          { transaction: options.transaction },
+        );
+      }
+    }
+
     let amountToDebit;
 
     const userEarningsByContent = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
@@ -544,8 +586,8 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
         amount: amountToDebit,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
+        originatorType: originatorType,
+        originatorId: originatorId,
       },
       {
         transaction: options.transaction,

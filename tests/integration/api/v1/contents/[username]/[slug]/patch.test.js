@@ -1,5 +1,7 @@
 import { version as uuidVersion } from 'uuid';
 
+import balance from 'models/balance';
+import content from 'models/content';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -3106,6 +3108,139 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         });
         expect(uuidVersion(responseBody.error_id)).toEqual(4);
         expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      });
+
+      test('Updating "status" to "deleted" of a child of a sponsored content', async () => {
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 50,
+        });
+
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const thirdUser = await contentsRequestBuilder.buildUser();
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Sponsored content title',
+          body: 'Body',
+          tabcash: 50,
+          source_url: 'https://example.com',
+        });
+
+        const childContentLevel1 = await orchestrator.createContent({
+          owner_id: secondUser.id,
+          parent_id: createdSponsoredContent.content_id,
+          title: 'Child level 1',
+          status: 'published',
+        });
+
+        const childContentLevel2 = await orchestrator.createContent({
+          owner_id: thirdUser.id,
+          parent_id: childContentLevel1.id,
+          title: 'Child level 2',
+          status: 'published',
+        });
+
+        const sponsoredContentTabCash = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.patch(
+          `/${thirdUser.username}/${childContentLevel2.slug}`,
+          { status: 'deleted' },
+        );
+
+        expect(response.status).toEqual(200);
+        expect(responseBody).toStrictEqual({
+          id: childContentLevel2.id,
+          owner_id: thirdUser.id,
+          parent_id: childContentLevel1.id,
+          slug: childContentLevel2.slug,
+          title: childContentLevel2.title,
+          body: childContentLevel2.body,
+          status: 'deleted',
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: responseBody.deleted_at,
+          owner_username: thirdUser.username,
+        });
+
+        const sponsoredContentTabCashAfterDeletingChild = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCashAfterDeletingChild).toEqual(sponsoredContentTabCash + 1);
+      });
+
+      test('Updating "status" to "deleted" of a child of a deactivated sponsored content', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 10,
+        });
+
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'Sponsored content title',
+          body: 'Body',
+          tabcash: 10,
+          source_url: 'https://example.com',
+        });
+
+        let lastChild;
+        for (let i = 1; i <= 10; i++) {
+          lastChild = await orchestrator.createContent({
+            owner_id: secondUser.id,
+            parent_id: createdSponsoredContent.content_id,
+            title: `Comment #${i}`,
+            status: 'published',
+          });
+        }
+
+        const foundContent = await content.findOne({
+          where: {
+            id: createdSponsoredContent.content_id,
+          },
+        });
+        expect(Date.parse(foundContent.deactivate_at)).not.toEqual(NaN);
+
+        const sponsoredContentTabCash = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCash).toEqual(0);
+
+        const { response } = await contentsRequestBuilder.patch(`/${secondUser.username}/${lastChild.slug}`, {
+          status: 'deleted',
+        });
+
+        expect(response.status).toEqual(200);
+
+        const sponsoredContentTabCashAfterDeletingChild = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCashAfterDeletingChild).toEqual(0);
+
+        const foundContentAfterDeletingChild = await content.findOne({
+          where: {
+            id: createdSponsoredContent.content_id,
+          },
+        });
+        expect(foundContentAfterDeletingChild.deactivate_at).toEqual(foundContent.deactivate_at);
       });
 
       test('Updating a deactivated sponsored content', async () => {

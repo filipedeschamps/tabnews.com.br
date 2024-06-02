@@ -1,6 +1,8 @@
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
+import balance from 'models/balance';
+import content from 'models/content';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -2959,6 +2961,62 @@ describe('POST /api/v1/contents', () => {
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('A sponsored content being deactivated when its TabCash ends', async () => {
+        const firstUser = await orchestrator.createUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: 100,
+        });
+        const createdSponsoredContent = await orchestrator.createSponsoredContent({
+          owner_id: firstUser.id,
+          title: 'root',
+          tabcash: 10,
+        });
+
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+
+        let lastChild;
+        for (let i = 1; i <= 9; i++) {
+          await contentsRequestBuilder.buildUser();
+
+          const { response, responseBody } = await contentsRequestBuilder.post({
+            body: `Comment #${i}`,
+            parent_id: createdSponsoredContent.content_id,
+            status: 'published',
+          });
+          lastChild = responseBody;
+
+          expect(response.status).toEqual(201);
+
+          const sponsoredContentTabCash = await balance.getTotal({
+            balanceType: 'sponsored_content:tabcash',
+            recipientId: createdSponsoredContent.id,
+          });
+          expect(sponsoredContentTabCash).toEqual(10 - i);
+        }
+
+        const { response } = await contentsRequestBuilder.post({
+          body: `Comment #10, grandchild of the sponsored content`,
+          parent_id: lastChild.id,
+          status: 'published',
+        });
+        expect(response.status).toEqual(201);
+
+        const sponsoredContentTabCash = await balance.getTotal({
+          balanceType: 'sponsored_content:tabcash',
+          recipientId: createdSponsoredContent.id,
+        });
+        expect(sponsoredContentTabCash).toEqual(0);
+
+        const foundContent = await content.findOne({
+          where: {
+            id: createdSponsoredContent.content_id,
+          },
+        });
+        expect(Date.parse(foundContent.deactivate_at)).not.toEqual(NaN);
       });
     });
   });

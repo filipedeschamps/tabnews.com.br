@@ -23,6 +23,12 @@ const sqlFunctionMap = {
   default: 'get_content_current_tabcoins',
 };
 
+const sponsoredContentTabcashMap = {
+  'create:child': -1,
+  'delete:child': 1,
+  rate: -1,
+};
+
 async function findAllByOriginatorId(originatorId, options) {
   const query = {
     text: `
@@ -193,7 +199,6 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
 
 async function rateSponsoredContent({ sponsoredContentId, fromUserId, transactionType }, options = {}) {
   const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
-  const tabCashToDeductFromSponsoredContent = -1;
   const tabCoinsToCreditToUser = 1;
   const originatorType = 'event';
   const originatorId = options.eventId;
@@ -239,9 +244,9 @@ async function rateSponsoredContent({ sponsoredContentId, fromUserId, transactio
 
       sponsoredContentId, // $3
       tabCoinsToTransactToContent, // $4
-      
-      tabCashToDeductFromSponsoredContent, // $5
-      
+
+      sponsoredContentTabcashMap.rate, // $5
+
       originatorType, // $6
       originatorId, // $7
 
@@ -337,6 +342,41 @@ async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, o
   };
 }
 
+async function updateSponsoredContentTabcash({ sponsoredContentId, originatorId, originatorType, type }, options) {
+  const query = {
+    text: `
+      WITH recipient_sponsored_content AS (
+        SELECT id, deactivate_at
+        FROM sponsored_contents
+        WHERE id = $1
+      ),
+      sponsored_content_tabcash_insert AS (
+        INSERT INTO sponsored_content_tabcash_operations
+          (recipient_id, amount, originator_type, originator_id)
+        SELECT
+          COALESCE(CAST($1 AS uuid), (SELECT id FROM recipient_sponsored_content)),
+          $2,
+          $3,
+          $4
+        WHERE EXISTS (
+          SELECT 1
+          FROM recipient_sponsored_content
+          WHERE deactivate_at IS NULL OR deactivate_at > NOW() 
+        )
+      )
+      UPDATE sponsored_contents
+      SET deactivate_at = NOW()
+      WHERE
+        id = $1 AND
+        deactivate_at IS NULL AND
+        get_sponsored_content_current_tabcash($1) <= 1
+    ;`,
+    values: [sponsoredContentId, sponsoredContentTabcashMap[type], originatorType, originatorId],
+  };
+
+  await database.query(query, options);
+}
+
 async function undo(balanceOperation, options) {
   const invertedBalanceOperation = {
     balanceType: balanceOperation.balance_type,
@@ -358,5 +398,6 @@ export default Object.freeze({
   rateContent,
   rateSponsoredContent,
   sponsorContent,
+  updateSponsoredContentTabcash,
   undo,
 });
