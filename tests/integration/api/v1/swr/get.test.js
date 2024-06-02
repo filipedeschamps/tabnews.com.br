@@ -1,5 +1,3 @@
-import fetch from 'cross-fetch';
-
 import orchestrator from 'tests/orchestrator.js';
 
 describe('GET /swr', () => {

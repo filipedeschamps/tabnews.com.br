@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import activation from 'models/activation.js';
@@ -22,7 +21,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Create account (successfully)', async () => {
     const postUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -105,7 +104,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Login (successfully)', async () => {
     const postSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -137,7 +136,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Get user (successfully)', async () => {
     const getUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-      method: 'get',
+      method: 'GET',
       headers: {
         cookie: `session_id=${parsedCookiesFromPost.session_id.value}`,
       },

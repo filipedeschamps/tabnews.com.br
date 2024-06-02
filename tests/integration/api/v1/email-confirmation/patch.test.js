@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import emailConfirmation from 'models/email-confirmation.js';
@@ -161,7 +160,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const updateUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -294,7 +293,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${firstUserSession.token}`,

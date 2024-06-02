@@ -55,7 +55,6 @@
     "@vitejs/plugin-react": "4.2.1",
     "autoprefixer": "10.4.17",
     "concurrently": "8.2.2",
-    "cross-fetch": "4.0.0",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.4.1",
     "dotenv-expand": "10.0.0",
