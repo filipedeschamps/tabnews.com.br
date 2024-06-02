@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { version as uuidVersion } from 'uuid';
@@ -98,7 +97,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -141,7 +140,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -198,7 +197,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -247,7 +246,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -297,7 +296,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -353,7 +352,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -409,7 +408,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(

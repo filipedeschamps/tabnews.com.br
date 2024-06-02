@@ -108,11 +108,14 @@ describe('POST /api/v1/contents', () => {
     });
 
     test('Content with POST Body containing an invalid JSON string', async () => {
-      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const contentsRequestBuilder = new RequestBuilder();
       await contentsRequestBuilder.buildUser();
       contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
 
-      const { response, responseBody } = await contentsRequestBuilder.post('Texto corrido no lugar de um JSON');
+      const { response, responseBody } = await contentsRequestBuilder.post(
+        '/api/v1/contents',
+        'Texto corrido no lugar de um JSON',
+      );
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
