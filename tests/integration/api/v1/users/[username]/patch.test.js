@@ -1,7 +1,5 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
-import authentication from 'models/authentication';
 import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
 import user from 'models/user.js';
@@ -19,7 +17,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -50,7 +48,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       let secondUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -85,7 +83,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       vi.useRealTimers();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -106,7 +104,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
       expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
       expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);
@@ -123,7 +121,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -168,7 +166,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -211,7 +209,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -252,7 +250,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -285,7 +283,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -315,7 +313,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -345,7 +343,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -375,7 +373,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -405,7 +403,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -435,7 +433,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -465,7 +463,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -495,7 +493,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -525,7 +523,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           cookie: `session_id=${defaultUserSession.token}`,
         },
@@ -550,7 +548,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           cookie: `session_id=${defaultUserSession.token}`,
         },
@@ -576,7 +574,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -606,7 +604,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -652,7 +650,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -675,7 +673,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -716,7 +714,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -745,7 +743,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -777,7 +775,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         const defaultUserSession = await orchestrator.createSession(defaultUser);
 
         const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'patch',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             cookie: `session_id=${defaultUserSession.token}`,
@@ -810,7 +808,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       secondUser = await orchestrator.activateUser(secondUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${privilegedUserSession.token}`,
@@ -849,7 +847,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       secondUser = await orchestrator.activateUser(secondUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${privilegedUserSession.token}`,

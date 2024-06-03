@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import parseLinkHeader from 'parse-link-header';
 import { version as uuidVersion } from 'uuid';
 

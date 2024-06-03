@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import event from 'models/event.js';
@@ -16,7 +15,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
   describe('Anonymous user', () => {
     test('Spamming valid users', async () => {
       const request1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -28,7 +27,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       });
 
       const request2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -40,7 +39,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       });
 
       const request3 = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

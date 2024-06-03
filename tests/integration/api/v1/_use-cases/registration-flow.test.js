@@ -1,8 +1,6 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import activation from 'models/activation.js';
-import authentication from 'models/authentication';
 import password from 'models/password.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
@@ -23,7 +21,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Create account (successfully)', async () => {
     const postUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -106,7 +104,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Login (successfully)', async () => {
     const postSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -128,7 +126,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.id);
     expect(sessionObjectInDatabase.user_id).toEqual(postUserResponseBody.id);
 
-    parsedCookiesFromPost = authentication.parseSetCookies(postSessionResponse);
+    parsedCookiesFromPost = orchestrator.parseSetCookies(postSessionResponse);
     expect(parsedCookiesFromPost.session_id.name).toEqual('session_id');
     expect(parsedCookiesFromPost.session_id.value).toEqual(postSessionResponseBody.token);
     expect(parsedCookiesFromPost.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
@@ -138,7 +136,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Get user (successfully)', async () => {
     const getUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-      method: 'get',
+      method: 'GET',
       headers: {
         cookie: `session_id=${parsedCookiesFromPost.session_id.value}`,
       },
