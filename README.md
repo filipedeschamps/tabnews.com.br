@@ -82,13 +82,15 @@ Por padrão, ao rodar o comando `npm run dev` será injetado dois usuários ativ
 
 ## Rodar os testes
 
-Há várias formas de rodar os testes dependendo do que você deseja fazer, mas o primeiro passo antes de fazer qualquer alteração no projeto é rodar os testes de forma geral para se certificar que tudo está passando como esperado. O comando abaixo irá rodar todos os serviços necessários, rodar os testes e em seguida derrubar todos os serviços.
+### Testes unitários
+
+Há várias formas de rodar os testes dependendo do que você deseja fazer, mas o primeiro passo antes de fazer qualquer alteração no projeto é rodar os testes unitários de forma geral para se certificar que tudo está passando como esperado. O comando abaixo irá rodar todos os serviços necessários, rodar os testes unitários e em seguida derrubar todos os serviços.
 
 ```bash
 npm test
 ```
 
-Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o modo `watch` com o comando abaixo:
+Caso queira manter os serviços e testes unitários rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o modo `watch` com o comando abaixo:
 
 ```bash
 npm run test:watch:services
@@ -104,7 +106,7 @@ npm run dev
 npm run test:watch
 ```
 
-Caso não queira executar (ou dar `watch`) em todos os testes e queira isolar arquivos específicos de teste, você pode filtrar pelo caminho. Não é necessário digitar o caminho inteiro para o arquivo e você também pode fornecer mais de um caminho, veja alguns exemplos abaixo:
+Caso não queira executar (ou dar `watch`) em todos os testes unitários e queira isolar arquivos específicos de teste, você pode filtrar pelo caminho. Não é necessário digitar o caminho inteiro para o arquivo e você também pode fornecer mais de um caminho, veja alguns exemplos abaixo:
 
 ```bash
 # Rodar todos os testes de "users" e "status" da api "v1"
@@ -124,6 +126,44 @@ Observações:
 
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
 - A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar.
+
+### Testes E2E
+
+Além dos testes unitários o projeto também inclui testes de ponta a ponta (E2E) que simulam o comportamento dos usuários. Esses testes são executados usando o Playwright.
+
+Para executar os testes em um navegador em segundo plano, em que você não verá a interface do usuário, execute o comando:
+
+```bash
+npm run test:e2e
+```
+
+Uma alternativa para execução desses testes, que te permite visualizar exatamente o que está acontecendo na interface do usuário do navegador, rode o seguinte comando:
+
+```bash
+npm run test:e2e:headed
+```
+
+Agora, se você preferir executar os testes visualizando seus resultados numa timeline em que você consegue acompanhar na interface o momento da execução do script, rode:
+
+```bash
+npm run test:e2e:ui
+```
+
+Com esse último comando é possível escolher qual teste executar diretamente de uma UI amigável, mas se quiser fazer isso via terminal...
+
+```bash
+# Rodar teste por arquivo
+npx playwright test login.spec.js
+
+# Rodar teste de um arquivo específico (procure pelo título do teste)
+npx playwright test -g "should be able to login"
+```
+
+Depois da execução é possível consultar um relatório acessando com o comando abaixo:
+
+```bash
+npx playwright show-report
+```
 
 ## Formas de contribuir
 
