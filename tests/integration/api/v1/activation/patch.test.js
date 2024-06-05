@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import activation from 'models/activation.js';
@@ -14,7 +13,7 @@ describe('PATCH /api/v1/activation', () => {
   describe('Anonymous user', () => {
     test('Activating with blank body', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
       });
 
       const responseBody = await response.json();
@@ -32,7 +31,7 @@ describe('PATCH /api/v1/activation', () => {
 
     test('Activating using a null token', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -57,7 +56,7 @@ describe('PATCH /api/v1/activation', () => {
 
     test('Activating using a malformatted number token', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -82,7 +81,7 @@ describe('PATCH /api/v1/activation', () => {
 
     test('Activating using an empty string token', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -107,7 +106,7 @@ describe('PATCH /api/v1/activation', () => {
 
     test('Activating using a malformatted string token', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -143,7 +142,7 @@ describe('PATCH /api/v1/activation', () => {
       expect(activationToken.expires_at - activationToken.created_at).toBe(900000); // 15 minutes
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -169,7 +168,7 @@ describe('PATCH /api/v1/activation', () => {
       const activationToken = await activation.create(defaultUser);
 
       const firstTryResponde = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -182,7 +181,7 @@ describe('PATCH /api/v1/activation', () => {
       const firstTryRespondeBody = await firstTryResponde.json();
 
       const secondTryResponde = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -214,7 +213,7 @@ describe('PATCH /api/v1/activation', () => {
       });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -245,7 +244,7 @@ describe('PATCH /api/v1/activation', () => {
       const activationToken = await activation.create(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -276,7 +275,7 @@ describe('PATCH /api/v1/activation', () => {
       let defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,

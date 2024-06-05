@@ -107,15 +107,12 @@ function errorResponse(response, statusCode, publicErrorObject) {
 }
 
 function logRequest(request, response, next) {
-  const { method, url, headers, query, body, context } = request;
+  const { headers, body, context } = request;
 
   const log = {
-    method,
-    url,
-    headers,
-    query,
-    context,
-    body,
+    headers: clearHeaders(headers),
+    body: clearBody(body),
+    context: clearContext(context),
   };
 
   logger.info(log);
@@ -123,24 +120,79 @@ function logRequest(request, response, next) {
   next();
 }
 
+const headersToRedact = ['authorization', 'cookie'];
+const headerToOmit = ['access-control-allow-headers', 'forwarded', 'x-vercel-proxy-signature', 'x-vercel-sc-headers'];
+
+function clearHeaders(headers) {
+  const cleanHeaders = { ...headers };
+
+  headersToRedact.forEach((header) => {
+    if (cleanHeaders[header]) {
+      cleanHeaders[header] = '**';
+    }
+  });
+
+  headerToOmit.forEach((header) => {
+    delete cleanHeaders[header];
+  });
+
+  return [cleanHeaders];
+}
+
+const bodyToRedact = ['email', 'password'];
+
+function clearBody(requestBody) {
+  const cleanBody = { ...requestBody };
+
+  if (typeof cleanBody.body === 'string') {
+    cleanBody.body = cleanBody.body.substring(0, 300);
+  }
+
+  bodyToRedact.forEach((key) => {
+    if (cleanBody[key]) {
+      cleanBody[key] = '**';
+    }
+  });
+
+  return [cleanBody];
+}
+
+function clearContext(context) {
+  const cleanContext = { ...context };
+
+  if (cleanContext.user) {
+    cleanContext.user = {
+      id: context.user.id,
+      username: context.user.username,
+    };
+  }
+
+  return cleanContext;
+}
+
 function injectPaginationHeaders(pagination, endpoint, response) {
   const links = [];
-  const baseUrl = `${webserver.host}${endpoint}?strategy=${pagination.strategy}`;
+  const baseUrl = `${webserver.host}${endpoint}`;
 
-  if (pagination.firstPage) {
-    links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
+  const searchParams = new URLSearchParams();
+
+  if (pagination.strategy) {
+    searchParams.set('strategy', pagination.strategy);
   }
 
-  if (pagination.previousPage) {
-    links.push(`<${baseUrl}&page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
-  }
+  const pages = [
+    { page: pagination.firstPage, rel: 'first' },
+    { page: pagination.previousPage, rel: 'prev' },
+    { page: pagination.nextPage, rel: 'next' },
+    { page: pagination.lastPage, rel: 'last' },
+  ];
 
-  if (pagination.nextPage) {
-    links.push(`<${baseUrl}&page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
-  }
-
-  if (pagination.lastPage) {
-    links.push(`<${baseUrl}&page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
+  for (const { page, rel } of pages) {
+    if (page) {
+      searchParams.set('page', page);
+      searchParams.set('per_page', pagination.perPage);
+      links.push(`<${baseUrl}?${searchParams.toString()}>; rel="${rel}"`);
+    }
   }
 
   const linkHeaderString = links.join(', ');

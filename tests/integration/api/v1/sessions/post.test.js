@@ -1,7 +1,5 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
-import authentication from 'models/authentication';
 import session from 'models/session';
 import orchestrator from 'tests/orchestrator.js';
 
@@ -44,7 +42,7 @@ describe('POST /api/v1/sessions', () => {
       const sessionObjectInDatabase = await session.findOneById(responseBody.id);
       expect(sessionObjectInDatabase.user_id).toEqual(defaultUser.id);
 
-      const parsedCookiesFromResponse = authentication.parseSetCookies(response);
+      const parsedCookiesFromResponse = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromResponse.session_id.name).toEqual('session_id');
       expect(parsedCookiesFromResponse.session_id.value).toEqual(responseBody.token);
       expect(parsedCookiesFromResponse.session_id.maxAge).toEqual(60 * 60 * 24 * 30);

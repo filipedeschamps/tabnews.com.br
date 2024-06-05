@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import content from 'models/content.js';
@@ -20,7 +19,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       const sessionObject = await orchestrator.createSession(defaultUser);
 
       const request1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
@@ -33,7 +32,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       });
 
       const request2 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
@@ -46,7 +45,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       });
 
       const request3 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
@@ -117,7 +116,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       const sessionObject = await orchestrator.createSession(defaultUser);
 
       const rootContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
@@ -132,7 +131,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       const rootContentBody = await rootContent.json();
 
       const request1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
@@ -146,7 +145,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       });
 
       const request2 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,
@@ -160,7 +159,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       });
 
       const request3 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${sessionObject.token}`,

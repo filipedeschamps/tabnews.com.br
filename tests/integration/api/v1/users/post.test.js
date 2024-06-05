@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import password from 'models/password.js';
@@ -15,7 +14,7 @@ describe('POST /api/v1/users', () => {
   describe('Anonymous user', () => {
     test('With unique and valid data', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -55,7 +54,7 @@ describe('POST /api/v1/users', () => {
 
     test('With unique and valid data, and an unknown key', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -92,7 +91,7 @@ describe('POST /api/v1/users', () => {
 
     test('With unique and valid data, but with "untrimmed" values', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -134,7 +133,7 @@ describe('POST /api/v1/users', () => {
     test('With "username" duplicated exactly (same uppercase letters)', async () => {
       // firstResponse
       await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -146,7 +145,7 @@ describe('POST /api/v1/users', () => {
       });
 
       const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -173,7 +172,7 @@ describe('POST /api/v1/users', () => {
     test('With "username" duplicated (different uppercase letters)', async () => {
       // firstResponse
       await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -185,7 +184,7 @@ describe('POST /api/v1/users', () => {
       });
 
       const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -211,7 +210,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" missing', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -236,7 +235,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" with a null value', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -262,7 +261,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" with an empty string', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -288,7 +287,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" that\'s not a String', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -314,7 +313,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" containing non alphanumeric characters', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -340,7 +339,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" too long', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -366,7 +365,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "username" in blocked list', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -393,7 +392,7 @@ describe('POST /api/v1/users', () => {
     test('With "email" duplicated (same uppercase letters)', async () => {
       // firstResponse
       await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -405,7 +404,7 @@ describe('POST /api/v1/users', () => {
       });
 
       const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -432,7 +431,7 @@ describe('POST /api/v1/users', () => {
     test('With "email" duplicated (different uppercase letters)', async () => {
       // firstResponse
       await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -444,7 +443,7 @@ describe('POST /api/v1/users', () => {
       });
 
       const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -470,7 +469,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "email" missing', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -495,7 +494,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "email" with an empty string', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -521,7 +520,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "email" that\'s not a String', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -547,7 +546,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "email" with invalid format', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -573,7 +572,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "password" missing', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -598,7 +597,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "password" with an empty string', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -624,7 +623,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "password" that\'s not a String', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -650,7 +649,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "password" too short', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -676,7 +675,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "password" too long', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -702,7 +701,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "body" totally blank', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
       });
 
       const responseBody = await response.json();
@@ -720,7 +719,7 @@ describe('POST /api/v1/users', () => {
 
     test('With "body" containing a String', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         body: "Please don't hack us, we are the good guys!",
       });
 

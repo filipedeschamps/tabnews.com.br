@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import event from 'models/event.js';
@@ -14,7 +13,7 @@ describe('GET /api/v1/events [NOT YET IMPLEMENTED]', () => {
   describe('Anonymous user', () => {
     test('Returning all types of events', async () => {
       const createUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
