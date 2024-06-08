@@ -4,10 +4,84 @@ import { ValidationError } from 'errors';
 import database from 'infra/database';
 import balance from 'models/balance';
 import content from 'models/content';
+import pagination from 'models/pagination';
+import user from 'models/user';
 import validator from 'models/validator';
 
 const MAX_ACTIVE_SPONSORED_CONTENTS = 5;
 const MAX_SAME_USER_SPONSORED_CONTENTS = 1;
+
+async function findAllByOwnerUsername(values) {
+  const offset = (values.page - 1) * values.per_page;
+
+  const userObject = await user.findOneByUsername(values.owner_username);
+
+  const query = {
+    text: `
+      WITH content_window AS (
+        SELECT
+          COUNT(*) OVER()::INTEGER as total_rows,
+          id,
+          slug,
+          title,
+          source_url,
+          published_at,
+          updated_at
+        FROM contents
+        WHERE owner_id = $3 AND status = 'sponsored'
+        ORDER BY published_at DESC
+        LIMIT $1 OFFSET $2
+      )
+      SELECT
+        sponsored_contents.id,
+        sponsored_contents.content_id,
+        sponsored_contents.deactivate_at,
+        sponsored_contents.created_at,
+        sponsored_contents.updated_at,
+        content_window.slug,
+        content_window.title,
+        content_window.source_url,
+        content_window.published_at,
+        content_window.updated_at AS content_updated_at,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[content_window.id]
+           AND children.status = 'published'
+        ) as children_deep_count,
+        $4 as owner_username,
+        get_sponsored_content_current_tabcoins(sponsored_contents.id) AS tabcoins,
+        get_sponsored_content_current_tabcash(sponsored_contents.id) AS tabcash,
+        content_window.total_rows
+      FROM
+        sponsored_contents
+      INNER JOIN
+        content_window ON sponsored_contents.content_id = content_window.id
+    ;`,
+    values: [values.per_page, offset, userObject.id, userObject.username],
+  };
+
+  const results = await database.query(query);
+
+  if (results.rows[0]) {
+    values.total_rows = results.rows[0].total_rows;
+  } else {
+    const countQuery = {
+      text: `
+        SELECT COUNT(*)::INTEGER as total_rows
+        FROM contents
+        WHERE owner_id = $1 AND status = 'sponsored'
+      ;`,
+      values: [userObject.id],
+    };
+    const countResult = await database.query(countQuery);
+    values.total_rows = countResult.rows[0].total_rows;
+  }
+
+  results.pagination = pagination.get(values);
+
+  return results;
+}
 
 async function create(postedSponsoredContent, options = {}) {
   validateDeactivateAtOnCreate(postedSponsoredContent);
@@ -166,5 +240,6 @@ function validateCreateSchema(sponsoredContent) {
 }
 
 export default Object.freeze({
+  findAllByOwnerUsername,
   create,
 });

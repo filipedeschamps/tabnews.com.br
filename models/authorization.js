@@ -33,11 +33,12 @@ const availableFeatures = new Set([
   'create:content:text_child',
   'read:content:list',
   'read:content:tabcoins',
-  'read:sponsored_content',
-  'read:sponsored_content:tabcoins',
 
   // SPONSORED CONTENT
   'create:sponsored_content',
+  'read:sponsored_content',
+  'read:sponsored_content:list',
+  'read:sponsored_content:tabcoins',
 
   // MODERATION
   'read:user:list',
@@ -289,6 +290,14 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = output.map((content) => {
       return validator(content, {
         content: 'required',
+      });
+    });
+  }
+
+  if (feature === 'read:sponsored_content:list') {
+    filteredOutputValues = output.map((content) => {
+      return validator(content, {
+        sponsored_content_complete: 'required',
       });
     });
   }

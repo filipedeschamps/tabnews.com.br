@@ -526,6 +526,19 @@ const schemas = {
       .concat(schemas.tabcoins());
   },
 
+  sponsored_content_complete: function () {
+    return schemas
+      .sponsored_content()
+      .concat(
+        Joi.object({
+          content_id: Joi.string().guid({ version: 'uuidv4' }).required(),
+          content_updated_at: Joi.date().required(),
+        }),
+      )
+      .concat(schemas.tabcash())
+      .concat(schemas.children_deep_count());
+  },
+
   with_children: function () {
     return Joi.object({
       with_children: Joi.boolean().when('$required.with_children', {
