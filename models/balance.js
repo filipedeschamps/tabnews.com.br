@@ -276,7 +276,30 @@ async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, o
   const originatorType = 'event';
   const originatorId = options.eventId;
   const tabcoins = 1;
-  const balanceType = 'initial';
+
+  let sponsoredContentTabcoinInsert = '';
+  const queryValues = [
+    contentOwnerId, // $1
+    tabcash * -1, // $2
+
+    sponsoredContentId, // $3
+    tabcash, // $4
+
+    originatorType, // $5
+    originatorId, // $6
+  ];
+
+  if (!options.skipSponsoredContentTabcoinInsert) {
+    sponsoredContentTabcoinInsert = `,
+     sponsored_content_tabcoin_insert AS (
+       INSERT INTO sponsored_content_tabcoin_operations
+         (recipient_id, balance_type, amount, originator_type, originator_id)
+       VALUES
+         ($3, $8, $7, $5, $6)
+     )`;
+    queryValues.push(tabcoins); // $7
+    queryValues.push('initial'); // $7
+  }
 
   const query = {
     text: `
@@ -284,7 +307,7 @@ async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, o
         INSERT INTO user_tabcash_operations
           (recipient_id, amount, originator_type, originator_id)
         VALUES
-          ($1, $2, $7, $8)
+          ($1, $2, $5, $6)
         RETURNING
           *
       ),
@@ -292,16 +315,11 @@ async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, o
         INSERT INTO sponsored_content_tabcash_operations
           (recipient_id, amount, originator_type, originator_id)
         VALUES
-          ($3, $4, $7, $8)
+          ($3, $4, $5, $6)
         RETURNING
           *
-      ),
-      sponsored_content_tabcoin_insert AS (
-        INSERT INTO sponsored_content_tabcoin_operations
-          (recipient_id, balance_type, amount, originator_type, originator_id)
-        VALUES
-          ($3, $5, $6, $7, $8)
       )
+      ${sponsoredContentTabcoinInsert}
       SELECT
         get_user_current_tabcash($1) AS user_current_tabcash_balance
       FROM
@@ -310,19 +328,7 @@ async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, o
       LIMIT
         1
     ;`,
-    values: [
-      contentOwnerId, // $1
-      tabcash * -1, // $2
-
-      sponsoredContentId, // $3
-      tabcash, // $4
-
-      balanceType, // $5
-      tabcoins, // $6
-
-      originatorType, // $7
-      originatorId, // $8
-    ],
+    values: queryValues,
   };
 
   const results = await database.query(query, options);
@@ -339,6 +345,7 @@ async function sponsorContent({ sponsoredContentId, contentOwnerId, tabcash }, o
   return {
     user_tabcash: currentBalances.user_current_tabcash_balance,
     tabcoins: tabcoins,
+    tabcash: tabcash,
   };
 }
 

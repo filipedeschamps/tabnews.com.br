@@ -572,6 +572,7 @@ const schemas = {
           'update:content:text_child',
           'update:content:tabcoins',
           'create:sponsored_content',
+          'update:sponsored_content',
           'update:sponsored_content:tabcoins',
           'firewall:block_users',
           'firewall:block_contents:text_root',

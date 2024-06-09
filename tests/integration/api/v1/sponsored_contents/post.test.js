@@ -485,7 +485,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         key: 'deactivate_at',
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:CONTENT:VALIDATE_DEACTIVATE_AT_ON_CREATE:DATE_IN_PAST',
+        error_location_code: 'MODEL:SPONSORED_CONTENT:VALIDATE_DEACTIVATE_AT:DATE_IN_PAST',
       });
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
@@ -533,6 +533,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         deactivate_at: tomorrow.toISOString(),
         owner_username: defaultUser.username,
         tabcoins: 1,
+        tabcash: 100,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -588,6 +589,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         deactivate_at: null,
         owner_username: defaultUser.username,
         tabcoins: 1,
+        tabcash: 300,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -626,6 +628,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         deactivate_at: null,
         owner_username: defaultUser.username,
         tabcoins: 1,
+        tabcash: 300,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -796,6 +799,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         deactivate_at: null,
         owner_username: defaultUser.username,
         tabcoins: 1,
+        tabcash: 200,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -834,6 +838,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         deactivate_at: null,
         owner_username: defaultUser.username,
         tabcoins: 1,
+        tabcash: 500,
       });
 
       expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -875,6 +880,7 @@ describe('POST /api/v1/sponsored_contents', () => {
         balanceType: 'user:tabcash',
         recipientId: createdUser.id,
         amount: 100,
+        tabcash: 100,
       });
 
       const { response: responseError, responseBody: responseBodyError } = await sponsoredContentsRequestBuilder.post({
@@ -1006,6 +1012,7 @@ describe('POST /api/v1/sponsored_contents', () => {
           deactivate_at: null,
           owner_username: defaultUser.username,
           tabcoins: 1,
+          tabcash: 120,
         });
         expect(uuidVersion(responseBody.id)).toEqual(4);
         expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
@@ -1050,6 +1057,7 @@ describe('POST /api/v1/sponsored_contents', () => {
           deactivate_at: null,
           owner_username: defaultUser.username,
           tabcoins: 1,
+          tabcash: 300,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);
@@ -1093,6 +1101,7 @@ describe('POST /api/v1/sponsored_contents', () => {
           deactivate_at: null,
           owner_username: defaultUser.username,
           tabcoins: 1,
+          tabcash: 185,
         });
 
         expect(uuidVersion(responseBody.id)).toEqual(4);

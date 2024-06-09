@@ -83,8 +83,37 @@ async function findAllByOwnerUsername(values) {
   return results;
 }
 
+async function findOne(values) {
+  const userObject = await user.findOneByUsername(values.owner_username);
+
+  const query = {
+    text: `
+      SELECT
+        sponsored_contents.*,
+        contents.slug,
+        contents.title,
+        contents.body,
+        contents.source_url,
+        contents.published_at,
+        contents.updated_at AS content_updated_at,
+        contents.owner_id
+      FROM
+        contents
+      INNER JOIN
+        sponsored_contents ON contents.id = sponsored_contents.content_id
+      WHERE
+        contents.owner_id = $1 AND
+        slug = $2
+    ;`,
+    values: [userObject.id, values.slug],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
 async function create(postedSponsoredContent, options = {}) {
-  validateDeactivateAtOnCreate(postedSponsoredContent);
+  validateSetDeactivateAt(postedSponsoredContent);
 
   if (!postedSponsoredContent.slug) {
     postedSponsoredContent.slug = content.generateSlug(postedSponsoredContent.title) || uuidV4();
@@ -206,19 +235,74 @@ async function create(postedSponsoredContent, options = {}) {
   );
 
   createdSponsoredContent.tabcoins = balances.tabcoins;
+  createdSponsoredContent.tabcash = balances.tabcash;
 
   return createdSponsoredContent;
 }
 
-function validateDeactivateAtOnCreate(sponsoredContent) {
+async function update(newContent, options = {}) {
+  const validPostedContent = validateUpdateSchema(newContent);
+
+  validateSetDeactivateAt(newContent);
+
+  try {
+    const query = {
+      text: `
+          UPDATE sponsored_contents SET
+            deactivate_at = $2,
+            updated_at = (now() at time zone 'utc')
+          WHERE
+            id = $1
+          RETURNING
+            *,
+            get_sponsored_content_current_tabcoins($1) AS tabcoins,
+            get_sponsored_content_current_tabcash($1) AS tabcash
+        ;`,
+      values: [newContent.id, validPostedContent.deactivate_at],
+    };
+
+    const results = await database.query(query, { transaction: options.transaction });
+    const updatedSponsoredContent = results.rows[0];
+
+    const updatedContent = await content.update(updatedSponsoredContent.content_id, validPostedContent, options);
+
+    const tabcash = newContent.tabcash ?? updatedSponsoredContent.tabcash;
+    const tabcashToAdd = tabcash - updatedSponsoredContent.tabcash;
+
+    if (tabcashToAdd < 0) {
+      throw new ValidationError({
+        message: `Não é possível diminuir a quantidade de TabCash da publicação patrocinada.`,
+        action: `Utilize um valor maior ou igual à quantidade atual de TabCash da publicação.`,
+        errorLocationCode: 'MODEL:SPONSORED_CONTENT:VALIDATE_UPDATE_TABCASH:DECREASE_VALUE',
+        key: 'tabcash',
+      });
+    }
+
+    if (tabcashToAdd > 0) {
+      await balance.sponsorContent(
+        {
+          sponsoredContentId: updatedSponsoredContent.id,
+          contentOwnerId: updatedContent.owner_id,
+          tabcash: tabcashToAdd,
+        },
+        { skipSponsoredContentTabcoinInsert: true, eventId: options.eventId },
+      );
+    }
+
+    return { ...newContent, ...updatedContent, ...updatedSponsoredContent, tabcash };
+  } catch (error) {
+    throw content.parseQueryErrorToCustomError(error);
+  }
+}
+
+function validateSetDeactivateAt(sponsoredContent) {
   if (sponsoredContent.deactivate_at) {
     const deactivateAt = new Date(sponsoredContent.deactivate_at);
     if (deactivateAt <= new Date()) {
       throw new ValidationError({
         message: `"deactivate_at" não pode ser no passado.`,
         action: `Utilize uma data "deactivate_at" no futuro.`,
-        stack: new Error().stack,
-        errorLocationCode: 'MODEL:CONTENT:VALIDATE_DEACTIVATE_AT_ON_CREATE:DATE_IN_PAST',
+        errorLocationCode: 'MODEL:SPONSORED_CONTENT:VALIDATE_DEACTIVATE_AT:DATE_IN_PAST',
         key: 'deactivate_at',
       });
     }
@@ -239,7 +323,22 @@ function validateCreateSchema(sponsoredContent) {
   return cleanValues;
 }
 
+function validateUpdateSchema(sponsoredContent) {
+  const cleanValues = validator(sponsoredContent, {
+    slug: 'required',
+    title: 'required',
+    body: 'required',
+    source_url: 'optional',
+    deactivate_at: 'optional',
+    create_sponsored_content_tabcash: 'optional',
+  });
+
+  return cleanValues;
+}
+
 export default Object.freeze({
   findAllByOwnerUsername,
+  findOne,
   create,
+  update,
 });

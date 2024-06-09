@@ -36,6 +36,7 @@ const availableFeatures = new Set([
 
   // SPONSORED CONTENT
   'create:sponsored_content',
+  'update:sponsored_content',
   'read:sponsored_content',
   'read:sponsored_content:list',
   'read:sponsored_content:tabcoins',
@@ -44,6 +45,7 @@ const availableFeatures = new Set([
   'read:user:list',
   'read:votes:others',
   'update:content:others',
+  'update:sponsored_content:others',
   'update:user:others',
   'ban:user',
   'create:recovery_token:username',
@@ -61,6 +63,12 @@ function can(user, feature, resource) {
 
     case 'update:content':
       return (resource?.owner_id && user.id === resource.owner_id) || user.features.includes('update:content:others');
+
+    case 'update:sponsored_content':
+      return (
+        (resource?.owner_id && user.id === resource.owner_id) ||
+        user.features.includes('update:sponsored_content:others')
+      );
   }
 
   if (!resource) return true;
@@ -157,6 +165,17 @@ function filterInput(user, feature, input, target) {
       title: input.title,
       body: input.body,
       status: input.status,
+      source_url: input.source_url,
+    };
+  }
+
+  if (feature === 'update:sponsored_content' && can(user, feature, target)) {
+    filteredInputValues = {
+      deactivate_at: input.deactivate_at,
+      tabcash: input.tabcash,
+      slug: input.slug,
+      title: input.title,
+      body: input.body,
       source_url: input.source_url,
     };
   }
@@ -269,6 +288,7 @@ function filterOutput(user, feature, output) {
   if (feature === 'read:sponsored_content') {
     filteredOutputValues = validator(output, {
       sponsored_content: 'required',
+      tabcash: 'required',
     });
   }
 

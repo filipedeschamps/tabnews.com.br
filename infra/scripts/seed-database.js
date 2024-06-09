@@ -40,6 +40,7 @@ async function seedDevelopmentUsers() {
     'read:votes:others',
     'read:user:list',
     'create:sponsored_content',
+    'update:sponsored_content',
   ]);
   await insertUser('user', 'user@user.com', '$2a$04$v0hvAu/y6pJ17LzeCfcKG.rDStO9x5ficm2HTLZIfeDBG8oR/uQXi', [
     'create:session',
