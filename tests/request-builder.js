@@ -107,6 +107,29 @@ export default class RequestBuilder {
     return { response, responseBody };
   }
 
+  async delete(routeOrRequestBody, inputRequestBody) {
+    const { route, requestBody } = this.getRouteAndRequestBody(routeOrRequestBody, inputRequestBody);
+
+    if (!this.headers) {
+      this.buildHeaders();
+    }
+
+    const fetchData = {
+      method: 'DELETE',
+      headers: this.headers,
+    };
+
+    if (requestBody) {
+      fetchData.body = typeof requestBody === 'object' ? JSON.stringify(requestBody) : requestBody;
+    }
+
+    const response = await fetch(`${this.baseUrl}${route}`, fetchData);
+
+    const responseBody = await response.json();
+
+    return { response, responseBody };
+  }
+
   getRouteAndRequestBody(routeOrRequestBody = '', inputRequestBody) {
     let route = routeOrRequestBody;
     let requestBody = inputRequestBody;

@@ -4,7 +4,8 @@ import database from 'infra/database.js';
 const tableNameMap = {
   'user:tabcoin': 'user_tabcoin_operations',
   'user:tabcash': 'user_tabcash_operations',
-  'sponsored_content:tabcoin': 'sponsored_content_tabcoin_operations',
+  'sponsored_content:tabcoin:credit': 'sponsored_content_tabcoin_operations',
+  'sponsored_content:tabcoin:debit': 'sponsored_content_tabcoin_operations',
   'sponsored_content:tabcash': 'sponsored_content_tabcash_operations',
   default: 'content_tabcoin_operations',
 };
@@ -12,6 +13,8 @@ const tableNameMap = {
 const balanceTypeMap = {
   'content:tabcoin:credit': 'credit',
   'content:tabcoin:debit': 'debit',
+  'sponsored_content:tabcoin:credit': 'credit',
+  'sponsored_content:tabcoin:debit': 'debit',
   default: 'initial',
 };
 
@@ -47,6 +50,16 @@ async function findAllByOriginatorId(originatorId, options) {
           CONCAT('content:tabcoin:', balance_type) AS balance_type
         FROM content_tabcoin_operations
         WHERE originator_id = $1
+      UNION ALL
+        SELECT id, recipient_id, amount, originator_type, originator_id,
+          CONCAT('sponsored_content:tabcoin:', balance_type) AS balance_type
+        FROM sponsored_content_tabcoin_operations
+        WHERE originator_id = $1
+      UNION ALL
+        SELECT id, recipient_id, amount, originator_type, originator_id,
+          'sponsored_content:tabcash' AS balance_type
+        FROM sponsored_content_tabcash_operations
+        WHERE originator_id = $1
       ) AS all_operations;
     `,
     values: [originatorId],
@@ -58,7 +71,8 @@ async function findAllByOriginatorId(originatorId, options) {
 
 async function create({ balanceType, recipientId, amount, originatorType, originatorId }, options = {}) {
   const tableName = tableNameMap[balanceType] || tableNameMap.default;
-  const hasBalanceTypeColum = balanceType.startsWith('content:tabcoin');
+  const hasBalanceTypeColum =
+    balanceType.startsWith('content:tabcoin') || balanceType.startsWith('sponsored_content:tabcoin');
 
   const query = {
     text: `

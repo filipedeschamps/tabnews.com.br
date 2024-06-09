@@ -50,7 +50,7 @@ async function nuke(userId, options = {}) {
           WHERE
             originator_user_id = $1
             AND created_at > NOW() - INTERVAL '2 weeks'
-            AND type = 'update:content:tabcoins'
+            AND (type = 'update:content:tabcoins' OR type = 'update:sponsored_content:tabcoins')
           ORDER BY
             created_at ASC
         ;`,

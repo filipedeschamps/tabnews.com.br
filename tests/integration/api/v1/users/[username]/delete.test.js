@@ -1,6 +1,8 @@
 import { version as uuidVersion } from 'uuid';
 
+import balance from 'models/balance';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -618,6 +620,158 @@ describe('DELETE /api/v1/users/[username]', () => {
       expect(uuidVersion(nuke2ResponseBody.error_id)).toEqual(4);
       expect(uuidVersion(nuke2ResponseBody.request_id)).toEqual(4);
       expect(nuke2ResponseBody.key).toEqual('username');
+    });
+
+    test('"nuke" an user with sponsored content', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const firstUser = await usersRequestBuilder.buildUser({ with: ['ban:user'] });
+
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+
+      // Create sponsored contents
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: firstUser.id,
+        amount: 25,
+      });
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: firstUser.id,
+        amount: 2,
+      });
+
+      const firstUserSponsoredContent = await orchestrator.createSponsoredContent({
+        title: 'First user sponsored content',
+        owner_id: firstUser.id,
+        tabcash: 20,
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: secondUser.id,
+        amount: 50,
+      });
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 2,
+      });
+
+      const secondUserSponsoredContent = await orchestrator.createSponsoredContent({
+        title: 'Second user sponsored content',
+        owner_id: secondUser.id,
+        tabcash: 40,
+      });
+
+      // Rate sponsored contents
+      await orchestrator.createRate(firstUserSponsoredContent, 1, secondUser.id);
+      await orchestrator.createRate(secondUserSponsoredContent, 1, firstUser.id);
+
+      // Check first sponsored content TabCash
+      const firstUserSponsoredContentTabcashBeforeNuke = await balance.getTotal({
+        balanceType: 'sponsored_content:tabcash',
+        recipientId: firstUserSponsoredContent.id,
+      });
+      expect(firstUserSponsoredContentTabcashBeforeNuke).toEqual(19);
+
+      // Check users
+      const { responseBody: firstUserBeforeNuke } = await usersRequestBuilder.get(`/${firstUser.username}`);
+      expect(firstUserBeforeNuke.tabcoins).toEqual(3);
+      expect(firstUserBeforeNuke.tabcash).toEqual(5);
+
+      const { responseBody: secondUserBeforeNuke } = await usersRequestBuilder.get(`/${secondUser.username}`);
+      expect(secondUserBeforeNuke.tabcoins).toEqual(3);
+      expect(secondUserBeforeNuke.tabcash).toEqual(10);
+
+      // Nuke second user
+      const { response, responseBody } = await usersRequestBuilder.delete(`/${secondUser.username}`, {
+        ban_type: 'nuke',
+      });
+
+      expect(response.status).toEqual(200);
+      expect(responseBody).toStrictEqual({
+        id: secondUser.id,
+        username: secondUser.username,
+        description: secondUser.description,
+        features: ['nuked'],
+        created_at: secondUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      // Check users
+      const { responseBody: firstUserAfterNuke } = await usersRequestBuilder.get(`/${firstUser.username}`);
+      expect(firstUserAfterNuke.tabcoins).toEqual(3);
+      expect(firstUserAfterNuke.tabcash).toEqual(5);
+
+      const { response: secondUserAfterNukeResponse, responseBody: secondUserAfterNukeResponseBody } =
+        await usersRequestBuilder.get(`/${secondUser.username}`);
+
+      expect(secondUserAfterNukeResponse.status).toEqual(404);
+      expect(secondUserAfterNukeResponseBody).toStrictEqual({
+        status_code: 404,
+        name: 'NotFoundError',
+        message: 'O "username" informado não foi encontrado no sistema.',
+        action: 'Verifique se o "username" está digitado corretamente.',
+        error_location_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+        key: 'username',
+        error_id: secondUserAfterNukeResponseBody.error_id,
+        request_id: secondUserAfterNukeResponseBody.request_id,
+      });
+      expect(uuidVersion(secondUserAfterNukeResponseBody.error_id)).toEqual(4);
+      expect(uuidVersion(secondUserAfterNukeResponseBody.request_id)).toEqual(4);
+
+      // Check sponsored contents
+      const firstUserSponsoredContentAfterNukeResponse = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserSponsoredContent.slug}`,
+      );
+      const firstUserSponsoredContentAfterNukeResponseBody = await firstUserSponsoredContentAfterNukeResponse.json();
+
+      expect(firstUserSponsoredContentAfterNukeResponse.status).toEqual(200);
+      expect(firstUserSponsoredContentAfterNukeResponseBody).toStrictEqual({
+        id: firstUserSponsoredContent.content_id,
+        title: firstUserSponsoredContent.title,
+        body: firstUserSponsoredContent.body,
+        slug: firstUserSponsoredContent.slug,
+        created_at: firstUserSponsoredContent.created_at.toISOString(),
+        updated_at: firstUserSponsoredContent.updated_at.toISOString(),
+        published_at: firstUserSponsoredContent.published_at.toISOString(),
+        deleted_at: null,
+        owner_id: firstUser.id,
+        owner_username: firstUser.username,
+        parent_id: null,
+        source_url: null,
+        children_deep_count: 0,
+        status: 'sponsored',
+        tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+      });
+
+      const firstUserSponsoredContentTabcashAfterNuke = await balance.getTotal({
+        balanceType: 'sponsored_content:tabcash',
+        recipientId: firstUserSponsoredContent.id,
+      });
+      expect(firstUserSponsoredContentTabcashAfterNuke).toEqual(20);
+
+      const secondUserSponsoredContentAfterNukeResponse = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserSponsoredContent.slug}`,
+      );
+      const secondUserSponsoredContentAfterNukeResponseBody = await secondUserSponsoredContentAfterNukeResponse.json();
+
+      expect(secondUserSponsoredContentAfterNukeResponse.status).toEqual(404);
+      expect(secondUserSponsoredContentAfterNukeResponseBody).toStrictEqual({
+        status_code: 404,
+        name: 'NotFoundError',
+        message: 'O "username" informado não foi encontrado no sistema.',
+        action: 'Verifique se o "username" está digitado corretamente.',
+        error_location_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+        key: 'username',
+        error_id: secondUserSponsoredContentAfterNukeResponseBody.error_id,
+        request_id: secondUserSponsoredContentAfterNukeResponseBody.request_id,
+      });
+      expect(uuidVersion(secondUserSponsoredContentAfterNukeResponseBody.error_id)).toEqual(4);
+      expect(uuidVersion(secondUserSponsoredContentAfterNukeResponseBody.request_id)).toEqual(4);
     });
   });
 });
