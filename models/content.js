@@ -377,24 +377,24 @@ function populateSlug(postedContent) {
   }
 }
 
+slug.extend({
+  '%': ' por cento',
+  '>': '-',
+  '<': '-',
+  '@': '-',
+  '.': '-',
+  ',': '-',
+  '&': ' e ',
+  _: '-',
+  '/': '-',
+});
+
 function getSlug(title) {
   if (!title) {
     return;
   }
 
-  slug.extend({
-    '%': ' por cento',
-    '>': '-',
-    '<': '-',
-    '@': '-',
-    '.': '-',
-    ',': '-',
-    '&': ' e ',
-    _: '-',
-    '/': '-',
-  });
-
-  const generatedSlug = slug(title, {
+  const generatedSlug = slug(title.substring(0, 226), {
     trim: true,
   });
 

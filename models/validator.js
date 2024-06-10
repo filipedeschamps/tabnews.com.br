@@ -208,6 +208,7 @@ const schemas = {
         .max(226, 'utf8')
         .trim()
         .truncate()
+        .custom(noTrailingHyphen)
         .pattern(/^[a-z0-9](-?[a-z0-9])*$/)
         .when('$required.slug', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
@@ -667,6 +668,13 @@ const schemas = {
         .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
+};
+
+const noTrailingHyphen = (value) => {
+  while (value.endsWith('-')) {
+    value = value.slice(0, -1);
+  }
+  return value;
 };
 
 const withoutMarkdown = (value, helpers) => {

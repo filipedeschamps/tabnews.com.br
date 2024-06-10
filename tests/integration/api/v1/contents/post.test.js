@@ -672,6 +672,42 @@ describe('POST /api/v1/contents', () => {
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
     });
 
+    test('Content with "slug" with trailing hyphen', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'slug-with-trailing-hyphen---',
+      });
+
+      expect(response.status).toEqual(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'slug-with-trailing-hyphen',
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        status: 'draft',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+    });
+
     test('Content with "title" containing a blank String', async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       await contentsRequestBuilder.buildUser();
