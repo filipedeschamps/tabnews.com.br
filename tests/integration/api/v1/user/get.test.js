@@ -171,7 +171,7 @@ describe('GET /api/v1/user', () => {
 
     test('With expired session', async () => {
       vi.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
+        now: new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24 * 30), // 30 days and 1 second ago
       });
 
       const defaultUser = await orchestrator.createUser();
@@ -263,7 +263,7 @@ describe('GET /api/v1/user', () => {
 
       test('Should be able to renew with 9 day token', async () => {
         vi.useFakeTimers({
-          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), // 9 days ago
+          now: new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24 * 9), // 9 days and 1 second ago
         });
 
         let defaultUser = await orchestrator.createUser();
@@ -384,7 +384,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+          new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24), // 1 day and 1 second ago
         );
 
         const rewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
@@ -440,7 +440,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+          new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24), // 1 day and 1 second ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
@@ -488,7 +488,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
@@ -533,7 +533,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
@@ -584,7 +584,7 @@ describe('GET /api/v1/user', () => {
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
-          new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+          new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
         );
 
         const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);

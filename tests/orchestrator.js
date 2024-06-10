@@ -121,10 +121,36 @@ async function getLastEmail() {
   return lastEmailItem;
 }
 
+const usedFakeUsernames = new Set();
+const usedFakeEmails = new Set();
+
 async function createUser(userObject) {
+  let username = userObject?.username;
+  let email = userObject?.email;
+
+  while (!username) {
+    username = faker.internet.userName().replace(/[_.-]/g, '').substring(0, 30);
+
+    if (usedFakeUsernames.has(username)) {
+      username = undefined;
+    } else {
+      usedFakeUsernames.add(username);
+    }
+  }
+
+  while (!email) {
+    email = faker.internet.email();
+
+    if (usedFakeEmails.has(email)) {
+      email = undefined;
+    } else {
+      usedFakeEmails.add(email);
+    }
+  }
+
   return await user.create({
-    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', '').replace('-', ''),
-    email: userObject?.email || faker.internet.email(),
+    username,
+    email,
     password: userObject?.password || 'password',
     description: userObject?.description || '',
   });

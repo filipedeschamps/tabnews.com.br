@@ -73,7 +73,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
     test('With expired session', async () => {
       vi.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
+        now: new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24 * 30), // 30 days and 1 second ago
       });
 
       let defaultUser = await orchestrator.createUser();

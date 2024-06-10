@@ -84,7 +84,7 @@ describe('GET /recentes/rss', () => {
         <title>TabNews</title>
         <link>${orchestrator.webserverUrl}/recentes/rss</link>
         <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
-        <lastBuildDate>${new Date(secondRootContent.published_at).toUTCString()}</lastBuildDate>
+        <lastBuildDate>${new Date(secondRootContent.updated_at).toUTCString()}</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>pt</language>
