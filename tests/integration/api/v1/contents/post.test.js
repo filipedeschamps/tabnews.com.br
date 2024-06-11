@@ -1,7 +1,7 @@
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
-import { maxSlugLength } from 'tests/constants-for-tests';
+import { maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -734,34 +734,33 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "title" containing more than 255 characters', async () => {
+    test(`Content with "title" containing more than ${maxTitleLength} characters`, async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       await contentsRequestBuilder.buildUser();
 
       const { response, responseBody } = await contentsRequestBuilder.post({
-        title:
-          'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        title: `Este título possui ${1 + maxTitleLength} caracteres`.padEnd(1 + maxTitleLength, 's'),
         body: 'Qualquer coisa.',
       });
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" deve conter no máximo 255 caracteres.');
+      expect(responseBody.message).toEqual(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "title" containing 255 characters but more than 255 bytes', async () => {
+    test(`Content with "title" containing ${maxTitleLength} characters but more than ${maxTitleLength} bytes`, async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       const defaultUser = await contentsRequestBuilder.buildUser();
 
       const { response, responseBody } = await contentsRequestBuilder.post({
         title:
-          `Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
-            255,
+          `Este título possui ${maxTitleLength} caracteres ocupando ${1 + maxTitleLength} bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
+            maxTitleLength,
             's',
           ),
         body: 'Instale o Node.js',
@@ -773,13 +772,13 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: `este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-limitado-a-${maxSlugLength}-bytes`.padEnd(
+        slug: `este-titulo-possui-${maxTitleLength}-caracteres-ocupando-${1 + maxTitleLength}-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-limitado-a-${maxSlugLength}-bytes`.padEnd(
           maxSlugLength,
           's',
         ),
         title:
-          `Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
-            255,
+          `Este título possui ${maxTitleLength} caracteres ocupando ${1 + maxTitleLength} bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
+            maxTitleLength,
             's',
           ),
         body: 'Instale o Node.js',
@@ -835,13 +834,13 @@ describe('POST /api/v1/contents', () => {
       expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
     });
 
-    test('Content with "title" containing special characters occupying more than 255 bytes', async () => {
+    test(`Content with "title" containing special characters occupying more than ${maxTitleLength} bytes`, async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       const defaultUser = await contentsRequestBuilder.buildUser();
 
       const { response, responseBody } = await contentsRequestBuilder.post({
-        title: '♥'.repeat(255),
-        body: `The title is 255 characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
+        title: '♥'.repeat(maxTitleLength),
+        body: `The title is ${maxTitleLength} characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
       });
 
       expect(response.status).toEqual(201);
@@ -851,8 +850,8 @@ describe('POST /api/v1/contents', () => {
         owner_id: defaultUser.id,
         parent_id: null,
         slug: ''.padEnd(maxSlugLength, '4pml'),
-        title: '♥'.repeat(255),
-        body: `The title is 255 characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
+        title: '♥'.repeat(maxTitleLength),
+        body: `The title is ${maxTitleLength} characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
         status: 'draft',
         source_url: null,
         created_at: responseBody.created_at,

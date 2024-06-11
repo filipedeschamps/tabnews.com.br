@@ -1,6 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
-import { maxSlugLength } from 'tests/constants-for-tests';
+import { maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -1087,7 +1087,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
-    test('Content with "title" containing more than 255 characters', async () => {
+    test(`Content with "title" containing more than ${maxTitleLength} characters`, async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       const defaultUser = await contentsRequestBuilder.buildUser();
 
@@ -1100,15 +1100,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const { response, responseBody } = await contentsRequestBuilder.patch(
         `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          title:
-            'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          title: `Este título possui ${1 + maxTitleLength} caracteres`.padEnd(1 + maxTitleLength, 's'),
         },
       );
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" deve conter no máximo 255 caracteres.');
+      expect(responseBody.message).toEqual(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
