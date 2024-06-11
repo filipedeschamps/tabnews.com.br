@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import { maxSlugLength } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -707,7 +708,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
@@ -749,7 +750,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
@@ -840,7 +841,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 226 bytes', async () => {
+    test(`Content with "slug" containing more than ${maxSlugLength} bytes`, async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       const defaultUser = await contentsRequestBuilder.buildUser();
 
@@ -853,7 +854,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const { response, responseBody } = await contentsRequestBuilder.patch(
         `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(227, 's'),
+          slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+            1 + maxSlugLength,
+            's',
+          ),
         },
       );
 
@@ -863,7 +867,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(226, 's'),
+        slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+          maxSlugLength,
+          's',
+        ),
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',

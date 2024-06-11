@@ -372,6 +372,9 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     modified_time: secureContentFound.updated_at,
     author: secureContentFound.owner_username,
     type: 'article',
+    canonical: secureContentFound.parent_id
+      ? undefined
+      : `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
   };
 
   let secureRootContentFound = null;

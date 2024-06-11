@@ -1,6 +1,7 @@
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
+import { maxSlugLength } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -480,14 +481,17 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 226 bytes', async () => {
+    test(`Content with "slug" containing more than ${maxSlugLength} bytes`, async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       const defaultUser = await contentsRequestBuilder.buildUser();
 
       const { response, responseBody } = await contentsRequestBuilder.post({
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
-        slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(227, 's'),
+        slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+          1 + maxSlugLength,
+          's',
+        ),
       });
 
       expect(response.status).toEqual(201);
@@ -496,7 +500,10 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-from-227-to-226-bytes'.padEnd(226, 's'),
+        slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+          maxSlugLength,
+          's',
+        ),
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
@@ -579,7 +586,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
@@ -613,7 +620,7 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
@@ -753,7 +760,10 @@ describe('POST /api/v1/contents', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.post({
         title:
-          'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          `Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
+            255,
+            's',
+          ),
         body: 'Instale o Node.js',
       });
 
@@ -763,9 +773,15 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-ocupando-menos-de-256-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: `este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-limitado-a-${maxSlugLength}-bytes`.padEnd(
+          maxSlugLength,
+          's',
+        ),
         title:
-          'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+          `Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
+            255,
+            's',
+          ),
         body: 'Instale o Node.js',
         status: 'draft',
         source_url: null,
@@ -825,7 +841,7 @@ describe('POST /api/v1/contents', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.post({
         title: '♥'.repeat(255),
-        body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
+        body: `The title is 255 characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
       });
 
       expect(response.status).toEqual(201);
@@ -834,9 +850,9 @@ describe('POST /api/v1/contents', () => {
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: '4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4p',
+        slug: ''.padEnd(maxSlugLength, '4pml'),
         title: '♥'.repeat(255),
-        body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
+        body: `The title is 255 characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
         status: 'draft',
         source_url: null,
         created_at: responseBody.created_at,

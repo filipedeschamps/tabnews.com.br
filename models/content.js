@@ -394,7 +394,7 @@ function getSlug(title) {
     return;
   }
 
-  const generatedSlug = slug(title.substring(0, 226), {
+  const generatedSlug = slug(title.substring(0, 160), {
     trim: true,
   });
 
@@ -433,7 +433,7 @@ function parseQueryErrorToCustomError(error) {
   if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "title" ou "slug" diferente.`,
+      action: `Utilize um "title" ou "slug" com começo diferente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
