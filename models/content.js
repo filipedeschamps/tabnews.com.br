@@ -377,24 +377,24 @@ function populateSlug(postedContent) {
   }
 }
 
+slug.extend({
+  '%': ' por cento',
+  '>': '-',
+  '<': '-',
+  '@': '-',
+  '.': '-',
+  ',': '-',
+  '&': ' e ',
+  _: '-',
+  '/': '-',
+});
+
 function getSlug(title) {
   if (!title) {
     return;
   }
 
-  slug.extend({
-    '%': ' por cento',
-    '>': '-',
-    '<': '-',
-    '@': '-',
-    '.': '-',
-    ',': '-',
-    '&': ' e ',
-    _: '-',
-    '/': '-',
-  });
-
-  const generatedSlug = slug(title, {
+  const generatedSlug = slug(title.substring(0, 160), {
     trim: true,
   });
 
@@ -433,7 +433,7 @@ function parseQueryErrorToCustomError(error) {
   if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "title" ou "slug" diferente.`,
+      action: `Utilize um "title" ou "slug" com começo diferente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
