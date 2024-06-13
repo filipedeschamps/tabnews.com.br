@@ -512,7 +512,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const postTabCoinsResponsesStatus = postTabCoinsResponses.map(({ response }) => response.status);
 
-      let successPostIndexes = [postTabCoinsResponsesStatus.indexOf(201)];
+      const successPostIndexes = [postTabCoinsResponsesStatus.indexOf(201)];
 
       for (let i = 0; i < timesSuccessfully; i++) {
         successPostIndexes.push(postTabCoinsResponsesStatus.indexOf(201, successPostIndexes[i] + 1));

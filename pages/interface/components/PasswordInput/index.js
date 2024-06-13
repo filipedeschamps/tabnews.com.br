@@ -9,7 +9,7 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
 
   function focusAfterEnd(ref) {
     setTimeout(() => {
-      let len = ref.current.value.length;
+      const len = ref.current.value.length;
       ref.current.focus();
       ref.current.setSelectionRange(len, len);
     }, 5);

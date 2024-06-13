@@ -30,7 +30,7 @@ describe('GET /api/v1/status/votes', () => {
     test('Should not retrieve voting data', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
-      let defaultUserSession = await orchestrator.createSession(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/status/votes`, {
         method: 'GET',

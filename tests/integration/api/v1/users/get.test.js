@@ -49,7 +49,7 @@ describe('GET /api/v1/users', () => {
 
   describe('Default user', () => {
     test('User without "read:user:list" feature', async () => {
-      let defaultUserSession = await orchestrator.createSession(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'GET',
