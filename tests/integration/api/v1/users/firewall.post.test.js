@@ -69,7 +69,9 @@ describe('POST /api/v1/users [FIREWALL]', () => {
 
       const user1 = await user.findOneById(request1Body.id);
       const user2 = await user.findOneById(request2Body.id);
-      await expect(user.findOneByUsername('request3')).rejects.toThrow();
+      await expect(user.findOneByUsername('request3')).rejects.toThrow(
+        'O "username" informado não foi encontrado no sistema.',
+      );
 
       expect(user1.features).toStrictEqual([]);
       expect(user2.features).toStrictEqual([]);

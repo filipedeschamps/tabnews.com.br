@@ -20,7 +20,7 @@ export default function useCollapse({
     setChildrenState((lastState) => {
       const childIndex = lastState.findIndex((child) => child.id === id);
       let grouperIndex = childIndex;
-      let childrenToExpand = [];
+      const childrenToExpand = [];
 
       while (lastState[grouperIndex]?.renderIntent === 0) {
         childrenToExpand.push(lastState[grouperIndex]);
@@ -42,7 +42,7 @@ export default function useCollapse({
   function handleCollapse(id) {
     setChildrenState((lastState) => {
       const childIndex = lastState.findIndex((child) => child.id === id);
-      let children = [...lastState];
+      const children = [...lastState];
 
       if (childIndex < 0) return children;
 

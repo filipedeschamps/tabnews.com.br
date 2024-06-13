@@ -45,7 +45,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
-      let secondUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
         method: 'PATCH',

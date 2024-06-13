@@ -853,7 +853,7 @@ async function findTree(options = {}) {
   }
 
   function validateWhereSchema(where) {
-    let options = {};
+    const options = {};
 
     if (where.parent_id) {
       options.parent_id = 'required';

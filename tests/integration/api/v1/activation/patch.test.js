@@ -272,7 +272,7 @@ describe('PATCH /api/v1/activation', () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const activationToken = await activation.create(defaultUser);
-      let defaultUserSession = await orchestrator.createSession(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
         method: 'PATCH',

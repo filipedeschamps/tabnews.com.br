@@ -30,7 +30,7 @@ describe('GET /api/v1/migrations', () => {
     test('Retrieving pending migrations', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
-      let defaultUserSession = await orchestrator.createSession(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
         method: 'GET',
