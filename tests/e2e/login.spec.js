@@ -12,42 +12,36 @@ test.beforeAll('Running orchestrator', async () => {
 });
 
 test.beforeEach('Navigating for login page', async ({ page }) => {
-  await page.goto('/');
-
-  let homePage = new HomePage(page);
-  await homePage.goLogin();
+  let loginPage = new LoginPage(page);
+  await loginPage.goToPage();
 });
 
 test.describe('Login user', () => {
-  test.describe('User does not exist', () => {
-    test('should not be able to login', async ({ page }) => {
-      const loginPage = new LoginPage(page);
+  test('should not be able to login', async ({ page }) => {
+    const loginPage = new LoginPage(page);
 
-      await loginPage.fillField('email', 'email_not_exist@gmail.com');
-      await loginPage.fillField('password', 'password_invalid');
+    await loginPage.fillField('email', 'email_not_exist@gmail.com');
+    await loginPage.fillField('password', 'password_invalid');
 
-      await loginPage.buttonLogin.click();
+    await loginPage.buttonLogin.click();
 
-      let expectedMessage = await loginPage.getGlobalErrorMessage();
-      expect(expectedMessage).toContain('Dados não conferem. Verifique se os dados enviados estão corretos.');
-    });
+    let expectedMessage = await loginPage.getGlobalErrorMessage();
+    expect(expectedMessage).toContain('Dados não conferem. Verifique se os dados enviados estão corretos.');
   });
 
-  test.describe('Default user', () => {
-    test('should be able to login', async ({ page }) => {
-      const defaultUser = await orchestrator.createUser({
-        username: 'defaultuser',
-        email: 'email_default_user@gmail.com',
-        password: 'password_default_user',
-      });
-      await orchestrator.activateUser(defaultUser);
-
-      const loginPage = new LoginPage(page);
-      await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
-
-      const homePage = new HomePage(page);
-      let username = await homePage.getUserLogged();
-      expect(username).toBe('defaultuser');
+  test('should be able to login', async ({ page }) => {
+    const defaultUser = await orchestrator.createUser({
+      username: 'defaultuser',
+      email: 'email_default_user@gmail.com',
+      password: 'password_default_user',
     });
+    await orchestrator.activateUser(defaultUser);
+
+    const loginPage = new LoginPage(page);
+    await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
+
+    const homePage = new HomePage(page);
+    let username = await homePage.getUserLogged();
+    expect(username).toBe('defaultuser');
   });
 });
