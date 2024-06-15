@@ -15,17 +15,17 @@ exports.RegisterPage = class RegisterPage {
     return this.page.title();
   }
 
-  async makeRegisterUserDefault(username, email, password) {
-    await this.fillField('name', username);
-    await this.fillField('email', email);
-    await this.fillField('password', password);
+  async register(username, email, password) {
+    await this.fill('name', username);
+    await this.fill('email', email);
+    await this.fill('password', password);
     await this.page.locator('input[data-test-id=terms-accepted]').check();
 
     await this.buttonRegister.click();
     await this.buttonRegister.waitFor({ state: 'detached' });
   }
 
-  async fillField(id, value) {
+  async fill(id, value) {
     await this.page.locator(`#${id}`).fill(value);
   }
 };

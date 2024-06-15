@@ -32,7 +32,7 @@ test.describe('Register user', () => {
       title = await registerPage.getTitle();
       await expect(title).toBe('Cadastro · TabNews');
 
-      await registerPage.makeRegisterUserDefault('e2etests', 'e2e_tests@playwright.com', 'e2e_tests');
+      await registerPage.register('e2etests', 'e2e_tests@playwright.com', 'e2e_tests');
 
       const registerConfirmPage = new RegisterConfirmPage(page);
       let message = await registerConfirmPage.getMessage();
