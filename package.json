@@ -51,7 +51,7 @@
     "@commitlint/cli": "18.6.1",
     "@commitlint/config-conventional": "18.6.2",
     "@faker-js/faker": "8.4.1",
-    "@playwright/test": "1.43.1",
+    "@playwright/test": "1.44.1",
     "@testing-library/react": "15.0.0",
     "@vitejs/plugin-react": "4.2.1",
     "autoprefixer": "10.4.17",
