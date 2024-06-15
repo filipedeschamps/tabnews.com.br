@@ -57,7 +57,7 @@ test.describe('Home page', () => {
     test.beforeEach('Navigating to login page and log in', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goToPage();
-      await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
+      await loginPage.login('email_default_user@gmail.com', 'password_default_user');
     });
 
     test('should be able to visit relevants and recents tab', async ({ page }) => {

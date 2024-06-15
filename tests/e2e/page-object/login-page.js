@@ -10,6 +10,13 @@ exports.LoginPage = class LoginPage {
     this.buttonLogin = this.page.locator('button[type=submit]');
   }
 
+  async login(email, password, detachedLoginButton = true) {
+    await this.fill('email', email);
+    await this.fill('password', password);
+
+    await this.clickLoginButton(detachedLoginButton);
+  }
+
   async goToPage() {
     await this.page.goto('/');
 
@@ -17,20 +24,14 @@ exports.LoginPage = class LoginPage {
     await homePage.goLogin();
   }
 
-  async makeLoginUserDefault(email, password, validDetached = true) {
-    await this.fillField('email', email);
-    await this.fillField('password', password);
-
-    await this.makeLogin(validDetached);
-  }
-
-  async fillField(id, value) {
+  async fill(id, value) {
     await this.page.locator(`#${id}`).fill(value);
   }
 
-  async makeLogin(validDetached = true) {
+  async clickLoginButton(detached = true) {
     await this.buttonLogin.click();
-    if (validDetached) {
+
+    if (detached) {
       await this.buttonLogin.waitFor({ state: 'detached' });
     }
   }

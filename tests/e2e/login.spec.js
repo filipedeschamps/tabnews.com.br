@@ -19,11 +19,9 @@ test.beforeEach('Navigating for login page', async ({ page }) => {
 test.describe('Login user', () => {
   test('should not be able to login', async ({ page }) => {
     const loginPage = new LoginPage(page);
-
-    await loginPage.fillField('email', 'email_not_exist@gmail.com');
-    await loginPage.fillField('password', 'password_invalid');
-
-    await loginPage.buttonLogin.click();
+    await loginPage.fill('email', 'email_not_exist@gmail.com');
+    await loginPage.fill('password', 'password_invalid');
+    await loginPage.clickLoginButton(false);
 
     let expectedMessage = await loginPage.getGlobalErrorMessage();
     expect(expectedMessage).toContain('Dados não conferem. Verifique se os dados enviados estão corretos.');
@@ -38,7 +36,9 @@ test.describe('Login user', () => {
     await orchestrator.activateUser(defaultUser);
 
     const loginPage = new LoginPage(page);
-    await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
+    await loginPage.fill('email', 'email_default_user@gmail.com');
+    await loginPage.fill('password', 'password_default_user');
+    await loginPage.clickLoginButton();
 
     const homePage = new HomePage(page);
     let username = await homePage.getUserLogged();

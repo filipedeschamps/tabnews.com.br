@@ -32,14 +32,10 @@ test.describe('Publish content', () => {
       await orchestrator.activateUser(defaultUser);
     });
 
-    test.beforeEach('Navigating for login page', async ({ page }) => {
-      await page.goto('/');
-
-      const homePage = new HomePage(page);
-      await homePage.goLogin();
-
+    test.beforeEach('Navigating for login page and log in', async ({ page }) => {
       const loginPage = new LoginPage(page);
-      await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
+      await loginPage.goToPage();
+      await loginPage.login('email_default_user@gmail.com', 'password_default_user');
     });
 
     test('should to publish content by header', async ({ page }) => {

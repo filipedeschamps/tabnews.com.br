@@ -42,7 +42,7 @@ test.describe('Register user', () => {
       await registerConfirmPage.goLogin();
 
       const loginPage = new LoginPage(page);
-      await loginPage.makeLoginUserDefault('e2e_tests@playwright.com', 'e2e_tests', false);
+      await loginPage.login('e2e_tests@playwright.com', 'e2e_tests', false);
 
       let expectedMessage = await loginPage.getGlobalErrorMessage();
       expect(expectedMessage).toContain(
@@ -52,7 +52,7 @@ test.describe('Register user', () => {
       const user = await orchestrator.findUserByEmail('e2e_tests@playwright.com');
       await orchestrator.activateUser(user);
 
-      await loginPage.makeLoginUserDefault('e2e_tests@playwright.com', 'e2e_tests', true);
+      await loginPage.login('e2e_tests@playwright.com', 'e2e_tests');
 
       homePage = new HomePage(page);
       let usernameUserLogged = await homePage.getUserLogged();
@@ -69,13 +69,11 @@ test.describe('Register user', () => {
       });
       await orchestrator.activateUser(defaultUser);
 
-      let homePage = new HomePage(page);
-      await homePage.goLogin();
-
       const loginPage = new LoginPage(page);
-      await loginPage.makeLoginUserDefault('email_default_user@gmail.com', 'password_default_user');
+      await loginPage.goToPage();
+      await loginPage.login('email_default_user@gmail.com', 'password_default_user');
 
-      homePage = new HomePage(page);
+      const homePage = new HomePage(page);
       await expect(homePage.buttonRegister).toHaveCount(0);
     });
   });
