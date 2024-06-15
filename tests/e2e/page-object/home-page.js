@@ -15,7 +15,7 @@ exports.HomePage = class HomePage {
   }
 
   async getTitle() {
-    const title = this.page.getByRole('heading', { name: 'Nenhum conteúdo encontrado' });
+    const title = this.page.getByLabel('Relevantes');
     await title.waitFor({ state: 'visible' });
 
     return this.page.title();

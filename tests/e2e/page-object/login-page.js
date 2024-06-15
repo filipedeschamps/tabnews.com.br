@@ -1,3 +1,5 @@
+const { HomePage } = require('./home-page');
+
 exports.LoginPage = class LoginPage {
   /**
    * @param {import('@playwright/test').Page} page
@@ -8,11 +10,11 @@ exports.LoginPage = class LoginPage {
     this.buttonLogin = this.page.locator('button[type=submit]');
   }
 
-  async getTitle() {
-    const title = this.page.getByRole('heading', { name: 'Login' });
-    await title.waitFor({ state: 'visible' });
+  async goToPage() {
+    await this.page.goto('/');
 
-    return this.page.title();
+    const homePage = new HomePage(this.page);
+    await homePage.goLogin();
   }
 
   async makeLoginUserDefault(email, password, validDetached = true) {
