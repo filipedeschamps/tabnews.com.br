@@ -1,5 +1,5 @@
+import { randomUUID as uuidV4 } from 'node:crypto';
 import slug from 'slug';
-import { v4 as uuidV4 } from 'uuid';
 
 import { ForbiddenError, ValidationError } from 'errors';
 import database from 'infra/database.js';

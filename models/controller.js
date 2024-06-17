@@ -1,5 +1,5 @@
+import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
-import { v4 as uuidV4 } from 'uuid';
 
 import {
   ForbiddenError,
