@@ -1,4 +1,5 @@
-import { v4 as uuidV4, version as uuidVersion } from 'uuid';
+import { randomUUID as uuidV4 } from 'node:crypto';
+import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
 

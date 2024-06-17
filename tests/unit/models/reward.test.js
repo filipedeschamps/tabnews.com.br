@@ -1,4 +1,4 @@
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID as uuidV4 } from 'node:crypto';
 
 import database, { mockQuery, mockRelease } from 'infra/database';
 import balance from 'models/balance';
