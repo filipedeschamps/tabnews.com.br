@@ -1,4 +1,4 @@
-version: '2.4'
+name: 'tabnews'
 services:
   postgres_dev:
     container_name: 'postgres-dev'
