@@ -1805,15 +1805,18 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.',
-      );
-      expect(responseBody.action).toEqual('Utilize um "parent_id" que aponte para um conteúdo que existe.');
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'Você está tentando criar um comentário em um conteúdo que não existe.',
+        action: 'Utilize um "parent_id" que aponte para um conteúdo existente.',
+        error_location_code: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
+        key: 'parent_id',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
     });
 
     describe('Notifications', () => {
