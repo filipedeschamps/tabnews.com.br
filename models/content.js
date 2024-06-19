@@ -270,22 +270,17 @@ async function create(postedContent, options = {}) {
   populateSlug(postedContent);
   populateStatus(postedContent);
   const validContent = validateCreateSchema(postedContent);
+  validContent.id = uuidV4();
 
   checkRootContentTitle(validContent);
-
-  const parentContent = validContent.parent_id
-    ? await checkIfParentIdExists(validContent, {
-        transaction: options.transaction,
-      })
-    : null;
-
-  injectIdAndPath(validContent, parentContent);
 
   populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent, {
     transaction: options.transaction,
   });
+
+  throwIfParentIsNotInPath(newContent);
 
   await creditOrDebitTabCoins(null, newContent, {
     eventId: options.eventId,
@@ -310,10 +305,22 @@ async function create(postedContent, options = {}) {
     const query = {
       text: `
       WITH
+        parent AS (
+          SELECT id, path FROM contents WHERE id = $2
+        ),
+        path_value AS (
+          SELECT 
+            CASE 
+              WHEN parent.id IS NULL THEN ARRAY[]::uuid[]
+              ELSE ARRAY_APPEND(parent.path, parent.id)
+            END AS path
+          FROM (SELECT 1) AS dummy
+          LEFT JOIN parent ON true
+        ),
         inserted_content as (
           INSERT INTO
             contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, (SELECT path FROM path_value))
             RETURNING *
         )
       SELECT
@@ -346,7 +353,6 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
-        content.path,
       ],
     };
 
@@ -356,18 +362,6 @@ async function create(postedContent, options = {}) {
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
     }
-  }
-}
-
-function injectIdAndPath(validContent, parentContent) {
-  validContent.id = uuidV4();
-
-  if (parentContent) {
-    validContent.path = [...parentContent.path, parentContent.id];
-  }
-
-  if (!parentContent) {
-    validContent.path = [];
   }
 }
 
@@ -405,17 +399,8 @@ function populateStatus(postedContent) {
   postedContent.status = postedContent.status || 'draft';
 }
 
-async function checkIfParentIdExists(content, options) {
-  const existingContent = await findOne(
-    {
-      where: {
-        id: content.parent_id,
-      },
-    },
-    options,
-  );
-
-  if (!existingContent) {
+function throwIfParentIsNotInPath(newContent) {
+  if (newContent.parent_id && newContent.path.at(-1) !== newContent.parent_id) {
     throw new ValidationError({
       message: `Você está tentando criar um comentário em um conteúdo que não existe.`,
       action: `Utilize um "parent_id" que aponte para um conteúdo existente.`,
@@ -425,8 +410,6 @@ async function checkIfParentIdExists(content, options) {
       key: 'parent_id',
     });
   }
-
-  return existingContent;
 }
 
 function parseQueryErrorToCustomError(error) {
