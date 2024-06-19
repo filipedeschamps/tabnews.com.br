@@ -417,8 +417,8 @@ async function checkIfParentIdExists(content, options) {
 
   if (!existingContent) {
     throw new ValidationError({
-      message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
-      action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
+      message: `Você está tentando criar um comentário em um conteúdo que não existe.`,
+      action: `Utilize um "parent_id" que aponte para um conteúdo existente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
       statusCode: 400,
@@ -625,13 +625,6 @@ async function update(contentId, postedContent, options = {}) {
   throwIfContentIsAlreadyDeleted(oldContent);
   throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
   checkRootContentTitle(newContent);
-  checkForParentIdRecursion(newContent);
-
-  if (newContent.parent_id) {
-    await checkIfParentIdExists(newContent, {
-      transaction: options.transaction,
-    });
-  }
 
   populatePublishedAtValue(oldContent, newContent);
   populateDeletedAtValue(newContent);
@@ -727,19 +720,6 @@ function validateUpdateSchema(content) {
   });
 
   return cleanValues;
-}
-
-function checkForParentIdRecursion(content) {
-  if (content.parent_id === content.id) {
-    throw new ValidationError({
-      message: `"parent_id" não deve apontar para o próprio conteúdo.`,
-      action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
-      statusCode: 400,
-      key: 'parent_id',
-    });
-  }
 }
 
 function populateDeletedAtValue(contentObject) {
