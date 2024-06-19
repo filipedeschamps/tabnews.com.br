@@ -43,13 +43,7 @@ function validateObject(object) {
   return cleanObject;
 }
 
-async function findAll() {
-  const results = await database.query('SELECT * FROM events;');
-  return results.rows;
-}
-
 export default Object.freeze({
   create,
   updateMetadata,
-  findAll,
 });

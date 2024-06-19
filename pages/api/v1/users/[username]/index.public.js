@@ -163,6 +163,13 @@ async function patchHandler(request, response) {
     for (const field of updatableFields) {
       if (originalUser[field] !== updatedUser[field]) {
         metadata.updatedFields.push(field);
+
+        if (field === 'username') {
+          metadata.username = {
+            old: originalUser.username,
+            new: updatedUser.username,
+          };
+        }
       }
     }
 

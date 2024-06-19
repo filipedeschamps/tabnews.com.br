@@ -1,7 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
 import content from 'models/content.js';
-import event from 'models/event.js';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeEach(async () => {
@@ -61,9 +60,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       const request2Body = await request2.json();
       const request3Body = await request3.json();
 
-      expect(request1.status).toBe(201);
-      expect(request2.status).toBe(201);
-      expect(request3.status).toBe(429);
+      expect.soft(request1.status).toBe(201);
+      expect.soft(request2.status).toBe(201);
+      expect.soft(request3.status).toBe(429);
 
       expect(request3Body).toStrictEqual({
         name: 'TooManyRequestsError',
@@ -96,18 +95,22 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       expect(content2.status).toStrictEqual('draft');
       expect(content3).toStrictEqual(undefined);
 
-      const events = await event.findAll();
-      expect(events.length).toEqual(3);
+      const lastEvent = await orchestrator.getLastEvent();
 
-      expect(uuidVersion(events[2].id)).toEqual(4);
-      expect(events[2].type).toEqual('firewall:block_contents:text_root');
-      expect(events[2].originator_user_id).toEqual(defaultUser.id);
-      expect(events[2].originator_ip).toEqual('127.0.0.1');
-      expect(events[2].metadata).toEqual({
-        from_rule: 'create:content:text_root',
-        contents: [content1.id, content2.id],
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'firewall:block_contents:text_root',
+        originator_user_id: defaultUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          from_rule: 'create:content:text_root',
+          contents: [content1.id, content2.id],
+        },
+        created_at: lastEvent.created_at,
       });
-      expect(Date.parse(events[2].created_at)).not.toEqual(NaN);
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
     });
 
     test('Spamming valid "child" contents', async () => {
@@ -176,9 +179,9 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       const request2Body = await request2.json();
       const request3Body = await request3.json();
 
-      expect(request1.status).toBe(201);
-      expect(request2.status).toBe(201);
-      expect(request3.status).toBe(429);
+      expect.soft(request1.status).toBe(201);
+      expect.soft(request2.status).toBe(201);
+      expect.soft(request3.status).toBe(429);
 
       expect(request3Body).toStrictEqual({
         name: 'TooManyRequestsError',
@@ -211,18 +214,22 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
       expect(content2.status).toStrictEqual('draft');
       expect(content3).toStrictEqual(undefined);
 
-      const events = await event.findAll();
-      expect(events.length).toEqual(4);
+      const lastEvent = await orchestrator.getLastEvent();
 
-      expect(uuidVersion(events[3].id)).toEqual(4);
-      expect(events[3].type).toEqual('firewall:block_contents:text_child');
-      expect(events[3].originator_user_id).toEqual(defaultUser.id);
-      expect(events[3].originator_ip).toEqual('127.0.0.1');
-      expect(events[3].metadata).toEqual({
-        from_rule: 'create:content:text_child',
-        contents: [content1.id, content2.id],
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'firewall:block_contents:text_child',
+        originator_user_id: defaultUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          from_rule: 'create:content:text_child',
+          contents: [content1.id, content2.id],
+        },
+        created_at: lastEvent.created_at,
       });
-      expect(Date.parse(events[3].created_at)).not.toEqual(NaN);
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
     });
   });
 });

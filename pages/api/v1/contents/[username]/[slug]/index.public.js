@@ -147,7 +147,7 @@ async function patchHandler(request, response) {
 
     const currentEvent = await event.create(
       {
-        type: filteredBodyValues.parent_id ? 'update:content:text_child' : 'update:content:text_root',
+        type: contentToBeUpdated.parent_id ? 'update:content:text_child' : 'update:content:text_root',
         originatorUserId: request.context.user.id,
         originatorIp: request.context.clientIp,
       },
