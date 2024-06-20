@@ -115,7 +115,7 @@ async function patchHandler(request, response) {
     });
   }
 
-  if (!unfilteredBodyValues.parent_id) {
+  if (!contentToBeUpdated.parent_id) {
     if (!authorization.can(userTryingToPatch, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos na raiz do site.',
