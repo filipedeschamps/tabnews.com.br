@@ -306,7 +306,7 @@ async function create(postedContent, options = {}) {
       text: `
       WITH
         parent AS (
-          SELECT id, path FROM contents WHERE id = $2
+          SELECT id, path, owner_id FROM contents WHERE id = $2
         ),
         path_value AS (
           SELECT 
@@ -337,11 +337,14 @@ async function create(postedContent, options = {}) {
         inserted_content.published_at,
         inserted_content.deleted_at,
         inserted_content.path,
-        users.username as owner_username
+        users.username as owner_username,
+        parent.owner_id as parent_owner_id
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
+      LEFT JOIN
+        parent ON true
       ;`,
       values: [
         content.id,
@@ -546,15 +549,20 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
 
     if (newContent.parent_id) {
-      const queryParent = {
-        text: `SELECT owner_id FROM contents WHERE id = $1;`,
-        values: [newContent.parent_id],
-      };
-      const parentQueryResult = await database.query(queryParent, options);
-      const parentContent = parentQueryResult.rows[0];
+      let parentOwnerId = newContent.parent_owner_id;
+
+      if (parentOwnerId === undefined) {
+        const queryParent = {
+          text: `SELECT owner_id FROM contents WHERE id = $1;`,
+          values: [newContent.parent_id],
+        };
+        const parentQueryResult = await database.query(queryParent, options);
+        const parentContent = parentQueryResult.rows[0];
+        parentOwnerId = parentContent.owner_id;
+      }
 
       // We should not credit if the parent content is from the same user.
-      if (parentContent.owner_id === newContent.owner_id) return;
+      if (parentOwnerId === newContent.owner_id) return;
     }
   }
 
