@@ -306,6 +306,8 @@ async function update(username, postedUserData, options = {}) {
           password = $4,
           description = $5,
           notifications = $6,
+          totp_enabled = $7,
+          totp_secret = $8,
           updated_at = (now() at time zone 'utc')
         WHERE
           id = $1
@@ -319,6 +321,8 @@ async function update(username, postedUserData, options = {}) {
         userWithUpdatedValues.password,
         userWithUpdatedValues.description,
         userWithUpdatedValues.notifications,
+        userWithUpdatedValues.totp_enabled,
+        userWithUpdatedValues.totp_secret,
       ],
     };
 
@@ -351,6 +355,8 @@ async function validatePatchSchema(postedUserData) {
     password: 'optional',
     description: 'optional',
     notifications: 'optional',
+    totp_enabled: 'optional',
+    totp_secret: 'optional',
   });
 
   return cleanValues;

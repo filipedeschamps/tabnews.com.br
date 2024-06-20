@@ -162,6 +162,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
       ],
       tabcoins: 0,
       tabcash: 0,
+      totp_enabled: false,
       created_at: postUserResponseBody.created_at,
       updated_at: getUserResponseBody.updated_at,
     });

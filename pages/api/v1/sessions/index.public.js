@@ -7,6 +7,7 @@ import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import session from 'models/session';
+import totp from 'models/totp';
 import user from 'models/user';
 import validator from 'models/validator.js';
 
@@ -38,6 +39,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    totp_token: 'optional',
   });
 
   request.body = cleanValues;
@@ -62,6 +64,28 @@ async function postHandler(request, response) {
       action: `Verifique se os dados enviados estão corretos.`,
       errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
+  }
+
+  if (storedUser.totp_enabled) {
+    if (!insecureInputValues?.totp_token) {
+      const responseBody = {
+        status_code: 202,
+        message: 'Duplo fator de autenticação necessário',
+        action: 'Envie o token do duplo fator de autenticação',
+      };
+      response.status(202).json(responseBody);
+    }
+
+    const secret = totp.decryptData(storedUser.totp_secret);
+    const valid = totp.validateOTP(secret, insecureInputValues.totp_token);
+
+    if (!valid) {
+      throw new UnauthorizedError({
+        message: `Código informado inválido`,
+        action: `Verifique se os dados enviados estão corretos`,
+        errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:TOTP_TOKEN_INVALID`,
+      });
+    }
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
