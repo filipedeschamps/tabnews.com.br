@@ -541,23 +541,21 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       });
     }
 
+    // We should not credit if the content has little or no value.
+    // Expected 5 or more words with 5 or more characters.
+    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
+
     if (newContent.parent_id) {
-      const parentContent = await findOne(
-        {
-          where: {
-            id: newContent.parent_id,
-          },
-        },
-        options,
-      );
+      const queryParent = {
+        text: `SELECT owner_id FROM contents WHERE id = $1;`,
+        values: [newContent.parent_id],
+      };
+      const parentQueryResult = await database.query(queryParent, options);
+      const parentContent = parentQueryResult.rows[0];
 
       // We should not credit if the parent content is from the same user.
       if (parentContent.owner_id === newContent.owner_id) return;
     }
-
-    // We should not credit if the content has little or no value.
-    // Expected 5 or more words with 5 or more characters.
-    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
   }
 
   if (userEarnings > 0) {
