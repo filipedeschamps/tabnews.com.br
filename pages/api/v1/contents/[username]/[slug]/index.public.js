@@ -115,7 +115,7 @@ async function patchHandler(request, response) {
     });
   }
 
-  if (!unfilteredBodyValues.parent_id) {
+  if (!contentToBeUpdated.parent_id) {
     if (!authorization.can(userTryingToPatch, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos na raiz do site.',
@@ -147,7 +147,7 @@ async function patchHandler(request, response) {
 
     const currentEvent = await event.create(
       {
-        type: filteredBodyValues.parent_id ? 'update:content:text_child' : 'update:content:text_root',
+        type: contentToBeUpdated.parent_id ? 'update:content:text_child' : 'update:content:text_root',
         originatorUserId: request.context.user.id,
         originatorIp: request.context.clientIp,
       },

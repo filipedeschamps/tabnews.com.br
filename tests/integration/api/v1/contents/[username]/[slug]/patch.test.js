@@ -87,6 +87,174 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
     });
   });
 
+  describe('User without "create:content:text_root" feature', () => {
+    test('"root" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_root'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Root content title',
+        body: 'Root content body',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${rootContent.slug}`,
+        {
+          title: 'Valid user trying to update "root" content.',
+          body: "He shouldn't be able to do it because he lacks the 'create:content:text_root' feature.",
+        },
+      );
+
+      expect(response.status).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual('Você não possui permissão para editar conteúdos na raiz do site.');
+      expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_root".');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual(
+        'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
+      );
+    });
+
+    test('"child" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_root'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Root content title',
+        body: 'Root content body',
+      });
+
+      const childContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        body: 'Child content with original body',
+        parent_id: rootContent.id,
+        status: 'published',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${childContent.slug}`,
+        {
+          body: 'Updated body, even without "create:content:text_root" feature.',
+        },
+      );
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: userWithoutFeature.id,
+        parent_id: rootContent.id,
+        slug: childContent.slug,
+        title: null,
+        body: 'Updated body, even without "create:content:text_root" feature.',
+        status: 'published',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: userWithoutFeature.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+    });
+  });
+
+  describe('User without "create:content:text_child" feature', () => {
+    test('"root" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_child'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Valid user trying to update "root" content.',
+        body: 'It should be possible, even without the "create:content:text_child" feature.',
+        status: 'published',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${rootContent.slug}`,
+        { source_url: 'http://www.tabnews.com.br/' },
+      );
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: userWithoutFeature.id,
+        parent_id: null,
+        slug: 'valid-user-trying-to-update-root-content',
+        title: 'Valid user trying to update "root" content.',
+        body: 'It should be possible, even without the "create:content:text_child" feature.',
+        status: 'published',
+        source_url: 'http://www.tabnews.com.br/',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: userWithoutFeature.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(responseBody.updated_at > rootContent.updated_at.toISOString()).toEqual(true);
+    });
+
+    test('"child" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_child'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Root content title',
+        body: 'Root content body',
+      });
+
+      const childContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        body: 'Child content body',
+        parent_id: rootContent.id,
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${childContent.slug}`,
+        {
+          title: 'Valid user, trying to update "child" content.',
+          body: "He shouldn't be able to do it because he lacks the 'create:content:text_child' feature.",
+        },
+      );
+
+      expect(response.status).toEqual(403);
+      expect(responseBody.status_code).toEqual(403);
+      expect(responseBody.name).toEqual('ForbiddenError');
+      expect(responseBody.message).toEqual(
+        'Você não possui permissão para editar conteúdos dentro de outros conteúdos.',
+      );
+      expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_child".');
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(responseBody.error_location_code).toEqual(
+        'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
+      );
+    });
+  });
+
   describe('Default user', () => {
     test('Content without PATCH Body and "Content-Type"', async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');

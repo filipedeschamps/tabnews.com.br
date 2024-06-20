@@ -1,6 +1,5 @@
 import { version as uuidVersion } from 'uuid';
 
-import event from 'models/event.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
 
@@ -54,9 +53,9 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       const request2Body = await request2.json();
       const request3Body = await request3.json();
 
-      expect(request1.status).toBe(201);
-      expect(request2.status).toBe(201);
-      expect(request3.status).toBe(429);
+      expect.soft(request1.status).toBe(201);
+      expect.soft(request2.status).toBe(201);
+      expect.soft(request3.status).toBe(429);
 
       expect(request3Body).toStrictEqual({
         name: 'TooManyRequestsError',
@@ -76,18 +75,22 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       expect(user1.features).toStrictEqual([]);
       expect(user2.features).toStrictEqual([]);
 
-      const events = await event.findAll();
-      expect(events.length).toEqual(3);
+      const lastEvent = await orchestrator.getLastEvent();
 
-      expect(uuidVersion(events[2].id)).toEqual(4);
-      expect(events[2].type).toEqual('firewall:block_users');
-      expect(events[2].originator_user_id).toEqual(null);
-      expect(events[2].originator_ip).toEqual('127.0.0.1');
-      expect(events[2].metadata).toEqual({
-        from_rule: 'create:user',
-        users: [user1.id, user2.id],
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'firewall:block_users',
+        originator_user_id: null,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          from_rule: 'create:user',
+          users: [user1.id, user2.id],
+        },
+        created_at: lastEvent.created_at,
       });
-      expect(Date.parse(events[2].created_at)).not.toEqual(NaN);
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
     });
   });
 });

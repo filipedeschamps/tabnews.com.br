@@ -394,6 +394,11 @@ async function updateRewardedAt(userId, rewardedAt) {
   return await database.query(query);
 }
 
+async function getLastEvent() {
+  const results = await database.query('SELECT * FROM events ORDER BY created_at DESC LIMIT 1;');
+  return results.rows[0];
+}
+
 function parseSetCookies(response) {
   const setCookieHeaderValues = response.headers.get('set-cookie');
   const parsedCookies = setCookieParser.parse(setCookieHeaderValues, { map: true });
@@ -401,27 +406,28 @@ function parseSetCookies(response) {
 }
 
 const orchestrator = {
-  waitForAllServices,
-  dropAllTables,
-  runPendingMigrations,
-  webserverUrl,
-  deleteAllEmails,
-  getLastEmail,
-  createUser,
   activateUser,
-  createSession,
-  findSessionByToken,
   addFeaturesToUser,
-  removeFeaturesFromUser,
-  createContent,
-  updateContent,
-  createRecoveryToken,
-  createFirewallTestFunctions,
   createBalance,
+  createContent,
+  createFirewallTestFunctions,
   createPrestige,
   createRate,
-  updateRewardedAt,
+  createRecoveryToken,
+  createSession,
+  createUser,
+  deleteAllEmails,
+  dropAllTables,
+  findSessionByToken,
+  getLastEmail,
+  getLastEvent,
   parseSetCookies,
+  removeFeaturesFromUser,
+  runPendingMigrations,
+  updateContent,
+  updateRewardedAt,
+  waitForAllServices,
+  webserverUrl,
 };
 
 export default orchestrator;
