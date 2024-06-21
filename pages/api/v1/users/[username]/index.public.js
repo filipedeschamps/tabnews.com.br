@@ -112,24 +112,15 @@ async function patchHandler(request, response) {
   try {
     await transaction.query('BEGIN');
 
-    const currentEvent = await event.create(
-      {
-        type: 'update:user',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
-      },
-      {
-        transaction: transaction,
-      },
-    );
-
     const updatedUser = await user.update(targetUsername, secureInputValues, {
       transaction: transaction,
     });
 
-    await event.updateMetadata(
-      currentEvent.id,
+    await event.create(
       {
+        type: 'update:user',
+        originatorUserId: request.context.user.id,
+        originatorIp: request.context.clientIp,
         metadata: getEventMetadata(targetUser, updatedUser),
       },
       {
