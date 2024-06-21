@@ -305,21 +305,21 @@ async function create(postedContent, options = {}) {
       text: `
       WITH
         parent AS (
-          SELECT id, path, owner_id FROM contents WHERE id = $2
-        ),
-        path_value AS (
-          SELECT 
+          SELECT
+            owner_id,
             CASE 
-              WHEN parent.id IS NULL THEN ARRAY[]::uuid[]
-              ELSE ARRAY_APPEND(parent.path, parent.id)
-            END AS path
+              WHEN id IS NULL THEN ARRAY[]::uuid[]
+              ELSE ARRAY_APPEND(path, id)
+            END AS child_path
           FROM (SELECT 1) AS dummy
-          LEFT JOIN parent ON true
+          LEFT JOIN contents
+          ON id = $2
         ),
         inserted_content as (
           INSERT INTO
             contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, (SELECT path FROM path_value))
+            SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, parent.child_path
+            FROM parent
             RETURNING *
         )
       SELECT
