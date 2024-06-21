@@ -600,14 +600,16 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 async function update(contentId, postedContent, options = {}) {
   const validPostedContent = validateUpdateSchema(postedContent);
 
-  const oldContent = await findOne(
-    {
-      where: {
-        id: contentId,
+  const oldContent =
+    options.oldContent ??
+    (await findOne(
+      {
+        where: {
+          id: contentId,
+        },
       },
-    },
-    options,
-  );
+      options,
+    ));
 
   const newContent = { ...oldContent, ...validPostedContent };
 

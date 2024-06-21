@@ -150,6 +150,9 @@ async function patchHandler(request, response) {
         type: contentToBeUpdated.parent_id ? 'update:content:text_child' : 'update:content:text_root',
         originatorUserId: request.context.user.id,
         originatorIp: request.context.clientIp,
+        metadata: {
+          id: contentToBeUpdated.id,
+        },
       },
       {
         transaction: transaction,
@@ -157,21 +160,10 @@ async function patchHandler(request, response) {
     );
 
     const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues, {
+      oldContent: contentToBeUpdated,
       eventId: currentEvent.id,
       transaction: transaction,
     });
-
-    await event.updateMetadata(
-      currentEvent.id,
-      {
-        metadata: {
-          id: updatedContent.id,
-        },
-      },
-      {
-        transaction: transaction,
-      },
-    );
 
     await transaction.query('COMMIT');
     await transaction.release();
