@@ -270,7 +270,6 @@ async function create(postedContent, options = {}) {
   populateSlug(postedContent);
   populateStatus(postedContent);
   const validContent = validateCreateSchema(postedContent);
-  validContent.id = uuidV4();
 
   checkRootContentTitle(validContent);
 
@@ -432,6 +431,7 @@ function parseQueryErrorToCustomError(error) {
 
 function validateCreateSchema(content) {
   const cleanValues = validator(content, {
+    id: 'required',
     parent_id: 'optional',
     owner_id: 'required',
     slug: 'required',
