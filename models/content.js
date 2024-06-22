@@ -261,6 +261,17 @@ async function findWithStrategy(options = {}) {
 }
 
 async function getPagination(values, options) {
+  values.query = {};
+  if (values.strategy) {
+    values.query.strategy = values.strategy;
+  }
+  if (values.with_root !== undefined) {
+    values.query.with_root = values.with_root;
+  }
+  if (values.with_children !== undefined) {
+    values.query.with_children = values.with_children;
+  }
+
   values.count = true;
   values.total_rows = values.total_rows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
   return pagination.get(values);

@@ -174,11 +174,7 @@ function injectPaginationHeaders(pagination, endpoint, response) {
   const links = [];
   const baseUrl = `${webserver.host}${endpoint}`;
 
-  const searchParams = new URLSearchParams();
-
-  if (pagination.strategy) {
-    searchParams.set('strategy', pagination.strategy);
-  }
+  const searchParams = new URLSearchParams(pagination.query);
 
   const pages = [
     { page: pagination.firstPage, rel: 'first' },
@@ -190,7 +186,6 @@ function injectPaginationHeaders(pagination, endpoint, response) {
   for (const { page, rel } of pages) {
     if (page) {
       searchParams.set('page', page);
-      searchParams.set('per_page', pagination.perPage);
       links.push(`<${baseUrl}?${searchParams.toString()}>; rel="${rel}"`);
     }
   }

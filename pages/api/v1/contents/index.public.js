@@ -61,6 +61,8 @@ async function getHandler(request, response) {
     },
     page: request.query.page,
     per_page: request.query.per_page,
+    with_root: request.query.with_root,
+    with_children: request.query.with_children,
   });
 
   const contentList = results.rows;
