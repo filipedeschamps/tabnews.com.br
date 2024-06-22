@@ -26,6 +26,7 @@ export { default as ThemeSelector, ThemeSwitcher } from '@/ThemeSelector';
 export { default as Tooltip } from '@/Tooltip';
 export { default as Turnstile } from '@/Turnstile';
 export { default as UserHeader } from '@/UserHeader';
+export { default as UserList } from '@/UserList';
 export {
   ActionList,
   ActionMenu,
