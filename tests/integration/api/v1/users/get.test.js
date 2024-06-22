@@ -1,28 +1,13 @@
 import parseLinkHeader from 'parse-link-header';
 import { version as uuidVersion } from 'uuid';
 
+import user from 'models/user';
 import orchestrator from 'tests/orchestrator.js';
-
-let firstUser;
-let secondUser;
-let privilegedUser;
-let privilegedUserSession;
-let defaultUser;
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
-
-  firstUser = await orchestrator.createUser();
-  firstUser = await orchestrator.activateUser(firstUser);
-  defaultUser = firstUser;
-
-  secondUser = await orchestrator.createUser();
-  await orchestrator.activateUser(secondUser);
-  secondUser = await orchestrator.addFeaturesToUser(secondUser, ['read:user:list']);
-  privilegedUser = secondUser;
-  privilegedUserSession = await orchestrator.createSession(privilegedUser);
 });
 
 describe('GET /api/v1/users', () => {
@@ -49,6 +34,8 @@ describe('GET /api/v1/users', () => {
 
   describe('Default user', () => {
     test('User without "read:user:list" feature', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
@@ -77,6 +64,25 @@ describe('GET /api/v1/users', () => {
   });
 
   describe('User with "read:user:list" feature', () => {
+    let firstUser;
+    let secondUser;
+    let privilegedUser;
+    let privilegedUserSession;
+
+    beforeEach(async () => {
+      await orchestrator.dropAllTables();
+      await orchestrator.runPendingMigrations();
+
+      firstUser = await orchestrator.createUser();
+      firstUser = await orchestrator.activateUser(firstUser);
+
+      secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+      secondUser = await orchestrator.addFeaturesToUser(secondUser, ['read:user:list']);
+      privilegedUser = secondUser;
+      privilegedUserSession = await orchestrator.createSession(privilegedUser);
+    });
+
     test('With a large value for "per_page"', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users?per_page=150`, {
         method: 'GET',
@@ -176,6 +182,64 @@ describe('GET /api/v1/users', () => {
           tabcash: 0,
           created_at: firstUser.created_at.toISOString(),
           updated_at: firstUser.updated_at.toISOString(),
+        },
+      ]);
+
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(Date.parse(responseBody[0].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[0].updated_at)).not.toBeNaN();
+
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(Date.parse(responseBody[1].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[1].updated_at)).not.toBeNaN();
+    });
+
+    test('Retrieving user list removing markdown from description and limiting it to 255 characters', async () => {
+      const description = `# This description will contain some **markdown** to test if the _API_ is returning only the content, without markdown.
+      
+      [www.google.com](https://www.google.com), ![example image](http://example.com/example.jpg)
+
+      We will also need to fill it with a lot of characters to make sure the API won't return more than 255 characters. The end.`;
+
+      const cleanDescription =
+        (
+          'This description will contain some markdown to test if the API is returning only the content, without markdown.' +
+          ' www.google.com, example image' +
+          " We will also need to fill it with a lot of characters to make sure the API won't return more than 255 characters. The end."
+        ).substring(0, 252) + '...';
+
+      firstUser = await user.update(firstUser, { description });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${privilegedUserSession.token}`,
+        },
+      });
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual([
+        {
+          id: firstUser.id,
+          username: firstUser.username,
+          description: cleanDescription,
+          features: firstUser.features,
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: firstUser.created_at.toISOString(),
+          updated_at: firstUser.updated_at.toISOString(),
+        },
+        {
+          id: secondUser.id,
+          username: secondUser.username,
+          description: secondUser.description,
+          features: secondUser.features,
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: secondUser.created_at.toISOString(),
+          updated_at: secondUser.updated_at.toISOString(),
         },
       ]);
 

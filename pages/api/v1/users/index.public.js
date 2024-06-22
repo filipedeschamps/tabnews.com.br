@@ -9,6 +9,7 @@ import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
 import firewall from 'models/firewall';
+import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
@@ -51,6 +52,10 @@ async function getHandler(request, response) {
   const userList = results.rows;
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
+
+  for (const userObject of secureOutputValues) {
+    userObject.description = removeMarkdown(userObject.description, { maxLength: 255 });
+  }
 
   controller.injectPaginationHeaders(results.pagination, '/api/v1/users', request, response);
 
