@@ -2,7 +2,7 @@ import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
-import { NotificationEmail } from 'models/transactional';
+import { FirewallEmail, NotificationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function sendReplyEmailToParentUser(createdContent) {
@@ -22,7 +22,7 @@ async function sendReplyEmailToParentUser(createdContent) {
       return;
     }
 
-    const childContentUrl = getChildContentUrl(secureCreatedContent);
+    const childContentUrl = getContentUrl(secureCreatedContent);
     const rootContent = parentContent.parent_id
       ? await content.findOne({
           where: {
@@ -34,7 +34,7 @@ async function sendReplyEmailToParentUser(createdContent) {
 
     const secureRootContent = authorization.filterOutput(anonymousUser, 'read:content', rootContent);
 
-    const subject = getSubject({
+    const subject = getReplyEmailSubject({
       createdContent: secureCreatedContent,
       rootContent: secureRootContent,
     });
@@ -63,7 +63,7 @@ async function sendReplyEmailToParentUser(createdContent) {
   }
 }
 
-function getSubject({ createdContent, rootContent }) {
+function getReplyEmailSubject({ createdContent, rootContent }) {
   const sanitizedRootContentTitle =
     rootContent.title.length > 55 ? `${rootContent.title.substring(0, 55)}...` : rootContent.title;
 
@@ -78,10 +78,85 @@ function getBodyReplyLine({ createdContent, rootContent }) {
   return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}".`;
 }
 
-function getChildContentUrl({ owner_username, slug }) {
+function getContentUrl({ owner_username, slug }) {
   return `${webserver.host}/${owner_username}/${slug}`;
 }
 
+async function sendUserDisabled({ eventId, user }) {
+  const { html, text } = FirewallEmail({
+    sideEffectLine: 'Identificamos a criação de muitos usuários em um curto período, então a sua conta foi desativada.',
+    eventId: eventId,
+    username: user.username,
+  });
+
+  await email.send({
+    to: user.email,
+    from: {
+      name: 'TabNews',
+      address: 'contato@tabnews.com.br',
+    },
+    subject: 'Sua conta foi desativada',
+    html,
+    text,
+  });
+}
+
+async function sendContentDeletedToUser({ contents, eventId, userId }) {
+  const deletedContentLine = getFirewallDeletedContentLine(contents);
+
+  const subject = contents.length > 1 ? 'Alguns conteúdos seus foram removidos' : 'Um conteúdo seu foi removido';
+
+  const userToNotify = await user.findOneById(userId);
+
+  const { html, text } = FirewallEmail({
+    sideEffectLine: deletedContentLine,
+    eventId: eventId,
+    username: userToNotify.username,
+  });
+
+  await email.send({
+    to: userToNotify.email,
+    from: {
+      name: 'TabNews',
+      address: 'contato@tabnews.com.br',
+    },
+    subject: subject,
+    html,
+    text,
+  });
+}
+
+function getFirewallDeletedContentLine(contents) {
+  const formatter = new Intl.ListFormat('pt-BR');
+  const contentsReference = contents.map((content) => `"${content.title ?? content.id}"`);
+  const formattedList = formatter.format(contentsReference);
+  const isRootContent = !!contents[0].title;
+
+  let beforeTitles;
+  let afterTitles;
+  if (isRootContent) {
+    if (contents.length > 1) {
+      beforeTitles = 'muitas publicações em um curto período, então as suas publicações';
+      afterTitles = 'foram removidas';
+    } else {
+      beforeTitles = 'muitas publicações em um curto período, então a sua publicação';
+      afterTitles = 'foi removida';
+    }
+  } else {
+    if (contents.length > 1) {
+      beforeTitles = 'muitos comentários em um curto período, então os seus comentários de IDs';
+      afterTitles = 'foram removidos';
+    } else {
+      beforeTitles = 'muitos comentários em um curto período, então o seu comentário de ID';
+      afterTitles = 'foi removido';
+    }
+  }
+
+  return `Identificamos a criação de ${beforeTitles} ${formattedList} ${afterTitles}.`;
+}
+
 export default Object.freeze({
+  sendContentDeletedToUser,
   sendReplyEmailToParentUser,
+  sendUserDisabled,
 });
