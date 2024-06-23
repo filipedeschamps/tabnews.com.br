@@ -510,7 +510,8 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   // or if it was deleted and is catch by firewall: "deleted" -> "firewall".
   if (
     oldContent &&
-    ((!oldContent.published_at && newContent.status !== 'published') || oldContent.status === 'deleted')
+    ((!oldContent.published_at && newContent.status !== 'published') ||
+      ['deleted', 'firewall'].includes(oldContent.status))
   ) {
     return;
   }

@@ -1939,5 +1939,456 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         expect(content2AfterConfirm.status).toEqual('deleted');
       });
     });
+
+    describe('Different firewall events containing an element in common', () => {
+      test('With two "firewall:block_users" events, "confirm" and "undo"', async () => {
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const { response: response1, responseBody: user1 } = await usersRequestBuilder.post({
+          username: 'request1',
+          email: 'request1@gmail.com',
+          password: 'validpassword',
+        });
+
+        const firstCreateUserEvent = await orchestrator.getLastEvent();
+
+        await orchestrator.updateEventCreatedAt(firstCreateUserEvent.id, new Date(Date.now() - 4 * 1000));
+
+        const { response: response2, responseBody: user2 } = await usersRequestBuilder.post({
+          username: 'request2',
+          email: 'request2@gmail.com',
+          password: 'validpassword',
+        });
+
+        const { response: response3 } = await usersRequestBuilder.post({
+          username: 'request3',
+          email: 'request3@gmail.com',
+          password: 'validpassword',
+        });
+
+        const firstFirewallEvent = await orchestrator.getLastEvent();
+
+        await orchestrator.updateEventCreatedAt(firstCreateUserEvent.id, new Date(Date.now() - 30 * 60 * 1000));
+
+        const { response: response4, responseBody: user4 } = await usersRequestBuilder.post({
+          username: 'request4',
+          email: 'request4@gmail.com',
+          password: 'validpassword',
+        });
+
+        const { response: response5 } = await usersRequestBuilder.post({
+          username: 'request5',
+          email: 'request5@gmail.com',
+          password: 'validpassword',
+        });
+
+        const secondFirewallEvent = await orchestrator.getLastEvent();
+
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
+        expect.soft(response3.status).toBe(429);
+        expect.soft(response4.status).toBe(201);
+        expect.soft(response5.status).toBe(429);
+
+        expect(firstFirewallEvent).toStrictEqual({
+          id: firstFirewallEvent.id,
+          type: 'firewall:block_users',
+          originator_user_id: null,
+          originator_ip: '127.0.0.1',
+          metadata: {
+            from_rule: 'create:user',
+            users: [user1.id, user2.id],
+          },
+          created_at: firstFirewallEvent.created_at,
+        });
+        expect(uuidVersion(firstFirewallEvent.id)).toBe(4);
+        expect(Date.parse(firstFirewallEvent.created_at)).not.toBe(NaN);
+
+        expect(secondFirewallEvent).toStrictEqual({
+          id: secondFirewallEvent.id,
+          type: 'firewall:block_users',
+          originator_user_id: null,
+          originator_ip: '127.0.0.1',
+          metadata: {
+            from_rule: 'create:user',
+            users: [user2.id, user4.id],
+          },
+          created_at: secondFirewallEvent.created_at,
+        });
+        expect(uuidVersion(secondFirewallEvent.id)).toBe(4);
+        expect(Date.parse(secondFirewallEvent.created_at)).not.toBe(NaN);
+
+        // Confirm first event
+        const reviewFirewallRequestBuilder = new RequestBuilder(`/api/v1/moderations/review_firewall`);
+        const firewallUser = await reviewFirewallRequestBuilder.buildUser({
+          with: ['read:firewall', 'review:firewall'],
+        });
+
+        const { response: responseConfirm, responseBody: responseBodyConfirm } =
+          await reviewFirewallRequestBuilder.post(`/${firstFirewallEvent.id}`, {
+            action: 'confirm',
+          });
+
+        expect(responseConfirm.status).toEqual(200);
+
+        expect(responseBodyConfirm).toStrictEqual({
+          affected: {
+            users: [
+              {
+                created_at: user1.created_at,
+                description: user1.description,
+                features: ['nuked'],
+                id: user1.id,
+                tabcash: user1.tabcash,
+                tabcoins: user1.tabcoins,
+                updated_at: user1.updated_at,
+                username: user1.username,
+              },
+              {
+                created_at: user2.created_at,
+                description: user2.description,
+                features: ['nuked'],
+                id: user2.id,
+                tabcash: user2.tabcash,
+                tabcoins: user2.tabcoins,
+                updated_at: user2.updated_at,
+                username: user2.username,
+              },
+            ],
+          },
+          events: [
+            {
+              created_at: firstFirewallEvent.created_at.toISOString(),
+              id: firstFirewallEvent.id,
+              metadata: firstFirewallEvent.metadata,
+              originator_user_id: firstFirewallEvent.originator_user_id,
+              type: firstFirewallEvent.type,
+            },
+            {
+              created_at: responseBodyConfirm.events[1].created_at,
+              id: responseBodyConfirm.events[1].id,
+              metadata: {
+                original_event_id: firstFirewallEvent.id,
+                users: firstFirewallEvent.metadata.users,
+              },
+              originator_user_id: firewallUser.id,
+              type: 'moderation:block_users',
+            },
+          ],
+        });
+
+        const createdConfirmationEventResponse = responseBodyConfirm.events[1];
+        expect(Date.parse(createdConfirmationEventResponse.created_at)).not.toEqual(NaN);
+
+        // Check "confirm" event
+        const confirmationEvent = await orchestrator.getLastEvent();
+        expect(confirmationEvent).toStrictEqual({
+          created_at: expect.any(Date),
+          id: confirmationEvent.id,
+          metadata: {
+            original_event_id: firstFirewallEvent.id,
+            users: firstFirewallEvent.metadata.users,
+          },
+          originator_ip: '127.0.0.1',
+          originator_user_id: firewallUser.id,
+          type: 'moderation:block_users',
+        });
+
+        expect(uuidVersion(confirmationEvent.id)).toEqual(4);
+
+        // Undo second event
+        const { response: responseUndo, responseBody: responseBodyUndo } = await reviewFirewallRequestBuilder.post(
+          `/${secondFirewallEvent.id}`,
+          { action: 'undo' },
+        );
+
+        expect(responseUndo.status).toEqual(200);
+
+        expect(responseBodyUndo).toStrictEqual({
+          affected: {
+            users: [
+              {
+                created_at: user4.created_at,
+                description: user4.description,
+                features: responseBodyUndo.affected.users[0].features,
+                id: user4.id,
+                tabcash: user4.tabcash,
+                tabcoins: user4.tabcoins,
+                updated_at: user4.updated_at,
+                username: user4.username,
+              },
+              {
+                created_at: user2.created_at,
+                description: user2.description,
+                features: responseBodyUndo.affected.users[1].features,
+                id: user2.id,
+                tabcash: user2.tabcash,
+                tabcoins: user2.tabcoins,
+                updated_at: user2.updated_at,
+                username: user2.username,
+              },
+            ],
+          },
+          events: [
+            {
+              created_at: secondFirewallEvent.created_at.toISOString(),
+              id: secondFirewallEvent.id,
+              metadata: secondFirewallEvent.metadata,
+              originator_user_id: secondFirewallEvent.originator_user_id,
+              type: secondFirewallEvent.type,
+            },
+            {
+              created_at: responseBodyUndo.events[1].created_at,
+              id: responseBodyUndo.events[1].id,
+              metadata: {
+                original_event_id: secondFirewallEvent.id,
+                users: secondFirewallEvent.metadata.users,
+              },
+              originator_user_id: firewallUser.id,
+              type: 'moderation:unblock_users',
+            },
+          ],
+        });
+
+        const createdEventResponse = responseBodyUndo.events[1];
+        expect(Date.parse(createdEventResponse.created_at)).not.toEqual(NaN);
+
+        const user4AfterUndoResponse = responseBodyUndo.affected.users[0];
+        const user2AfterUndoResponse = responseBodyUndo.affected.users[1];
+
+        // User 2 is nuked because of the previous confirmed firewall event.
+        expect(user2AfterUndoResponse.features.sort()).toStrictEqual(['nuked', 'read:activation_token']);
+        expect(user4AfterUndoResponse.features.sort()).toStrictEqual(user4.features.sort());
+
+        // Check "undo" event
+        const undoEvent = await orchestrator.getLastEvent();
+        expect(undoEvent).toStrictEqual({
+          created_at: expect.any(Date),
+          id: undoEvent.id,
+          metadata: {
+            original_event_id: secondFirewallEvent.id,
+            users: secondFirewallEvent.metadata.users,
+          },
+          originator_ip: '127.0.0.1',
+          originator_user_id: firewallUser.id,
+          type: 'moderation:unblock_users',
+        });
+
+        expect(uuidVersion(undoEvent.id)).toEqual(4);
+      });
+
+      test('With two "firewall:block_contents:text_root" events, "confirm" and "undo"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const user1 = await contentsRequestBuilder.buildUser();
+
+        const { response: response1, responseBody: content1 } = await createContentViaApi(contentsRequestBuilder);
+        const firstCreateContentEvent = await orchestrator.getLastEvent();
+
+        const { response: response2, responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
+        await orchestrator.createRate(content2, 10);
+
+        const { response: response3 } = await createContentViaApi(contentsRequestBuilder);
+
+        const firstFirewallEvent = await orchestrator.getLastEvent();
+
+        await orchestrator.updateEventCreatedAt(firstCreateContentEvent.id, new Date(Date.now() - 30 * 60 * 1000));
+
+        const { response: response4, responseBody: content4 } = await createContentViaApi(contentsRequestBuilder);
+        const { response: response5 } = await createContentViaApi(contentsRequestBuilder);
+
+        const secondFirewallEvent = await orchestrator.getLastEvent();
+
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
+        expect.soft(response3.status).toBe(429);
+        expect.soft(response4.status).toBe(201);
+        expect.soft(response5.status).toBe(429);
+
+        // Confirm first event
+        const reviewFirewallRequestBuilder = new RequestBuilder(`/api/v1/moderations/review_firewall`);
+        const firewallUser = await reviewFirewallRequestBuilder.buildUser({
+          with: ['read:firewall', 'review:firewall'],
+        });
+
+        const { response: responseConfirm, responseBody: responseBodyConfirm } =
+          await reviewFirewallRequestBuilder.post(`/${firstFirewallEvent.id}`, { action: 'confirm' });
+
+        expect(responseConfirm.status).toEqual(200);
+
+        expect(responseBodyConfirm).toStrictEqual({
+          affected: {
+            contents: [
+              {
+                body: content1.body,
+                created_at: content1.created_at,
+                deleted_at: responseBodyConfirm.affected.contents[0].deleted_at,
+                id: content1.id,
+                owner_id: content1.owner_id,
+                parent_id: content1.parent_id,
+                published_at: content1.published_at,
+                slug: content1.slug,
+                source_url: content1.source_url,
+                status: 'deleted',
+                title: content1.title,
+                updated_at: content1.updated_at,
+              },
+              {
+                body: content2.body,
+                created_at: content2.created_at,
+                deleted_at: responseBodyConfirm.affected.contents[1].deleted_at,
+                id: content2.id,
+                owner_id: content2.owner_id,
+                parent_id: content2.parent_id,
+                published_at: content2.published_at,
+                slug: content2.slug,
+                source_url: content2.source_url,
+                status: 'deleted',
+                title: content2.title,
+                updated_at: content2.updated_at,
+              },
+            ],
+            users: [
+              {
+                created_at: user1.created_at.toISOString(),
+                description: user1.description,
+                features: user1.features,
+                id: user1.id,
+                tabcash: 0,
+                tabcoins: 0,
+                updated_at: user1.updated_at.toISOString(),
+                username: user1.username,
+              },
+            ],
+          },
+          events: [
+            {
+              created_at: firstFirewallEvent.created_at.toISOString(),
+              id: firstFirewallEvent.id,
+              metadata: firstFirewallEvent.metadata,
+              originator_user_id: firstFirewallEvent.originator_user_id,
+              type: firstFirewallEvent.type,
+            },
+            {
+              created_at: responseBodyConfirm.events[1].created_at,
+              id: responseBodyConfirm.events[1].id,
+              metadata: {
+                original_event_id: firstFirewallEvent.id,
+                contents: firstFirewallEvent.metadata.contents,
+              },
+              originator_user_id: firewallUser.id,
+              type: 'moderation:block_contents:text_root',
+            },
+          ],
+        });
+
+        // Check "confirm" event
+        const confirmationEvent = await orchestrator.getLastEvent();
+        expect(confirmationEvent).toStrictEqual({
+          created_at: expect.any(Date),
+          id: confirmationEvent.id,
+          metadata: {
+            original_event_id: firstFirewallEvent.id,
+            contents: firstFirewallEvent.metadata.contents,
+          },
+          originator_ip: '127.0.0.1',
+          originator_user_id: firewallUser.id,
+          type: 'moderation:block_contents:text_root',
+        });
+
+        expect(uuidVersion(confirmationEvent.id)).toEqual(4);
+
+        // Undo second event
+        const { response: responseUndo, responseBody: responseBodyUndo } = await reviewFirewallRequestBuilder.post(
+          `/${secondFirewallEvent.id}`,
+          { action: 'undo' },
+        );
+
+        expect(responseUndo.status).toEqual(200);
+
+        expect(responseBodyUndo).toStrictEqual({
+          affected: {
+            contents: [
+              {
+                body: content4.body,
+                created_at: content4.created_at,
+                deleted_at: content4.deleted_at,
+                id: content4.id,
+                owner_id: content4.owner_id,
+                parent_id: content4.parent_id,
+                published_at: content4.published_at,
+                slug: content4.slug,
+                source_url: content4.source_url,
+                status: content4.status,
+                title: content4.title,
+                updated_at: content4.updated_at,
+              },
+              {
+                body: content2.body,
+                created_at: content2.created_at,
+                deleted_at: responseBodyUndo.affected.contents[1].deleted_at,
+                id: content2.id,
+                owner_id: content2.owner_id,
+                parent_id: content2.parent_id,
+                published_at: content2.published_at,
+                slug: content2.slug,
+                source_url: content2.source_url,
+                status: 'deleted',
+                title: content2.title,
+                updated_at: content2.updated_at,
+              },
+            ],
+            users: [
+              {
+                created_at: user1.created_at.toISOString(),
+                description: user1.description,
+                features: user1.features,
+                id: user1.id,
+                tabcash: 0,
+                tabcoins: 0,
+                updated_at: user1.updated_at.toISOString(),
+                username: user1.username,
+              },
+            ],
+          },
+          events: [
+            {
+              created_at: secondFirewallEvent.created_at.toISOString(),
+              id: secondFirewallEvent.id,
+              metadata: secondFirewallEvent.metadata,
+              originator_user_id: secondFirewallEvent.originator_user_id,
+              type: secondFirewallEvent.type,
+            },
+            {
+              created_at: responseBodyUndo.events[1].created_at,
+              id: responseBodyUndo.events[1].id,
+              metadata: {
+                original_event_id: secondFirewallEvent.id,
+                contents: secondFirewallEvent.metadata.contents,
+              },
+              originator_user_id: firewallUser.id,
+              type: 'moderation:unblock_contents:text_root',
+            },
+          ],
+        });
+
+        const createdEventResponse = responseBodyUndo.events[1];
+        expect(Date.parse(createdEventResponse.created_at)).not.toEqual(NaN);
+
+        // Check "undo" event
+        const undoEvent = await orchestrator.getLastEvent();
+        expect(undoEvent).toStrictEqual({
+          created_at: expect.any(Date),
+          id: undoEvent.id,
+          metadata: {
+            original_event_id: secondFirewallEvent.id,
+            contents: secondFirewallEvent.metadata.contents,
+          },
+          originator_ip: '127.0.0.1',
+          originator_user_id: firewallUser.id,
+          type: 'moderation:unblock_contents:text_root',
+        });
+
+        expect(uuidVersion(undoEvent.id)).toEqual(4);
+      });
+    });
   });
 });

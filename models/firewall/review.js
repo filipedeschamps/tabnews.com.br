@@ -170,7 +170,7 @@ async function unblockUsers(firewallEvent, options) {
   const activeUsers = [];
 
   for (const userData of users) {
-    if (userData.features.length === 0) {
+    if (userData.features.length === 0 || (userData.features.length === 1 && userData.features[0] === 'nuked')) {
       inactiveUsers.push(userData.id);
     } else {
       activeUsers.push(userData.id);

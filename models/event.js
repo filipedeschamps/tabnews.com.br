@@ -69,7 +69,7 @@ async function findAllRelatedEvents(id) {
       INNER JOIN
         searched_event ON true
       WHERE
-        events.metadata @> searched_event.metadata
+        events.metadata = searched_event.metadata
     )
 
     SELECT
