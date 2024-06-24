@@ -279,7 +279,7 @@ async function create(postedContent, options = {}) {
     transaction: options.transaction,
   });
 
-  throwIfParentIsNotInPath(newContent);
+  throwIfSpecifiedParentDoesNotExist(postedContent, newContent);
 
   await creditOrDebitTabCoins(null, newContent, {
     eventId: options.eventId,
@@ -401,8 +401,10 @@ function populateStatus(postedContent) {
   postedContent.status = postedContent.status || 'draft';
 }
 
-function throwIfParentIsNotInPath(newContent) {
-  if (newContent.parent_id && newContent.path.at(-1) !== newContent.parent_id) {
+function throwIfSpecifiedParentDoesNotExist(postedContent, newContent) {
+  const existingParentId = newContent.path.at(-1);
+
+  if (postedContent.parent_id && postedContent.parent_id !== existingParentId) {
     throw new ValidationError({
       message: `Você está tentando criar um comentário em um conteúdo que não existe.`,
       action: `Utilize um "parent_id" que aponte para um conteúdo existente.`,
@@ -545,7 +547,6 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
     }
 
     // We should not credit if the content has little or no value.
-    // Expected 5 or more words with 5 or more characters.
     if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
 
     if (newContent.parent_id) {
