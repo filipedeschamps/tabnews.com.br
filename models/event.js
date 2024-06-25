@@ -14,27 +14,6 @@ async function create(object, options = {}) {
   return results.rows[0];
 }
 
-// Currently it only update "metadata" column.
-async function updateMetadata(eventId, object, options = {}) {
-  object = validateObject(object);
-
-  const query = {
-    text: `
-      UPDATE
-        events
-      SET
-        metadata = $1
-      WHERE
-        id = $2
-      RETURNING *
-    ;`,
-    values: [object.metadata, eventId],
-  };
-
-  const results = await database.query(query, options);
-  return results.rows[0];
-}
-
 function validateObject(object) {
   const cleanObject = validator(object, {
     event: 'required',
@@ -45,5 +24,4 @@ function validateObject(object) {
 
 export default Object.freeze({
   create,
-  updateMetadata,
 });

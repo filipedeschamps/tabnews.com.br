@@ -273,19 +273,13 @@ async function create(postedContent, options = {}) {
 
   checkRootContentTitle(validContent);
 
-  const parentContent = validContent.parent_id
-    ? await checkIfParentIdExists(validContent, {
-        transaction: options.transaction,
-      })
-    : null;
-
-  injectIdAndPath(validContent, parentContent);
-
   populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent, {
     transaction: options.transaction,
   });
+
+  throwIfSpecifiedParentDoesNotExist(postedContent, newContent);
 
   await creditOrDebitTabCoins(null, newContent, {
     eventId: options.eventId,
@@ -310,10 +304,22 @@ async function create(postedContent, options = {}) {
     const query = {
       text: `
       WITH
+        parent AS (
+          SELECT
+            owner_id,
+            CASE 
+              WHEN id IS NULL THEN ARRAY[]::uuid[]
+              ELSE ARRAY_APPEND(path, id)
+            END AS child_path
+          FROM (SELECT 1) AS dummy
+          LEFT JOIN contents
+          ON id = $2
+        ),
         inserted_content as (
           INSERT INTO
             contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, parent.child_path
+            FROM parent
             RETURNING *
         )
       SELECT
@@ -330,11 +336,14 @@ async function create(postedContent, options = {}) {
         inserted_content.published_at,
         inserted_content.deleted_at,
         inserted_content.path,
-        users.username as owner_username
+        users.username as owner_username,
+        parent.owner_id as parent_owner_id
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
+      LEFT JOIN
+        parent ON true
       ;`,
       values: [
         content.id,
@@ -346,7 +355,6 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
-        content.path,
       ],
     };
 
@@ -356,18 +364,6 @@ async function create(postedContent, options = {}) {
     } catch (error) {
       throw parseQueryErrorToCustomError(error);
     }
-  }
-}
-
-function injectIdAndPath(validContent, parentContent) {
-  validContent.id = uuidV4();
-
-  if (parentContent) {
-    validContent.path = [...parentContent.path, parentContent.id];
-  }
-
-  if (!parentContent) {
-    validContent.path = [];
   }
 }
 
@@ -405,17 +401,10 @@ function populateStatus(postedContent) {
   postedContent.status = postedContent.status || 'draft';
 }
 
-async function checkIfParentIdExists(content, options) {
-  const existingContent = await findOne(
-    {
-      where: {
-        id: content.parent_id,
-      },
-    },
-    options,
-  );
+function throwIfSpecifiedParentDoesNotExist(postedContent, newContent) {
+  const existingParentId = newContent.path.at(-1);
 
-  if (!existingContent) {
+  if (postedContent.parent_id && postedContent.parent_id !== existingParentId) {
     throw new ValidationError({
       message: `Você está tentando criar um comentário em um conteúdo que não existe.`,
       action: `Utilize um "parent_id" que aponte para um conteúdo existente.`,
@@ -425,8 +414,6 @@ async function checkIfParentIdExists(content, options) {
       key: 'parent_id',
     });
   }
-
-  return existingContent;
 }
 
 function parseQueryErrorToCustomError(error) {
@@ -446,6 +433,7 @@ function parseQueryErrorToCustomError(error) {
 
 function validateCreateSchema(content) {
   const cleanValues = validator(content, {
+    id: 'required',
     parent_id: 'optional',
     owner_id: 'required',
     slug: 'required',
@@ -558,23 +546,25 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       });
     }
 
+    // We should not credit if the content has little or no value.
+    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
+
     if (newContent.parent_id) {
-      const parentContent = await findOne(
-        {
-          where: {
-            id: newContent.parent_id,
-          },
-        },
-        options,
-      );
+      let parentOwnerId = newContent.parent_owner_id;
+
+      if (parentOwnerId === undefined) {
+        const queryParent = {
+          text: `SELECT owner_id FROM contents WHERE id = $1;`,
+          values: [newContent.parent_id],
+        };
+        const parentQueryResult = await database.query(queryParent, options);
+        const parentContent = parentQueryResult.rows[0];
+        parentOwnerId = parentContent.owner_id;
+      }
 
       // We should not credit if the parent content is from the same user.
-      if (parentContent.owner_id === newContent.owner_id) return;
+      if (parentOwnerId === newContent.owner_id) return;
     }
-
-    // We should not credit if the content has little or no value.
-    // Expected 5 or more words with 5 or more characters.
-    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
   }
 
   if (userEarnings > 0) {
@@ -611,14 +601,16 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
 async function update(contentId, postedContent, options = {}) {
   const validPostedContent = validateUpdateSchema(postedContent);
 
-  const oldContent = await findOne(
-    {
-      where: {
-        id: contentId,
+  const oldContent =
+    options.oldContent ??
+    (await findOne(
+      {
+        where: {
+          id: contentId,
+        },
       },
-    },
-    options,
-  );
+      options,
+    ));
 
   const newContent = { ...oldContent, ...validPostedContent };
 

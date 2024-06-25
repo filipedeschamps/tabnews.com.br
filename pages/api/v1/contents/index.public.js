@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+import { randomUUID as uuidV4 } from 'node:crypto';
 
 import { ForbiddenError } from 'errors';
 import database from 'infra/database.js';
@@ -133,6 +134,7 @@ async function postHandler(request, response) {
   }
 
   secureInputValues.owner_id = userTryingToCreate.id;
+  secureInputValues.id = uuidV4();
 
   const transaction = await database.transaction();
 
@@ -144,6 +146,9 @@ async function postHandler(request, response) {
         type: secureInputValues.parent_id ? 'create:content:text_child' : 'create:content:text_root',
         originatorUserId: request.context.user.id,
         originatorIp: request.context.clientIp,
+        metadata: {
+          id: secureInputValues.id,
+        },
       },
       {
         transaction: transaction,
@@ -154,18 +159,6 @@ async function postHandler(request, response) {
       eventId: currentEvent.id,
       transaction: transaction,
     });
-
-    await event.updateMetadata(
-      currentEvent.id,
-      {
-        metadata: {
-          id: createdContent.id,
-        },
-      },
-      {
-        transaction: transaction,
-      },
-    );
 
     await transaction.query('COMMIT');
     await transaction.release();

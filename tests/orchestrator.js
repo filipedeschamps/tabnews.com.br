@@ -177,13 +177,19 @@ async function findSessionByToken(token) {
 }
 
 async function createContent(contentObject) {
+  const contentId = contentObject?.id || randomUUID();
+
   const currentEvent = await event.create({
     type: contentObject?.parent_id ? 'create:content:text_child' : 'create:content:text_root',
     originatorUserId: contentObject?.owner_id,
+    metadata: {
+      id: contentId,
+    },
   });
 
   const createdContent = await content.create(
     {
+      id: contentId,
       parent_id: contentObject?.parent_id || undefined,
       owner_id: contentObject?.owner_id || undefined,
       title: contentObject?.title || undefined,
@@ -196,12 +202,6 @@ async function createContent(contentObject) {
       eventId: currentEvent.id,
     },
   );
-
-  await event.updateMetadata(currentEvent.id, {
-    metadata: {
-      id: createdContent.id,
-    },
-  });
 
   return createdContent;
 }
