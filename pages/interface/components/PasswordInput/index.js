@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { FormControl, IconButton, TextInput, Tooltip } from '@/TabNewsUI';
+import { FormControl, TextInput } from '@/TabNewsUI';
 import { AlertFillIcon, EyeClosedIcon, EyeIcon } from '@/TabNewsUI/icons';
 
 export default function PasswordInput({ inputRef, id, name, label, errorObject, setErrorObject, ...props }) {
@@ -39,18 +39,12 @@ export default function PasswordInput({ inputRef, id, name, label, errorObject, 
       <FormControl.Label>{label}</FormControl.Label>
       <TextInput
         trailingVisual={
-          // Using custom Tooltip while waiting for the fix of the `TextInput.Action`
-          // Issue https://github.com/primer/react/issues/4091
-          <Tooltip
+          <TextInput.Action
             aria-label={isPasswordVisible ? 'Ocultar a senha' : 'Visualizar a senha'}
-            direction="nw"
-            sx={{ position: 'absolute' }}>
-            <IconButton
-              onClick={handlePasswordVisible}
-              icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
-              variant="invisible"
-            />
-          </Tooltip>
+            tooltipDirection="nw"
+            onClick={handlePasswordVisible}
+            icon={isPasswordVisible ? EyeClosedIcon : EyeIcon}
+          />
         }
         contrast
         sx={{ pl: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
