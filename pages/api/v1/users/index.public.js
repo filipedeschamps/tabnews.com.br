@@ -1,5 +1,7 @@
 import nextConnect from 'next-connect';
+import { randomUUID as uuidV4 } from 'node:crypto';
 
+import { ValidationError } from 'errors';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -72,18 +74,37 @@ async function postHandler(request, response) {
   const insecureInputValues = request.body;
   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
 
-  const newUser = await user.create(secureInputValues);
+  let newUser;
+  try {
+    newUser = await user.create(secureInputValues);
 
-  await event.create({
-    type: 'create:user',
-    originatorUserId: request.context.user.id || newUser.id,
-    originatorIp: request.context.clientIp,
-    metadata: {
-      id: newUser.id,
-    },
-  });
+    await event.create({
+      type: 'create:user',
+      originatorUserId: request.context.user.id || newUser.id,
+      originatorIp: request.context.clientIp,
+      metadata: {
+        id: newUser.id,
+      },
+    });
 
-  await activation.createAndSendActivationEmail(newUser);
+    await activation.createAndSendActivationEmail(newUser);
+  } catch (error) {
+    if (error instanceof ValidationError && error.key === 'email') {
+      const now = new Date();
+      newUser = {
+        id: uuidV4(),
+        username: secureInputValues.username,
+        description: secureInputValues.description || '',
+        features: ['read:activation_token'],
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: now,
+        updated_at: now,
+      };
+    } else {
+      throw error;
+    }
+  }
 
   const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 
