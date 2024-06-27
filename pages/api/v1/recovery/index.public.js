@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 
-import { ForbiddenError } from 'errors';
+import { ForbiddenError, ValidationError } from 'errors';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
@@ -43,7 +43,25 @@ async function postHandler(request, response) {
     });
   }
 
-  const tokenObject = await recovery.createAndSendRecoveryEmail(validatedInputValues);
+  let tokenObject;
+  try {
+    tokenObject = await recovery.createAndSendRecoveryEmail(validatedInputValues);
+  } catch (error) {
+    if (error instanceof ValidationError && error.key === 'email') {
+      const now = new Date();
+      const expires_at = new Date();
+      expires_at.setMinutes(now.getMinutes() + 15);
+
+      tokenObject = {
+        used: false,
+        created_at: now,
+        updated_at: now,
+        expires_at: expires_at,
+      };
+    } else {
+      throw error;
+    }
+  }
 
   const authorizedValuesToReturn = authorization.filterOutput(userTryingToRecover, 'read:recovery_token', tokenObject);
 
