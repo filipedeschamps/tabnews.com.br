@@ -116,6 +116,8 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "email" valid, but user not found', async () => {
+      await orchestrator.deleteAllEmails();
+
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
@@ -129,21 +131,21 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-
+      expect.soft(response.status).toBe(201);
       expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
-        message: 'O "email" informado não foi encontrado no sistema.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
-        key: 'email',
+        used: false,
+        expires_at: responseBody.expires_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+
+      const lastEmail = await orchestrator.getLastEmail();
+      expect(lastEmail).toBeNull();
     });
 
     test('With "email" malformatted', async () => {
