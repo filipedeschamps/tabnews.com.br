@@ -4,6 +4,7 @@ import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -594,6 +595,41 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('object');
+    });
+
+    test('Patching itself with "email" duplicated exactly', async () => {
+      await orchestrator.deleteAllEmails();
+      await orchestrator.createUser({
+        email: 'someone@example.com',
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: 'someone@example.com',
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        email: 'someone@example.com',
+        description: defaultUser.description,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
     });
 
     test('Patching itself with another "email"', async () => {
