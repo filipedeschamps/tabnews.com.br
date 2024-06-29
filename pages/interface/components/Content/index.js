@@ -164,7 +164,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
     if (response.status === 200) {
       setComponentMode('deleted');
     } else {
-      setGlobalErrorMessage(createErrorMessage(responseBody));
+      setGlobalErrorMessage({ error: responseBody });
     }
   };
 
@@ -187,11 +187,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
         wordBreak: 'break-word',
       }}>
       <Box>
-        {globalErrorMessage && (
-          <Flash variant="danger" sx={{ mb: 4 }}>
-            {globalErrorMessage}
-          </Flash>
-        )}
+        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
@@ -374,7 +370,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
       })
         .then(processResponse)
         .catch(() => {
-          setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+          setGlobalErrorMessage({
+            error: { message: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.' },
+          });
           setIsPosting(false);
         });
 
@@ -402,7 +400,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         if (response.status === 201) {
           return (responseBody) => {
             if (responseBody.message) {
-              setGlobalErrorMessage(createErrorMessage(responseBody));
+              setGlobalErrorMessage({ error: responseBody });
               console.error(responseBody);
               return;
             }
@@ -423,14 +421,14 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             setErrorObject(responseBody);
 
             if (responseBody.key === 'slug') {
-              setGlobalErrorMessage(createErrorMessage(responseBody, { omitErrorId: true }));
+              setGlobalErrorMessage({ error: responseBody, omitErrorId: true });
             }
           };
         }
 
         if (response.status >= 401) {
           return (responseBody) => {
-            setGlobalErrorMessage(createErrorMessage(responseBody));
+            setGlobalErrorMessage({ error: responseBody });
           };
         }
       }
@@ -493,7 +491,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     <Box sx={{ mb: 4, width: '100%' }}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }} noValidate>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+          {globalErrorMessage && <ErrorMessage {...globalErrorMessage} />}
 
           {!contentObject?.parent_id && (
             <FormControl id="title" required>
@@ -666,6 +664,24 @@ function DeletedMode({ viewFrame }) {
         Conteúdo apagado com sucesso.
       </Box>
     </Box>
+  );
+}
+
+function ErrorMessage({ error, omitErrorId, ...props }) {
+  const isErrorWithReadMore =
+    error.error_location_code === 'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS';
+
+  return (
+    <Flash variant="danger" {...props}>
+      {createErrorMessage(error, { omitErrorId: omitErrorId || isErrorWithReadMore })}
+
+      {isErrorWithReadMore && (
+        <Text sx={{ display: 'block', mt: 1 }}>
+          Para mais informações, leia:{' '}
+          <Link href="/faq#erro-nova-publicacao">Não consigo criar novas publicações. O que fazer?</Link>
+        </Text>
+      )}
+    </Flash>
   );
 }
 
