@@ -51,7 +51,9 @@ export function DefaultHead() {
       <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+      {webserverHost.startsWith('https') && (
+        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+      )}
     </NextHead>
   );
 }
