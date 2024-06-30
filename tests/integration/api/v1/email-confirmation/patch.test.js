@@ -315,7 +315,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS',
         key: 'email',
       });
 
@@ -356,7 +356,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS',
         key: 'email',
       });
 

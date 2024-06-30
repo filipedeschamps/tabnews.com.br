@@ -267,9 +267,9 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('O "username" informado já está sendo usado.');
+      expect(responseBody.message).toEqual('O nome de usuário informado já está sendo usado.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
@@ -300,9 +300,9 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('O "username" informado já está sendo usado.');
+      expect(responseBody.message).toEqual('O nome de usuário informado já está sendo usado.');
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.key).toEqual('username');
