@@ -1,7 +1,6 @@
 import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
-import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
 import pagination from 'models/pagination.js';
 import validator from 'models/validator.js';
@@ -328,7 +327,9 @@ async function update(userId, postedUserData, options = {}) {
         WHERE
           id = $1
         RETURNING
-          *
+          *,
+          get_user_current_tabcoins($1) as tabcoins,
+          get_user_current_tabcash($1) as tabcash
       ;`,
       values: [
         currentUser.id,
@@ -342,21 +343,6 @@ async function update(userId, postedUserData, options = {}) {
 
     const results = await database.query(query, options);
     const updatedUser = results.rows[0];
-
-    updatedUser.tabcoins = await balance.getTotal(
-      {
-        balanceType: 'user:tabcoin',
-        recipientId: updatedUser.id,
-      },
-      options,
-    );
-    updatedUser.tabcash = await balance.getTotal(
-      {
-        balanceType: 'user:tabcash',
-        recipientId: updatedUser.id,
-      },
-      options,
-    );
 
     return updatedUser;
   }
