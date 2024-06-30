@@ -229,8 +229,7 @@ async function findOneById(userId, options = {}) {
 
 async function create(postedUserData) {
   const validUserData = validatePostSchema(postedUserData);
-  await validateUniqueUsername(validUserData.username);
-  await validateUniqueEmail(validUserData.email);
+  await validateUniqueUser(validUserData);
   await hashPasswordInObject(validUserData);
 
   validUserData.features = ['read:activation_token'];
@@ -277,23 +276,20 @@ function validatePostSchema(postedUserData) {
   return cleanValues;
 }
 
-// TODO: Refactor the interface of this function
-// and the code inside to make it more future proof
 async function update(userId, postedUserData, options = {}) {
   const validPostedUserData = validatePatchSchema(postedUserData);
   const currentUser = options.oldUser ?? (await findOneById(userId, { transaction: options.transaction }));
 
-  if (
+  const shouldValidateUsername =
     'username' in validPostedUserData &&
-    currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()
-  ) {
-    await validateUniqueUsername(validPostedUserData.username, { transaction: options.transaction });
-  }
+    currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase();
+  const shouldValidateEmail =
+    'email' in validPostedUserData && validPostedUserData.email.toLowerCase() !== currentUser.email.toLowerCase();
 
-  if ('email' in validPostedUserData && validPostedUserData.email.toLowerCase() !== currentUser.email.toLowerCase()) {
-    await validateUniqueEmail(validPostedUserData.email, { transaction: options.transaction });
+  if (shouldValidateUsername || shouldValidateEmail) {
+    await validateUniqueUser({ ...validPostedUserData, id: userId }, { transaction: options.transaction });
 
-    if (!options.skipEmailConfirmation) {
+    if (shouldValidateEmail && !options.skipEmailConfirmation) {
       await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
         transaction: options.transaction,
       });
@@ -360,39 +356,59 @@ function validatePatchSchema(postedUserData) {
   return cleanValues;
 }
 
-async function validateUniqueUsername(username, options) {
-  const query = {
-    text: 'SELECT username FROM users WHERE LOWER(username) = LOWER($1)',
-    values: [username],
-  };
+async function validateUniqueUser(userData, options) {
+  const orConditions = [];
+  const queryValues = [];
 
-  const results = await database.query(query, options);
-
-  if (results.rowCount > 0) {
-    throw new ValidationError({
-      message: `O "username" informado já está sendo usado.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
-      key: 'username',
-    });
+  if (userData.username) {
+    queryValues.push(userData.username);
+    orConditions.push(`LOWER(username) = LOWER($${queryValues.length})`);
   }
-}
 
-async function validateUniqueEmail(email, options) {
+  if (userData.email) {
+    queryValues.push(userData.email);
+    orConditions.push(`LOWER(email) = LOWER($${queryValues.length})`);
+  }
+
+  let where = `(${orConditions.join(' OR ')})`;
+
+  if (userData.id) {
+    queryValues.push(userData.id);
+    where += ` AND id <> $${queryValues.length}`;
+  }
+
   const query = {
-    text: 'SELECT email FROM users WHERE LOWER(email) = LOWER($1)',
-    values: [email],
+    text: `
+      SELECT
+        username,
+        email
+      FROM
+        users
+      WHERE
+        ${where}
+    `,
+    values: queryValues,
   };
 
   const results = await database.query(query, options);
 
   if (results.rowCount > 0) {
-    throw new ValidationError({
-      message: `O email informado já está sendo usado.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
-      key: 'email',
-    });
+    const isSameUsername = results.rows[0].username.toLowerCase() === userData.username?.toLowerCase();
+    if (isSameUsername) {
+      throw new ValidationError({
+        message: `O "username" informado já está sendo usado.`,
+        stack: new Error().stack,
+        errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS`,
+        key: 'username',
+      });
+    } else {
+      throw new ValidationError({
+        message: `O email informado já está sendo usado.`,
+        stack: new Error().stack,
+        errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS`,
+        key: 'email',
+      });
+    }
   }
 }
 
