@@ -114,7 +114,7 @@ async function patchHandler(request, response) {
   try {
     await transaction.query('BEGIN');
 
-    updatedUser = await user.update(targetUsername, secureInputValues, {
+    updatedUser = await user.update(targetUser.id, secureInputValues, {
       transaction: transaction,
     });
 

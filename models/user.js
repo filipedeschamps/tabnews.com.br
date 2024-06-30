@@ -281,10 +281,9 @@ function validatePostSchema(postedUserData) {
 
 // TODO: Refactor the interface of this function
 // and the code inside to make it more future proof
-// and to accept update using "userId".
-async function update(username, postedUserData, options = {}) {
+async function update(userId, postedUserData, options = {}) {
   const validPostedUserData = await validatePatchSchema(postedUserData);
-  const currentUser = await findOneByUsername(username, { transaction: options.transaction });
+  const currentUser = await findOneById(userId, { transaction: options.transaction });
 
   if (
     'username' in validPostedUserData &&

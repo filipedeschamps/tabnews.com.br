@@ -160,27 +160,13 @@ async function markTokenAsUsed(tokenId) {
   return results.rows[0];
 }
 
-async function updateUserEmail(userId, newEmail) {
-  const currentUser = await user.findOneById(userId);
-
-  await user.update(
-    currentUser.username,
-    {
-      email: newEmail,
-    },
-    {
-      skipEmailConfirmation: true,
-    },
-  );
-}
-
 async function confirmEmailUpdate(tokenId) {
   const tokenObject = await findOneTokenById(tokenId);
 
   if (!tokenObject.used) {
     const validToken = await findOneValidTokenById(tokenId);
     const usedToken = await markTokenAsUsed(validToken.id);
-    await updateUserEmail(validToken.user_id, validToken.email);
+    await user.update(validToken.user_id, { email: validToken.email }, { skipEmailConfirmation: true });
     return usedToken;
   }
 
