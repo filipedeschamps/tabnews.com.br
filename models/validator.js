@@ -201,6 +201,18 @@ const schemas = {
     });
   },
 
+  rank: function () {
+    return Joi.object({
+      rank: Joi.number()
+        .precision(4)
+        .when('$required.rank', {
+          is: 'required',
+          then: Joi.required(),
+          otherwise: Joi.optional().allow(null),
+        }),
+    });
+  },
+
   slug: function () {
     return Joi.object({
       slug: Joi.string()
@@ -492,12 +504,23 @@ const schemas = {
       'tabcoins',
       'tabcoins_credit',
       'tabcoins_debit',
+      'rank',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
     }
 
     return contentSchema;
+  },
+
+  only_children: function () {
+    return Joi.object({
+      only_children: Joi.boolean().when('$required.only_children', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
   },
 
   with_children: function () {
@@ -666,6 +689,19 @@ const schemas = {
         .trim()
         .valid('nuke')
         .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
+  q: function () {
+    return Joi.object({
+      q: Joi.string()
+        .replace(
+          /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
+          '',
+        )
+        .min(3)
+        .max(255)
+        .when('$required.q', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 };
