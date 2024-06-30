@@ -5,10 +5,9 @@ import webserver from 'infra/webserver.js';
 import { ConfirmationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
-async function createAndSendEmail(userId, newEmail, options) {
-  const userFound = await user.findOneById(userId, options);
-  const tokenObject = await create(userFound.id, newEmail, options);
-  await sendEmailToUser(userFound, newEmail, tokenObject.id);
+async function createAndSendEmail(user, newEmail, options) {
+  const tokenObject = await create(user.id, newEmail, options);
+  await sendEmailToUser(user, newEmail, tokenObject.id);
 
   return tokenObject;
 }
