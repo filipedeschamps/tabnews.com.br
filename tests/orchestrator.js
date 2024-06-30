@@ -298,6 +298,25 @@ async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
 }
 
+async function updateEmailConfirmationToken(tokenId, tokenBody) {
+  const query = {
+    text: `
+      UPDATE
+        email_confirmation_tokens
+      SET
+        expires_at = $2
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [tokenId, tokenBody.expires_at],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
 async function createFirewallTestFunctions() {
   const procedures = fs.readdirSync('infra/stored-procedures');
 
@@ -456,6 +475,7 @@ const orchestrator = {
   removeFeaturesFromUser,
   runPendingMigrations,
   updateContent,
+  updateEmailConfirmationToken,
   updateEventCreatedAt,
   updateRewardedAt,
   waitForAllServices,

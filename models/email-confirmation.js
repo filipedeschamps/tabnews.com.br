@@ -53,65 +53,6 @@ function getEmailConfirmationPageEndpoint(tokenId) {
   return `${webserver.host}/perfil/confirmar-email/${tokenId}`;
 }
 
-async function findOneTokenById(tokenId) {
-  const query = {
-    text: `
-      SELECT
-        *
-      FROM
-        email_confirmation_tokens
-      WHERE
-        id = $1
-      LIMIT 1
-    ;`,
-    values: [tokenId],
-  };
-  const results = await database.query(query);
-
-  if (results.rowCount === 0) {
-    throw new NotFoundError({
-      message: `O token de confirmação de email utilizado não foi encontrado no sistema.`,
-      action: 'Certifique-se que está sendo enviado o token corretamente.',
-      errorLocationCode: 'MODEL:EMAIL_CONFIRMATION:FIND_ONE_TOKEN_BY_ID:NOT_FOUND',
-      stack: new Error().stack,
-    });
-  }
-
-  return results.rows[0];
-}
-
-async function findOneValidTokenById(tokenId) {
-  const query = {
-    text: `
-      SELECT
-        *
-      FROM
-        email_confirmation_tokens
-      WHERE
-        id = $1
-        AND used = false
-        AND expires_at >= now()
-      LIMIT
-        1
-    ;`,
-    values: [tokenId],
-  };
-
-  const results = await database.query(query);
-
-  if (results.rowCount === 0) {
-    throw new NotFoundError({
-      message: `O token de confirmação de email utilizado não foi encontrado no sistema ou expirou.`,
-      action: 'Solicite uma nova alteração de email.',
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:EMAIL_CONFIRMATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
-      key: 'token_id',
-    });
-  }
-
-  return results.rows[0];
-}
-
 async function findOneTokenByUserId(userId) {
   const query = {
     text: `
@@ -139,7 +80,7 @@ async function findOneTokenByUserId(userId) {
   return results.rows[0];
 }
 
-async function markTokenAsUsed(tokenId) {
+async function markTokenAsUsedById(tokenId) {
   const query = {
     text: `
       UPDATE
@@ -149,6 +90,8 @@ async function markTokenAsUsed(tokenId) {
         updated_at = (now() at time zone 'utc')
       WHERE
         id = $1
+        AND used = false
+        AND expires_at >= now()
       RETURNING
         *
     ;`,
@@ -156,56 +99,25 @@ async function markTokenAsUsed(tokenId) {
   };
 
   const results = await database.query(query);
+
+  if (results.rowCount === 0) {
+    throw new NotFoundError({
+      message: `O token de confirmação de email utilizado não foi encontrado no sistema ou expirou.`,
+      action: 'Solicite uma nova alteração de email.',
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:EMAIL_CONFIRMATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+      key: 'token_id',
+    });
+  }
+
   return results.rows[0];
 }
 
 async function confirmEmailUpdate(tokenId) {
-  const tokenObject = await findOneTokenById(tokenId);
+  const usedToken = await markTokenAsUsedById(tokenId);
+  await user.update(usedToken.user_id, { email: usedToken.email }, { skipEmailConfirmation: true });
 
-  if (!tokenObject.used) {
-    const validToken = await findOneValidTokenById(tokenId);
-    const usedToken = await markTokenAsUsed(validToken.id);
-    await user.update(validToken.user_id, { email: validToken.email }, { skipEmailConfirmation: true });
-    return usedToken;
-  }
-
-  return tokenObject;
-}
-
-async function update(tokenId, tokenBody) {
-  const currentToken = await findOneTokenById(tokenId);
-  const updatedToken = { ...currentToken, ...tokenBody };
-
-  const query = {
-    text: `
-      UPDATE
-        email_confirmation_tokens
-      SET
-        user_id = $2,
-        used = $3,
-        email = $4,
-        expires_at = $5,
-        created_at = $6,
-        updated_at = $7
-      WHERE
-        id = $1
-      RETURNING
-        *
-    ;`,
-    values: [
-      tokenId,
-      updatedToken.user_id,
-      updatedToken.used,
-      updatedToken.email,
-      updatedToken.expires_at,
-      updatedToken.created_at,
-      updatedToken.updated_at,
-    ],
-  };
-
-  const results = await database.query(query);
-
-  return results.rows[0];
+  return usedToken;
 }
 
 export default Object.freeze({
@@ -214,5 +126,4 @@ export default Object.freeze({
   findOneTokenByUserId,
   getEmailConfirmationPageEndpoint,
   confirmEmailUpdate,
-  update,
 });
