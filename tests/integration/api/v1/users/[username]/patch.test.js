@@ -4,6 +4,7 @@ import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -764,6 +765,40 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Patching itself with the user having TabCoins and TabCash', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: defaultUser.id,
+        amount: 200,
+      });
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: defaultUser.id,
+        amount: 55,
+      });
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'new description',
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: 'new description',
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        tabcoins: 200,
+        tabcash: 55,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
     });
 
     describe('TEMPORARY BEHAVIOR', () => {
