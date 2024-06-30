@@ -164,7 +164,6 @@ async function findOneByEmail(email, options = {}) {
   return results.rows[0];
 }
 
-// TODO: validate userId
 async function findOneById(userId, options = {}) {
   const baseQuery = `
       WITH user_found AS (
@@ -262,8 +261,8 @@ function validatePostSchema(postedUserData) {
 // TODO: Refactor the interface of this function
 // and the code inside to make it more future proof
 async function update(userId, postedUserData, options = {}) {
-  const validPostedUserData = await validatePatchSchema(postedUserData);
-  const currentUser = await findOneById(userId, { transaction: options.transaction });
+  const validPostedUserData = validatePatchSchema(postedUserData);
+  const currentUser = options.oldUser ?? (await findOneById(userId, { transaction: options.transaction }));
 
   if (
     'username' in validPostedUserData &&
@@ -276,7 +275,7 @@ async function update(userId, postedUserData, options = {}) {
     await validateUniqueEmail(validPostedUserData.email, { transaction: options.transaction });
 
     if (!options.skipEmailConfirmation) {
-      await emailConfirmation.createAndSendEmail(currentUser.id, validPostedUserData.email, {
+      await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
         transaction: options.transaction,
       });
       delete validPostedUserData.email;
@@ -343,7 +342,7 @@ async function update(userId, postedUserData, options = {}) {
   }
 }
 
-async function validatePatchSchema(postedUserData) {
+function validatePatchSchema(postedUserData) {
   const cleanValues = validator(postedUserData, {
     username: 'optional',
     email: 'optional',

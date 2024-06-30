@@ -113,6 +113,7 @@ async function patchHandler(request, response) {
     await transaction.query('BEGIN');
 
     const updatedUser = await user.update(targetUser.id, secureInputValues, {
+      oldUser: targetUser,
       transaction: transaction,
     });
 
