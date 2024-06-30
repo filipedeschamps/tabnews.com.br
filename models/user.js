@@ -290,7 +290,7 @@ async function update(userId, postedUserData, options = {}) {
     await validateUniqueUsername(validPostedUserData.username, { transaction: options.transaction });
   }
 
-  if ('email' in validPostedUserData) {
+  if ('email' in validPostedUserData && validPostedUserData.email.toLowerCase() !== currentUser.email.toLowerCase()) {
     await validateUniqueEmail(validPostedUserData.email, { transaction: options.transaction });
 
     if (!options.skipEmailConfirmation) {

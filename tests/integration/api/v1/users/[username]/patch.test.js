@@ -678,6 +678,33 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
     });
 
+    test('Patching itself with the same "email"', async () => {
+      await orchestrator.deleteAllEmails();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: defaultUser.email,
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+    });
+
     test('Patching itself with "notifications"', async () => {
       const defaultUser = await orchestrator.createUser({
         notifications: true,
