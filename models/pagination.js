@@ -1,11 +1,8 @@
-function get({ total_rows, page, per_page, query = {} }) {
+function get({ total_rows, page, per_page }) {
   const firstPage = 1;
   const lastPage = Math.ceil(total_rows / per_page) || 1;
   const nextPage = page >= lastPage ? null : page + 1;
   const previousPage = page <= 1 ? null : page > lastPage ? lastPage : page - 1;
-
-  query.page = page;
-  query.per_page = per_page;
 
   const pagination = {
     currentPage: page,
@@ -15,7 +12,6 @@ function get({ total_rows, page, per_page, query = {} }) {
     nextPage: nextPage,
     previousPage: previousPage,
     lastPage: lastPage,
-    query: query,
   };
 
   return pagination;

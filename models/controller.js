@@ -170,11 +170,19 @@ function clearContext(context) {
   return cleanContext;
 }
 
-function injectPaginationHeaders(pagination, endpoint, response) {
+function injectPaginationHeaders(pagination, endpoint, request, response) {
   const links = [];
   const baseUrl = `${webserver.host}${endpoint}`;
 
-  const searchParams = new URLSearchParams(pagination.query);
+  const searchParams = new URLSearchParams();
+
+  const acceptedParams = ['strategy', 'with_root', 'with_children', 'page', 'per_page'];
+
+  acceptedParams.forEach((param) => {
+    if (request?.query?.[param] !== undefined) {
+      searchParams.set(param, request.query[param]);
+    }
+  });
 
   const pages = [
     { page: pagination.firstPage, rel: 'first' },

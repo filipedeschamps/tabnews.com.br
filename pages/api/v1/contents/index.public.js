@@ -61,8 +61,6 @@ async function getHandler(request, response) {
     },
     page: request.query.page,
     per_page: request.query.per_page,
-    with_root: request.query.with_root,
-    with_children: request.query.with_children,
   });
 
   const contentList = results.rows;
@@ -79,7 +77,7 @@ async function getHandler(request, response) {
     }
   }
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', request, response);
 
   return response.status(200).json(secureOutputValues);
 }
