@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
 import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
@@ -17,7 +16,6 @@ export default function RecoverPassword() {
 }
 
 function RecoverPasswordForm() {
-  const router = useRouter();
   const { user, isLoading: userIsLoading } = useUser();
 
   const userInputRef = useRef('');
@@ -28,7 +26,7 @@ function RecoverPasswordForm() {
     }
   }, [user, userIsLoading]);
 
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
+  const [globalMessageObject, setGlobalMessageObject] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
 
@@ -71,11 +69,20 @@ function RecoverPasswordForm() {
         }),
       });
 
-      setGlobalErrorMessage(undefined);
+      setGlobalMessageObject(undefined);
       const responseBody = await response.json();
 
       if (response.status === 201) {
-        router.push('/cadastro/recuperar/confirmar');
+        const message =
+          userInput === user?.email || username
+            ? `Um e-mail será enviado para "${userInput}" com um link para definir uma nova senha.`
+            : `Caso o e-mail "${userInput}" esteja cadastrado, um link será enviado para definir uma nova senha.`;
+
+        setGlobalMessageObject({
+          message: message,
+          type: 'success',
+        });
+        setIsLoading(false);
         return;
       }
 
@@ -86,12 +93,15 @@ function RecoverPasswordForm() {
       }
 
       if (response.status >= 401) {
-        setGlobalErrorMessage(createErrorMessage(responseBody));
+        setGlobalMessageObject({ type: 'danger', message: createErrorMessage(responseBody) });
         setIsLoading(false);
         return;
       }
     } catch (error) {
-      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+      setGlobalMessageObject({
+        type: 'danger',
+        message: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.',
+      });
       setIsLoading(false);
     }
   }
@@ -99,7 +109,7 @@ function RecoverPasswordForm() {
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+        {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.message}</Flash>}
 
         {user?.features.includes('create:recovery_token:username') && (
           <Flash variant="default">

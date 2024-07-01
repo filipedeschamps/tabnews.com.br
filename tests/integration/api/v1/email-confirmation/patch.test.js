@@ -282,6 +282,8 @@ describe('PATCH /api/v1/email-confirmation', () => {
     });
 
     test('With an already used email (before creating the token)', async () => {
+      await orchestrator.deleteAllEmails();
+
       const firstUser = await orchestrator.createUser({
         email: 'validation.error@before.com',
       });
@@ -304,23 +306,13 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-
-      expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
-        message: 'O email informado já está sendo usado.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
-        key: 'email',
-      });
+      expect(response.status).toBe(200);
 
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('validation.error@before.com');
+      expect(userInDatabaseCheck1.email).toBe(firstUser.email);
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
     });
 
     test('With an already used email (after creating the token)', async () => {

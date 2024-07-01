@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 
-import { ForbiddenError, UnprocessableEntityError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -141,6 +141,21 @@ async function patchHandler(request, response) {
   } catch (error) {
     await transaction.query('ROLLBACK');
     await transaction.release();
+
+    if (error instanceof ValidationError && error.key === 'email') {
+      const secureOutputValues = authorization.filterOutput(
+        userTryingToPatch,
+        updateAnotherUser ? 'read:user' : 'read:user:self',
+        {
+          ...targetUser,
+          ...secureInputValues,
+          updated_at: new Date(),
+        },
+      );
+
+      return response.status(200).json(secureOutputValues);
+    }
+
     throw error;
   }
 
