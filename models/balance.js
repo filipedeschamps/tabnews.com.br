@@ -13,12 +13,6 @@ const balanceTypeMap = {
   default: 'initial',
 };
 
-const sqlFunctionMap = {
-  'user:tabcoin': 'get_user_current_tabcoins',
-  'user:tabcash': 'get_user_current_tabcash',
-  default: 'get_content_current_tabcoins',
-};
-
 async function findAllByOriginatorId(originatorId, options) {
   const query = {
     text: `
@@ -69,18 +63,6 @@ async function create({ balanceType, recipientId, amount, originatorType, origin
 
   const results = await database.query(query, options);
   return results.rows[0];
-}
-
-async function getTotal({ balanceType, recipientId }, options) {
-  const sqlFunction = sqlFunctionMap[balanceType] || sqlFunctionMap.default;
-
-  const query = {
-    text: `SELECT ${sqlFunction}($1) AS total;`,
-    values: [recipientId],
-  };
-
-  const results = await database.query(query, options);
-  return results.rows[0].total;
 }
 
 async function getContentTabcoinsCreditDebit({ recipientId }, options = {}) {
@@ -194,7 +176,6 @@ async function undo(balanceOperation, options) {
 export default Object.freeze({
   findAllByOriginatorId,
   create,
-  getTotal,
   getContentTabcoinsCreditDebit,
   rateContent,
   undo,

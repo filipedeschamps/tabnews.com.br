@@ -5,10 +5,9 @@ import webserver from 'infra/webserver.js';
 import { ConfirmationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
-async function createAndSendEmail(userId, newEmail, options) {
-  const userFound = await user.findOneById(userId, options);
-  const tokenObject = await create(userFound.id, newEmail, options);
-  await sendEmailToUser(userFound, newEmail, tokenObject.id);
+async function createAndSendEmail(user, newEmail, options) {
+  const tokenObject = await create(user.id, newEmail, options);
+  await sendEmailToUser(user, newEmail, tokenObject.id);
 
   return tokenObject;
 }
@@ -81,38 +80,6 @@ async function findOneTokenById(tokenId) {
   return results.rows[0];
 }
 
-async function findOneValidTokenById(tokenId) {
-  const query = {
-    text: `
-      SELECT
-        *
-      FROM
-        email_confirmation_tokens
-      WHERE
-        id = $1
-        AND used = false
-        AND expires_at >= now()
-      LIMIT
-        1
-    ;`,
-    values: [tokenId],
-  };
-
-  const results = await database.query(query);
-
-  if (results.rowCount === 0) {
-    throw new NotFoundError({
-      message: `O token de confirmação de email utilizado não foi encontrado no sistema ou expirou.`,
-      action: 'Solicite uma nova alteração de email.',
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:EMAIL_CONFIRMATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
-      key: 'token_id',
-    });
-  }
-
-  return results.rows[0];
-}
-
 async function findOneTokenByUserId(userId) {
   const query = {
     text: `
@@ -160,31 +127,29 @@ async function markTokenAsUsed(tokenId) {
   return results.rows[0];
 }
 
-async function updateUserEmail(userId, newEmail) {
-  const currentUser = await user.findOneById(userId);
-
-  await user.update(
-    currentUser.username,
-    {
-      email: newEmail,
-    },
-    {
-      skipEmailConfirmation: true,
-    },
-  );
-}
-
 async function confirmEmailUpdate(tokenId) {
   const tokenObject = await findOneTokenById(tokenId);
 
   if (!tokenObject.used) {
-    const validToken = await findOneValidTokenById(tokenId);
-    const usedToken = await markTokenAsUsed(validToken.id);
-    await updateUserEmail(validToken.user_id, validToken.email);
+    throwIfTokenIsExpired(tokenObject);
+    const usedToken = await markTokenAsUsed(tokenObject.id);
+    await user.update(tokenObject.user_id, { email: tokenObject.email }, { skipEmailConfirmation: true });
     return usedToken;
   }
 
   return tokenObject;
+}
+
+function throwIfTokenIsExpired(tokenObject) {
+  if (tokenObject.expires_at < Date.now()) {
+    throw new NotFoundError({
+      message: `O token de confirmação de email utilizado não foi encontrado no sistema ou expirou.`,
+      action: 'Solicite uma nova alteração de email.',
+      errorLocationCode: 'MODEL:EMAIL_CONFIRMATION:CHECK_IF_TOKEN_IS_EXPIRED:NOT_FOUND',
+      stack: new Error().stack,
+      key: 'token_id',
+    });
+  }
 }
 
 async function update(tokenId, tokenBody) {

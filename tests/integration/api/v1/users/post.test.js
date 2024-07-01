@@ -161,11 +161,11 @@ describe('POST /api/v1/users', () => {
       expect(secondResponse.status).toEqual(400);
       expect(secondResponseBody.status_code).toEqual(400);
       expect(secondResponseBody.name).toEqual('ValidationError');
-      expect(secondResponseBody.message).toEqual('O "username" informado já está sendo usado.');
+      expect(secondResponseBody.message).toEqual('O nome de usuário informado já está sendo usado.');
       expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(secondResponseBody.error_id)).toEqual(4);
       expect(uuidVersion(secondResponseBody.request_id)).toEqual(4);
-      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS');
       expect(secondResponseBody.key).toEqual('username');
     });
 
@@ -200,11 +200,11 @@ describe('POST /api/v1/users', () => {
       expect(secondResponse.status).toEqual(400);
       expect(secondResponseBody.status_code).toEqual(400);
       expect(secondResponseBody.name).toEqual('ValidationError');
-      expect(secondResponseBody.message).toEqual('O "username" informado já está sendo usado.');
+      expect(secondResponseBody.message).toEqual('O nome de usuário informado já está sendo usado.');
       expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(secondResponseBody.error_id)).toEqual(4);
       expect(uuidVersion(secondResponseBody.request_id)).toEqual(4);
-      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS');
       expect(secondResponseBody.key).toEqual('username');
     });
 
@@ -424,7 +424,7 @@ describe('POST /api/v1/users', () => {
       expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(secondResponseBody.error_id)).toEqual(4);
       expect(uuidVersion(secondResponseBody.request_id)).toEqual(4);
-      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS');
+      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS');
       expect(secondResponseBody.key).toEqual('email');
     });
 
@@ -463,7 +463,7 @@ describe('POST /api/v1/users', () => {
       expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(secondResponseBody.error_id)).toEqual(4);
       expect(uuidVersion(secondResponseBody.request_id)).toEqual(4);
-      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS');
+      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS');
       expect(secondResponseBody.key).toEqual('email');
     });
 

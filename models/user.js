@@ -1,7 +1,6 @@
 import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
-import balance from 'models/balance.js';
 import emailConfirmation from 'models/email-confirmation.js';
 import pagination from 'models/pagination.js';
 import validator from 'models/validator.js';
@@ -164,7 +163,6 @@ async function findOneByEmail(email, options = {}) {
   return results.rows[0];
 }
 
-// TODO: validate userId
 async function findOneById(userId, options = {}) {
   const baseQuery = `
       WITH user_found AS (
@@ -211,8 +209,7 @@ async function findOneById(userId, options = {}) {
 
 async function create(postedUserData) {
   const validUserData = validatePostSchema(postedUserData);
-  await validateUniqueUsername(validUserData.username);
-  await validateUniqueEmail(validUserData.email);
+  await validateUniqueUser(validUserData);
   await hashPasswordInObject(validUserData);
 
   validUserData.features = ['read:activation_token'];
@@ -259,25 +256,21 @@ function validatePostSchema(postedUserData) {
   return cleanValues;
 }
 
-// TODO: Refactor the interface of this function
-// and the code inside to make it more future proof
-// and to accept update using "userId".
-async function update(username, postedUserData, options = {}) {
-  const validPostedUserData = await validatePatchSchema(postedUserData);
-  const currentUser = await findOneByUsername(username, { transaction: options.transaction });
+async function update(userId, postedUserData, options = {}) {
+  const validPostedUserData = validatePatchSchema(postedUserData);
+  const currentUser = options.oldUser ?? (await findOneById(userId, { transaction: options.transaction }));
 
-  if (
+  const shouldValidateUsername =
     'username' in validPostedUserData &&
-    currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase()
-  ) {
-    await validateUniqueUsername(validPostedUserData.username, { transaction: options.transaction });
-  }
+    currentUser.username.toLowerCase() !== validPostedUserData.username.toLowerCase();
+  const shouldValidateEmail =
+    'email' in validPostedUserData && validPostedUserData.email.toLowerCase() !== currentUser.email.toLowerCase();
 
-  if ('email' in validPostedUserData) {
-    await validateUniqueEmail(validPostedUserData.email, { transaction: options.transaction });
+  if (shouldValidateUsername || shouldValidateEmail) {
+    await validateUniqueUser({ ...validPostedUserData, id: userId }, { transaction: options.transaction });
 
-    if (!options.skipEmailConfirmation) {
-      await emailConfirmation.createAndSendEmail(currentUser.id, validPostedUserData.email, {
+    if (shouldValidateEmail && !options.skipEmailConfirmation) {
+      await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
         transaction: options.transaction,
       });
       delete validPostedUserData.email;
@@ -310,7 +303,9 @@ async function update(username, postedUserData, options = {}) {
         WHERE
           id = $1
         RETURNING
-          *
+          *,
+          get_user_current_tabcoins($1) as tabcoins,
+          get_user_current_tabcash($1) as tabcash
       ;`,
       values: [
         currentUser.id,
@@ -325,26 +320,11 @@ async function update(username, postedUserData, options = {}) {
     const results = await database.query(query, options);
     const updatedUser = results.rows[0];
 
-    updatedUser.tabcoins = await balance.getTotal(
-      {
-        balanceType: 'user:tabcoin',
-        recipientId: updatedUser.id,
-      },
-      options,
-    );
-    updatedUser.tabcash = await balance.getTotal(
-      {
-        balanceType: 'user:tabcash',
-        recipientId: updatedUser.id,
-      },
-      options,
-    );
-
     return updatedUser;
   }
 }
 
-async function validatePatchSchema(postedUserData) {
+function validatePatchSchema(postedUserData) {
   const cleanValues = validator(postedUserData, {
     username: 'optional',
     email: 'optional',
@@ -356,38 +336,49 @@ async function validatePatchSchema(postedUserData) {
   return cleanValues;
 }
 
-async function validateUniqueUsername(username, options) {
-  const query = {
-    text: 'SELECT username FROM users WHERE LOWER(username) = LOWER($1)',
-    values: [username],
-  };
+async function validateUniqueUser(userData, options) {
+  const orConditions = [];
+  const queryValues = [];
 
-  const results = await database.query(query, options);
-
-  if (results.rowCount > 0) {
-    throw new ValidationError({
-      message: `O "username" informado já está sendo usado.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
-      key: 'username',
-    });
+  if (userData.username) {
+    queryValues.push(userData.username);
+    orConditions.push(`LOWER(username) = LOWER($${queryValues.length})`);
   }
-}
 
-async function validateUniqueEmail(email, options) {
+  if (userData.email) {
+    queryValues.push(userData.email);
+    orConditions.push(`LOWER(email) = LOWER($${queryValues.length})`);
+  }
+
+  let where = `(${orConditions.join(' OR ')})`;
+
+  if (userData.id) {
+    queryValues.push(userData.id);
+    where += ` AND id <> $${queryValues.length}`;
+  }
+
   const query = {
-    text: 'SELECT email FROM users WHERE LOWER(email) = LOWER($1)',
-    values: [email],
+    text: `
+      SELECT
+        username,
+        email
+      FROM
+        users
+      WHERE
+        ${where}
+    `,
+    values: queryValues,
   };
 
   const results = await database.query(query, options);
 
   if (results.rowCount > 0) {
+    const isSameUsername = results.rows[0].username.toLowerCase() === userData.username?.toLowerCase();
     throw new ValidationError({
-      message: `O email informado já está sendo usado.`,
+      message: `O ${isSameUsername ? 'nome de usuário' : 'email'} informado já está sendo usado.`,
       stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
-      key: 'email',
+      errorLocationCode: 'MODEL:USER:VALIDATE_UNIQUE:ALREADY_EXISTS',
+      key: isSameUsername ? 'username' : 'email',
     });
   }
 }
