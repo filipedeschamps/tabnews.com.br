@@ -369,7 +369,7 @@ async function create(postedContent, options = {}) {
 
 function populateSlug(postedContent) {
   if (!postedContent.slug) {
-    postedContent.slug = getSlug(postedContent.title) || uuidV4();
+    postedContent.slug = generateSlug(postedContent.title) || uuidV4();
   }
 }
 
@@ -385,7 +385,7 @@ slug.extend({
   '/': '-',
 });
 
-function getSlug(title) {
+function generateSlug(title) {
   if (!title) {
     return;
   }
@@ -443,12 +443,12 @@ function validateCreateSchema(content) {
     source_url: 'optional',
   });
 
-  if (cleanValues.status === 'deleted') {
+  if (['deleted', 'sponsored'].includes(cleanValues.status)) {
     throw new ValidationError({
-      message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
+      message: `Não é possível criar um novo conteúdo diretamente com status "${cleanValues.status}".`,
       key: 'status',
       type: 'any.only',
-      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
     });
   }
 
@@ -711,6 +711,15 @@ function validateUpdateSchema(content) {
     source_url: 'optional',
   });
 
+  if (cleanValues.status === 'sponsored') {
+    throw new ValidationError({
+      message: 'Não é possível atualizar um conteúdo para o status "sponsored".',
+      key: 'status',
+      type: 'any.only',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_UPDATE_SCHEMA:INVALID_STATUS',
+    });
+  }
+
   return cleanValues;
 }
 
@@ -929,4 +938,6 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  generateSlug,
+  parseQueryErrorToCustomError,
 });
