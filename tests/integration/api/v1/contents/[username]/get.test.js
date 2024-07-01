@@ -859,6 +859,14 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
       expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+
+      const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+      expect(responseLinkHeader.first.url).toBe(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_children=false&page=1&per_page=30`,
+      );
+      expect(responseLinkHeader.last.url).toBe(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_children=false&page=1&per_page=30`,
+      );
     });
 
     test('"username" existent with 5 contents, but only 2 "root" "published", and with_root "false"', async () => {
@@ -965,6 +973,14 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
       expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
       expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+
+      const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+      expect(responseLinkHeader.first.url).toBe(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_root=false&page=1&per_page=30`,
+      );
+      expect(responseLinkHeader.last.url).toBe(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_root=false&page=1&per_page=30`,
+      );
     });
   });
 });

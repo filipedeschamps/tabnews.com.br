@@ -170,15 +170,19 @@ function clearContext(context) {
   return cleanContext;
 }
 
-function injectPaginationHeaders(pagination, endpoint, response) {
+function injectPaginationHeaders(pagination, endpoint, request, response) {
   const links = [];
   const baseUrl = `${webserver.host}${endpoint}`;
 
   const searchParams = new URLSearchParams();
 
-  if (pagination.strategy) {
-    searchParams.set('strategy', pagination.strategy);
-  }
+  const acceptedParams = ['strategy', 'with_root', 'with_children', 'page', 'per_page'];
+
+  acceptedParams.forEach((param) => {
+    if (request?.query?.[param] !== undefined) {
+      searchParams.set(param, request.query[param]);
+    }
+  });
 
   const pages = [
     { page: pagination.firstPage, rel: 'first' },
@@ -190,7 +194,6 @@ function injectPaginationHeaders(pagination, endpoint, response) {
   for (const { page, rel } of pages) {
     if (page) {
       searchParams.set('page', page);
-      searchParams.set('per_page', pagination.perPage);
       links.push(`<${baseUrl}?${searchParams.toString()}>; rel="${rel}"`);
     }
   }

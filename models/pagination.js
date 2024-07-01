@@ -1,4 +1,4 @@
-function get({ total_rows, page, per_page, strategy }) {
+function get({ total_rows, page, per_page }) {
   const firstPage = 1;
   const lastPage = Math.ceil(total_rows / per_page) || 1;
   const nextPage = page >= lastPage ? null : page + 1;
@@ -13,10 +13,6 @@ function get({ total_rows, page, per_page, strategy }) {
     previousPage: previousPage,
     lastPage: lastPage,
   };
-
-  if (strategy) {
-    pagination.strategy = strategy;
-  }
 
   return pagination;
 }

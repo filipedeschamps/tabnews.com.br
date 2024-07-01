@@ -77,7 +77,7 @@ async function getHandler(request, response) {
     }
   }
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', request, response);
 
   return response.status(200).json(secureOutputValues);
 }

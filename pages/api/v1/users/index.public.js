@@ -50,7 +50,7 @@ async function getHandler(request, response) {
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/users', response);
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/users', request, response);
 
   return response.status(200).json(secureOutputValues);
 }

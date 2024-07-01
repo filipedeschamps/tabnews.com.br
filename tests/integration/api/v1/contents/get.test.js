@@ -1358,16 +1358,19 @@ describe('GET /api/v1/contents', () => {
         {
           content: 'relevant root',
           params: [],
+          responseLinkParams: ['strategy=relevant'],
           getExpected: () => rootSortedByTabCoins,
         },
         {
           content: 'relevant root',
           params: ['with_children=false'],
+          responseLinkParams: ['strategy=relevant', 'with_children=false'],
           getExpected: () => rootSortedByTabCoins,
         },
         {
           content: 'relevant root and children',
           params: ['with_children=true'],
+          responseLinkParams: ['strategy=relevant', 'with_children=true'],
           getExpected: () => [
             rootSortedByTabCoins[0],
             childSortedByTabCoins[0],
@@ -1378,38 +1381,48 @@ describe('GET /api/v1/contents', () => {
         {
           content: 'new root',
           params: ['with_children=false', 'with_root=true', 'strategy=new'],
-          getExpected: () => rootSortedByNew,
-        },
-        {
-          content: 'new root',
-          params: ['with_children=false', 'with_root=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=true', 'with_children=false'],
           getExpected: () => rootSortedByNew,
         },
         {
           content: 'new children',
           params: ['with_children=true', 'with_root=false', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=false', 'with_children=true'],
           getExpected: () => childSortedByNew,
         },
         {
           content: 'new root and children',
           params: ['with_children=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_children=true'],
           getExpected: () => [...childSortedByNew, ...rootSortedByNew],
         },
         {
           content: 'new root and children',
           params: ['with_children=true', 'with_root=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=true', 'with_children=true'],
           getExpected: () => [...childSortedByNew, ...rootSortedByNew],
         },
         {
           content: 'new root',
           params: ['with_root=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=true'],
           getExpected: () => rootSortedByNew,
         },
-      ])('get $content with params: $params', async ({ params, getExpected }) => {
+      ])('get $content with params: $params', async ({ params, responseLinkParams, getExpected }) => {
         const { response, responseBody } = await contentsRequestBuilder.get(`?${params.join('&')}`);
 
         expect(response.status).toEqual(200);
         expect(responseBody).toStrictEqual(getExpected());
+
+        const linkParamsString = responseLinkParams.join('&');
+        const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+
+        expect(responseLinkHeader.first.url).toBe(
+          `${orchestrator.webserverUrl}/api/v1/contents?${linkParamsString}&page=1&per_page=30`,
+        );
+        expect(responseLinkHeader.last.url).toBe(
+          `${orchestrator.webserverUrl}/api/v1/contents?${linkParamsString}&page=1&per_page=30`,
+        );
       });
     });
   });
