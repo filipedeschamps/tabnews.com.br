@@ -369,7 +369,7 @@ async function create(postedContent, options = {}) {
 
 function populateSlug(postedContent) {
   if (!postedContent.slug) {
-    postedContent.slug = getSlug(postedContent.title) || uuidV4();
+    postedContent.slug = generateSlug(postedContent.title) || uuidV4();
   }
 }
 
@@ -385,7 +385,7 @@ slug.extend({
   '/': '-',
 });
 
-function getSlug(title) {
+function generateSlug(title) {
   if (!title) {
     return;
   }
@@ -929,4 +929,6 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  generateSlug,
+  parseQueryErrorToCustomError,
 });

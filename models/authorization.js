@@ -34,6 +34,10 @@ const availableFeatures = new Set([
   'read:content:list',
   'read:content:tabcoins',
 
+  // ADS
+  'create:ads',
+  'read:ads',
+
   // MODERATION
   'read:user:list',
   'read:votes:others',
@@ -130,6 +134,18 @@ function filterInput(user, feature, input, target) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
+    };
+  }
+
+  if (feature === 'create:ads' && can(user, feature)) {
+    filteredInputValues = {
+      slug: input.slug,
+      title: input.title,
+      body: input.body,
+      link: input.link,
+      deactivated_at: input.deactivated_at,
+      bid: input.bid,
+      budget: input.budget,
     };
   }
 
@@ -243,6 +259,12 @@ function filterOutput(user, feature, output) {
 
     filteredOutputValues = validator(clonedOutput, {
       content: 'required',
+    });
+  }
+
+  if (feature === 'read:ads') {
+    filteredOutputValues = validator(output, {
+      sponsored_content: 'required',
     });
   }
 

@@ -14,6 +14,7 @@ import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
+import sponsoredContent from 'models/sponsored-content.js';
 import user from 'models/user.js';
 
 if (process.env.NODE_ENV !== 'test') {
@@ -165,7 +166,10 @@ async function removeFeaturesFromUser(userObject, features) {
 }
 
 async function activateUser(userObject) {
-  return await activation.activateUserByUserId(userObject.id);
+  await activation.activateUserByUserId(userObject.id);
+
+  // We are adding the `create:ads` feature here while this is an incomplete/beta feature.
+  return user.addFeatures(userObject.id, ['create:ads']);
 }
 
 async function createSession(userObject) {
@@ -216,6 +220,39 @@ async function updateContent(contentId, contentObject) {
     status: contentObject?.status || undefined,
     source_url: contentObject?.source_url || undefined,
   });
+}
+
+async function createSponsoredContent(sponsoredContentObject) {
+  const sponsoredContentId = sponsoredContentObject.id || randomUUID();
+
+  const currentEvent = await event.create({
+    type: 'create:sponsored_content',
+    originatorUserId: sponsoredContentObject.owner_id,
+    originatorIp: faker.internet.ip(),
+    metadata: {
+      id: sponsoredContentId,
+    },
+  });
+
+  const createdContent = await sponsoredContent.create(
+    {
+      id: sponsoredContentId,
+      slug: sponsoredContentObject?.slug,
+      title: sponsoredContentObject?.title,
+      body: sponsoredContentObject?.body || faker.lorem.paragraphs(5),
+      owner_id: sponsoredContentObject?.owner_id,
+      link: sponsoredContentObject?.link,
+      activated_at: sponsoredContentObject?.activated_at,
+      deactivated_at: sponsoredContentObject?.deactivated_at,
+      bid: sponsoredContentObject?.bid,
+      budget: sponsoredContentObject?.budget,
+    },
+    {
+      eventId: currentEvent.id,
+    },
+  );
+
+  return createdContent;
 }
 
 async function createBalance(balanceObject) {
@@ -415,6 +452,7 @@ const orchestrator = {
   createRate,
   createRecoveryToken,
   createSession,
+  createSponsoredContent,
   createUser,
   deleteAllEmails,
   dropAllTables,

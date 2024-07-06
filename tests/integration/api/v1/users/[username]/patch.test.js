@@ -699,6 +699,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           'create:content:text_child',
           'update:content',
           'update:user',
+          'create:ads',
         ],
         notifications: defaultUser.notifications,
         tabcoins: 0,

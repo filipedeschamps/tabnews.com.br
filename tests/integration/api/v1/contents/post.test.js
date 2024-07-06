@@ -2876,5 +2876,47 @@ describe('POST /api/v1/contents', () => {
         expect(userResponseBody.tabcash).toEqual(0);
       });
     });
+
+    describe('Sponsored content', () => {
+      test('Content with "slug" containing the same value of a sponsored content from the same user', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 100,
+        });
+
+        await orchestrator.createSponsoredContent({
+          title: 'A sponsored content (and a content will use the same slug)',
+          body: 'First body',
+          slug: 'duplicate-slug-sponsored-content-and-content',
+          owner_id: defaultUser.id,
+          bid: 2,
+          budget: 100,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'A normal content with the same slug of a sponsored content',
+          body: 'Second body',
+          slug: 'duplicate-slug-sponsored-content-and-content',
+        });
+
+        expect(response.status).toBe(400);
+
+        expect(responseBody).toStrictEqual({
+          name: 'ValidationError',
+          message: 'O conteúdo enviado parece ser duplicado.',
+          action: 'Utilize um "title" ou "slug" com começo diferente.',
+          status_code: 400,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
+          key: 'slug',
+        });
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+      });
+    });
   });
 });

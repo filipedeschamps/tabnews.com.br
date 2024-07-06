@@ -39,6 +39,7 @@ async function seedDevelopmentUsers() {
     'create:recovery_token:username',
     'read:votes:others',
     'read:user:list',
+    'create:ads',
   ]);
   await insertUser('user', 'user@user.com', '$2a$04$v0hvAu/y6pJ17LzeCfcKG.rDStO9x5ficm2HTLZIfeDBG8oR/uQXi', [
     'create:session',
@@ -48,6 +49,7 @@ async function seedDevelopmentUsers() {
     'create:content:text_child',
     'update:content',
     'update:user',
+    'create:ads',
   ]);
 
   console.log('------------------------------');

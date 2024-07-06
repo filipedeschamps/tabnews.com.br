@@ -178,6 +178,46 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   };
 }
 
+async function sponsorContent({ contentOwnerId, tabcash }, options) {
+  const originatorType = 'event';
+  const originatorId = options.eventId;
+
+  const query = {
+    text: `
+      WITH user_tabcash_insert AS (
+        INSERT INTO user_tabcash_operations
+          (recipient_id, amount, originator_type, originator_id)
+        VALUES
+          ($1, $2, $3, $4)
+        RETURNING
+          *
+      )
+      SELECT
+        get_user_current_tabcash($1) AS user_current_tabcash_balance
+      FROM
+        user_tabcash_insert
+    ;`,
+    values: [
+      contentOwnerId, // $1
+      tabcash * -1, // $2
+
+      originatorType, // $3
+      originatorId, // $4
+    ],
+  };
+
+  const results = await database.query(query, options);
+  const currentBalances = results.rows[0];
+
+  if (currentBalances.user_current_tabcash_balance < 0) {
+    throw new UnprocessableEntityError({
+      message: 'Não foi possível utilizar TabCash para criar esta publicação patrocinada.',
+      action: 'Informe um valor menor ou acumule mais TabCash.',
+      errorLocationCode: 'MODEL:BALANCE:SPONSOR_CONTENT:NOT_ENOUGH',
+    });
+  }
+}
+
 async function undo(balanceOperation, options) {
   const invertedBalanceOperation = {
     balanceType: balanceOperation.balance_type,
@@ -197,5 +237,6 @@ export default Object.freeze({
   getTotal,
   getContentTabcoinsCreditDebit,
   rateContent,
+  sponsorContent,
   undo,
 });

@@ -265,6 +265,15 @@ const schemas = {
     });
   },
 
+  link: function () {
+    return Joi.object({
+      link: schemas
+        .source_url()
+        .extract('source_url')
+        .when('$required.link', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
   owner_id: function () {
     return Joi.object({
       owner_id: Joi.string()
@@ -307,6 +316,26 @@ const schemas = {
   deleted_at: function () {
     return Joi.object({
       deleted_at: Joi.date().when('$required.deleted_at', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(null),
+      }),
+    });
+  },
+
+  activated_at: function () {
+    return Joi.object({
+      activated_at: Joi.date().when('$required.activated_at', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(null),
+      }),
+    });
+  },
+
+  deactivated_at: function () {
+    return Joi.object({
+      deactivated_at: Joi.date().when('$required.deactivated_at', {
         is: 'required',
         then: Joi.required(),
         otherwise: Joi.optional().allow(null),
@@ -500,6 +529,50 @@ const schemas = {
     return contentSchema;
   },
 
+  sponsored_content: function () {
+    return Joi.object()
+      .required()
+      .concat(schemas.id())
+      .concat(schemas.owner_id())
+      .concat(schemas.slug())
+      .concat(schemas.title())
+      .concat(schemas.body())
+      .concat(schemas.link())
+      .concat(schemas.created_at())
+      .concat(schemas.updated_at())
+      .concat(schemas.activated_at())
+      .concat(schemas.deactivated_at())
+      .concat(schemas.owner_username());
+  },
+
+  bid: function () {
+    const min = 1;
+    return Joi.object({
+      bid: Joi.number()
+        .integer()
+        .min(min)
+        .max(MAX_INTEGER)
+        .when('$required.bid', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
+  budget: function () {
+    const min = 1;
+    return Joi.object({
+      budget: Joi.number()
+        .integer()
+        .min(min)
+        .max(MAX_INTEGER)
+        .when('$required.budget', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
+        .messages({
+          'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${MAX_INTEGER}.`,
+        }),
+    });
+  },
+
   with_children: function () {
     return Joi.object({
       with_children: Joi.boolean().when('$required.with_children', {
@@ -532,6 +605,7 @@ const schemas = {
           'update:content:text_root',
           'update:content:text_child',
           'update:content:tabcoins',
+          'create:sponsored_content',
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
