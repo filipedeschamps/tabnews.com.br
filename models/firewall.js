@@ -1,6 +1,7 @@
 import { TooManyRequestsError } from 'errors';
 import database from 'infra/database.js';
 import event from 'models/event.js';
+import notification from 'models/notification';
 
 const rules = {
   'create:user': createUserRule,
@@ -36,7 +37,8 @@ async function createUserRule(context) {
     await createUserRuleSideEffect(context);
 
     throw new TooManyRequestsError({
-      message: 'Você está tentando criar muitos usuários.',
+      message:
+        'Identificamos a criação de muitos usuários em um curto período, então usuários criados recentemente podem ter sido desativados.',
     });
   }
 }
@@ -47,17 +49,34 @@ async function createUserRuleSideEffect(context) {
     values: [context.clientIp],
   });
 
-  const usersAffected = results.rows.map((row) => row.user_id);
+  const affectedUsersIds = results.rows.map((user) => user.id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_users',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
     metadata: {
       from_rule: 'create:user',
-      users: usersAffected,
+      users: affectedUsersIds,
     },
   });
+
+  await sendUserNotification(results.rows, createdEvent);
+}
+
+async function sendUserNotification(userRows, event) {
+  const notifications = [];
+
+  for (const user of userRows) {
+    notifications.push(
+      notification.sendUserDisabled({
+        eventId: event.id,
+        user: user,
+      }),
+    );
+  }
+
+  return Promise.allSettled(notifications);
 }
 
 async function createContentTextRootRule(context) {
@@ -72,7 +91,8 @@ async function createContentTextRootRule(context) {
     await createContentTextRootRuleSideEffect(context);
 
     throw new TooManyRequestsError({
-      message: 'Você está tentando criar muitos conteúdos na raiz do site.',
+      message:
+        'Identificamos a criação de muitas publicações em um curto período, então publicações criadas recentemente podem ter sido removidas.',
     });
   }
 }
@@ -83,17 +103,19 @@ async function createContentTextRootRuleSideEffect(context) {
     values: [context.clientIp],
   });
 
-  const contentsAffected = results.rows.map((row) => row.content_id);
+  const affectedContentsIds = results.rows.map((row) => row.id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_contents:text_root',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
     metadata: {
       from_rule: 'create:content:text_root',
-      contents: contentsAffected,
+      contents: affectedContentsIds,
     },
   });
+
+  await sendContentTextNotification(results.rows, createdEvent);
 }
 
 async function createContentTextChildRule(context) {
@@ -108,7 +130,8 @@ async function createContentTextChildRule(context) {
     await createContentTextChildRuleSideEffect(context);
 
     throw new TooManyRequestsError({
-      message: 'Você está tentando criar muitas respostas.',
+      message:
+        'Identificamos a criação de muitos comentários em um curto período, então comentários criados recentemente podem ter sido removidos.',
     });
   }
 }
@@ -119,17 +142,47 @@ async function createContentTextChildRuleSideEffect(context) {
     values: [context.clientIp],
   });
 
-  const contentsAffected = results.rows.map((row) => row.content_id);
+  const affectedContentsIds = results.rows.map((row) => row.id);
 
-  await event.create({
+  const createdEvent = await event.create({
     type: 'firewall:block_contents:text_child',
     originatorUserId: context.user.id,
     originatorIp: context.clientIp,
     metadata: {
       from_rule: 'create:content:text_child',
-      contents: contentsAffected,
+      contents: affectedContentsIds,
     },
   });
+
+  await sendContentTextNotification(results.rows, createdEvent);
+}
+
+async function sendContentTextNotification(contentRows, event) {
+  const usersToNotify = {};
+
+  for (const content of contentRows) {
+    if (content.owner_id !== event.originator_user_id) {
+      if (usersToNotify[content.owner_id]) {
+        usersToNotify[content.owner_id].push(content);
+      } else {
+        usersToNotify[content.owner_id] = [content];
+      }
+    }
+  }
+
+  const notifications = [];
+
+  for (const [userId, contents] of Object.entries(usersToNotify)) {
+    notifications.push(
+      notification.sendContentDeletedToUser({
+        contents: contents,
+        eventId: event.id,
+        userId: userId,
+      }),
+    );
+  }
+
+  return Promise.allSettled(notifications);
 }
 
 export default Object.freeze({

@@ -512,16 +512,19 @@ describe('models/event', () => {
       const { responseBody: content1 } = await contentRequestBuilder.post({
         title: 'Título 1',
         body: 'Corpo',
+        status: 'published',
       });
 
       const { responseBody: content2 } = await contentRequestBuilder.post({
         title: 'Título 2',
         body: 'Corpo',
+        status: 'published',
       });
 
       await contentRequestBuilder.post({
         title: 'Título 3',
         body: 'Corpo',
+        status: 'published',
       });
 
       const lastEvent = await orchestrator.getLastEvent();
@@ -554,16 +557,19 @@ describe('models/event', () => {
       const { responseBody: content1 } = await contentRequestBuilder.post({
         body: 'Corpo',
         parent_id: rootContentBody.id,
+        status: 'published',
       });
 
       const { responseBody: content2 } = await contentRequestBuilder.post({
         body: 'Corpo',
         parent_id: rootContentBody.id,
+        status: 'published',
       });
 
       await contentRequestBuilder.post({
         body: 'Corpo',
         parent_id: rootContentBody.id,
+        status: 'published',
       });
 
       const lastEvent = await orchestrator.getLastEvent();

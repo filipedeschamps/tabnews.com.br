@@ -1650,19 +1650,50 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(
         `/${defaultUser.username}/${defaultUserContent.slug}`,
-        { status: 'inexisting_status' },
+        { status: 'non_existent_status' },
       );
 
       expect(response.status).toEqual(400);
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
       expect(uuidVersion(responseBody.request_id)).toEqual(4);
       expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "status" set to "firewall"', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título',
+        body: 'Body',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'firewall' },
+      );
+
+      expect(response.status).toEqual(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'Não é possível atualizar um conteúdo para o status "firewall".',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:CONTENT:VALIDATE_UPDATE_SCHEMA:INVALID_STATUS',
+        key: 'status',
+        type: 'any.only',
+      });
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
     test('Content with "status" set to Null', async () => {
@@ -1684,7 +1715,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
@@ -1711,7 +1742,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       expect(responseBody.status_code).toEqual(400);
       expect(responseBody.name).toEqual('ValidationError');
       expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted".',
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
       expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
       expect(uuidVersion(responseBody.error_id)).toEqual(4);
