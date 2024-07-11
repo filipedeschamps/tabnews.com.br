@@ -3008,6 +3008,59 @@ describe('POST /api/v1/contents', () => {
 
         expect(userResponseBody.tabcash).toBe(defaultTabCashForAdCreation - 1);
       });
+
+      test('Should not be able to create with "parent_id"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Root title',
+          body: 'Root body',
+          status: 'published',
+        });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          parent_id: rootContent.id,
+        });
+
+        const createdAdContent = await content.findOne({ where: { id: responseBody.id } });
+
+        expect.soft(createdAdContent.type).toBe('content');
+        expect.soft(response.status).toBe(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: 'ad-title',
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
     });
 
     describe('With invalid "type"', () => {
