@@ -49,6 +49,9 @@ async function findAllByOriginatorId(originatorId, options) {
 async function create({ balanceType, recipientId, amount, originatorType, originatorId }, options = {}) {
   const tableName = tableNameMap[balanceType] || tableNameMap.default;
   const hasBalanceTypeColum = balanceType.startsWith('content:tabcoin');
+  const totalBalanceFunction = sqlFunctionMap[balanceType] || sqlFunctionMap.default;
+
+  const returning = options.withBalance ? `*, ${totalBalanceFunction}($1) as total` : '*';
 
   const query = {
     text: `
@@ -56,7 +59,7 @@ async function create({ balanceType, recipientId, amount, originatorType, origin
         (recipient_id, amount, originator_type, originator_id${hasBalanceTypeColum ? ', balance_type' : ''})
       VALUES
         ($1, $2, $3, $4${hasBalanceTypeColum ? ', $5' : ''})
-      RETURNING * ;
+      RETURNING ${returning};
       `,
     values: [recipientId, amount, originatorType, originatorId],
   };

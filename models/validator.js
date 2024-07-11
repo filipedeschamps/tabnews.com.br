@@ -251,6 +251,16 @@ const schemas = {
     });
   },
 
+  content_type: function () {
+    return Joi.object({
+      type: Joi.string()
+        .trim()
+        .valid('content', 'ad')
+        .default('content')
+        .when('$required.content_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
   source_url: function () {
     return Joi.object({
       source_url: Joi.string()

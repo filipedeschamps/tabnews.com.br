@@ -1,7 +1,8 @@
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
-import { maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
+import content from 'models/content';
+import { defaultTabCashForAdCreation, maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -2898,6 +2899,148 @@ describe('POST /api/v1/contents', () => {
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
+      });
+    });
+
+    describe('With "type: ad"', () => {
+      test('Should be able to create "ad" type content', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          source_url: 'https://www.tabnews.com.br',
+        });
+
+        const createdAdContent = await content.findOne({ where: { id: responseBody.id } });
+
+        expect.soft(createdAdContent.type).toBe('ad');
+        expect.soft(response.status).toBe(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'ad-title',
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          source_url: 'https://www.tabnews.com.br',
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test(`Should debit ${defaultTabCashForAdCreation} TabCash`, async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 1_000 + defaultTabCashForAdCreation,
+        });
+
+        const { response: contentResponse } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect.soft(contentResponse.status).toBe(201);
+        expect(userResponseBody.tabcash).toBe(1_000);
+      });
+
+      test(`Should not be able to create without enough TabCash`, async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation - 1,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+        });
+
+        expect.soft(response.status).toBe(422);
+
+        expect(responseBody).toStrictEqual({
+          name: 'UnprocessableEntityError',
+          message: 'Não foi possível criar a publicação.',
+          action: `Você precisa de pelo menos ${defaultTabCashForAdCreation} TabCash para realizar esta ação.`,
+          status_code: 422,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcash).toBe(defaultTabCashForAdCreation - 1);
+      });
+    });
+
+    describe('With invalid "type"', () => {
+      test('Should not be able to POST with invalid "type"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'invalid_type',
+        });
+
+        expect.soft(response.status).toBe(400);
+
+        expect(responseBody).toStrictEqual({
+          name: 'ValidationError',
+          message: '"type" deve possuir um dos seguintes valores: "content", "ad".',
+          action: 'Ajuste os dados enviados e tente novamente.',
+          status_code: 400,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+          key: 'type',
+          type: 'any.only',
+        });
       });
     });
   });
