@@ -263,12 +263,20 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:recovery_token') {
-    filteredOutputValues = validator(output, {
-      used: 'required',
-      expires_at: 'required',
-      created_at: 'required',
-      updated_at: 'required',
-    });
+    filteredOutputValues = validator(
+      {
+        used: output.used,
+        expires_at: output.expires_at,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
+      },
+      {
+        used: 'required',
+        expires_at: 'required',
+        created_at: 'required',
+        updated_at: 'required',
+      },
+    );
   }
 
   if (feature === 'read:email_confirmation_token') {

@@ -282,10 +282,12 @@ describe('PATCH /api/v1/email-confirmation', () => {
     });
 
     test('With an already used email (before creating the token)', async () => {
-      const firstUser = await orchestrator.createUser({
+      await orchestrator.deleteAllEmails();
+
+      let firstUser = await orchestrator.createUser({
         email: 'validation.error@before.com',
       });
-      await orchestrator.activateUser(firstUser);
+      firstUser = await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
 
       await orchestrator.createUser({
@@ -306,21 +308,27 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
-        message: 'O email informado já está sendo usado.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
-        key: 'email',
+        id: firstUser.id,
+        username: firstUser.username,
+        email: 'other.user.email@before.com',
+        description: firstUser.description,
+        features: firstUser.features,
+        notifications: firstUser.notifications,
+        created_at: firstUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
       });
 
+      expect(responseBody.updated_at).not.toBe(firstUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('validation.error@before.com');
+      expect(userInDatabaseCheck1.email).toBe('validation.error@before.com');
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
     });
 
     test('With an already used email (after creating the token)', async () => {

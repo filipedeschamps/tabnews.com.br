@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 
-import { ForbiddenError, UnprocessableEntityError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -109,10 +109,12 @@ async function patchHandler(request, response) {
 
   const transaction = await database.transaction();
 
+  let updatedUser;
+
   try {
     await transaction.query('BEGIN');
 
-    const updatedUser = await user.update(targetUsername, secureInputValues, {
+    updatedUser = await user.update(targetUsername, secureInputValues, {
       transaction: transaction,
     });
 
@@ -130,19 +132,28 @@ async function patchHandler(request, response) {
 
     await transaction.query('COMMIT');
     await transaction.release();
-
-    const secureOutputValues = authorization.filterOutput(
-      userTryingToPatch,
-      updateAnotherUser ? 'read:user' : 'read:user:self',
-      updatedUser,
-    );
-
-    return response.status(200).json(secureOutputValues);
   } catch (error) {
     await transaction.query('ROLLBACK');
     await transaction.release();
-    throw error;
+
+    if (error instanceof ValidationError && error.key === 'email') {
+      updatedUser = {
+        ...targetUser,
+        ...secureInputValues,
+        updated_at: new Date(),
+      };
+    } else {
+      throw error;
+    }
   }
+
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToPatch,
+    updateAnotherUser ? 'read:user' : 'read:user:self',
+    updatedUser,
+  );
+
+  return response.status(200).json(secureOutputValues);
 
   function getEventMetadata(originalUser, updatedUser) {
     const metadata = {

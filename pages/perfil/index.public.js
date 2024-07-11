@@ -146,8 +146,8 @@ function EditProfileForm() {
         if (user.email !== email) {
           const hasSavedModifications = Object.keys(payload).length > 1;
           const text = hasSavedModifications
-            ? `Alterações salvas. O email será alterado apenas após a confirmação pelo link enviado para "${email}".`
-            : `Alteração pendente. Um email de confirmação foi enviado para "${email}".`;
+            ? `Alterações salvas. O email será alterado apenas após a confirmação pelo link enviado para "${email}", caso o email esteja disponível.`
+            : `Alteração pendente. Um email de confirmação será enviado para "${email}", caso o email esteja disponível.`;
           setGlobalMessageObject({ text, type: 'warning' });
           setEmailDisabled(true);
         } else {
