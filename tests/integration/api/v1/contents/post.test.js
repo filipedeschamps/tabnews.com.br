@@ -3061,6 +3061,34 @@ describe('POST /api/v1/contents', () => {
         expect(Date.parse(responseBody.created_at)).not.toBeNaN();
         expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       });
+
+      test('Should not credit TabCoins to the user', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response: contentResponse, responseBody: contentResponseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Relevant text needs to contain a good amount of words',
+          status: 'published',
+          type: 'ad',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect.soft(contentResponse.status).toBe(201);
+        expect(contentResponseBody.tabcoins).toBe(1);
+        expect(contentResponseBody.type).toBe('ad');
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
     });
 
     describe('With invalid "type"', () => {

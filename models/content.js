@@ -559,6 +559,11 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       });
     }
 
+    // We should not credit TabCoins to the user if the "type" is not "content".
+    if (newContent.type !== 'content') {
+      userEarnings = 0;
+    }
+
     // We should not credit if the content has little or no value.
     if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
 
