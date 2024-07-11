@@ -492,6 +492,7 @@ const schemas = {
       'title',
       'body',
       'status',
+      'content_type',
       'source_url',
       'created_at',
       'updated_at',
