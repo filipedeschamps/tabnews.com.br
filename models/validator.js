@@ -246,7 +246,7 @@ const schemas = {
     return Joi.object({
       status: Joi.string()
         .trim()
-        .valid('draft', 'published', 'deleted')
+        .valid('draft', 'published', 'deleted', 'firewall')
         .when('$required.status', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
