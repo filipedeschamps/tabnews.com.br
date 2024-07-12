@@ -1,7 +1,7 @@
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
-import { maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
+import { defaultTabCashForAdCreation, maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -151,6 +151,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Tentando criar conteúdo em nome de outro usuário',
         body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -298,6 +299,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Começando com caractere proibido no Postgres',
         body: 'Terminando com caractere proibido no Postgres',
         status: 'draft',
+        type: 'content',
         source_url: 'https://teste-caractere.invalido/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -390,6 +392,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Título normal',
         body: 'Espaço só no fim',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -445,6 +448,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -507,6 +511,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -663,6 +668,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Conteúdo existente',
         body: 'Outro body',
         status: 'published',
+        type: 'content',
         tabcoins: 0,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -699,6 +705,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -783,6 +790,7 @@ describe('POST /api/v1/contents', () => {
           ),
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -818,6 +826,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Braille Pattern Blank Unicode Character',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -853,6 +862,7 @@ describe('POST /api/v1/contents', () => {
         title: '♥'.repeat(maxTitleLength),
         body: `The title is ${maxTitleLength} characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -888,6 +898,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Título válido, mas com espaços em branco no início e no fim',
         body: 'Qualquer coisa.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -923,6 +934,7 @@ describe('POST /api/v1/contents', () => {
         title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
         body: 'Qualquer coisa.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -959,6 +971,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Deveria criar um conteúdo com status "draft".',
         body: 'Qualquer coisa.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -995,6 +1008,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Deveria criar um conteúdo com status "published".',
         body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1146,6 +1160,7 @@ describe('POST /api/v1/contents', () => {
         title: 'TabNews',
         body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
         status: 'draft',
+        type: 'content',
         source_url: 'http://www.tabnews.com.br/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1182,6 +1197,7 @@ describe('POST /api/v1/contents', () => {
         title: 'TabNews: Onde Tudo Começou',
         body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/museu',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1218,6 +1234,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Um baita de um Top-Level Domain',
         body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
         status: 'draft',
+        type: 'content',
         source_url: 'http://nic.xn--vermgensberatung-pwb/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1254,6 +1271,7 @@ describe('POST /api/v1/contents', () => {
         title: 'URL bem curta',
         body: 'Por exemplo o encurtador do Telegram',
         status: 'draft',
+        type: 'content',
         source_url: 'https://t.me',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1400,6 +1418,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1436,6 +1455,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
+        type: 'content',
         source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1492,6 +1512,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1529,6 +1550,7 @@ describe('POST /api/v1/contents', () => {
           'Deveria conseguir! E o campo "slug" é opcional & 95,5% dos usuários não usam :) [áéíóú?@#$*<>|+-=.,;:_] <- (caracteres especiais)',
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1571,6 +1593,7 @@ describe('POST /api/v1/contents', () => {
         title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
         body: 'Body',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1649,6 +1672,7 @@ describe('POST /api/v1/contents', () => {
         title: null,
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1700,6 +1724,7 @@ describe('POST /api/v1/contents', () => {
         title: null,
         body: 'Deveria criar um slug com UUID V4',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1745,6 +1770,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Título em um child content! O que vai acontecer?',
         body: 'Deveria criar um slug baseado no "title"',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2421,6 +2447,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Title',
           body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2472,6 +2499,7 @@ describe('POST /api/v1/contents', () => {
           title: null,
           body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2515,6 +2543,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Title',
           body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2566,6 +2595,7 @@ describe('POST /api/v1/contents', () => {
           title: null,
           body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2609,6 +2639,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Title',
           body: 'Body with relevant texts needs to contain a good amount of words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2660,6 +2691,7 @@ describe('POST /api/v1/contents', () => {
           title: null,
           body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2732,6 +2764,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Title',
           body: 'Body with no minimum amount of relevant words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2783,6 +2816,7 @@ describe('POST /api/v1/contents', () => {
           title: null,
           body: 'Body with no minimum amount of relevant words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2828,6 +2862,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Title',
           body: 'Relevant text needs to contain a good amount of words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2879,6 +2914,7 @@ describe('POST /api/v1/contents', () => {
           title: null,
           body: 'Relevant text needs to contain a good amount of words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -2898,6 +2934,225 @@ describe('POST /api/v1/contents', () => {
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
+      });
+    });
+
+    describe('With "type: ad"', () => {
+      test('Should be able to create "ad" type content', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          source_url: 'https://www.tabnews.com.br',
+        });
+
+        expect.soft(response.status).toBe(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'ad-title',
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          source_url: 'https://www.tabnews.com.br',
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test(`Should debit ${defaultTabCashForAdCreation} TabCash`, async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 1_000 + defaultTabCashForAdCreation,
+        });
+
+        const { response: contentResponse } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect.soft(contentResponse.status).toBe(201);
+        expect(userResponseBody.tabcash).toBe(1_000);
+      });
+
+      test(`Should not be able to create without enough TabCash`, async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation - 1,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+        });
+
+        expect.soft(response.status).toBe(422);
+
+        expect(responseBody).toStrictEqual({
+          name: 'UnprocessableEntityError',
+          message: 'Não foi possível criar a publicação.',
+          action: `Você precisa de pelo menos ${defaultTabCashForAdCreation} TabCash para realizar esta ação.`,
+          status_code: 422,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcash).toBe(defaultTabCashForAdCreation - 1);
+      });
+
+      test('Should not be able to create with "parent_id"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Root title',
+          body: 'Root body',
+          status: 'published',
+        });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          parent_id: rootContent.id,
+        });
+
+        expect.soft(response.status).toBe(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: rootContent.id,
+          slug: 'ad-title',
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'content',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test('Should not credit TabCoins to the user', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response: contentResponse, responseBody: contentResponseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Relevant text needs to contain a good amount of words',
+          status: 'published',
+          type: 'ad',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect.soft(contentResponse.status).toBe(201);
+        expect(contentResponseBody.tabcoins).toBe(1);
+        expect(contentResponseBody.type).toBe('ad');
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
+    });
+
+    describe('With invalid "type"', () => {
+      test('Should not be able to POST with invalid "type"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'invalid_type',
+        });
+
+        expect.soft(response.status).toBe(400);
+
+        expect(responseBody).toStrictEqual({
+          name: 'ValidationError',
+          message: '"type" deve possuir um dos seguintes valores: "content", "ad".',
+          action: 'Ajuste os dados enviados e tente novamente.',
+          status_code: 400,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+          key: 'type',
+          type: 'any.only',
+        });
       });
     });
   });

@@ -118,6 +118,7 @@ function filterInput(user, feature, input, target) {
       title: input.title,
       body: input.body,
       status: input.status,
+      type: input.type,
       source_url: input.source_url,
     };
   }

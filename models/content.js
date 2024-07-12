@@ -1,7 +1,7 @@
 import { randomUUID as uuidV4 } from 'node:crypto';
 import slug from 'slug';
 
-import { ForbiddenError, ValidationError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
 import pagination from 'models/pagination.js';
@@ -113,6 +113,7 @@ async function findAll(values = {}, options = {}) {
         contents.title,
         ${!values.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
         contents.status,
+        contents.type,
         contents.source_url,
         contents.created_at,
         contents.updated_at,
@@ -286,6 +287,11 @@ async function create(postedContent, options = {}) {
     transaction: options.transaction,
   });
 
+  await updateTabCashBalance(null, newContent, {
+    eventId: options.eventId,
+    transaction: options.transaction,
+  });
+
   const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
       recipientId: newContent.id,
@@ -317,8 +323,8 @@ async function create(postedContent, options = {}) {
         ),
         inserted_content as (
           INSERT INTO
-            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
-            SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, parent.child_path
+            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, type, path)
+            SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, parent.child_path
             FROM parent
             RETURNING *
         )
@@ -330,6 +336,7 @@ async function create(postedContent, options = {}) {
         inserted_content.title,
         inserted_content.body,
         inserted_content.status,
+        inserted_content.type,
         inserted_content.source_url,
         inserted_content.created_at,
         inserted_content.updated_at,
@@ -355,6 +362,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
+        content.type,
       ],
     };
 
@@ -440,6 +448,7 @@ function validateCreateSchema(content) {
     title: 'optional',
     body: 'required',
     status: 'required',
+    content_type: 'optional',
     source_url: 'optional',
   });
 
@@ -550,6 +559,11 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       });
     }
 
+    // We should not credit TabCoins to the user if the "type" is not "content".
+    if (newContent.type !== 'content') {
+      userEarnings = 0;
+    }
+
     // We should not credit if the content has little or no value.
     if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
 
@@ -599,6 +613,36 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
         transaction: options.transaction,
       },
     );
+  }
+}
+
+async function updateTabCashBalance(oldContent, newContent, options = {}) {
+  if (newContent.type === 'content') {
+    return;
+  }
+
+  const tabCashToDebitFromUser = -100;
+
+  const balanceResult = await balance.create(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: newContent.owner_id,
+      amount: tabCashToDebitFromUser,
+      originatorType: options.eventId ? 'event' : 'content',
+      originatorId: options.eventId ? options.eventId : newContent.id,
+    },
+    {
+      transaction: options.transaction,
+      withBalance: true,
+    },
+  );
+
+  if (balanceResult.total < 0) {
+    throw new UnprocessableEntityError({
+      message: `Não foi possível criar a publicação.`,
+      action: `Você precisa de pelo menos ${Math.abs(tabCashToDebitFromUser)} TabCash para realizar esta ação.`,
+      errorLocationCode: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
+    });
   }
 }
 
@@ -674,6 +718,7 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.title,
         updated_content.body,
         updated_content.status,
+        updated_content.type,
         updated_content.source_url,
         updated_content.created_at,
         updated_content.updated_at,

@@ -216,6 +216,7 @@ async function createContent(contentObject) {
       slug: contentObject?.slug || undefined,
       body: contentObject?.body || faker.lorem.paragraphs(5),
       status: contentObject?.status || 'draft',
+      type: contentObject?.type || 'content',
       source_url: contentObject?.source_url || undefined,
     },
     {

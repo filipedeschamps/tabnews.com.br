@@ -89,6 +89,7 @@ function postValidationHandler(request, response, next) {
     title: 'optional',
     body: 'required',
     status: 'optional',
+    content_type: 'optional',
     source_url: 'optional',
   });
 
