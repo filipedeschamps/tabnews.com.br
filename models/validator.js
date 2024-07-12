@@ -747,6 +747,7 @@ const reservedUsernames = [
   'ceo',
   'cfo',
   'checkout',
+  'classificados',
   'comentario',
   'comentarios',
   'compartilhada',
