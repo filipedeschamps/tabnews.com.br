@@ -103,13 +103,11 @@ export default function ContentList({ contentList: list, pagination, paginationB
               </Text>
               {' · '}
               <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
-                <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  <Text as="address" sx={{ fontStyle: 'normal' }}>
-                    <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-                      {contentObject.owner_username}
-                    </Link>
-                  </Text>
-                </Box>
+                <Text as="address" sx={{ fontStyle: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                    {contentObject.owner_username}
+                  </Link>
+                </Text>
               </Tooltip>
               {' · '}
               <Text>
