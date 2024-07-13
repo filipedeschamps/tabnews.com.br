@@ -211,6 +211,11 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
                   <Label>Autor</Label>
                 </Tooltip>
               )}
+              {contentObject.type === 'ad' && (
+                <Tooltip aria-label="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                  <Label variant="success">Patrocinado</Label>
+                </Tooltip>
+              )}
             </LabelGroup>
             {!contentObject.parent_id && (
               <>
