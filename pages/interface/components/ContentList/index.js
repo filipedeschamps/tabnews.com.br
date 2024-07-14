@@ -1,7 +1,8 @@
 import { Box, EmptyState, Link, Pagination, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
-import { CommentIcon } from '@/TabNewsUI/icons';
+import { CommentIcon, LinkExternalIcon } from '@/TabNewsUI/icons';
+import { getDomain, isExternalLink, isTrustedDomain } from 'pages/interface';
 
-export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
+export default function ContentList({ ad, contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
 
   return (
@@ -18,6 +19,7 @@ export default function ContentList({ contentList: list, pagination, paginationB
           }}
           key={`content-list-${listNumberStart}`}
           start={listNumberStart}>
+          <Ad ad={ad} />
           <RenderItems />
           <EndOfRelevant />
         </Box>
@@ -103,13 +105,11 @@ export default function ContentList({ contentList: list, pagination, paginationB
               </Text>
               {' · '}
               <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
-                <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  <Text as="address" sx={{ fontStyle: 'normal' }}>
-                    <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-                      {contentObject.owner_username}
-                    </Link>
-                  </Text>
-                </Box>
+                <Text as="address" sx={{ fontStyle: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                    {contentObject.owner_username}
+                  </Link>
+                </Text>
               </Tooltip>
               {' · '}
               <Text>
@@ -146,4 +146,55 @@ export default function ContentList({ contentList: list, pagination, paginationB
   function RenderEmptyMessage(props) {
     return <EmptyState title="Nenhum conteúdo encontrado" {...props} />;
   }
+}
+
+function Ad({ ad }) {
+  if (!ad) {
+    return;
+  }
+
+  const link = ad.source_url || `/${ad.owner_username}/${ad.slug}`;
+  const isAdToExternalLink = isExternalLink(link);
+  const domain = isAdToExternalLink ? `(${getDomain(link)})` : '';
+  const title = ad.title.length > 70 ? ad.title.substring(0, 67).trim().concat('...') : ad.title;
+
+  return (
+    <Box as="li" sx={{ display: 'grid', gridColumnStart: 2, '::marker': 'none' }}>
+      <Box>
+        <Link
+          sx={{
+            overflow: 'auto',
+            fontWeight: 'semibold',
+            wordWrap: 'break-word',
+            ':link': {
+              color: 'success.fg',
+            },
+            ':visited': {
+              color: 'success.fg',
+            },
+          }}
+          href={link}
+          rel={isTrustedDomain(link) ? undefined : 'nofollow'}>
+          <Text sx={{ wordBreak: 'break-word', marginRight: 1 }}>
+            {title} {domain}
+          </Text>
+          {isAdToExternalLink && <LinkExternalIcon verticalAlign="middle" />}
+        </Link>
+      </Box>
+
+      <Text sx={{ whiteSpace: 'nowrap', fontSize: 0, color: 'neutral.emphasis' }}>
+        Contribuindo com{' '}
+        <Tooltip
+          aria-label={`Autor: ${ad.owner_username}`}
+          direction="nw"
+          sx={{ position: 'absolute', display: 'grid' }}>
+          <Link
+            sx={{ overflow: 'hidden', textOverflow: 'ellipsis', color: 'neutral.emphasis', mr: 2 }}
+            href={`/${ad.owner_username}`}>
+            {ad.owner_username}
+          </Link>
+        </Tooltip>
+      </Text>
+    </Box>
+  );
 }
