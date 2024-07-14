@@ -564,10 +564,12 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           {!contentObject?.id && !contentObject?.parent_id && (
             <FormControl>
               <Checkbox name="isSponsoredContent" onChange={handleChange} checked={newData.isSponsoredContent} />
-              <FormControl.Label>Criar como publicação patrocinada.</FormControl.Label>
+              <FormControl.Label>
+                Criar como publicação patrocinada. <Link href="/faq#publicacao-patrocinada">Saiba mais.</Link>
+              </FormControl.Label>
 
               <FormControl.Caption>
-                Serão utilizados 100 TabCash para criar a publicação patrocinada.
+                Serão consumidos 100 TabCash para criar a publicação patrocinada.
               </FormControl.Caption>
             </FormControl>
           )}
