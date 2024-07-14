@@ -41,6 +41,9 @@ const availableFeatures = new Set([
   'update:user:others',
   'ban:user',
   'create:recovery_token:username',
+
+  // ADVERTISEMENT
+  'read:ad:list',
 ]);
 
 function can(user, feature, resource) {
@@ -288,6 +291,17 @@ function filterOutput(user, feature, output) {
       created_at: 'required',
       updated_at: 'required',
     });
+  }
+
+  if (feature === 'read:ad:list') {
+    filteredOutputValues = validator(
+      {
+        ad_list: output,
+      },
+      {
+        ad_list: 'required',
+      },
+    ).ad_list;
   }
 
   // Force the clean up of "undefined" values

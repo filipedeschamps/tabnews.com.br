@@ -511,6 +511,54 @@ const schemas = {
     return contentSchema;
   },
 
+  ad: function () {
+    let contentSchema = Joi.object({
+      children: Joi.array().optional().items(Joi.link('#content')),
+    })
+      .required()
+      .min(1)
+      .id('ad');
+
+    for (const key of [
+      'id',
+      'owner_id',
+      'slug',
+      'title',
+      'body',
+      'status',
+      'ad_type',
+      'source_url',
+      'created_at',
+      'updated_at',
+      'published_at',
+      'deleted_at',
+      'owner_username',
+      'children_deep_count',
+      'tabcash',
+    ]) {
+      const keyValidationFunction = schemas[key];
+      contentSchema = contentSchema.concat(keyValidationFunction());
+    }
+
+    return contentSchema;
+  },
+
+  ad_list: function () {
+    return Joi.object({
+      ad_list: Joi.array().items(Joi.link('#ad')).required().shared(schemas.ad()),
+    });
+  },
+
+  ad_type: function () {
+    return Joi.object({
+      type: Joi.string()
+        .trim()
+        .valid('markdown')
+        .default('markdown')
+        .when('$required.ad_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
   with_children: function () {
     return Joi.object({
       with_children: Joi.boolean().when('$required.with_children', {
