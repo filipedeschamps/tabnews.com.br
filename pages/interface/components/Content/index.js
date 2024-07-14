@@ -8,6 +8,7 @@ import {
   BranchName,
   Button,
   ButtonWithLoader,
+  Checkbox,
   Editor,
   Flash,
   FormControl,
@@ -270,6 +271,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     title: contentObject?.title || '',
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
+    isSponsoredContent: contentObject?.type === 'ad',
   });
   const [titlePlaceholder, setTitlePlaceholder] = useState('');
 
@@ -343,6 +345,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         : `/api/v1/contents`;
       const requestBody = {
         status: 'published',
+        type: newData.isSponsoredContent ? 'ad' : 'content',
       };
 
       if (title || contentObject?.title) {
@@ -439,7 +442,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     (event) => {
       setErrorObject(undefined);
       setNewData((oldData) => {
-        const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
+        const value = event.target?.name === 'isSponsoredContent' ? event.target.checked : event.target?.value ?? event;
+        const newData = { ...oldData, [event.target?.name || 'body']: value };
         localStorage.setItem(localStorageKey, JSON.stringify(newData));
         return newData;
       });
@@ -554,6 +558,17 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               {errorObject?.key === 'source_url' && (
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
+            </FormControl>
+          )}
+
+          {!contentObject?.id && !contentObject?.parent_id && (
+            <FormControl>
+              <Checkbox name="isSponsoredContent" onChange={handleChange} checked={newData.isSponsoredContent} />
+              <FormControl.Label>Criar como publicação patrocinada.</FormControl.Label>
+
+              <FormControl.Caption>
+                Serão utilizados 100 TabCash para criar a publicação patrocinada.
+              </FormControl.Caption>
             </FormControl>
           )}
 
