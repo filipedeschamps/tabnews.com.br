@@ -2,12 +2,13 @@ import { getStaticPropsRevalidate } from 'next-swr';
 
 import { ContentList, DefaultLayout, RecentTabNav } from '@/TabNewsUI';
 import webserver from 'infra/webserver';
+import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default function Home({ contentListFound, pagination }) {
+export default function Home({ adFound, contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout
@@ -16,7 +17,12 @@ export default function Home({ contentListFound, pagination }) {
           description: 'Publicações no TabNews ordenadas pelas mais recentes.',
         }}>
         <RecentTabNav />
-        <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/pagina" />
+        <ContentList
+          ad={adFound}
+          contentList={contentListFound}
+          pagination={pagination}
+          paginationBasePath="/recentes/pagina"
+        />
       </DefaultLayout>
     </>
   );
@@ -71,8 +77,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
+  const adsFound = await ad.getRandom(1);
+  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
+
   return {
     props: {
+      adFound: secureAdValues[0] ?? null,
       contentListFound: secureContentValues,
       pagination: results.pagination,
     },

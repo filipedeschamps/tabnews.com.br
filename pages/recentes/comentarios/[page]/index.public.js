@@ -2,13 +2,14 @@ import { getStaticPropsRevalidate } from 'next-swr';
 
 import { ContentList, DefaultLayout, RecentTabNav } from '@/TabNewsUI';
 import webserver from 'infra/webserver';
+import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default function CommentsPage({ contentListFound, pagination }) {
+export default function CommentsPage({ adFound, contentListFound, pagination }) {
   return (
     <DefaultLayout
       metadata={{
@@ -16,7 +17,12 @@ export default function CommentsPage({ contentListFound, pagination }) {
         description: 'Comentários no TabNews ordenados pelos mais recentes.',
       }}>
       <RecentTabNav />
-      <ContentList contentList={contentListFound} pagination={pagination} paginationBasePath="/recentes/comentarios" />
+      <ContentList
+        ad={adFound}
+        contentList={contentListFound}
+        pagination={pagination}
+        paginationBasePath="/recentes/comentarios"
+      />
     </DefaultLayout>
   );
 }
@@ -67,8 +73,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     content.body = removeMarkdown(content.body, { maxLength: 255 });
   }
 
+  const adsFound = await ad.getRandom(1);
+  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
+
   return {
     props: {
+      adFound: secureAdValues[0] ?? null,
       contentListFound: secureContentListFound,
       pagination: results.pagination,
     },
