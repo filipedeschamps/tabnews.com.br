@@ -54,6 +54,7 @@ async function getHandler(request, response) {
     where: {
       parent_id: request.query.with_children ? undefined : null,
       status: 'published',
+      type: 'content',
       $not_null: request.query.with_root === false ? ['parent_id'] : undefined,
     },
     attributes: {

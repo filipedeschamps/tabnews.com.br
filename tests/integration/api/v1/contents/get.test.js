@@ -1,13 +1,12 @@
 import parseLinkHeader from 'parse-link-header';
 import { version as uuidVersion } from 'uuid';
 
+import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
-  await orchestrator.dropAllTables();
-  await orchestrator.runPendingMigrations();
 });
 
 describe('GET /api/v1/contents', () => {
@@ -1432,6 +1431,47 @@ describe('GET /api/v1/contents', () => {
           `${orchestrator.webserverUrl}/api/v1/contents?${linkParamsString}&page=1&per_page=30`,
         );
       });
+    });
+
+    describe('Should not return "ad" regardless of strategy', () => {
+      beforeAll(async () => {
+        await orchestrator.dropAllTables();
+        await orchestrator.runPendingMigrations();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Ad Title',
+          body: relevantBody,
+          status: 'published',
+          type: 'ad',
+        });
+
+        await orchestrator.createContent({
+          parent_id: adContent.id,
+          owner_id: secondUser.id,
+          body: relevantBody,
+          status: 'published',
+        });
+      });
+
+      test.each(['', '?strategy=relevant', '?strategy=new', '?strategy=old'])(
+        'get contents with params: %s',
+        async (params) => {
+          const { response, responseBody } = await contentsRequestBuilder.get(params);
+
+          expect(response.status).toBe(200);
+          expect(responseBody).toEqual([]);
+        },
+      );
     });
   });
 });
