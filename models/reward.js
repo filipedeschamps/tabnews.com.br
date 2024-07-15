@@ -48,6 +48,7 @@ async function getContentAgeFactor(owner_id) {
     where: {
       owner_id,
       status: 'published',
+      type: 'content',
     },
     per_page: 1,
   });

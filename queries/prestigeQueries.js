@@ -33,6 +33,7 @@ WITH content_window AS ((
   WHERE
     owner_id = $1
     AND status = 'published'
+    AND type = 'content'
     AND ($3 = FALSE OR parent_id IS NULL)
   ORDER BY
     published_at DESC
@@ -47,6 +48,7 @@ UNION
   WHERE
     owner_id = $1
     AND status = 'published'
+    AND type = 'content'
     AND published_at < $2
     AND ($3 = FALSE OR parent_id IS NULL)
   ORDER BY
