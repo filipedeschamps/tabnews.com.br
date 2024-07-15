@@ -16,20 +16,20 @@ export default function RootContent({ contentListFound, pagination, username }) 
   const isAuthenticatedUser = user && user.username === username;
 
   return (
-    <DefaultLayout metadata={{ title: `Publicações · Página ${pagination.currentPage} · ${username}` }}>
-      <UserHeader username={username} rootContentCount={pagination.totalRows} />
+    <DefaultLayout metadata={{ title: `Classificados · Página ${pagination.currentPage} · ${username}` }}>
+      <UserHeader username={username} adContentCount={pagination.totalRows} />
 
       <ContentList
         contentList={contentListFound}
         pagination={pagination}
-        paginationBasePath={`/${username}/conteudos`}
+        paginationBasePath={`/${username}/classificados`}
         emptyStateProps={{
           isLoading: isLoading,
-          title: 'Nenhuma publicação encontrada',
-          description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhuma publicação.`,
+          title: 'Nenhum classificado encontrado',
+          description: `${isAuthenticatedUser ? 'Você' : username} não possui anúncios publicados.`,
           icon: FaUser,
           action: isAuthenticatedUser && {
-            text: 'Publicar conteúdo',
+            text: 'Publicar',
             onClick: () => push('/publicar'),
           },
         }}
@@ -71,10 +71,9 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     results = await content.findWithStrategy({
       strategy: 'new',
       where: {
-        parent_id: null,
         owner_id: secureUserFound.id,
         status: 'published',
-        type: 'content',
+        type: 'ad',
       },
       attributes: {
         exclude: ['body'],
@@ -98,7 +97,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
   if (secureContentListFound.length === 0 && context.params.page !== 1) {
-    const lastValidPage = `/${secureUserFound.username}/conteudos/${results.pagination.lastPage || 1}`;
+    const lastValidPage = `/${secureUserFound.username}/classificados/${results.pagination.lastPage || 1}`;
     const revalidate = context.params.page > results.pagination.lastPage + 1 ? 60 : 1;
 
     return {
