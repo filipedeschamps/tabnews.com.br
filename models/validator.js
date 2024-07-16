@@ -397,23 +397,37 @@ const schemas = {
     let whereSchema = Joi.object({}).optional().min(1);
 
     for (const key of [
-      'id',
       'parent_id',
       'slug',
       'title',
       'body',
-      'status',
       'source_url',
       'owner_id',
       'username',
       'owner_username',
-      '$or',
       '$not_null',
       'attributes',
     ]) {
       const keyValidationFunction = schemas[key];
       whereSchema = whereSchema.concat(keyValidationFunction());
     }
+
+    for (const key of ['id', 'status']) {
+      whereSchema = whereSchema.concat(
+        Joi.object({
+          [key]: Joi.alternatives().try(Joi.array().items(schemas[key]().extract(key)), schemas[key]().extract(key)),
+        }),
+      );
+    }
+
+    whereSchema = whereSchema.concat(
+      Joi.object({
+        type: Joi.alternatives().try(
+          Joi.array().items(schemas.content_type().extract('type')),
+          schemas.content_type().extract('type'),
+        ),
+      }),
+    );
 
     return Joi.object({
       where: whereSchema,
@@ -433,14 +447,6 @@ const schemas = {
         .messages({
           'number.unsafe': `{#label} deve possuir um valor entre ${min} e ${max}.`,
         }),
-    });
-  },
-
-  $or: function () {
-    const statusSchemaWithId = schemas.status().id('status');
-
-    return Joi.object({
-      $or: Joi.array().optional().items(Joi.link('#status')).shared(statusSchemaWithId),
     });
   },
 

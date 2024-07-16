@@ -25,6 +25,7 @@ async function handleRequest(request, response) {
     where: {
       parent_id: null,
       status: 'published',
+      type: 'content',
     },
     page: 1,
     per_page: 30,

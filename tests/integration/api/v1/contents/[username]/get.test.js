@@ -1,6 +1,7 @@
 import parseLinkHeader from 'parse-link-header';
 import { version as uuidVersion } from 'uuid';
 
+import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -994,6 +995,59 @@ describe('GET /api/v1/contents/[username]', () => {
       );
       expect(responseLinkHeader.last.url).toBe(
         `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new&with_root=false&page=1&per_page=30`,
+      );
+    });
+
+    test('"username" existent with "ad" content', async () => {
+      const firstUser = await orchestrator.createUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: firstUser.id,
+        amount: defaultTabCashForAdCreation,
+      });
+
+      const adContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Ad Content',
+        body: relevantBody,
+        status: 'published',
+        type: 'ad',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(200);
+
+      expect(responseBody).toStrictEqual([
+        {
+          id: adContent.id,
+          owner_id: firstUser.id,
+          parent_id: null,
+          slug: 'ad-content',
+          title: 'Ad Content',
+          status: 'published',
+          type: 'ad',
+          source_url: null,
+          created_at: adContent.created_at.toISOString(),
+          updated_at: adContent.updated_at.toISOString(),
+          published_at: adContent.published_at.toISOString(),
+          deleted_at: null,
+          owner_username: firstUser.username,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          children_deep_count: 0,
+        },
+      ]);
+
+      const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+      expect(responseLinkHeader.first.url).toBe(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=relevant&page=1&per_page=30`,
+      );
+      expect(responseLinkHeader.last.url).toBe(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=relevant&page=1&per_page=30`,
       );
     });
   });

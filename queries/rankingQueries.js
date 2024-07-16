@@ -24,6 +24,7 @@ const rankedContent = `
             parent_id IS NULL
             AND status = 'published'
             AND published_at > NOW() - INTERVAL '7 days'
+            AND type != 'ad'
         UNION
         SELECT
             contents.id,
@@ -40,6 +41,7 @@ const rankedContent = `
         WHERE
             parent_id IS NULL
             AND status = 'published'
+            AND type != 'ad'
     ),
     ranked_published_root_contents AS (
         SELECT

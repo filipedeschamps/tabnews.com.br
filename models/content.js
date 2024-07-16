@@ -57,13 +57,7 @@ async function findAll(values = {}, options = {}) {
     Object.keys(values.where).forEach((key) => {
       if (key === '$not_null') return;
 
-      if (key === '$or') {
-        values.where[key].forEach(($orObject) => {
-          query.values.push(Object.values($orObject)[0]);
-        });
-      } else {
-        query.values.push(values.where[key]);
-      }
+      query.values.push(values.where[key]);
     });
   }
   const results = await database.query(query, { transaction: options.transaction });
@@ -85,7 +79,6 @@ async function findAll(values = {}, options = {}) {
       order: 'optional',
       where: 'optional',
       count: 'optional',
-      $or: 'optional',
       $not_null: 'optional',
       limit: 'optional',
       attributes: 'optional',
@@ -163,18 +156,6 @@ async function findAll(values = {}, options = {}) {
           return `contents.${columnName} IS NOT DISTINCT FROM $${globalIndex}`;
         }
 
-        if (columnName === '$or') {
-          const $orQuery = columnValue
-            .map((orColumn) => {
-              globalIndex += 1;
-              const orColumnName = Object.keys(orColumn)[0];
-              return `contents.${orColumnName} = $${globalIndex}`;
-            })
-            .join(' OR ');
-
-          return `(${$orQuery})`;
-        }
-
         if (columnName === '$not_null') {
           const $notNullQuery = columnValue
             .map((notColumnName) => {
@@ -186,6 +167,11 @@ async function findAll(values = {}, options = {}) {
         }
 
         globalIndex += 1;
+
+        if (Array.isArray(columnValue)) {
+          return `contents.${columnName}  = ANY ($${globalIndex})`;
+        }
+
         return `contents.${columnName} = $${globalIndex}`;
       }
     }, '');

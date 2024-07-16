@@ -1,3 +1,4 @@
+import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 describe('GET /recentes/rss', () => {
@@ -19,6 +20,49 @@ describe('GET /recentes/rss', () => {
     });
 
     test('With 0 contents', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
+      const responseBody = await response.text();
+
+      const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
+
+      expect(response.status).toEqual(200);
+
+      expect(responseBody).toStrictEqual(`<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>TabNews</title>
+        <link>${orchestrator.webserverUrl}/recentes/rss</link>
+        <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
+        <lastBuildDate>${lastBuildDateFromResponseBody}</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>pt</language>
+        <image>
+            <title>TabNews</title>
+            <url>${orchestrator.webserverUrl}/favicon-mobile.png</url>
+            <link>${orchestrator.webserverUrl}/recentes/rss</link>
+        </image>
+    </channel>
+</rss>`);
+    });
+
+    test('With 1 "ad" content`', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: defaultUser.id,
+        amount: defaultTabCashForAdCreation,
+      });
+
+      await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Ad Title',
+        body: relevantBody,
+        status: 'published',
+        type: 'ad',
+      });
+
       const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
       const responseBody = await response.text();
 
