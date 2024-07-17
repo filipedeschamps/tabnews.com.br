@@ -40,6 +40,12 @@ async function nuke(userId, options = {}) {
       }
     }
 
+    const userBalanceOperations = await balance.findAllByOriginatorId(userId, options);
+
+    for (const userBalanceOperation of userBalanceOperations) {
+      await balance.undo(userBalanceOperation, options);
+    }
+
     async function getAllRatingEventsFromUser(userId, options = {}) {
       const query = {
         text: `

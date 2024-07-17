@@ -592,8 +592,8 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
         balanceType: 'content:tabcoin:initial',
         recipientId: newContent.id,
         amount: contentEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
+        originatorType: 'user',
+        originatorId: newContent.owner_id,
       },
       {
         transaction: options.transaction,

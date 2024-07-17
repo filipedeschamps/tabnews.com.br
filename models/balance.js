@@ -132,7 +132,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
         INSERT INTO content_tabcoin_operations
           (balance_type, recipient_id, amount, originator_type, originator_id)
         VALUES
-          ($10, $4, $5, $8, $9)
+          ($10, $4, $5, 'user', $1)
         RETURNING
           *
       )
