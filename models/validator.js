@@ -509,6 +509,7 @@ const schemas = {
       'tabcoins',
       'tabcoins_credit',
       'tabcoins_debit',
+      'tabcash',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
