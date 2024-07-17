@@ -27,7 +27,7 @@ Queremos ter conteúdo de qualidade tanto na publicação principal quanto nos c
     {
       id: 'qualidade-tabnews',
       question: 'Como criar um bom conteúdo no TabNews?',
-      answer: `A forma como cada pessoa avalia a qualidade de um conteúdo é subjetiva, mas temos algumas recomendações que podem ajudar a criar uma publicação mais relevante: 
+      answer: `A forma como cada pessoa avalia a qualidade de um conteúdo é subjetiva, mas temos algumas recomendações que podem ajudar a criar uma publicação mais relevante:
 
 - **Atenção à gramática e aos erros de digitação:** antes de publicar, confirme se precisa corrigir algum erro gramatical ou de digitação. O uso correto da língua portuguesa ajudará a transmitir a sua mensagem para os leitores.
 - **Formate o conteúdo para facilitar a leitura:** o editor de texto do TabNews aceita a sintaxe Markdown, então você pode usá-la para identificar no seu texto títulos e subtítulos, trechos de código, citações, enfatizar trechos específicos, exibir diagramas etc.
@@ -37,12 +37,30 @@ Queremos ter conteúdo de qualidade tanto na publicação principal quanto nos c
     {
       id: 'tabcash',
       question: 'O que é TabCash?',
-      answer: `O TabCash é uma moeda digital para recompensar pessoas que estão criando conteúdos com valor concreto e também ajudando a qualificar outros conteúdos. O saldo de TabCash poderá ser utilizado no sistema de Revenue Share, onde você poderá usar espaços de anúncio para compartilhar o que desejar, desde que respeite os [Termos de Uso](/termos-de-uso). Esse sistema ainda não está implementado, mas você pode [acompanhar o progresso no GitHub](https://github.com/filipedeschamps/tabnews.com.br/issues/1490).`,
+      answer: `O TabCash é uma moeda digital para recompensar pessoas que estão criando conteúdos com valor concreto e também ajudando a qualificar outros conteúdos. O saldo de TabCash pode ser utilizado no sistema de Revenue Share, onde você pode usar espaços de anúncio para compartilhar o que desejar, desde que respeite os [Termos de Uso](/termos-de-uso). Esse sistema está em desenvolvimento e você pode [acompanhar o progresso no GitHub](https://github.com/filipedeschamps/tabnews.com.br/issues/1490).`,
     },
     {
       id: 'ganhar-tabcash',
       question: 'Como ganhar TabCash?',
       answer: `Para ganhar TabCash, é necessário contribuir com a qualificação de conteúdos de outras pessoas, consumindo 2 TabCoins a cada qualificação realizada e, ao mesmo tempo, ganhando 1 TabCash.`,
+    },
+    {
+      id: 'utilizar-tabcash',
+      question: 'Como utilizar meu TabCash?',
+      answer: `O TabCash pode ser utilizado para publicar o que você quiser em espaços de anúncio, desde que respeite os [Termos de Uso](/termos-de-uso).
+
+Atualmente, o único espaço de anúncio disponível é o de [publicações patrocinadas](#publicacao-patrocinada). Para criar esse tipo de anúncio, acesse a página [Publicar novo conteúdo](/publicar) e marque a caixa de seleção "**Criar como publicação patrocinada**". Você precisa ter ao menos **100 TabCash**, que serão consumidos ao criar a publicação patrocinada.`,
+    },
+    {
+      id: 'publicacao-patrocinada',
+      question: 'Como funciona uma publicação patrocinada?',
+      answer: `_Esse tipo de anúncio está em desenvolvimento, então está em constante evolução. Você pode acompanhar o que está sendo feito no [issue #1491 do GitHub](https://github.com/filipedeschamps/tabnews.com.br/issues/1491)._
+
+No topo das listas de conteúdos [Relevantes](/) e [Recentes](/recentes/pagina/1), e também nas páginas de publicações e comentários, após o conteúdo principal, uma publicação patrocinada escolhida de forma aleatória é exibida. Caso a publicação tenha um link de "**fonte**", o visitante que clicar no título da publicação será redirecionado para o link. Caso o link seja para um site externo, o domínio será identificado após o título, por exemplo: \`Título da publicação patrocinada (site-externo.com.br)\`.
+
+Para criar uma publicação patrocinada, você investirá **100 TabCash**. A cada dia que passar, **10 TabCash** serão consumidos da publicação patrocinada.
+
+Recomendamos que o título tenha até 70 caracteres para que possa ser exibido sem reticências ao final.`,
     },
     {
       id: 'tabcoin',

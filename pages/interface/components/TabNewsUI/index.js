@@ -1,3 +1,4 @@
+export { default as AdBanner } from '@/AdBanner';
 export { default as ButtonWithLoader } from '@/ButtonWithLoader';
 export { default as Confetti } from '@/Confetti';
 export { default as Content } from '@/Content';
