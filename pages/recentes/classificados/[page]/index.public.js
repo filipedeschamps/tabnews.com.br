@@ -2,37 +2,26 @@ import { getStaticPropsRevalidate } from 'next-swr';
 
 import { ContentList, DefaultLayout, RecentTabNav } from '@/TabNewsUI';
 import webserver from 'infra/webserver';
-import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default function Home({ adFound, contentListFound, pagination }) {
+export default function ContentsPage({ contentListFound, pagination }) {
   return (
-    <>
-      <DefaultLayout
-        metadata={{
-          title: `Página ${pagination.currentPage} · Recentes`,
-          description: 'Publicações no TabNews ordenadas pelas mais recentes.',
-        }}>
-        <RecentTabNav />
-        <ContentList
-          ad={adFound}
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/recentes/pagina"
-        />
-      </DefaultLayout>
-    </>
+    <DefaultLayout
+      metadata={{
+        title: `Página ${pagination.currentPage} · Classificados Recentes`,
+        description: 'Classificados do TabNews ordenados pelos mais recentes.',
+      }}>
+      <RecentTabNav />
+      <ContentList
+        contentList={contentListFound}
+        pagination={pagination}
+        paginationBasePath="/recentes/classificados"
+      />
+    </DefaultLayout>
   );
-}
-
-export async function getStaticPaths() {
-  return {
-    paths: [{ params: { page: '1' } }, { params: { page: '2' } }, { params: { page: '3' } }],
-    fallback: 'blocking',
-  };
 }
 
 export const getStaticProps = getStaticPropsRevalidate(async (context) => {
@@ -54,9 +43,8 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const results = await content.findWithStrategy({
     strategy: 'new',
     where: {
-      parent_id: null,
       status: 'published',
-      type: 'content',
+      type: 'ad',
     },
     attributes: {
       exclude: ['body'],
@@ -68,7 +56,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const contentListFound = results.rows;
 
   if (contentListFound.length === 0 && context.params.page !== 1 && !webserver.isBuildTime) {
-    const lastValidPage = `/recentes/pagina/${results.pagination.lastPage || 1}`;
+    const lastValidPage = `/recentes/classificados/${results.pagination.lastPage || 1}`;
     const revalidate = context.params.page > results.pagination.lastPage + 1 ? 10 : 1;
 
     return {
@@ -79,17 +67,20 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     };
   }
 
-  const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
-
-  const adsFound = await ad.getRandom(1);
-  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
+  const secureContentListFound = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
   return {
     props: {
-      adFound: secureAdValues[0] ?? null,
-      contentListFound: secureContentValues,
+      contentListFound: secureContentListFound,
       pagination: results.pagination,
     },
-    revalidate: 1,
+    revalidate: 10,
   };
 });
+
+export async function getStaticPaths() {
+  return {
+    paths: [{ params: { page: '1' } }, { params: { page: '2' } }, { params: { page: '3' } }],
+    fallback: 'blocking',
+  };
+}

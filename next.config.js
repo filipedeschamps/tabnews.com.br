@@ -37,6 +37,11 @@ module.exports = {
         permanent: true,
       },
       {
+        source: '/recentes/classificados',
+        destination: '/recentes/classificados/1',
+        permanent: true,
+      },
+      {
         source: '/recentes/todos',
         destination: '/recentes/todos/1',
         permanent: true,
