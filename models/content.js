@@ -607,13 +607,13 @@ async function updateTabCashBalance(oldContent, newContent, options = {}) {
     return;
   }
 
-  const tabCashToDebitFromUser = -100;
+  const initialTabCash = 100;
 
-  const balanceResult = await balance.create(
+  const userBalance = await balance.create(
     {
       balanceType: 'user:tabcash',
       recipientId: newContent.owner_id,
-      amount: tabCashToDebitFromUser,
+      amount: -initialTabCash,
       originatorType: options.eventId ? 'event' : 'content',
       originatorId: options.eventId ? options.eventId : newContent.id,
     },
@@ -623,13 +623,29 @@ async function updateTabCashBalance(oldContent, newContent, options = {}) {
     },
   );
 
-  if (balanceResult.total < 0) {
+  if (userBalance.total < 0) {
     throw new UnprocessableEntityError({
       message: `Não foi possível criar a publicação.`,
-      action: `Você precisa de pelo menos ${Math.abs(tabCashToDebitFromUser)} TabCash para realizar esta ação.`,
+      action: `Você precisa de pelo menos ${Math.abs(initialTabCash)} TabCash para realizar esta ação.`,
       errorLocationCode: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
     });
   }
+
+  const contentBalance = await balance.create(
+    {
+      balanceType: 'ad:budget',
+      recipientId: newContent.id,
+      amount: initialTabCash,
+      originatorType: 'user',
+      originatorId: newContent.owner_id,
+    },
+    {
+      transaction: options.transaction,
+      withBalance: true,
+    },
+  );
+
+  newContent.tabcash = contentBalance.total;
 }
 
 async function update(contentId, postedContent, options = {}) {

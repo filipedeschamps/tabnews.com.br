@@ -2975,6 +2975,7 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 0,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
+          tabcash: defaultTabCashForAdCreation,
           owner_username: defaultUser.username,
         });
 
@@ -2994,7 +2995,7 @@ describe('POST /api/v1/contents', () => {
           amount: 1_000 + defaultTabCashForAdCreation,
         });
 
-        const { response: contentResponse } = await contentsRequestBuilder.post({
+        const { response: contentResponse, responseBody: contentResponseBody } = await contentsRequestBuilder.post({
           title: 'Ad title',
           body: 'Ad body',
           status: 'published',
@@ -3004,6 +3005,7 @@ describe('POST /api/v1/contents', () => {
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
         expect.soft(contentResponse.status).toBe(201);
+        expect(contentResponseBody.tabcash).toBe(defaultTabCashForAdCreation);
         expect(userResponseBody.tabcash).toBe(1_000);
       });
 

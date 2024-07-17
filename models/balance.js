@@ -4,18 +4,21 @@ import database from 'infra/database.js';
 const tableNameMap = {
   'user:tabcoin': 'user_tabcoin_operations',
   'user:tabcash': 'user_tabcash_operations',
+  'ad:budget': 'ad_tabcash_operations',
   default: 'content_tabcoin_operations',
 };
 
 const balanceTypeMap = {
   'content:tabcoin:credit': 'credit',
   'content:tabcoin:debit': 'debit',
-  default: 'initial',
+  'content:tabcoin:initial': 'initial',
+  'ad:budget': 'budget',
 };
 
 const sqlFunctionMap = {
   'user:tabcoin': 'get_user_current_tabcoins',
   'user:tabcash': 'get_user_current_tabcash',
+  'ad:budget': 'get_ad_current_tabcash',
   default: 'get_content_current_tabcoins',
 };
 
@@ -48,7 +51,7 @@ async function findAllByOriginatorId(originatorId, options) {
 
 async function create({ balanceType, recipientId, amount, originatorType, originatorId }, options = {}) {
   const tableName = tableNameMap[balanceType] || tableNameMap.default;
-  const hasBalanceTypeColum = balanceType.startsWith('content:tabcoin');
+  const hasBalanceTypeColum = !balanceType.startsWith('user:');
   const totalBalanceFunction = sqlFunctionMap[balanceType] || sqlFunctionMap.default;
 
   const returning = options.withBalance ? `*, ${totalBalanceFunction}($1) as total` : '*';
@@ -65,7 +68,7 @@ async function create({ balanceType, recipientId, amount, originatorType, origin
   };
 
   if (hasBalanceTypeColum) {
-    const parsedBalanceType = balanceTypeMap[balanceType] || balanceTypeMap.default;
+    const parsedBalanceType = balanceTypeMap[balanceType] || balanceType;
 
     query.values.push(parsedBalanceType);
   }
