@@ -84,12 +84,64 @@ describe('GET /api/v1/sponsored-beta', () => {
       expect(createdAds).toContainEqual(responseBody[0]);
       expect(createdAds).toContainEqual(responseBody[1]);
     });
+
+    it('should ignore specific ad', async () => {
+      const createdAds = await createAds(1, owner);
+
+      const { response, responseBody } = await adsRequestBuilder.get(`?ignore_id=${createdAds[0].id}`);
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toEqual([]);
+    });
+
+    it('should get from specific owner', async () => {
+      const specificOwner = await orchestrator.createUser();
+
+      orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: specificOwner.id,
+        amount: defaultTabCashForAdCreation,
+      });
+
+      await createAds(10, owner);
+      const specificAd = await createAds(1, specificOwner);
+      await createAds(10, owner, 10);
+
+      const { response, responseBody } = await adsRequestBuilder.get(`?owner_id=${specificOwner.id}`);
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual(specificAd);
+    });
+
+    it('should try get from another owner', async () => {
+      const specificOwner = await orchestrator.createUser();
+
+      const createdAds = await createAds(1, owner);
+
+      const { response, responseBody } = await adsRequestBuilder.get(`?flexible=true&owner_id=${specificOwner.id}`);
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual(createdAds);
+    });
+
+    it('should try get from another owner and ignore specific ad', async () => {
+      const specificOwner = await orchestrator.createUser();
+
+      const createdAds = await createAds(2, owner);
+
+      const { response, responseBody } = await adsRequestBuilder.get(
+        `?flexible=true&owner_id=${specificOwner.id}&ignore_id=${createdAds[1].id}`,
+      );
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual([createdAds[0]]);
+    });
   });
 });
 
-async function createAds(count, owner) {
+async function createAds(count, owner, indexOffset = 0) {
   const ads = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = indexOffset; i < count + indexOffset; i++) {
     const ad = await orchestrator.createContent({
       owner_id: owner.id,
       title: `Ad #${i}`,

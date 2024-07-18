@@ -19,6 +19,9 @@ export default nextConnect({
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
     per_page: 'optional',
+    owner_id: 'optional',
+    ignore_id: 'optional',
+    flexible: 'optional',
   });
 
   request.query = cleanValues;
@@ -29,7 +32,11 @@ function getValidationHandler(request, response, next) {
 async function getHandler(request, response) {
   const userTryingToList = user.createAnonymous();
 
-  const ads = await ad.getRandom(request.query.per_page);
+  const ads = await ad.getRandom(request.query.per_page, {
+    ignoreId: request.query.ignore_id,
+    ownerId: request.query.owner_id,
+    tryOtherOwners: request.query.flexible,
+  });
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:ad:list', ads);
 
