@@ -1,6 +1,6 @@
 import webserver from 'infra/webserver';
 
-const DEFAULT_TRUSTED_HOSTS = ['tabnews.com.br', 'github.com', 'curso.dev'];
+const DEFAULT_TRUSTED_HOSTS = ['tabnews.com.br', 'github.com', 'curso.dev', 'filipedeschamps.com.br'];
 
 const webserverHostname = new URL(webserver.host).hostname;
 const trustedHosts = [...new Set([webserverHostname, ...DEFAULT_TRUSTED_HOSTS])];

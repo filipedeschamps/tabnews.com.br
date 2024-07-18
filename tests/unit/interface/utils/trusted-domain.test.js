@@ -5,6 +5,7 @@ describe('isTrustedDomain', () => {
     expect(isTrustedDomain('http://www.github.com')).toBe(true);
     expect(isTrustedDomain('https://tabnews.com.br')).toBe(true);
     expect(isTrustedDomain('//curso.dev')).toBe(true);
+    expect(isTrustedDomain('https://filipedeschamps.com.br')).toBe(true);
     expect(isTrustedDomain('http://sub.tabnews.com.br')).toBe(true);
     expect(isTrustedDomain('https://www.example.com')).toBe(false);
   });
