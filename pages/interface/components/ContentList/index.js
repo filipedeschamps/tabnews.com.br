@@ -108,12 +108,16 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
                 whiteSpace: 'nowrap',
                 color: 'neutral.emphasis',
               }}>
-              <TabCoinBalanceTooltip
-                direction="ne"
-                credit={contentObject.tabcoins_credit}
-                debit={contentObject.tabcoins_debit}>
-                <TabCoinsText count={contentObject.tabcoins} />
-              </TabCoinBalanceTooltip>
+              {contentObject.type === 'ad' ? (
+                <Text sx={{ color: 'success.fg' }}>Patrocinado</Text>
+              ) : (
+                <TabCoinBalanceTooltip
+                  direction="ne"
+                  credit={contentObject.tabcoins_credit}
+                  debit={contentObject.tabcoins_debit}>
+                  <TabCoinsText count={contentObject.tabcoins} />
+                </TabCoinBalanceTooltip>
+              )}
               {' · '}
               <Text>
                 <ChildrenDeepCountText count={contentObject.children_deep_count} />
