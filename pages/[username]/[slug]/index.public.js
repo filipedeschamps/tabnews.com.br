@@ -83,7 +83,7 @@ export default function Post({ adFound, contentFound, rootContentFound, parentCo
             />
           </Box>
 
-          {adFound && <AdBanner ad={adFound} sx={{ ml: 5, pl: 1, width: '100%' }} />}
+          {adFound && <AdBanner ad={adFound} sx={{ ml: 5, pl: 1 }} />}
 
           <RenderChildrenTree
             key={contentFound.id}
