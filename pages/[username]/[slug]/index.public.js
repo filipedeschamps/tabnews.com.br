@@ -418,7 +418,11 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
   }
 
-  const adsFound = await ad.getRandom(1);
+  const adsFound = await ad.getRandom(1, {
+    ignoreId: secureContentFound.id,
+    ownerId: secureContentFound.owner_id,
+    tryOtherOwners: secureContentFound.type === 'content',
+  });
   const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
 
   return {

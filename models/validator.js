@@ -393,6 +393,20 @@ const schemas = {
     });
   },
 
+  ignore_id: function () {
+    return Joi.object({
+      ignore_id: schemas.id().extract('id'),
+    });
+  },
+
+  flexible: function () {
+    return Joi.object({
+      flexible: Joi.boolean()
+        .default(false)
+        .when('$required.optional', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
   where: function () {
     let whereSchema = Joi.object({}).optional().min(1);
 
