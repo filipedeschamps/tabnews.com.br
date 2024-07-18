@@ -32,7 +32,7 @@ export default function AdBanner({ ad, ...props }) {
         </Link>
       </Box>
 
-      <Text sx={{ whiteSpace: 'nowrap', fontSize: 0, color: 'neutral.emphasis' }}>
+      <Text sx={{ whiteSpace: 'nowrap', overflow: 'hidden', fontSize: 0, color: 'neutral.emphasis' }}>
         Contribuindo com{' '}
         <Tooltip
           aria-label={`Autor: ${ad.owner_username}`}
