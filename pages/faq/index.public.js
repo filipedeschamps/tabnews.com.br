@@ -56,9 +56,9 @@ Atualmente, o único espaço de anúncio disponível é o de [publicações patr
       question: 'Como funciona uma publicação patrocinada?',
       answer: `_Esse tipo de anúncio está em desenvolvimento, então está em constante evolução. Você pode acompanhar o que está sendo feito no [issue #1491 do GitHub](https://github.com/filipedeschamps/tabnews.com.br/issues/1491)._
 
-No topo das listas de conteúdos [Relevantes](/) e [Recentes](/recentes/pagina/1), e também nas páginas de publicações e comentários, após o conteúdo principal, uma publicação patrocinada escolhida de forma aleatória é exibida. Caso a publicação tenha um link de "**fonte**", o visitante que clicar no título da publicação será redirecionado para o link. Caso o link seja para um site externo, o domínio será identificado após o título, por exemplo: \`Título da publicação patrocinada (site-externo.com.br)\`.
+No topo das listas de conteúdos [Relevantes](/) e [Recentes](/recentes/pagina/1), e também nas páginas de publicações e comentários, após o conteúdo principal, uma publicação patrocinada escolhida de forma aleatória é exibida como um _banner_. Caso a publicação tenha um link de "**fonte**", o visitante que clicar no título da publicação será redirecionado para o link. Caso o link seja para um site externo, o domínio será identificado após o título, por exemplo: \`Título da publicação patrocinada (site-externo.com.br)\`.
 
-Para criar uma publicação patrocinada, você investirá **100 TabCash**. A cada dia que passar, **10 TabCash** serão consumidos da publicação patrocinada.
+Para criar uma publicação patrocinada, você investirá **100 TabCash** no orçamento dela. Ainda não está definido como o orçamento será consumido e ainda não é possível alterar o valor do orçamento.
 
 Recomendamos que o título tenha até 70 caracteres para que possa ser exibido sem reticências ao final.`,
     },
