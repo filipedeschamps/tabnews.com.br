@@ -1,12 +1,23 @@
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+
 import { Box, Link, Text, Tooltip } from '@/TabNewsUI';
 import { LinkExternalIcon } from '@/TabNewsUI/icons';
 import { getDomain, isExternalLink, isTrustedDomain } from 'pages/interface';
 
-export default function AdBanner({ ad, ...props }) {
+export default function AdBanner({ ad: newAd, ...props }) {
+  const [ad, setAd] = useState(newAd);
+  const router = useRouter();
+
   const link = ad.source_url || `/${ad.owner_username}/${ad.slug}`;
   const isAdToExternalLink = isExternalLink(link);
   const domain = isAdToExternalLink ? `(${getDomain(link)})` : '';
   const title = ad.title.length > 70 ? ad.title.substring(0, 67).trim().concat('...') : ad.title;
+
+  useEffect(() => {
+    setAd(newAd);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.asPath]);
 
   return (
     <Box {...props} as="aside" sx={{ display: 'grid', ...props.sx }}>
