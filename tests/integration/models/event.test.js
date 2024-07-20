@@ -59,7 +59,7 @@ describe('models/event', () => {
         created_at: lastEvent.created_at,
         metadata: {
           id: defaultUser.id,
-          updatedFields: ['description', 'notifications', 'username'],
+          updated_fields: ['description', 'notifications', 'username'],
           username: {
             old: defaultUser.username,
             new: responseBody.username,
@@ -348,7 +348,7 @@ describe('models/event', () => {
         created_at: lastEvent.created_at,
         metadata: {
           id: userToBeUpdated.id,
-          updatedFields: ['description'],
+          updated_fields: ['description'],
         },
       });
 
