@@ -76,7 +76,7 @@ async function resetUserPassword(secureInputValues) {
   if (!tokenObject.used) {
     const userToken = await markTokenAsUsed(tokenObject.id);
     await session.expireAllFromUserId(tokenObject.user_id);
-    await user.update(tokenObject.user_id, { password: secureInputValues.password });
+    await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
     return userToken;
   }
 

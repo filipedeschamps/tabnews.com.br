@@ -276,9 +276,15 @@ function validatePostSchema(postedUserData) {
   return cleanValues;
 }
 
-async function update(userId, postedUserData, options = {}) {
+async function update(targetUser, postedUserData, options = {}) {
   const validPostedUserData = validatePatchSchema(postedUserData);
-  const currentUser = options.oldUser ?? (await findOneById(userId, { transaction: options.transaction }));
+
+  const isTargetUserComplete = 'username' in targetUser;
+  const needsTargetUserComplete = 'username' in validPostedUserData || 'email' in validPostedUserData;
+  const currentUser =
+    !isTargetUserComplete && needsTargetUserComplete
+      ? await findOneById(targetUser.id, { transaction: options.transaction })
+      : targetUser;
 
   const shouldValidateUsername =
     'username' in validPostedUserData &&
@@ -287,8 +293,7 @@ async function update(userId, postedUserData, options = {}) {
     'email' in validPostedUserData && validPostedUserData.email.toLowerCase() !== currentUser.email.toLowerCase();
 
   if (shouldValidateUsername || shouldValidateEmail) {
-    await validateUniqueUser({ ...validPostedUserData, id: userId }, { transaction: options.transaction });
-
+    await validateUniqueUser({ ...validPostedUserData, id: currentUser.id }, { transaction: options.transaction });
     if (shouldValidateEmail && !options.skipEmailConfirmation) {
       await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
         transaction: options.transaction,
@@ -300,25 +305,32 @@ async function update(userId, postedUserData, options = {}) {
   if ('password' in validPostedUserData) {
     await hashPasswordInObject(validPostedUserData);
   }
-
-  const userWithUpdatedValues = { ...currentUser, ...validPostedUserData };
-
-  const updatedUser = await runUpdateQuery(currentUser, userWithUpdatedValues, {
+  const updatedUser = await runUpdateQuery(currentUser, validPostedUserData, {
     transaction: options.transaction,
   });
   return updatedUser;
 
-  async function runUpdateQuery(currentUser, userWithUpdatedValues, options) {
+  async function runUpdateQuery(currentUser, valuesToUpdate, options) {
+    const values = [currentUser.id];
+    const setFields = [];
+
+    for (const [field, newValue] of Object.entries(valuesToUpdate)) {
+      if (newValue !== undefined) {
+        values.push(newValue);
+        setFields.push(`${field} = $${values.length}`);
+      }
+    }
+
+    if (!setFields.length) {
+      return currentUser;
+    }
+
     const query = {
       text: `
         UPDATE
           users
         SET
-          username = $2,
-          email = $3,
-          password = $4,
-          description = $5,
-          notifications = $6,
+          ${setFields.join(', ')},
           updated_at = (now() at time zone 'utc')
         WHERE
           id = $1
@@ -327,14 +339,7 @@ async function update(userId, postedUserData, options = {}) {
           get_user_current_tabcoins($1) as tabcoins,
           get_user_current_tabcash($1) as tabcash
       ;`,
-      values: [
-        currentUser.id,
-        userWithUpdatedValues.username,
-        userWithUpdatedValues.email,
-        userWithUpdatedValues.password,
-        userWithUpdatedValues.description,
-        userWithUpdatedValues.notifications,
-      ],
+      values: values,
     };
 
     const results = await database.query(query, options);

@@ -115,7 +115,7 @@ async function markTokenAsUsedById(tokenId) {
 
 async function confirmEmailUpdate(tokenId) {
   const usedToken = await markTokenAsUsedById(tokenId);
-  await user.update(usedToken.user_id, { email: usedToken.email }, { skipEmailConfirmation: true });
+  await user.update({ id: usedToken.user_id }, { email: usedToken.email }, { skipEmailConfirmation: true });
 
   return usedToken;
 }

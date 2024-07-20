@@ -78,7 +78,8 @@ function patchValidationHandler(request, response, next) {
 async function patchHandler(request, response) {
   const userTryingToPatch = request.context.user;
   const targetUsername = request.query.username;
-  const targetUser = await user.findOneByUsername(targetUsername);
+  const targetUser =
+    targetUsername === userTryingToPatch.username ? userTryingToPatch : await user.findOneByUsername(targetUsername);
   const insecureInputValues = request.body;
 
   let updateAnotherUser = false;
@@ -114,8 +115,7 @@ async function patchHandler(request, response) {
   try {
     await transaction.query('BEGIN');
 
-    updatedUser = await user.update(targetUser.id, secureInputValues, {
-      oldUser: targetUser,
+    updatedUser = await user.update(targetUser, secureInputValues, {
       transaction: transaction,
     });
 
