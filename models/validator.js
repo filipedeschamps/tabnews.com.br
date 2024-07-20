@@ -616,7 +616,6 @@ const schemas = {
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
           'reward:user:tabcoins',
-          'system:update:tabcoins',
         )
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',
