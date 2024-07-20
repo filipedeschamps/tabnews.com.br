@@ -2,6 +2,7 @@ import { version as uuidVersion } from 'uuid';
 
 import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
+import totp from 'models/totp';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
@@ -146,6 +147,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -191,6 +193,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -234,6 +237,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -618,6 +622,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         description: defaultUser.description,
         features: defaultUser.features,
         notifications: defaultUser.notifications,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -739,6 +744,55 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itself with a "description" containing a valid value and totp enabled', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const enableTotpRequestBuilder = new RequestBuilder('/api/v1/mfa/totp/enable');
+      await enableTotpRequestBuilder.setUser(defaultUser);
+      const totp_secret = totp.createSecret();
+
+      await enableTotpRequestBuilder.patch({ totp_secret });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: 'my description',
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect(response.status).toEqual(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: 'my description',
+        email: defaultUser.email,
+        features: [
+          'create:session',
+          'read:session',
+          'create:content',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content',
+          'update:user',
+        ],
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: true,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });

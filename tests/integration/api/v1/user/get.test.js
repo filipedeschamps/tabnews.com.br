@@ -1,6 +1,8 @@
 import { version as uuidVersion } from 'uuid';
 
+import totp from 'models/totp';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -126,8 +128,44 @@ describe('GET /api/v1/user', () => {
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
+      });
+
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
+      expect(parsedCookiesFromGet).toStrictEqual({});
+
+      const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
+      expect(sessionObject).toStrictEqual(defaultUserSession);
+    });
+
+    test('With valid session, necessary features and totp enabled', async () => {
+      const enableTotpRequestBuilder = new RequestBuilder('/api/v1/mfa/totp/enable');
+      const defaultUser = await enableTotpRequestBuilder.buildUser();
+      const totp_secret = totp.createSecret();
+      await enableTotpRequestBuilder.patch({ totp_secret });
+
+      const userRequestBuilder = new RequestBuilder('/api/v1/user');
+      await userRequestBuilder.setUser(defaultUser);
+
+      const defaultUserSession = userRequestBuilder.sessionObject;
+
+      const { response, responseBody } = await userRequestBuilder.get();
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        notifications: defaultUser.notifications,
+        features: defaultUser.features,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: true,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
       });
 
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
@@ -242,6 +280,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -295,6 +334,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -347,6 +387,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });

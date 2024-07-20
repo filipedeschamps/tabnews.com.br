@@ -1,12 +1,13 @@
 import nextConnect from 'next-connect';
 
-import { ForbiddenError, UnauthorizedError } from 'errors';
+import { ForbiddenError, UnauthorizedError, ValidationError } from 'errors';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import session from 'models/session';
+import totp from 'models/totp';
 import user from 'models/user';
 import validator from 'models/validator.js';
 
@@ -38,6 +39,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    totp_token: 'optional',
   });
 
   request.body = cleanValues;
@@ -62,6 +64,28 @@ async function postHandler(request, response) {
       action: `Verifique se os dados enviados estão corretos.`,
       errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
+  }
+
+  if (storedUser.totp_enabled) {
+    if (!insecureInputValues?.totp_token) {
+      throw new ValidationError({
+        message: 'O duplo fator de autenticação está habilitado para esta conta.',
+        action: 'Refaça a requisição enviando o código TOTP.',
+        errorLocationCode: 'CONTROLER:SESSIONS:POST_HANDLER:TOTP_TOKEN_NOT_SENT',
+        key: 'totp_token',
+      });
+    }
+
+    const secret = totp.decryptData(storedUser.totp_secret);
+    const valid = totp.validateOTP(secret, insecureInputValues.totp_token);
+
+    if (!valid) {
+      throw new UnauthorizedError({
+        message: `O código TOTP informado é inválido`,
+        action: `Verifique se os dados enviados estão corretos`,
+        errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:TOTP_TOKEN_INVALID`,
+      });
+    }
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {

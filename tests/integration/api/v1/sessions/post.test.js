@@ -1,7 +1,9 @@
 import { version as uuidVersion } from 'uuid';
 
 import session from 'models/session';
+import totp from 'models/totp';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -48,6 +50,140 @@ describe('POST /api/v1/sessions', () => {
       expect(parsedCookiesFromResponse.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
       expect(parsedCookiesFromResponse.session_id.path).toEqual('/');
       expect(parsedCookiesFromResponse.session_id.httpOnly).toEqual(true);
+    });
+
+    test('Using a valid email and password with totp enabled but not sending totp token', async () => {
+      const enableTotpRequestBuilder = new RequestBuilder('/api/v1/mfa/totp/enable');
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailWithTotpEnabled@gmail.com',
+        password: 'ValidPassword',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await enableTotpRequestBuilder.setUser(defaultUser);
+
+      const secret = totp.createSecret();
+
+      await enableTotpRequestBuilder.patch({ totp_secret: secret });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'emailWithTotpEnabled@gmail.com',
+          password: 'ValidPassword',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O duplo fator de autenticação está habilitado para esta conta.',
+        action: 'Refaça a requisição enviando o código TOTP.',
+        status_code: 400,
+        key: 'totp_token',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'CONTROLER:SESSIONS:POST_HANDLER:TOTP_TOKEN_NOT_SENT',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+    });
+
+    test('Using a valid email and password with totp enabled and sending valid token', async () => {
+      const enableTotpRequestBuilder = new RequestBuilder('/api/v1/mfa/totp/enable');
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailWithValidTotp@gmail.com',
+        password: 'ValidPasswordAndTotp',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await enableTotpRequestBuilder.setUser(defaultUser);
+
+      const secret = totp.createSecret();
+      const otp = totp.createTOTP(secret);
+
+      await enableTotpRequestBuilder.patch({ totp_secret: secret });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'emailWithValidTotp@gmail.com',
+          password: 'ValidPasswordAndTotp',
+          totp_token: otp.generate(),
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(responseBody.token.length).toEqual(96);
+      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+
+      const sessionObjectInDatabase = await session.findOneById(responseBody.id);
+      expect(sessionObjectInDatabase.user_id).toEqual(defaultUser.id);
+
+      const parsedCookiesFromResponse = orchestrator.parseSetCookies(response);
+      expect(parsedCookiesFromResponse.session_id.name).toEqual('session_id');
+      expect(parsedCookiesFromResponse.session_id.value).toEqual(responseBody.token);
+      expect(parsedCookiesFromResponse.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
+      expect(parsedCookiesFromResponse.session_id.path).toEqual('/');
+      expect(parsedCookiesFromResponse.session_id.httpOnly).toEqual(true);
+    });
+
+    test('Using a valid email and password with totp enabled and sending invalid token', async () => {
+      const enableTotpRequestBuilder = new RequestBuilder('/api/v1/mfa/totp/enable');
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailWithInvalidTotp@gmail.com',
+        password: 'ValidPasswordAndInvalidTotp',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await enableTotpRequestBuilder.setUser(defaultUser);
+
+      const secret = totp.createSecret();
+      const otp = totp.createTOTP();
+
+      await enableTotpRequestBuilder.patch({ totp_secret: secret });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'emailWithInvalidTotp@gmail.com',
+          password: 'ValidPasswordAndInvalidTotp',
+          totp_token: otp.generate(),
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(responseBody).toStrictEqual({
+        name: 'UnauthorizedError',
+        message: 'O código TOTP informado é inválido',
+        action: 'Verifique se os dados enviados estão corretos',
+        status_code: 401,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'CONTROLLER:SESSIONS:POST_HANDLER:TOTP_TOKEN_INVALID',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toEqual(4);
+      expect(uuidVersion(responseBody.request_id)).toEqual(4);
     });
 
     test('Using a valid email and password, but user lost the feature "create:session"', async () => {

@@ -77,6 +77,7 @@ async function resetUserPassword(secureInputValues) {
     const userToken = await markTokenAsUsed(tokenObject.id);
     await session.expireAllFromUserId(tokenObject.user_id);
     await updateUserPassword(tokenObject.user_id, secureInputValues.password);
+    await resetTOTP(tokenObject.user_id);
     return userToken;
   }
 
@@ -166,6 +167,13 @@ async function markTokenAsUsed(tokenId) {
 
   const results = await database.query(query);
   return results.rows[0];
+}
+
+async function resetTOTP(userId) {
+  const currentUser = await user.findOneById(userId);
+  if (currentUser.totp_enabled) {
+    await user.update(currentUser.username, { totp_enabled: false });
+  }
 }
 
 async function updateUserPassword(userId, password) {
