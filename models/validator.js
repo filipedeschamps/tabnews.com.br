@@ -635,6 +635,26 @@ const schemas = {
           }),
         },
         {
+          is: 'update:user',
+          then: Joi.object({
+            id: Joi.string().required(),
+            updatedFields: Joi.array()
+              .items(Joi.string().valid('description', 'notifications', 'username'))
+              .required(),
+            username: Joi.object({
+              old: Joi.string().required(),
+              new: Joi.string().required(),
+            }),
+          }),
+        },
+        {
+          is: 'ban:user',
+          then: Joi.object({
+            ban_type: schemas.ban_type().extract('ban_type').required(),
+            user_id: schemas.id().extract('id').required(),
+          }),
+        },
+        {
           is: 'create:content:text_root',
           then: Joi.object({
             id: Joi.string().required(),
@@ -659,6 +679,16 @@ const schemas = {
           }),
         },
         {
+          is: 'update:content:tabcoins',
+          then: Joi.object({
+            transaction_type: schemas.transaction_type().extract('transaction_type').required(),
+            from_user_id: Joi.string().required(),
+            content_owner_id: Joi.string().required(),
+            content_id: Joi.string().required(),
+            amount: Joi.number().integer().min(1).required(),
+          }),
+        },
+        {
           is: 'firewall:block_users',
           then: Joi.object({
             from_rule: Joi.string().required(),
@@ -677,6 +707,13 @@ const schemas = {
           then: Joi.object({
             from_rule: Joi.string().required(),
             contents: Joi.array().required(),
+          }),
+        },
+        {
+          is: 'reward:user:tabcoins',
+          then: Joi.object({
+            reward_type: Joi.string().valid('daily').required(),
+            amount: Joi.number().integer().min(1).required(),
           }),
         },
       ]),
