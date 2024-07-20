@@ -1,5 +1,6 @@
 import { TooManyRequestsError } from 'errors';
 import database from 'infra/database.js';
+import content from 'models/content';
 import event from 'models/event.js';
 import notification from 'models/notification';
 
@@ -115,7 +116,10 @@ async function createContentTextRootRuleSideEffect(context) {
     },
   });
 
-  await sendContentTextNotification(results.rows, createdEvent);
+  await Promise.allSettled([
+    undoContentsTabcoins(results.rows, createdEvent),
+    sendContentTextNotification(results.rows, createdEvent),
+  ]);
 }
 
 async function createContentTextChildRule(context) {
@@ -154,7 +158,25 @@ async function createContentTextChildRuleSideEffect(context) {
     },
   });
 
-  await sendContentTextNotification(results.rows, createdEvent);
+  await Promise.allSettled([
+    undoContentsTabcoins(results.rows, createdEvent),
+    sendContentTextNotification(results.rows, createdEvent),
+  ]);
+}
+
+async function undoContentsTabcoins(contentRows, createdEvent) {
+  for (const contentObject of contentRows) {
+    await content.creditOrDebitTabCoins(
+      {
+        ...contentObject,
+        status: contentObject.status_before_update,
+      },
+      contentObject,
+      {
+        eventId: createdEvent.id,
+      },
+    );
+  }
 }
 
 async function sendContentTextNotification(contentRows, event) {
