@@ -349,7 +349,6 @@ function canRequest(feature) {
         errorLocationCode: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
     }
-
     next();
   };
 }
@@ -359,4 +358,5 @@ export default Object.freeze({
   canRequest,
   filterOutput,
   filterInput,
+  validateUser,
 });
