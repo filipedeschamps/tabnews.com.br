@@ -1,6 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
-import { maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
+import { maxSlugLength, maxTitleLength, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -1505,7 +1505,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Título velho',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'draft',
       });
 
@@ -1522,7 +1522,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'titulo-velho',
         title: 'Título velho',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
         type: 'content',
         source_url: null,
@@ -1582,7 +1582,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -1599,7 +1599,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'title',
         title: 'Title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'deleted',
         type: 'content',
         tabcoins: 1,
@@ -2389,7 +2389,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
@@ -2441,7 +2441,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2479,7 +2479,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2543,7 +2543,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2586,7 +2586,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2624,7 +2624,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2667,7 +2667,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2706,7 +2706,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2714,7 +2714,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
         });
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
@@ -2740,7 +2740,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2748,7 +2748,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
@@ -2776,7 +2776,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2784,7 +2784,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
@@ -2816,7 +2816,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2824,7 +2824,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
@@ -2857,7 +2857,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2865,7 +2865,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
@@ -2897,7 +2897,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2905,7 +2905,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2936,7 +2936,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2944,7 +2944,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2976,7 +2976,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2984,7 +2984,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3015,7 +3015,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3023,7 +3023,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3055,7 +3055,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3095,7 +3095,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3137,7 +3137,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3180,7 +3180,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const secondUserContent = await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo do Segundo Usuário antes do patch!',
-        body: 'Body antes do patch! - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 

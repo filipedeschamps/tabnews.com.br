@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -183,7 +184,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'firstUserRootContent',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         }),
       });
@@ -198,7 +199,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'firstUserChildContent - Body with relevant texts needs to contain a good amount of words',
+          body: 'firstUserChildContent' + relevantBody,
           status: 'published',
         }),
       });
@@ -214,7 +215,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'secondUserRootContent',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         }),
       });
@@ -229,7 +230,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'secondUserChildContent #1 - Body with relevant texts needs to contain a good amount of words',
+          body: 'secondUserChildContent #1' + relevantBody,
           status: 'published',
         }),
       });
@@ -244,7 +245,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'secondUserChildContent #2 - Body with relevant texts needs to contain a good amount of words',
+          body: 'secondUserChildContent #2' + relevantBody,
           status: 'published',
         }),
       });
@@ -259,7 +260,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'Draft Content',
-          body: 'Draft Content - Body with relevant texts needs to contain a good amount of words',
+          body: 'Draft Content' + relevantBody,
           status: 'draft',
         }),
       });
@@ -272,7 +273,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'Deleted Content',
-          body: 'Deleted Content - Body with relevant texts needs to contain a good amount of words',
+          body: 'Deleted Content' + relevantBody,
           status: 'published',
         }),
       });

@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -196,7 +197,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -221,7 +222,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         children_deep_count: 1,
         status: 'published',
         type: 'content',
@@ -445,7 +446,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -473,7 +474,7 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         children_deep_count: 1,
         status: 'published',
         type: 'content',

@@ -1,3 +1,4 @@
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -110,7 +111,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -155,7 +156,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -338,7 +339,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 

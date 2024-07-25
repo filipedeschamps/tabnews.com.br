@@ -2244,7 +2244,7 @@ describe('POST /api/v1/contents', () => {
 
         const { responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
         });
 
         expect(responseBody.tabcoins).toEqual(0);
@@ -2264,7 +2264,7 @@ describe('POST /api/v1/contents', () => {
 
         const { responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2283,14 +2283,14 @@ describe('POST /api/v1/contents', () => {
 
         const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
-          body: 'Root - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           status: 'published',
         });
 
         const secondUser = await contentsRequestBuilder.buildUser();
 
         const { responseBody } = await contentsRequestBuilder.post({
-          body: 'Child - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           parent_id: rootContent.id,
           status: 'draft',
         });
@@ -2313,14 +2313,14 @@ describe('POST /api/v1/contents', () => {
         // User will receive tabcoins for publishing a root content.
         const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
-          body: 'Root - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           status: 'published',
         });
 
         // But user will not receive additional tabcoins for
         // publishing a child content to itself.
         const { responseBody } = await contentsRequestBuilder.post({
-          body: 'Child - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           parent_id: rootContent.id,
           status: 'published',
         });
@@ -2340,7 +2340,7 @@ describe('POST /api/v1/contents', () => {
 
         const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
-          body: 'Root - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2348,7 +2348,7 @@ describe('POST /api/v1/contents', () => {
         await orchestrator.createPrestige(secondUser.id);
 
         const { responseBody } = await contentsRequestBuilder.post({
-          body: 'Child - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           parent_id: rootContent.id,
           status: 'published',
         });
@@ -2370,7 +2370,7 @@ describe('POST /api/v1/contents', () => {
 
         const { response, responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2433,7 +2433,7 @@ describe('POST /api/v1/contents', () => {
 
         const { response, responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2445,7 +2445,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
           type: 'content',
           source_url: null,
@@ -2529,7 +2529,7 @@ describe('POST /api/v1/contents', () => {
 
         const { response, responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2541,7 +2541,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
           type: 'content',
           source_url: null,
@@ -2625,7 +2625,7 @@ describe('POST /api/v1/contents', () => {
 
         const { response, responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2637,7 +2637,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
           type: 'content',
           source_url: null,
@@ -2676,7 +2676,7 @@ describe('POST /api/v1/contents', () => {
         await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
 
         const { response, responseBody } = await contentsRequestBuilder.post({
-          body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
+          body: relevantBody,
           parent_id: rootContent.id,
           status: 'published',
         });
@@ -2689,7 +2689,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
-          body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
+          body: relevantBody,
           status: 'published',
           type: 'content',
           source_url: null,
@@ -2967,7 +2967,7 @@ describe('POST /api/v1/contents', () => {
 
         const { response, responseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Relevant text needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -2979,7 +2979,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Relevant text needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
           type: 'content',
           source_url: null,
@@ -3018,7 +3018,7 @@ describe('POST /api/v1/contents', () => {
         await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
 
         const { response, responseBody } = await contentsRequestBuilder.post({
-          body: 'Relevant text needs to contain a good amount of words',
+          body: relevantBody,
           parent_id: rootContent.id,
           status: 'published',
         });
@@ -3031,7 +3031,7 @@ describe('POST /api/v1/contents', () => {
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
-          body: 'Relevant text needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
           type: 'content',
           source_url: null,
@@ -3228,7 +3228,7 @@ describe('POST /api/v1/contents', () => {
 
         const { response: contentResponse, responseBody: contentResponseBody } = await contentsRequestBuilder.post({
           title: 'Title',
-          body: 'Relevant text needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
           type: 'ad',
         });

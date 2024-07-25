@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -155,7 +156,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -202,7 +203,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: responseBody.slug,
         title: 'Conteúdo root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
         type: 'content',
         tabcoins: 1,
