@@ -1,6 +1,8 @@
 import { version as uuidVersion } from 'uuid';
 
+import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -603,6 +605,98 @@ describe('GET /api/v1/user', () => {
         expect(postRewardUser.tabcoins).toStrictEqual(1000);
         expect(postRewardUser.tabcash).toStrictEqual(0);
         expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+      });
+
+      test('Should be able to reward even with negative ad balance', async () => {
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Ad Title',
+          status: 'published',
+          body: relevantBody,
+          type: 'ad',
+        });
+
+        await orchestrator.createRate(adContent, -999);
+
+        vi.useRealTimers();
+
+        await orchestrator.createPrestige(defaultUser.id);
+
+        const preRewardUser = await userRequestBuilder.get();
+
+        expect(preRewardUser.response.status).toBe(200);
+        expect(preRewardUser.responseBody.tabcoins).toBe(-999);
+        expect(preRewardUser.responseBody.tabcash).toBe(0);
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24), // 1 day and 1 second ago
+        );
+
+        const rewardedUser = await userRequestBuilder.get();
+
+        expect(rewardedUser.response.status).toBe(200);
+        expect(rewardedUser.responseBody.tabcoins).toBe(defaultTestRewardValue - 999);
+        expect(rewardedUser.responseBody.tabcash).toBe(0);
+      });
+
+      test('Should not reward only by ad positive balance', async () => {
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Ad Title',
+          status: 'published',
+          body: relevantBody,
+          type: 'ad',
+        });
+
+        await orchestrator.createRate(adContent, 999);
+
+        vi.useRealTimers();
+
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1 });
+
+        const preRewardUser = await userRequestBuilder.get();
+
+        expect(preRewardUser.response.status).toBe(200);
+        expect(preRewardUser.responseBody.tabcoins).toBe(999);
+        expect(preRewardUser.responseBody.tabcash).toBe(0);
+
+        await orchestrator.updateRewardedAt(
+          defaultUser.id,
+          new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
+        );
+
+        const notRewardedUser = await userRequestBuilder.get();
+
+        expect(notRewardedUser.response.status).toBe(200);
+        expect(notRewardedUser.responseBody.tabcoins).toBe(999);
+        expect(notRewardedUser.responseBody.tabcash).toBe(0);
       });
     });
   });
