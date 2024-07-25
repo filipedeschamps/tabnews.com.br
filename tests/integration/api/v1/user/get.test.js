@@ -105,18 +105,10 @@ describe('GET /api/v1/user', () => {
 
   describe('Default user', () => {
     test('With valid session and necessary features', async () => {
-      let defaultUser = await orchestrator.createUser();
-      defaultUser = await orchestrator.activateUser(defaultUser);
-      const defaultUserSession = await orchestrator.createSession(defaultUser);
+      const userRequestBuilder = new RequestBuilder('/api/v1/user');
+      const defaultUser = await userRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
-        headers: {
-          cookie: `session_id=${defaultUserSession.token}`,
-        },
-      });
-
-      const responseBody = await response.json();
+      const { response, responseBody } = await userRequestBuilder.get();
 
       expect(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
@@ -135,24 +127,15 @@ describe('GET /api/v1/user', () => {
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
 
-      const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
-      expect(sessionObject).toStrictEqual(defaultUserSession);
+      const sessionObject = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
+      expect(sessionObject).toStrictEqual(userRequestBuilder.sessionObject);
     });
 
     test('With valid session, but user lost "read:session" feature', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-      await orchestrator.removeFeaturesFromUser(defaultUser, ['read:session']);
+      const userRequestBuilder = new RequestBuilder('/api/v1/user');
+      await userRequestBuilder.buildUser({ without: ['read:session'] });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-      });
-
-      const responseBody = await response.json();
+      const { response, responseBody } = await userRequestBuilder.get();
 
       expect(response.status).toBe(403);
       expect(responseBody.status_code).toBe(403);
@@ -176,20 +159,12 @@ describe('GET /api/v1/user', () => {
         now: new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24 * 30), // 30 days and 1 second ago
       });
 
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const defaultUserSession = await orchestrator.createSession(defaultUser);
+      const userRequestBuilder = new RequestBuilder('/api/v1/user');
+      await userRequestBuilder.buildUser();
 
       vi.useRealTimers();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-        method: 'GET',
-        headers: {
-          cookie: `session_id=${defaultUserSession.token}`,
-        },
-      });
-
-      const responseBody = await response.json();
+      const { response, responseBody } = await userRequestBuilder.get();
 
       expect(response.status).toBe(401);
       expect(responseBody.status_code).toBe(401);
@@ -206,7 +181,7 @@ describe('GET /api/v1/user', () => {
       expect(parsedCookiesFromGet.session_id.path).toBe('/');
       expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
-      const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
+      const sessionObject = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
       expect(sessionObject).toBeUndefined();
     });
 
@@ -217,22 +192,14 @@ describe('GET /api/v1/user', () => {
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 + 1000 * 60),
         });
 
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
 
         vi.useRealTimers();
 
-        const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
+        const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            cookie: `session_id=${sessionObjectBeforeRenew.token}`,
-          },
-        });
-
-        const responseBody = await response.json();
+        const { response, responseBody } = await userRequestBuilder.get();
 
         expect(response.status).toBe(200);
         expect(responseBody).toStrictEqual({
@@ -255,8 +222,8 @@ describe('GET /api/v1/user', () => {
         expect(parsedCookiesFromGet.session_id.path).toBe('/');
         expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
-        const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
-        expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
+        const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
+        expect(sessionObjectBeforeRenew).toStrictEqual(userRequestBuilder.sessionObject);
         expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);
         expect(sessionObjectAfterRenew.created_at).toEqual(sessionObjectBeforeRenew.created_at);
         expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toBe(true);
@@ -268,24 +235,16 @@ describe('GET /api/v1/user', () => {
           now: new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24 * 9), // 9 days and 1 second ago
         });
 
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
 
         vi.useRealTimers();
 
-        const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
+        const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
 
-        expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
+        expect(sessionObjectBeforeRenew).toStrictEqual(userRequestBuilder.sessionObject);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            cookie: `session_id=${sessionObjectBeforeRenew.token}`,
-          },
-        });
-
-        const responseBody = await response.json();
+        const { response, responseBody } = await userRequestBuilder.get();
 
         expect(response.status).toBe(200);
         expect(responseBody).toStrictEqual({
@@ -308,7 +267,7 @@ describe('GET /api/v1/user', () => {
         expect(parsedCookiesFromGet.session_id.path).toBe('/');
         expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
-        const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
+        const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
         expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);
         expect(sessionObjectAfterRenew.created_at).toEqual(sessionObjectBeforeRenew.created_at);
         expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toBe(true);
@@ -320,24 +279,16 @@ describe('GET /api/v1/user', () => {
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9 + 1000 * 60), // 1 minute left for 9 days
         });
 
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
 
         vi.useRealTimers();
 
-        const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
+        const sessionObjectBeforeRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
 
-        expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
+        expect(sessionObjectBeforeRenew).toStrictEqual(userRequestBuilder.sessionObject);
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            cookie: `session_id=${sessionObjectBeforeRenew.token}`,
-          },
-        });
-
-        const responseBody = await response.json();
+        const { response, responseBody } = await userRequestBuilder.get();
 
         expect(response.status).toBe(200);
         expect(responseBody).toStrictEqual({
@@ -356,7 +307,7 @@ describe('GET /api/v1/user', () => {
         const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
         expect(parsedCookiesFromGet).toStrictEqual({});
 
-        const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
+        const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
         expect(sessionObjectAfterRenew).toStrictEqual(sessionObjectBeforeRenew);
       });
     });
@@ -365,19 +316,11 @@ describe('GET /api/v1/user', () => {
       const defaultTestRewardValue = 2;
 
       test('Should be able to reward the user once a day', async () => {
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
-        const preRewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            cookie: `session_id=${defaultUserSession.token}`,
-          },
-        });
-
-        const preRewardUser = await preRewardUserResponse.json();
+        const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
         expect(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
@@ -389,28 +332,14 @@ describe('GET /api/v1/user', () => {
           new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24), // 1 day and 1 second ago
         );
 
-        const rewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            cookie: `session_id=${defaultUserSession.token}`,
-          },
-        });
-
-        const rewardUser = await rewardUserResponse.json();
+        const { response: rewardUserResponse, responseBody: rewardUser } = await userRequestBuilder.get();
 
         expect(rewardUserResponse.status).toBe(200);
         expect(rewardUser.tabcoins).toBe(defaultTestRewardValue);
         expect(rewardUser.tabcash).toBe(0);
         expect(rewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
-        const postRewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            cookie: `session_id=${defaultUserSession.token}`,
-          },
-        });
-
-        const postRewardUser = await postRewardUserResponse.json();
+        const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
         expect(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
@@ -419,21 +348,11 @@ describe('GET /api/v1/user', () => {
       });
 
       test('Should deduplicate simultaneous rewards', async () => {
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
-        const fetchUser = async () =>
-          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-            method: 'GET',
-            headers: {
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-          });
-
-        const preRewardUserResponse = await fetchUser();
-        const preRewardUser = await preRewardUserResponse.json();
+        const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
         expect(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
@@ -445,21 +364,18 @@ describe('GET /api/v1/user', () => {
           new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24), // 1 day and 1 second ago
         );
 
-        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+        const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         const tabcoins = await Promise.all(
           simultaneousResults.map(async (result) => {
-            expect(result.status).toBe(200);
-            const resultBody = await result.json();
-            return resultBody.tabcoins;
+            expect(result.response.status).toBe(200);
+            return result.responseBody.tabcoins;
           }),
         );
 
         expect(tabcoins).toContain(defaultTestRewardValue);
 
-        const postRewardUserResponse = await fetchUser();
-
-        const postRewardUser = await postRewardUserResponse.json();
+        const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
         expect(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
@@ -468,20 +384,10 @@ describe('GET /api/v1/user', () => {
       });
 
       test('Should not reward if user has no prestige', async () => {
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
 
-        const fetchUser = async () =>
-          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-            method: 'GET',
-            headers: {
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-          });
-
-        const preRewardUserResponse = await fetchUser();
-        const preRewardUser = await preRewardUserResponse.json();
+        const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
         expect(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
@@ -493,17 +399,14 @@ describe('GET /api/v1/user', () => {
           new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
         );
 
-        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+        const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         simultaneousResults.forEach(async (result) => {
-          expect(result.status).toBe(200);
-          const resultBody = await result.json();
-          expect(resultBody.tabcoins).toBe(0);
+          expect(result.response.status).toBe(200);
+          expect(result.responseBody.tabcoins).toBe(0);
         });
 
-        const postRewardUserResponse = await fetchUser();
-
-        const postRewardUser = await postRewardUserResponse.json();
+        const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
         expect(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(0);
@@ -512,21 +415,11 @@ describe('GET /api/v1/user', () => {
       });
 
       test('Should not reward if user has negative prestige', async () => {
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1 });
 
-        const fetchUser = async () =>
-          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-            method: 'GET',
-            headers: {
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-          });
-
-        const preRewardUserResponse = await fetchUser();
-        const preRewardUser = await preRewardUserResponse.json();
+        const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
         expect(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
@@ -538,17 +431,14 @@ describe('GET /api/v1/user', () => {
           new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
         );
 
-        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+        const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         simultaneousResults.forEach(async (result) => {
-          expect(result.status).toBe(200);
-          const resultBody = await result.json();
-          expect(resultBody.tabcoins).toBe(0);
+          expect(result.response.status).toBe(200);
+          expect(result.responseBody.tabcoins).toBe(0);
         });
 
-        const postRewardUserResponse = await fetchUser();
-
-        const postRewardUser = await postRewardUserResponse.json();
+        const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
         expect(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(0);
@@ -557,9 +447,8 @@ describe('GET /api/v1/user', () => {
       });
 
       test('Should not reward if user has too many tabcoins', async () => {
-        let defaultUser = await orchestrator.createUser();
-        defaultUser = await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const defaultUser = await userRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         await orchestrator.createBalance({
@@ -568,16 +457,7 @@ describe('GET /api/v1/user', () => {
           amount: 1000,
         });
 
-        const fetchUser = async () =>
-          await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-            method: 'GET',
-            headers: {
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-          });
-
-        const preRewardUserResponse = await fetchUser();
-        const preRewardUser = await preRewardUserResponse.json();
+        const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
         expect(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(1000);
@@ -589,17 +469,14 @@ describe('GET /api/v1/user', () => {
           new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
         );
 
-        const simultaneousResults = await Promise.all([fetchUser(), fetchUser()]);
+        const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         simultaneousResults.forEach(async (result) => {
-          expect(result.status).toBe(200);
-          const resultBody = await result.json();
-          expect(resultBody.tabcoins).toBe(1000);
+          expect(result.response.status).toBe(200);
+          expect(result.responseBody.tabcoins).toBe(1000);
         });
 
-        const postRewardUserResponse = await fetchUser();
-
-        const postRewardUser = await postRewardUserResponse.json();
+        const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
         expect(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(1000);
