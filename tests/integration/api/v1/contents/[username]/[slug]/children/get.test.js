@@ -23,14 +23,14 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('From "root" content with "deleted" status', async () => {
@@ -48,14 +48,14 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('From "root" content with "published" status with no children', async () => {
@@ -71,7 +71,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toEqual([]);
     });
 
@@ -140,8 +140,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+      expect(response.status).toBe(200);
+      expect(responseBody.length).toBe(2);
       expect(responseBody).toStrictEqual([
         {
           id: childBranchBLevel1.id,
@@ -341,8 +341,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+      expect(response.status).toBe(200);
+      expect(responseBody.length).toBe(2);
       expect(responseBody).toStrictEqual([
         {
           id: childBranchBLevel2Content2.id,
@@ -430,8 +430,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+      expect(response.status).toBe(200);
+      expect(responseBody.length).toBe(2);
       expect(responseBody).toStrictEqual([
         {
           id: childBranchBLevel1.id,

@@ -14,10 +14,10 @@ describe('Under maintenance route', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(503);
-      expect(responseBody.message).toEqual('Funcionalidade em manutenção.');
-      expect(responseBody.action).toEqual('Tente novamente mais tarde.');
-      expect(responseBody.error_location_code).toEqual('INFRA:UNDER_MAINTENANCE:CHECK:IS_UNDER_MAINTENANCE');
+      expect(response.status).toBe(503);
+      expect(responseBody.message).toBe('Funcionalidade em manutenção.');
+      expect(responseBody.action).toBe('Tente novamente mais tarde.');
+      expect(responseBody.error_location_code).toBe('INFRA:UNDER_MAINTENANCE:CHECK:IS_UNDER_MAINTENANCE');
     });
 
     test('Trying to access "method" under maintenance, but distinct "path"', async () => {
@@ -25,9 +25,9 @@ describe('Under maintenance route', () => {
         method: 'POST',
       });
 
-      expect(response.status).toEqual(404);
-      expect(response.statusText).toEqual('Not Found');
-      expect(response.ok).toEqual(false);
+      expect(response.status).toBe(404);
+      expect(response.statusText).toBe('Not Found');
+      expect(response.ok).toBe(false);
     });
 
     test('Trying to access "path" under maintenance, but distinct "method"', async () => {
@@ -35,9 +35,9 @@ describe('Under maintenance route', () => {
         method: 'GET',
       });
 
-      expect(response.status).toEqual(404);
-      expect(response.statusText).toEqual('Not Found');
-      expect(response.ok).toEqual(false);
+      expect(response.status).toBe(404);
+      expect(response.statusText).toBe('Not Found');
+      expect(response.ok).toBe(false);
     });
   });
 });

@@ -20,14 +20,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Não deveria conseguir.',
       });
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -41,14 +41,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Não deveria conseguir, pois não possui a feature "update:content".',
       });
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
 
     test('"child" content with valid data', async () => {
@@ -76,14 +76,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -106,14 +106,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para editar conteúdos na raiz do site.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_root".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para editar conteúdos na raiz do site.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_root".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       );
     });
@@ -142,7 +142,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -164,11 +164,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: userWithoutFeature.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
   });
 
@@ -189,7 +189,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'http://www.tabnews.com.br/' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -211,11 +211,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: userWithoutFeature.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > rootContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > rootContent.updated_at.toISOString()).toBe(true);
     });
 
     test('"child" content with valid data', async () => {
@@ -242,16 +242,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual(
-        'Você não possui permissão para editar conteúdos dentro de outros conteúdos.',
-      );
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_child".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para editar conteúdos dentro de outros conteúdos.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_child".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       );
     });
@@ -265,14 +263,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(`/${defaultUser.username}/slug`);
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with PATCH Body containing an invalid JSON string', async () => {
@@ -285,14 +283,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         'Texto corrido no lugar de um JSON',
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with PATCH Body containing an empty Object', async () => {
@@ -301,14 +299,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(`/${defaultUser.username}/slug`, {});
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with invalid "username" in the URL', async () => {
@@ -317,14 +315,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(`/invalid-username/slug`, {});
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with invalid "slug" in the URL', async () => {
@@ -336,14 +334,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         {},
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" está no formato errado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" está no formato errado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "username" non-existent', async () => {
@@ -355,14 +353,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Não deveria conseguir',
       });
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
     });
 
     test('Content with "username" existent, but "slug" non-existent', async () => {
@@ -383,14 +381,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('Content with "username" and "slug" pointing to content from another user', async () => {
@@ -412,14 +410,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para atualizar o conteúdo de outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:content:others".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para atualizar o conteúdo de outro usuário.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "update:content:others".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
       );
     });
@@ -445,7 +443,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: firstUserContent.id,
@@ -467,11 +465,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: firstUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(firstUserContent.published_at.toISOString());
-      expect(responseBody.updated_at > firstUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.published_at).toBe(firstUserContent.published_at.toISOString());
+      expect(responseBody.updated_at > firstUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "body" declared solely', async () => {
@@ -489,7 +487,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'Body novo' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -511,10 +509,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with TabCoins credits and debits', async () => {
@@ -535,7 +533,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'New body' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -557,10 +555,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "body" containing blank String', async () => {
@@ -578,14 +576,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: '' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing empty Markdown', async () => {
@@ -606,14 +604,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Markdown deve conter algum texto.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Markdown deve conter algum texto.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title", "body" and "source_url" containing \\u0000 null characters', async () => {
@@ -636,7 +634,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -658,9 +656,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
     });
 
     test('Content with "title" and "body" containing invalid characters', async () => {
@@ -681,14 +679,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing more than 20.000 characters', async () => {
@@ -706,14 +704,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'A'.repeat(20001) },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve conter no máximo 20000 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve conter no máximo 20000 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing untrimmed values', async () => {
@@ -731,14 +729,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: ' Espaço no início e no fim ' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" ending with untrimmed values', async () => {
@@ -756,7 +754,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'Espaço só no fim ' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -778,10 +776,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "body" containing Null value', async () => {
@@ -799,14 +797,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: null },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" declared solely', async () => {
@@ -825,7 +823,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'slug-novo' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -847,10 +845,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
@@ -879,7 +877,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'primeiro-conteudo' },
       );
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -891,8 +889,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
@@ -921,7 +919,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'primeiro-conteudo' },
       );
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -933,8 +931,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
@@ -966,7 +964,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'primeiro-conteudo' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -988,9 +986,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
     });
 
     test('Content with "slug" containing a blank String', async () => {
@@ -1008,14 +1006,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: '' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test(`Content with "slug" containing more than ${maxSlugLength} bytes`, async () => {
@@ -1038,7 +1036,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1063,10 +1061,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "slug" containing special characters', async () => {
@@ -1084,14 +1082,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'slug-não-pode-ter-caracteres-especiais' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" está no formato errado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" está no formato errado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" containing Null value', async () => {
@@ -1109,14 +1107,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: null },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" with trailing hyphen', async () => {
@@ -1136,7 +1134,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1158,10 +1156,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" declared solely', async () => {
@@ -1179,7 +1177,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: 'Título novo' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1201,10 +1199,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" containing a blank String', async () => {
@@ -1222,14 +1220,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: '' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title", but current content is "deleted"', async () => {
@@ -1251,7 +1249,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: 'Título novo' },
       );
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -1263,8 +1261,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test(`Content with "title" containing more than ${maxTitleLength} characters`, async () => {
@@ -1284,14 +1282,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title" containing Null value in "root" content', async () => {
@@ -1309,14 +1307,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: null },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
     });
 
     test('Content with "title" containing Null value in "child" content', async () => {
@@ -1341,7 +1339,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: null },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -1363,10 +1361,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" containing untrimmed values', async () => {
@@ -1384,7 +1382,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: ' Título válido, mas com espaços em branco no início e no fim ' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1406,10 +1404,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" containing unescaped characters', async () => {
@@ -1427,7 +1425,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'` },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1449,10 +1447,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "draft" set to "draft"', async () => {
@@ -1470,7 +1468,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'draft' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1492,10 +1490,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "draft" set to "published"', async () => {
@@ -1514,7 +1512,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'published' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1536,11 +1534,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "published" set to "draft"', async () => {
@@ -1559,7 +1557,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'draft' },
       );
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1571,8 +1569,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
         key: 'status',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "status" "published" set to "deleted"', async () => {
@@ -1591,7 +1589,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'deleted' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1613,14 +1611,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
-      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.owner_id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.deleted_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
+      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "published" set to "deleted", than "published"', async () => {
@@ -1641,7 +1639,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const { response: republishedResponse, responseBody: republishedResponseBody } =
         await contentsRequestBuilder.patch(`/${defaultUser.username}/${originalContent.slug}`, { status: 'published' });
 
-      expect(republishedResponse.status).toEqual(404);
+      expect(republishedResponse.status).toBe(404);
       expect(republishedResponseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
@@ -1652,8 +1650,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
         key: 'slug',
       });
-      expect(uuidVersion(republishedResponseBody.error_id)).toEqual(4);
-      expect(uuidVersion(republishedResponseBody.request_id)).toEqual(4);
+      expect(uuidVersion(republishedResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(republishedResponseBody.request_id)).toBe(4);
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {
@@ -1671,16 +1669,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'non_existent_status' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "status" set to "firewall"', async () => {
@@ -1698,7 +1696,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'firewall' },
       );
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         status_code: 400,
         name: 'ValidationError',
@@ -1710,8 +1708,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         key: 'status',
         type: 'any.only',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "status" set to Null', async () => {
@@ -1729,16 +1727,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: null },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "status" set a blank String', async () => {
@@ -1756,16 +1754,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: '' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a valid HTTP URL', async () => {
@@ -1783,7 +1781,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'http://www.tabnews.com.br/' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1805,10 +1803,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a valid HTTPS URL', async () => {
@@ -1826,7 +1824,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://www.tabnews.com.br/museu' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1848,10 +1846,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a valid long TLD', async () => {
@@ -1869,7 +1867,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://nic.xn--vermgensberatung-pwb/' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1891,10 +1889,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a valid short URL', async () => {
@@ -1912,7 +1910,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://t.me' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1934,10 +1932,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a invalid short TLD', async () => {
@@ -1955,16 +1953,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'http://invalidtl.d' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a invalid long TLD', async () => {
@@ -1982,16 +1980,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://tl.dcomvinteecincocaracteres' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a not accepted Protocol', async () => {
@@ -2009,16 +2007,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'ftp://www.tabnews.com.br' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" not containing a protocol', async () => {
@@ -2036,16 +2034,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'www.tabnews.com.br' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing an incomplete URL', async () => {
@@ -2063,16 +2061,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://lol.' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing query parameters', async () => {
@@ -2090,7 +2088,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2112,11 +2110,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.published_at).toBe(null);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing fragment component', async () => {
@@ -2134,7 +2132,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://www.tabnews.com.br/#:~:text=TabNews,-Status' },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2156,11 +2154,11 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.published_at).toBe(null);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing an empty String', async () => {
@@ -2178,14 +2176,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: '' },
       );
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"source_url" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"source_url" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a Null value', async () => {
@@ -2204,7 +2202,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: null },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2226,10 +2224,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "parent_id" declared solely', async () => {
@@ -2253,16 +2251,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { parent_id: rootContent.id },
       );
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title" and "parent_id" set to another "parent_id"', async () => {
@@ -2296,7 +2294,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2318,10 +2316,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content from another user', async () => {
@@ -2341,14 +2339,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: 'Tentando atualizar o conteúdo.' },
       );
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para atualizar o conteúdo de outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:content:others".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para atualizar o conteúdo de outro usuário.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "update:content:others".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
       );
     });
@@ -2372,12 +2370,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'draft' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "draft" to "published" status', async () => {
@@ -2398,12 +2396,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'published' },
         );
 
-        expect(responseBody.tabcoins).toEqual(1);
+        expect(responseBody.tabcoins).toBe(1);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "draft" to "deleted" status', async () => {
@@ -2424,12 +2422,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "published" to "deleted" status (with prestige)', async () => {
@@ -2447,8 +2445,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponseBodyBefore } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBodyBefore.tabcoins).toEqual(8);
-        expect(userResponseBodyBefore.tabcash).toEqual(0);
+        expect(userResponseBodyBefore.tabcoins).toBe(8);
+        expect(userResponseBodyBefore.tabcash).toBe(0);
 
         await orchestrator.createBalance({
           balanceType: 'content:tabcoin:initial',
@@ -2463,12 +2461,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(1);
+        expect(responseBody.tabcoins).toBe(1);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "published" to "deleted" status (without prestige)', async () => {
@@ -2485,8 +2483,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponseBodyBefore } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBodyBefore.tabcoins).toEqual(0);
-        expect(userResponseBodyBefore.tabcash).toEqual(0);
+        expect(userResponseBodyBefore.tabcoins).toBe(0);
+        expect(userResponseBodyBefore.tabcash).toBe(0);
 
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1 });
 
@@ -2495,12 +2493,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(1);
+        expect(responseBody.tabcoins).toBe(1);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Deletion of "root" content that was first published without the minimum amount of relevant words', async () => {
@@ -2518,20 +2516,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponseBodyBefore } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBodyBefore.tabcoins).toEqual(0);
-        expect(userResponseBodyBefore.tabcash).toEqual(0);
+        expect(userResponseBodyBefore.tabcoins).toBe(0);
+        expect(userResponseBodyBefore.tabcash).toBe(0);
 
         const { responseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with positive tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
@@ -2560,22 +2558,22 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(11);
 
         const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
-        expect(userFirstGetResponseBody.tabcoins).toEqual(12);
+        expect(userFirstGetResponseBody.tabcoins).toBe(12);
 
         const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(11);
+        expect(contentSecondResponseBody.tabcoins).toBe(11);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with positive tabcoins updated from "published" to "deleted" status (without prestige)', async () => {
@@ -2597,22 +2595,22 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(11);
 
         const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
-        expect(userFirstGetResponseBody.tabcoins).toEqual(10);
+        expect(userFirstGetResponseBody.tabcoins).toBe(10);
 
         const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(11);
+        expect(contentSecondResponseBody.tabcoins).toBe(11);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with negative tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
@@ -2641,22 +2639,22 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(-9);
 
         const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
-        expect(userFirstGetResponseBody.tabcoins).toEqual(-8);
+        expect(userFirstGetResponseBody.tabcoins).toBe(-8);
 
         const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(-9);
+        expect(contentSecondResponseBody.tabcoins).toBe(-9);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(-10);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(-10);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with negative tabcoins updated from "published" to "deleted" status (without prestige)', async () => {
@@ -2678,22 +2676,22 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(-9);
 
         const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
-        expect(userFirstGetResponseBody.tabcoins).toEqual(-10);
+        expect(userFirstGetResponseBody.tabcoins).toBe(-10);
 
         const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${defaultUserContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(-9);
+        expect(contentSecondResponseBody.tabcoins).toBe(-9);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(-10);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(-10);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "draft" status', async () => {
@@ -2722,12 +2720,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'draft' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "published" status (same user)', async () => {
@@ -2757,12 +2755,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           { status: 'published' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "published" status (different user)', async () => {
@@ -2790,20 +2788,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'published' },
         );
 
-        expect(responseBody.tabcoins).toEqual(1);
+        expect(responseBody.tabcoins).toBe(1);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(2);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(2);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "deleted" status (same user)', async () => {
@@ -2830,20 +2828,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(2);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(2);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(2);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(2);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "deleted" status (different user)', async () => {
@@ -2871,20 +2869,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (same user - with prestige)', async () => {
@@ -2911,20 +2909,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(2);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(2);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(2);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(2);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (same user - without prestige)', async () => {
@@ -2950,20 +2948,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${defaultUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (different user - with prestige)', async () => {
@@ -2990,20 +2988,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: secondUserResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(secondUserResponse1Body.tabcoins).toEqual(2);
-        expect(secondUserResponse1Body.tabcash).toEqual(0);
+        expect(secondUserResponse1Body.tabcoins).toBe(2);
+        expect(secondUserResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(1);
+        expect(responseBody.tabcoins).toBe(1);
 
         const { responseBody: secondUserResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(secondUserResponse2Body.tabcoins).toEqual(0);
-        expect(secondUserResponse2Body.tabcash).toEqual(0);
+        expect(secondUserResponse2Body.tabcoins).toBe(0);
+        expect(secondUserResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (different user - without prestige)', async () => {
@@ -3029,20 +3027,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: secondUserResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(secondUserResponse1Body.tabcoins).toEqual(0);
-        expect(secondUserResponse1Body.tabcash).toEqual(0);
+        expect(secondUserResponse1Body.tabcoins).toBe(0);
+        expect(secondUserResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(1);
+        expect(responseBody.tabcoins).toBe(1);
 
         const { responseBody: secondUserResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(secondUserResponse2Body.tabcoins).toEqual(0);
-        expect(secondUserResponse2Body.tabcash).toEqual(0);
+        expect(secondUserResponse2Body.tabcoins).toBe(0);
+        expect(secondUserResponse2Body.tabcash).toBe(0);
       });
 
       test('Deletion of "child" content that was first published without the minimum amount of relevant words (without votes)', async () => {
@@ -3069,20 +3067,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(0);
+        expect(responseBody.tabcoins).toBe(0);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('Deletion of "child" content that was first published without the minimum amount of relevant words (with positive votes)', async () => {
@@ -3111,20 +3109,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(10);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(10);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(10);
+        expect(responseBody.tabcoins).toBe(10);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('Deletion of "child" content that was first published without the minimum amount of relevant words (with negative votes)', async () => {
@@ -3153,20 +3151,20 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse1Body.tabcoins).toEqual(-10);
-        expect(userResponse1Body.tabcash).toEqual(0);
+        expect(userResponse1Body.tabcoins).toBe(-10);
+        expect(userResponse1Body.tabcash).toBe(0);
 
         const { responseBody: responseBody } = await contentsRequestBuilder.patch(
           `/${secondUser.username}/${childContent.slug}`,
           { status: 'deleted' },
         );
 
-        expect(responseBody.tabcoins).toEqual(-10);
+        expect(responseBody.tabcoins).toBe(-10);
 
         const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        expect(userResponse2Body.tabcoins).toEqual(-10);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(-10);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
     });
   });
@@ -3192,7 +3190,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: secondUserContent.id,
@@ -3214,12 +3212,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: secondUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
-      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(responseBody.published_at).toBe(secondUserContent.published_at.toISOString());
+      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toBe(true);
     });
   });
 });

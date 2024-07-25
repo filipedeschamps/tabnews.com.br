@@ -17,14 +17,14 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:session".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:session".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
 
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
@@ -40,15 +40,15 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"session_id" deve possuir 96 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('session_id');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"session_id" deve possuir 96 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('session_id');
 
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
@@ -64,15 +64,15 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"session_id" deve possuir 96 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('session_id');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"session_id" deve possuir 96 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('session_id');
 
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
@@ -88,15 +88,15 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"session_id" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('session_id');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"session_id" deve conter apenas caracteres alfanuméricos.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('session_id');
 
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
       expect(parsedCookiesFromGet).toStrictEqual({});
@@ -155,15 +155,15 @@ describe('GET /api/v1/user', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para executar esta ação.');
-      expect(responseBody.action).toEqual(
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para executar esta ação.');
+      expect(responseBody.action).toBe(
         'Verifique se este usuário já ativou a sua conta e recebeu a feature "read:session".',
       );
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
       );
 
@@ -191,20 +191,20 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(401);
-      expect(responseBody.status_code).toEqual(401);
-      expect(responseBody.name).toEqual('UnauthorizedError');
-      expect(responseBody.message).toEqual('Usuário não possui sessão ativa.');
-      expect(responseBody.action).toEqual('Verifique se este usuário está logado.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(response.status).toBe(401);
+      expect(responseBody.status_code).toBe(401);
+      expect(responseBody.name).toBe('UnauthorizedError');
+      expect(responseBody.message).toBe('Usuário não possui sessão ativa.');
+      expect(responseBody.action).toBe('Verifique se este usuário está logado.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
 
       const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
-      expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-      expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
-      expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);
-      expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-      expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+      expect(parsedCookiesFromGet.session_id.name).toBe('session_id');
+      expect(parsedCookiesFromGet.session_id.value).toBe('invalid');
+      expect(parsedCookiesFromGet.session_id.maxAge).toBe(-1);
+      expect(parsedCookiesFromGet.session_id.path).toBe('/');
+      expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
       const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
       expect(sessionObject).toBeUndefined();
@@ -249,18 +249,18 @@ describe('GET /api/v1/user', () => {
         });
 
         const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
-        expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-        expect(parsedCookiesFromGet.session_id.value).toEqual(sessionObjectBeforeRenew.token);
-        expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-        expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-        expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+        expect(parsedCookiesFromGet.session_id.name).toBe('session_id');
+        expect(parsedCookiesFromGet.session_id.value).toBe(sessionObjectBeforeRenew.token);
+        expect(parsedCookiesFromGet.session_id.maxAge).toBe(60 * 60 * 24 * 30);
+        expect(parsedCookiesFromGet.session_id.path).toBe('/');
+        expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
         expect(sessionObjectBeforeRenew).toStrictEqual(defaultUserSession);
-        expect(sessionObjectAfterRenew.id).toEqual(sessionObjectBeforeRenew.id);
+        expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);
         expect(sessionObjectAfterRenew.created_at).toEqual(sessionObjectBeforeRenew.created_at);
-        expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toEqual(true);
-        expect(sessionObjectAfterRenew.updated_at > sessionObjectBeforeRenew.updated_at).toEqual(true);
+        expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toBe(true);
+        expect(sessionObjectAfterRenew.updated_at > sessionObjectBeforeRenew.updated_at).toBe(true);
       });
 
       test('Should be able to renew with 9 day token', async () => {
@@ -302,17 +302,17 @@ describe('GET /api/v1/user', () => {
         });
 
         const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
-        expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-        expect(parsedCookiesFromGet.session_id.value).toEqual(sessionObjectBeforeRenew.token);
-        expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-        expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-        expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+        expect(parsedCookiesFromGet.session_id.name).toBe('session_id');
+        expect(parsedCookiesFromGet.session_id.value).toBe(sessionObjectBeforeRenew.token);
+        expect(parsedCookiesFromGet.session_id.maxAge).toBe(60 * 60 * 24 * 30);
+        expect(parsedCookiesFromGet.session_id.path).toBe('/');
+        expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(defaultUserSession.token);
-        expect(sessionObjectAfterRenew.id).toEqual(sessionObjectBeforeRenew.id);
+        expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);
         expect(sessionObjectAfterRenew.created_at).toEqual(sessionObjectBeforeRenew.created_at);
-        expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toEqual(true);
-        expect(sessionObjectAfterRenew.updated_at > sessionObjectBeforeRenew.updated_at).toEqual(true);
+        expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toBe(true);
+        expect(sessionObjectAfterRenew.updated_at > sessionObjectBeforeRenew.updated_at).toBe(true);
       });
 
       test('Should not be able to renew with less than 9 days token', async () => {
@@ -380,9 +380,9 @@ describe('GET /api/v1/user', () => {
         const preRewardUser = await preRewardUserResponse.json();
 
         expect(preRewardUserResponse.status).toBe(200);
-        expect(preRewardUser.tabcoins).toStrictEqual(0);
-        expect(preRewardUser.tabcash).toStrictEqual(0);
-        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(preRewardUser.tabcoins).toBe(0);
+        expect(preRewardUser.tabcash).toBe(0);
+        expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
@@ -399,9 +399,9 @@ describe('GET /api/v1/user', () => {
         const rewardUser = await rewardUserResponse.json();
 
         expect(rewardUserResponse.status).toBe(200);
-        expect(rewardUser.tabcoins).toStrictEqual(defaultTestRewardValue);
-        expect(rewardUser.tabcash).toStrictEqual(0);
-        expect(rewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(rewardUser.tabcoins).toBe(defaultTestRewardValue);
+        expect(rewardUser.tabcash).toBe(0);
+        expect(rewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         const postRewardUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
           method: 'GET',
@@ -413,9 +413,9 @@ describe('GET /api/v1/user', () => {
         const postRewardUser = await postRewardUserResponse.json();
 
         expect(postRewardUserResponse.status).toBe(200);
-        expect(postRewardUser.tabcoins).toStrictEqual(defaultTestRewardValue);
-        expect(postRewardUser.tabcash).toStrictEqual(0);
-        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
+        expect(postRewardUser.tabcash).toBe(0);
+        expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
       });
 
       test('Should deduplicate simultaneous rewards', async () => {
@@ -436,9 +436,9 @@ describe('GET /api/v1/user', () => {
         const preRewardUser = await preRewardUserResponse.json();
 
         expect(preRewardUserResponse.status).toBe(200);
-        expect(preRewardUser.tabcoins).toStrictEqual(0);
-        expect(preRewardUser.tabcash).toStrictEqual(0);
-        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(preRewardUser.tabcoins).toBe(0);
+        expect(preRewardUser.tabcash).toBe(0);
+        expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
@@ -462,9 +462,9 @@ describe('GET /api/v1/user', () => {
         const postRewardUser = await postRewardUserResponse.json();
 
         expect(postRewardUserResponse.status).toBe(200);
-        expect(postRewardUser.tabcoins).toStrictEqual(defaultTestRewardValue);
-        expect(postRewardUser.tabcash).toStrictEqual(0);
-        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
+        expect(postRewardUser.tabcash).toBe(0);
+        expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
       });
 
       test('Should not reward if user has no prestige', async () => {
@@ -484,9 +484,9 @@ describe('GET /api/v1/user', () => {
         const preRewardUser = await preRewardUserResponse.json();
 
         expect(preRewardUserResponse.status).toBe(200);
-        expect(preRewardUser.tabcoins).toStrictEqual(0);
-        expect(preRewardUser.tabcash).toStrictEqual(0);
-        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(preRewardUser.tabcoins).toBe(0);
+        expect(preRewardUser.tabcash).toBe(0);
+        expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
@@ -506,9 +506,9 @@ describe('GET /api/v1/user', () => {
         const postRewardUser = await postRewardUserResponse.json();
 
         expect(postRewardUserResponse.status).toBe(200);
-        expect(postRewardUser.tabcoins).toStrictEqual(0);
-        expect(postRewardUser.tabcash).toStrictEqual(0);
-        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(postRewardUser.tabcoins).toBe(0);
+        expect(postRewardUser.tabcash).toBe(0);
+        expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
       });
 
       test('Should not reward if user has negative prestige', async () => {
@@ -529,9 +529,9 @@ describe('GET /api/v1/user', () => {
         const preRewardUser = await preRewardUserResponse.json();
 
         expect(preRewardUserResponse.status).toBe(200);
-        expect(preRewardUser.tabcoins).toStrictEqual(0);
-        expect(preRewardUser.tabcash).toStrictEqual(0);
-        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(preRewardUser.tabcoins).toBe(0);
+        expect(preRewardUser.tabcash).toBe(0);
+        expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
@@ -551,9 +551,9 @@ describe('GET /api/v1/user', () => {
         const postRewardUser = await postRewardUserResponse.json();
 
         expect(postRewardUserResponse.status).toBe(200);
-        expect(postRewardUser.tabcoins).toStrictEqual(0);
-        expect(postRewardUser.tabcash).toStrictEqual(0);
-        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(postRewardUser.tabcoins).toBe(0);
+        expect(postRewardUser.tabcash).toBe(0);
+        expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
       });
 
       test('Should not reward if user has too many tabcoins', async () => {
@@ -580,9 +580,9 @@ describe('GET /api/v1/user', () => {
         const preRewardUser = await preRewardUserResponse.json();
 
         expect(preRewardUserResponse.status).toBe(200);
-        expect(preRewardUser.tabcoins).toStrictEqual(1000);
-        expect(preRewardUser.tabcash).toStrictEqual(0);
-        expect(preRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(preRewardUser.tabcoins).toBe(1000);
+        expect(preRewardUser.tabcash).toBe(0);
+        expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         await orchestrator.updateRewardedAt(
           defaultUser.id,
@@ -602,9 +602,9 @@ describe('GET /api/v1/user', () => {
         const postRewardUser = await postRewardUserResponse.json();
 
         expect(postRewardUserResponse.status).toBe(200);
-        expect(postRewardUser.tabcoins).toStrictEqual(1000);
-        expect(postRewardUser.tabcash).toStrictEqual(0);
-        expect(postRewardUser.updated_at).toStrictEqual(defaultUser.updated_at.toISOString());
+        expect(postRewardUser.tabcoins).toBe(1000);
+        expect(postRewardUser.tabcash).toBe(0);
+        expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
       });
 
       test('Should be able to reward even with negative ad balance', async () => {

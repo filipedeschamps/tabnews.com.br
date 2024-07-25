@@ -7,7 +7,7 @@ describe('GET /swr', () => {
     const serverTimeBody = await serverTimeResponse.json();
     const serverTime = serverTimeBody.timestamp;
 
-    expect(serverTimeResponse.status).toEqual(200);
+    expect(serverTimeResponse.status).toBe(200);
     expect(serverTime).toBeGreaterThanOrEqual(startTime);
     expect(serverTime).toBeLessThanOrEqual(Date.now());
   });

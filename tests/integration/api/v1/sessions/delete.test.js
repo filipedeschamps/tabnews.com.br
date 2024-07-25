@@ -17,7 +17,7 @@ describe('DELETE /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
+      expect(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -29,8 +29,8 @@ describe('DELETE /api/v1/sessions', () => {
         error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With malformatted "session_id" cookie', async () => {
@@ -43,7 +43,7 @@ describe('DELETE /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -57,8 +57,8 @@ describe('DELETE /api/v1/sessions', () => {
         type: 'string.length',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -99,10 +99,10 @@ describe('DELETE /api/v1/sessions', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(responseBody.created_at).toEqual(sessionObject.created_at.toISOString());
-      expect(responseBody.expires_at < sessionObject.expires_at.toISOString()).toEqual(true);
-      expect(responseBody.expires_at < sessionObject.created_at.toISOString()).toEqual(true);
-      expect(responseBody.updated_at > sessionObject.updated_at.toISOString()).toEqual(true);
+      expect(responseBody.created_at).toBe(sessionObject.created_at.toISOString());
+      expect(responseBody.expires_at < sessionObject.expires_at.toISOString()).toBe(true);
+      expect(responseBody.expires_at < sessionObject.created_at.toISOString()).toBe(true);
+      expect(responseBody.updated_at > sessionObject.updated_at.toISOString()).toBe(true);
 
       // Third: test if the session is not working anymore
       const invalidSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
@@ -144,8 +144,8 @@ describe('DELETE /api/v1/sessions', () => {
         error_location_code: 'MODEL:AUTHENTICATION:INJECT_AUTHENTICATED_USER:USER_CANT_READ_SESSION',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 });

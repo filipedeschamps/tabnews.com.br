@@ -15,16 +15,16 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Retrieving too short user', async () => {
@@ -32,15 +32,15 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter no mínimo 3 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter no mínimo 3 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Retrieving too long user', async () => {
@@ -48,15 +48,15 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter no máximo 30 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter no máximo 30 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Retrieving user with invalid characters', async () => {
@@ -64,15 +64,15 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Retrieving existing user using same capital letters', async () => {
@@ -84,7 +84,7 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: userCreated.id,
@@ -97,9 +97,9 @@ describe('GET /api/v1/users/[username]', () => {
         updated_at: userCreated.updated_at.toISOString(),
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
       expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('email');
     });
@@ -113,7 +113,7 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: userCreated.id,
@@ -126,9 +126,9 @@ describe('GET /api/v1/users/[username]', () => {
         updated_at: userCreated.updated_at.toISOString(),
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
       expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('email');
     });
@@ -142,16 +142,16 @@ describe('GET /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
   });
 });

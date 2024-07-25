@@ -16,14 +16,14 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/ThisUserDoesNotExists`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
     });
 
     test('"username" existent, but with no content at all', async () => {
@@ -40,7 +40,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toEqual([]);
     });
 
@@ -66,7 +66,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toEqual([]);
     });
 
@@ -106,7 +106,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toEqual([
         {
           id: childContent.id,
@@ -166,7 +166,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toEqual([
         {
           id: childContent.id,
@@ -234,7 +234,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -297,11 +297,11 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
     });
 
     test('"username" existent with 4 contents, but only 2 "root" "published"', async () => {
@@ -348,7 +348,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -411,11 +411,11 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
     });
 
     test('"username" existent with "root" and "child" content with TabCoins credits and debits', async () => {
@@ -444,7 +444,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -488,11 +488,11 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
     });
 
     test('"username" existent with 60 contents, default pagination and strategy "new"', async () => {
@@ -560,8 +560,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('60');
+      expect(response.status).toBe(200);
+      expect(responseTotalRowsHeader).toBe('60');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -586,14 +586,14 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       });
 
-      expect(responseBody.length).toEqual(30);
-      expect(responseBody[0].title).toEqual('Conteúdo #60');
-      expect(responseBody[1].title).toEqual('Conteúdo #59');
-      expect(responseBody[2].title).toEqual('Conteúdo #58');
-      expect(responseBody[15].title).toEqual('Conteúdo #45');
-      expect(responseBody[27].title).toEqual('Conteúdo #33');
-      expect(responseBody[28].title).toEqual('Conteúdo #32');
-      expect(responseBody[29].title).toEqual('Conteúdo #31');
+      expect(responseBody.length).toBe(30);
+      expect(responseBody[0].title).toBe('Conteúdo #60');
+      expect(responseBody[1].title).toBe('Conteúdo #59');
+      expect(responseBody[2].title).toBe('Conteúdo #58');
+      expect(responseBody[15].title).toBe('Conteúdo #45');
+      expect(responseBody[27].title).toBe('Conteúdo #33');
+      expect(responseBody[28].title).toBe('Conteúdo #32');
+      expect(responseBody[29].title).toBe('Conteúdo #31');
 
       const page2Response = await fetch(responseLinkHeader.next.url);
       const page2ResponseBody = await page2Response.json();
@@ -601,8 +601,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2Response.status).toEqual(200);
-      expect(page2ResponseTotalRowsHeader).toEqual('60');
+      expect(page2Response.status).toBe(200);
+      expect(page2ResponseTotalRowsHeader).toBe('60');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -627,12 +627,12 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       });
 
-      expect(page2ResponseBody.length).toEqual(30);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #30');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #29');
-      expect(page2ResponseBody[27].title).toEqual('Conteúdo #3');
-      expect(page2ResponseBody[28].title).toEqual('Conteúdo #2');
-      expect(page2ResponseBody[29].title).toEqual('Conteúdo #1');
+      expect(page2ResponseBody.length).toBe(30);
+      expect(page2ResponseBody[0].title).toBe('Conteúdo #30');
+      expect(page2ResponseBody[1].title).toBe('Conteúdo #29');
+      expect(page2ResponseBody[27].title).toBe('Conteúdo #3');
+      expect(page2ResponseBody[28].title).toBe('Conteúdo #2');
+      expect(page2ResponseBody[29].title).toBe('Conteúdo #1');
     });
 
     test('"username" existent with 60 contents, default pagination and strategy "relevant"', async () => {
@@ -702,8 +702,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('60');
+      expect(response.status).toBe(200);
+      expect(responseTotalRowsHeader).toBe('60');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -728,16 +728,16 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       });
 
-      expect(responseBody.length).toEqual(30);
-      expect(responseBody[0].title).toEqual('Conteúdo #31');
-      expect(responseBody[1].title).toEqual('Conteúdo #36');
-      expect(responseBody[2].title).toEqual('Conteúdo #59');
-      expect(responseBody[3].title).toEqual('Conteúdo #58');
-      expect(responseBody[6].title).toEqual('Conteúdo #55');
-      expect(responseBody[26].title).toEqual('Conteúdo #32');
-      expect(responseBody[27].title).toEqual('Conteúdo #60');
-      expect(responseBody[28].title).toEqual('Conteúdo #50');
-      expect(responseBody[29].title).toEqual('Conteúdo #51');
+      expect(responseBody.length).toBe(30);
+      expect(responseBody[0].title).toBe('Conteúdo #31');
+      expect(responseBody[1].title).toBe('Conteúdo #36');
+      expect(responseBody[2].title).toBe('Conteúdo #59');
+      expect(responseBody[3].title).toBe('Conteúdo #58');
+      expect(responseBody[6].title).toBe('Conteúdo #55');
+      expect(responseBody[26].title).toBe('Conteúdo #32');
+      expect(responseBody[27].title).toBe('Conteúdo #60');
+      expect(responseBody[28].title).toBe('Conteúdo #50');
+      expect(responseBody[29].title).toBe('Conteúdo #51');
 
       const page2Response = await fetch(responseLinkHeader.next.url);
       const page2ResponseBody = await page2Response.json();
@@ -745,8 +745,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2Response.status).toEqual(200);
-      expect(page2ResponseTotalRowsHeader).toEqual('60');
+      expect(page2Response.status).toBe(200);
+      expect(page2ResponseTotalRowsHeader).toBe('60');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -771,12 +771,12 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       });
 
-      expect(page2ResponseBody.length).toEqual(30);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #30');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #29');
-      expect(page2ResponseBody[27].title).toEqual('Conteúdo #3');
-      expect(page2ResponseBody[28].title).toEqual('Conteúdo #2');
-      expect(page2ResponseBody[29].title).toEqual('Conteúdo #1');
+      expect(page2ResponseBody.length).toBe(30);
+      expect(page2ResponseBody[0].title).toBe('Conteúdo #30');
+      expect(page2ResponseBody[1].title).toBe('Conteúdo #29');
+      expect(page2ResponseBody[27].title).toBe('Conteúdo #3');
+      expect(page2ResponseBody[28].title).toBe('Conteúdo #2');
+      expect(page2ResponseBody[29].title).toBe('Conteúdo #1');
     });
 
     test('"username" existent with 4 contents, but only 2 "root" "published" and with_children "false"', async () => {
@@ -824,7 +824,7 @@ describe('GET /api/v1/contents/[username]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -867,11 +867,11 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       expect(responseLinkHeader.first.url).toBe(
@@ -938,7 +938,7 @@ describe('GET /api/v1/contents/[username]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -983,11 +983,11 @@ describe('GET /api/v1/contents/[username]', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       expect(responseLinkHeader.first.url).toBe(

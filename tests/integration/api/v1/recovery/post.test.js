@@ -26,7 +26,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
+      expect(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -38,8 +38,8 @@ describe('POST /api/v1/recovery', () => {
         error_location_code: 'CONTROLLER:RECOVERY:POST_HANDLER:CAN_NOT_CREATE_RECOVERY_TOKEN_USERNAME',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "username" malformatted', async () => {
@@ -56,7 +56,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -70,8 +70,8 @@ describe('POST /api/v1/recovery', () => {
         type: 'string.alphanum',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "email" valid and "user" found', async () => {
@@ -92,7 +92,7 @@ describe('POST /api/v1/recovery', () => {
 
       const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
 
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         used: false,
@@ -101,14 +101,14 @@ describe('POST /api/v1/recovery', () => {
         updated_at: tokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
       const lastEmail = await orchestrator.getLastEmail();
       expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
-      expect(lastEmail.subject).toEqual('Recuperação de Senha');
+      expect(lastEmail.subject).toBe('Recuperação de Senha');
       expect(lastEmail.text).toContain(defaultUser.username);
       expect(lastEmail.html).toContain(defaultUser.username);
       expect(lastEmail.text).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
@@ -162,7 +162,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -176,8 +176,8 @@ describe('POST /api/v1/recovery', () => {
         type: 'string.email',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With key other than "username" or "email"', async () => {
@@ -194,7 +194,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -208,8 +208,8 @@ describe('POST /api/v1/recovery', () => {
         type: 'object.min',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With blank Body', async () => {
@@ -219,7 +219,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -233,8 +233,8 @@ describe('POST /api/v1/recovery', () => {
         type: 'object.base',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With blank Object', async () => {
@@ -249,7 +249,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -263,8 +263,8 @@ describe('POST /api/v1/recovery', () => {
         type: 'object.min',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -292,7 +292,7 @@ describe('POST /api/v1/recovery', () => {
 
       const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
 
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         used: false,
@@ -301,14 +301,14 @@ describe('POST /api/v1/recovery', () => {
         updated_at: tokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
       const lastEmail = await orchestrator.getLastEmail();
       expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
-      expect(lastEmail.subject).toEqual('Recuperação de Senha');
+      expect(lastEmail.subject).toBe('Recuperação de Senha');
       expect(lastEmail.text).toContain(defaultUser.username);
       expect(lastEmail.html).toContain(defaultUser.username);
       expect(lastEmail.text).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
@@ -334,7 +334,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -347,8 +347,8 @@ describe('POST /api/v1/recovery', () => {
         key: 'username',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 });

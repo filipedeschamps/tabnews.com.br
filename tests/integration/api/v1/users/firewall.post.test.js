@@ -64,12 +64,12 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         'update:content',
         'update:user',
       ]);
-      expect(user1.updated_at.toISOString()).toEqual(activatedUser1.updated_at.toISOString());
-      expect(Date.parse(user1.updated_at)).not.toEqual(NaN);
+      expect(user1.updated_at.toISOString()).toBe(activatedUser1.updated_at.toISOString());
+      expect(Date.parse(user1.updated_at)).not.toBe(NaN);
 
       expect(user2.features).toStrictEqual([]);
-      expect(user2.updated_at.toISOString()).toEqual(response2Body.updated_at);
-      expect(Date.parse(user2.updated_at)).not.toEqual(NaN);
+      expect(user2.updated_at.toISOString()).toBe(response2Body.updated_at);
+      expect(Date.parse(user2.updated_at)).not.toBe(NaN);
 
       const lastEvent = await orchestrator.getLastEvent();
 
@@ -97,8 +97,8 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
       expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
 
-      expect(user1Email.subject).toEqual('Sua conta foi desativada');
-      expect(user2Email.subject).toEqual('Sua conta foi desativada');
+      expect(user1Email.subject).toBe('Sua conta foi desativada');
+      expect(user2Email.subject).toBe('Sua conta foi desativada');
 
       expect(user1Email.text).toContain(user1.username);
       expect(user1Email.html).toContain(user1.username);

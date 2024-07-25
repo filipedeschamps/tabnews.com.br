@@ -4,13 +4,13 @@ describe('createErrorMessage', () => {
   it('should return default error message when responseBody is null', () => {
     const responseBody = null;
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Erro desconhecido. Tente novamente mais tarde.');
+    expect(errorMessage).toBe('Erro desconhecido. Tente novamente mais tarde.');
   });
 
   it('should return default error message when responseBody is undefined', () => {
     const responseBody = undefined;
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Erro desconhecido. Tente novamente mais tarde.');
+    expect(errorMessage).toBe('Erro desconhecido. Tente novamente mais tarde.');
   });
 
   it('should return error message', () => {
@@ -18,7 +18,7 @@ describe('createErrorMessage', () => {
       message: 'Entrada inválida.',
     };
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Entrada inválida.');
+    expect(errorMessage).toBe('Entrada inválida.');
   });
 
   it('should return error message with action', () => {
@@ -26,7 +26,7 @@ describe('createErrorMessage', () => {
       action: 'Tente novamente.',
     };
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Tente novamente.');
+    expect(errorMessage).toBe('Tente novamente.');
   });
 
   it('should return error message with error_id', () => {
@@ -34,7 +34,7 @@ describe('createErrorMessage', () => {
       error_id: '123456789',
     };
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Informe ao suporte o valor (123456789)');
+    expect(errorMessage).toBe('Informe ao suporte o valor (123456789)');
   });
 
   it('should return error message with message and action', () => {
@@ -43,7 +43,7 @@ describe('createErrorMessage', () => {
       action: 'Tente novamente.',
     };
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Entrada inválida. Tente novamente.');
+    expect(errorMessage).toBe('Entrada inválida. Tente novamente.');
   });
 
   it('should return error message without error_id when omitErrorId is true', () => {
@@ -53,7 +53,7 @@ describe('createErrorMessage', () => {
       error_id: '123456789',
     };
     const errorMessage = createErrorMessage(responseBody, { omitErrorId: true });
-    expect(errorMessage).toEqual('Entrada inválida. Tente novamente.');
+    expect(errorMessage).toBe('Entrada inválida. Tente novamente.');
   });
 
   it('should return error message with message, action, and error_id', () => {
@@ -63,7 +63,7 @@ describe('createErrorMessage', () => {
       error_id: '123456789',
     };
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Entrada inválida. Tente novamente. Informe ao suporte o valor (123456789)');
+    expect(errorMessage).toBe('Entrada inválida. Tente novamente. Informe ao suporte o valor (123456789)');
   });
 
   it('should return error message without action when action is a specific string', () => {
@@ -73,6 +73,6 @@ describe('createErrorMessage', () => {
       error_id: '123456789',
     };
     const errorMessage = createErrorMessage(responseBody);
-    expect(errorMessage).toEqual('Um erro interno não esperado aconteceu. Informe ao suporte o valor (123456789)');
+    expect(errorMessage).toBe('Um erro interno não esperado aconteceu. Informe ao suporte o valor (123456789)');
   });
 });

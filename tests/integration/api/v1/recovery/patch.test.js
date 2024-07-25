@@ -34,7 +34,7 @@ describe('PATCH /api/v1/recovery', () => {
       const updatedTokenInDatabase = await recovery.findOneTokenById(recoveryToken.id);
       const updatedUserInDatabase = await user.findOneById(defaultUser.id);
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         used: true,
@@ -43,13 +43,13 @@ describe('PATCH /api/v1/recovery', () => {
         updated_at: updatedTokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(Date.parse(responseBody.expires_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
       expect(responseBody.updated_at > recoveryToken.updated_at.toISOString()).toBe(true);
 
-      expect(defaultUser.password).not.toEqual(updatedUserInDatabase.password);
+      expect(defaultUser.password).not.toBe(updatedUserInDatabase.password);
     });
 
     test('With valid information and multiple active sessions', async () => {
@@ -96,7 +96,7 @@ describe('PATCH /api/v1/recovery', () => {
         }),
       });
 
-      expect(recoveryResponse.status).toEqual(200);
+      expect(recoveryResponse.status).toBe(200);
 
       // Third: test if both sessions are invalid
       const invalidSession1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
@@ -138,7 +138,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -151,8 +151,8 @@ describe('PATCH /api/v1/recovery', () => {
         key: 'token_id',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With valid information, but expired token', async () => {
@@ -176,7 +176,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -189,8 +189,8 @@ describe('PATCH /api/v1/recovery', () => {
         key: 'token_id',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With valid information, but non-existent token', async () => {
@@ -208,7 +208,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -221,8 +221,8 @@ describe('PATCH /api/v1/recovery', () => {
         key: 'token_id',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "token_id" missing', async () => {
@@ -239,7 +239,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -253,8 +253,8 @@ describe('PATCH /api/v1/recovery', () => {
         type: 'any.required',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "token_id" as a Number', async () => {
@@ -271,7 +271,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -300,7 +300,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -314,8 +314,8 @@ describe('PATCH /api/v1/recovery', () => {
         type: 'string.guid',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "password" missing', async () => {
@@ -332,7 +332,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -346,8 +346,8 @@ describe('PATCH /api/v1/recovery', () => {
         type: 'any.required',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     // -------
@@ -359,7 +359,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -373,8 +373,8 @@ describe('PATCH /api/v1/recovery', () => {
         type: 'object.base',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With blank Object', async () => {
@@ -389,7 +389,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -403,8 +403,8 @@ describe('PATCH /api/v1/recovery', () => {
         type: 'any.required',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 });

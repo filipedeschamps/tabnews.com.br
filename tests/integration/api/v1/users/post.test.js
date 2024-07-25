@@ -26,7 +26,7 @@ describe('POST /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -39,9 +39,9 @@ describe('POST /api/v1/users', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
 
       const userInDatabase = await user.findOneByUsername('uniqueUserName');
       const passwordsMatch = await password.compare('validpassword', userInDatabase.password);
@@ -49,7 +49,7 @@ describe('POST /api/v1/users', () => {
 
       expect(passwordsMatch).toBe(true);
       expect(wrongPasswordMatch).toBe(false);
-      expect(userInDatabase.email).toEqual('validemailcaps@gmail.com');
+      expect(userInDatabase.email).toBe('validemailcaps@gmail.com');
     });
 
     test('With unique and valid data, and an unknown key', async () => {
@@ -68,7 +68,7 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -81,12 +81,12 @@ describe('POST /api/v1/users', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
 
       const userInDatabase = await user.findOneById(responseBody.id);
-      expect(userInDatabase.email).toEqual('postwithunknownkey@gmail.com');
+      expect(userInDatabase.email).toBe('postwithunknownkey@gmail.com');
     });
 
     test('With unique and valid data, but with "untrimmed" values', async () => {
@@ -104,7 +104,7 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -117,9 +117,9 @@ describe('POST /api/v1/users', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
 
       const userInDatabase = await user.findOneByUsername('extraSpaceInTheEnd');
       const passwordsMatch = await password.compare('validpassword', userInDatabase.password);
@@ -127,7 +127,7 @@ describe('POST /api/v1/users', () => {
 
       expect(passwordsMatch).toBe(true);
       expect(wrongPasswordMatch).toBe(false);
-      expect(userInDatabase.email).toEqual('space.in.the.beggining@gmail.com');
+      expect(userInDatabase.email).toBe('space.in.the.beggining@gmail.com');
     });
 
     test('With "username" duplicated exactly (same uppercase letters)', async () => {
@@ -158,15 +158,15 @@ describe('POST /api/v1/users', () => {
 
       const secondResponseBody = await secondResponse.json();
 
-      expect(secondResponse.status).toEqual(400);
-      expect(secondResponseBody.status_code).toEqual(400);
-      expect(secondResponseBody.name).toEqual('ValidationError');
-      expect(secondResponseBody.message).toEqual('O "username" informado já está sendo usado.');
-      expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(secondResponseBody.error_id)).toEqual(4);
-      expect(uuidVersion(secondResponseBody.request_id)).toEqual(4);
-      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(secondResponseBody.key).toEqual('username');
+      expect(secondResponse.status).toBe(400);
+      expect(secondResponseBody.status_code).toBe(400);
+      expect(secondResponseBody.name).toBe('ValidationError');
+      expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
+      expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
+      expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(secondResponseBody.key).toBe('username');
     });
 
     test('With "username" duplicated (different uppercase letters)', async () => {
@@ -197,15 +197,15 @@ describe('POST /api/v1/users', () => {
 
       const secondResponseBody = await secondResponse.json();
 
-      expect(secondResponse.status).toEqual(400);
-      expect(secondResponseBody.status_code).toEqual(400);
-      expect(secondResponseBody.name).toEqual('ValidationError');
-      expect(secondResponseBody.message).toEqual('O "username" informado já está sendo usado.');
-      expect(secondResponseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(secondResponseBody.error_id)).toEqual(4);
-      expect(uuidVersion(secondResponseBody.request_id)).toEqual(4);
-      expect(secondResponseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(secondResponseBody.key).toEqual('username');
+      expect(secondResponse.status).toBe(400);
+      expect(secondResponseBody.status_code).toBe(400);
+      expect(secondResponseBody.name).toBe('ValidationError');
+      expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
+      expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
+      expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(secondResponseBody.key).toBe('username');
     });
 
     test('With "username" missing', async () => {
@@ -222,15 +222,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "username" with a null value', async () => {
@@ -248,15 +248,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "username" with an empty string', async () => {
@@ -274,15 +274,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "username" that\'s not a String', async () => {
@@ -300,15 +300,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "username" containing non alphanumeric characters', async () => {
@@ -326,15 +326,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "username" too long', async () => {
@@ -352,15 +352,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter no máximo 30 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter no máximo 30 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "username" in blocked list', async () => {
@@ -378,15 +378,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Este nome de usuário não está disponível para uso.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Este nome de usuário não está disponível para uso.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('With "email" duplicated (same uppercase letters)', async () => {
@@ -507,15 +507,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"email" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('email');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"email" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('With "email" with an empty string', async () => {
@@ -533,15 +533,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"email" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('email');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"email" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('With "email" that\'s not a String', async () => {
@@ -559,15 +559,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"email" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('email');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"email" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('With "email" with invalid format', async () => {
@@ -585,15 +585,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"email" deve conter um email válido.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('email');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"email" deve conter um email válido.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('email');
     });
 
     test('With "password" missing', async () => {
@@ -610,15 +610,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('password');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"password" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('With "password" with an empty string', async () => {
@@ -636,15 +636,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('password');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"password" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('With "password" that\'s not a String', async () => {
@@ -662,15 +662,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('password');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"password" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('With "password" too short', async () => {
@@ -688,15 +688,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" deve conter no mínimo 8 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('password');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"password" deve conter no mínimo 8 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('With "password" too long', async () => {
@@ -714,15 +714,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"password" deve conter no máximo 72 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('password');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"password" deve conter no máximo 72 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('password');
     });
 
     test('With "body" totally blank', async () => {
@@ -732,15 +732,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('object');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('object');
     });
 
     test('With "body" containing a String', async () => {
@@ -751,15 +751,15 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('object');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('object');
     });
   });
 });
