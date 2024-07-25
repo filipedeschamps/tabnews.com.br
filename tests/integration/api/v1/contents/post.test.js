@@ -1,7 +1,7 @@
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
-import { defaultTabCashForAdCreation, maxSlugLength, maxTitleLength } from 'tests/constants-for-tests';
+import { defaultTabCashForAdCreation, maxSlugLength, maxTitleLength, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -2711,6 +2711,125 @@ describe('POST /api/v1/contents', () => {
 
         expect(userResponseBody.tabcoins).toEqual(1);
         expect(userResponseBody.tabcash).toEqual(0);
+      });
+
+      test('Should be able to publish even with a negative ad balance', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Ad Title',
+          status: 'published',
+          body: relevantBody,
+          type: 'ad',
+        });
+
+        await orchestrator.createRate(adContent, -999);
+
+        vi.useRealTimers();
+
+        const rootContent = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(rootContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+        expect(userResponseBody.tabcoins).toBe(-999);
+        expect(userResponseBody.tabcash).toBe(0);
+
+        const otherUser = await orchestrator.createUser();
+        const secondRootContent = await orchestrator.createContent({
+          owner_id: otherUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await contentsRequestBuilder.post({
+          parent_id: secondRootContent.id,
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(childContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody2 } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody2.tabcoins).toBe(-999);
+        expect(userResponseBody2.tabcash).toBe(0);
+      });
+
+      test('Should not earn TabCoins even with a positive ad balance', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        });
+
+        orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Ad Title',
+          status: 'published',
+          body: relevantBody,
+          type: 'ad',
+        });
+
+        await orchestrator.createRate(adContent, 999);
+
+        vi.useRealTimers();
+
+        const rootContent = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(rootContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(999);
+        expect(userResponseBody.tabcash).toBe(0);
+
+        const otherUser = await orchestrator.createUser();
+        const secondRootContent = await orchestrator.createContent({
+          owner_id: otherUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await contentsRequestBuilder.post({
+          parent_id: secondRootContent.id,
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(childContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody2 } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody2.tabcoins).toBe(999);
+        expect(userResponseBody2.tabcash).toBe(0);
       });
     });
 
