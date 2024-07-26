@@ -136,7 +136,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const secondUser = await orchestrator.createUser();
 
       // secondUserRootContent
-      orchestrator.createContent({
+      await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo de outro usuário',
         status: 'published',
@@ -208,7 +208,7 @@ describe('GET /api/v1/contents/[username]', () => {
       });
 
       // thirdRootContent
-      orchestrator.createContent({
+      await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Terceiro conteúdo criado',
         body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents/[username],

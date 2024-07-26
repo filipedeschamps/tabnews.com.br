@@ -14,7 +14,7 @@ beforeEach(async () => {
 
 describe('POST /api/v1/contents [FIREWALL]', () => {
   async function createContentViaApi(contentsRequestBuilder, body) {
-    return contentsRequestBuilder.post({
+    return await contentsRequestBuilder.post({
       title: body?.title ?? `New content - ${new Date().getTime()}`,
       body: 'body',
       status: 'published',

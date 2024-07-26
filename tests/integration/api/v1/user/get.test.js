@@ -366,12 +366,10 @@ describe('GET /api/v1/user', () => {
 
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
-        const tabcoins = await Promise.all(
-          simultaneousResults.map(async (result) => {
-            expect(result.response.status).toBe(200);
-            return result.responseBody.tabcoins;
-          }),
-        );
+        const tabcoins = simultaneousResults.map((result) => {
+          expect(result.response.status).toBe(200);
+          return result.responseBody.tabcoins;
+        });
 
         expect(tabcoins).toContain(defaultTestRewardValue);
 
@@ -401,7 +399,7 @@ describe('GET /api/v1/user', () => {
 
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
-        simultaneousResults.forEach(async (result) => {
+        simultaneousResults.forEach((result) => {
           expect(result.response.status).toBe(200);
           expect(result.responseBody.tabcoins).toBe(0);
         });
@@ -433,7 +431,7 @@ describe('GET /api/v1/user', () => {
 
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
-        simultaneousResults.forEach(async (result) => {
+        simultaneousResults.forEach((result) => {
           expect(result.response.status).toBe(200);
           expect(result.responseBody.tabcoins).toBe(0);
         });
@@ -471,7 +469,7 @@ describe('GET /api/v1/user', () => {
 
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
-        simultaneousResults.forEach(async (result) => {
+        simultaneousResults.forEach((result) => {
           expect(result.response.status).toBe(200);
           expect(result.responseBody.tabcoins).toBe(1000);
         });
@@ -492,7 +490,7 @@ describe('GET /api/v1/user', () => {
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
         });
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,
@@ -538,7 +536,7 @@ describe('GET /api/v1/user', () => {
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
         });
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,

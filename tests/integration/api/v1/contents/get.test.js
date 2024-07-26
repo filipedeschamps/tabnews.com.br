@@ -1261,10 +1261,11 @@ describe('GET /api/v1/contents', () => {
         await orchestrator.dropAllTables();
         await orchestrator.runPendingMigrations();
 
-        const createUser = async () => orchestrator.createUser();
-        const createContent = async (user, options) => orchestrator.createContent({ owner_id: user.id, ...options });
+        const createUser = async () => await orchestrator.createUser();
+        const createContent = async (user, options) =>
+          await orchestrator.createContent({ owner_id: user.id, ...options });
         const createComment = async (user, parent, body) =>
-          createContent(user, { body, status: 'published', parent_id: parent.id });
+          await createContent(user, { body, status: 'published', parent_id: parent.id });
 
         const [firstUser, secondUser, thirdUser] = await Promise.all(Array.from({ length: 3 }, () => createUser()));
 

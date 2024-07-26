@@ -16,7 +16,7 @@ describe('GET /api/v1/sponsored-beta', () => {
       await orchestrator.runPendingMigrations();
       owner = await orchestrator.createUser();
 
-      orchestrator.createBalance({
+      await orchestrator.createBalance({
         balanceType: 'user:tabcash',
         recipientId: owner.id,
         amount: 100 * defaultTabCashForAdCreation,
@@ -97,7 +97,7 @@ describe('GET /api/v1/sponsored-beta', () => {
     it('should get from specific owner', async () => {
       const specificOwner = await orchestrator.createUser();
 
-      orchestrator.createBalance({
+      await orchestrator.createBalance({
         balanceType: 'user:tabcash',
         recipientId: specificOwner.id,
         amount: defaultTabCashForAdCreation,

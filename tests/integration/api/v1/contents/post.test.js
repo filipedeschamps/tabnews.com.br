@@ -2716,7 +2716,7 @@ describe('POST /api/v1/contents', () => {
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
         });
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,
@@ -2775,7 +2775,7 @@ describe('POST /api/v1/contents', () => {
           now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
         });
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,
@@ -3053,7 +3053,7 @@ describe('POST /api/v1/contents', () => {
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
         const defaultUser = await contentsRequestBuilder.buildUser();
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,
@@ -3100,7 +3100,7 @@ describe('POST /api/v1/contents', () => {
         const usersRequestBuilder = new RequestBuilder('/api/v1/users');
         const defaultUser = await contentsRequestBuilder.buildUser();
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: 1_000 + defaultTabCashForAdCreation,
@@ -3125,7 +3125,7 @@ describe('POST /api/v1/contents', () => {
         const usersRequestBuilder = new RequestBuilder('/api/v1/users');
         const defaultUser = await contentsRequestBuilder.buildUser();
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation - 1,
@@ -3165,7 +3165,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,
@@ -3212,7 +3212,7 @@ describe('POST /api/v1/contents', () => {
         const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,
@@ -3240,7 +3240,7 @@ describe('POST /api/v1/contents', () => {
         const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
         const defaultUser = await contentsRequestBuilder.buildUser();
 
-        orchestrator.createBalance({
+        await orchestrator.createBalance({
           balanceType: 'user:tabcash',
           recipientId: defaultUser.id,
           amount: defaultTabCashForAdCreation,

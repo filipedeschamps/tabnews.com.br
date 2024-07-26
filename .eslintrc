@@ -29,6 +29,7 @@
         "plugin:vitest-globals/recommended"
       ],
       "rules": {
+        "require-await": "error",
         "vitest/no-conditional-in-test": "error",
         "vitest/no-disabled-tests": "warn",
         "vitest/no-focused-tests": "error",
