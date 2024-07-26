@@ -25,7 +25,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -39,8 +39,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('"root" content with "deleted" status', async () => {
@@ -58,7 +58,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -72,8 +72,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('"root" content with short "title", short "username" and 0 "children"', async () => {
@@ -114,8 +114,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"root" content with long "title", long "username" and 0 "children"', async () => {
@@ -157,8 +157,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"root" content with long "title", long "username" and 2 "children"', async () => {
@@ -214,8 +214,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" content with short "parent_title", short "body" and 0 "children"', async () => {
@@ -263,8 +263,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" content with long "parent_title", long "body" and 0 "children"', async () => {
@@ -313,8 +313,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" of a "child" content with "parent_title"', async () => {
@@ -369,8 +369,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" of a "child" content without "parent_title"', async () => {
@@ -425,8 +425,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
   });
 });

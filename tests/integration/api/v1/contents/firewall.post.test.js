@@ -14,7 +14,7 @@ beforeEach(async () => {
 
 describe('POST /api/v1/contents [FIREWALL]', () => {
   async function createContentViaApi(contentsRequestBuilder, body) {
-    return contentsRequestBuilder.post({
+    return await contentsRequestBuilder.post({
       title: body?.title ?? `New content - ${new Date().getTime()}`,
       body: 'body',
       status: 'published',
@@ -66,15 +66,15 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('firewall');
+        expect(content1.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(Date.parse(content1.updated_at)).not.toEqual(NaN);
-        expect(content1.updated_at.toISOString()).toEqual(response1Body.updated_at);
+        expect(Date.parse(content1.updated_at)).not.toBeNaN();
+        expect(content1.updated_at.toISOString()).toBe(response1Body.updated_at);
 
-        expect(content2.status).toEqual('firewall');
+        expect(content2.status).toBe('firewall');
         expect(content2.deleted_at).toBeNull();
-        expect(Date.parse(content2.updated_at)).not.toEqual(NaN);
-        expect(content2.updated_at.toISOString()).toEqual(response2Body.updated_at);
+        expect(Date.parse(content2.updated_at)).not.toBeNaN();
+        expect(content2.updated_at.toISOString()).toBe(response2Body.updated_at);
 
         expect(content3).toBeUndefined();
 
@@ -91,8 +91,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
           created_at: lastEvent.created_at,
         });
-        expect(uuidVersion(lastEvent.id)).toEqual(4);
-        expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+        expect(uuidVersion(lastEvent.id)).toBe(4);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);
@@ -146,10 +146,10 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('firewall');
-        expect(content2.status).toEqual('firewall');
+        expect(content1.status).toBe('firewall');
+        expect(content2.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(content2.deleted_at).toEqual(content2BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).toStrictEqual(content2BeforeFirewall.deleted_at);
         expect(content2.deleted_at).not.toBeNull();
         expect(content3).toBeUndefined();
 
@@ -166,8 +166,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
           created_at: lastEvent.created_at,
         });
-        expect(uuidVersion(lastEvent.id)).toEqual(4);
-        expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+        expect(uuidVersion(lastEvent.id)).toBe(4);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);
@@ -218,8 +218,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('firewall');
-        expect(content2.status).toEqual('firewall');
+        expect(content1.status).toBe('firewall');
+        expect(content2.status).toBe('firewall');
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -281,15 +281,15 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('firewall');
+        expect(content1.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(Date.parse(content1.updated_at)).not.toEqual(NaN);
-        expect(content1.updated_at.toISOString()).toEqual(response1Body.updated_at);
+        expect(Date.parse(content1.updated_at)).not.toBeNaN();
+        expect(content1.updated_at.toISOString()).toBe(response1Body.updated_at);
 
-        expect(content2.status).toEqual('firewall');
+        expect(content2.status).toBe('firewall');
         expect(content2.deleted_at).toBeNull();
-        expect(Date.parse(content2.updated_at)).not.toEqual(NaN);
-        expect(content2.updated_at.toISOString()).toEqual(response2Body.updated_at);
+        expect(Date.parse(content2.updated_at)).not.toBeNaN();
+        expect(content2.updated_at.toISOString()).toBe(response2Body.updated_at);
 
         expect(content3).toBeUndefined();
 
@@ -306,8 +306,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
           created_at: lastEvent.created_at,
         });
-        expect(uuidVersion(lastEvent.id)).toEqual(4);
-        expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+        expect(uuidVersion(lastEvent.id)).toBe(4);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);
@@ -368,10 +368,10 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
         });
 
-        expect(content1.status).toEqual('firewall');
-        expect(content2.status).toEqual('firewall');
+        expect(content1.status).toBe('firewall');
+        expect(content2.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(content2.deleted_at).toEqual(content2BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).toStrictEqual(content2BeforeFirewall.deleted_at);
         expect(content2.deleted_at).not.toBeNull();
         expect(content3).toBeUndefined();
 
@@ -388,8 +388,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           },
           created_at: lastEvent.created_at,
         });
-        expect(uuidVersion(lastEvent.id)).toEqual(4);
-        expect(Date.parse(lastEvent.created_at)).not.toEqual(NaN);
+        expect(uuidVersion(lastEvent.id)).toBe(4);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);

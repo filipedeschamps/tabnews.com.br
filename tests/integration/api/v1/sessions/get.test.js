@@ -15,7 +15,7 @@ describe('GET /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(405);
+      expect(response.status).toBe(405);
 
       expect(responseBody).toStrictEqual({
         name: 'MethodNotAllowedError',
@@ -26,8 +26,8 @@ describe('GET /api/v1/sessions', () => {
         request_id: responseBody.request_id,
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 });

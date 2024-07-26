@@ -64,12 +64,12 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         'update:content',
         'update:user',
       ]);
-      expect(user1.updated_at.toISOString()).toEqual(activatedUser1.updated_at.toISOString());
-      expect(Date.parse(user1.updated_at)).not.toEqual(NaN);
+      expect(user1.updated_at.toISOString()).toBe(activatedUser1.updated_at.toISOString());
+      expect(Date.parse(user1.updated_at)).not.toBeNaN();
 
       expect(user2.features).toStrictEqual([]);
-      expect(user2.updated_at.toISOString()).toEqual(response2Body.updated_at);
-      expect(Date.parse(user2.updated_at)).not.toEqual(NaN);
+      expect(user2.updated_at.toISOString()).toBe(response2Body.updated_at);
+      expect(Date.parse(user2.updated_at)).not.toBeNaN();
 
       const lastEvent = await orchestrator.getLastEvent();
 
@@ -86,7 +86,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
       const allEmails = await orchestrator.getEmails();
       expect(allEmails).toHaveLength(2);
@@ -94,11 +94,11 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));
       const user2Email = allEmails.find((email) => email.recipients.includes(`<${user2.email}>`));
 
-      expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
-      expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
+      expect(user1Email.recipients).toStrictEqual([`<${user1.email}>`]);
+      expect(user2Email.recipients).toStrictEqual([`<${user2.email}>`]);
 
-      expect(user1Email.subject).toEqual('Sua conta foi desativada');
-      expect(user2Email.subject).toEqual('Sua conta foi desativada');
+      expect(user1Email.subject).toBe('Sua conta foi desativada');
+      expect(user2Email.subject).toBe('Sua conta foi desativada');
 
       expect(user1Email.text).toContain(user1.username);
       expect(user1Email.html).toContain(user1.username);

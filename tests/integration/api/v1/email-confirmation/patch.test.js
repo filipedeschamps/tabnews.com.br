@@ -20,7 +20,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -49,7 +49,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -78,7 +78,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -107,7 +107,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -136,7 +136,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -171,13 +171,13 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      expect(updateUserResponse.status).toEqual(200);
+      expect(updateUserResponse.status).toBe(200);
 
       // Attention: it should not update the email in the database
       // before the user clicks on the confirmation link sent to the new email.
       // See `/tests/integration/email-confirmation` for more details.
       const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('fresh.valid.token@email.com');
+      expect(userInDatabaseCheck1.email).toBe('fresh.valid.token@email.com');
 
       // 2) RECEIVE CONFIRMATION EMAIL
       const confirmationEmail = await orchestrator.getLastEmail();
@@ -187,9 +187,9 @@ describe('PATCH /api/v1/email-confirmation', () => {
         tokenObjectInDatabase.id,
       );
 
-      expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');
-      expect(confirmationEmail.recipients).toEqual(['<new@email.com>']);
-      expect(confirmationEmail.subject).toEqual('Confirme seu novo email');
+      expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toStrictEqual(['<new@email.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
       expect(confirmationEmail.text).toContain(defaultUser.username);
       expect(confirmationEmail.html).toContain(defaultUser.username);
       expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
@@ -211,7 +211,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const emailConfirmationResponseBody = await emailConfirmationResponse.json();
 
-      expect(emailConfirmationResponse.status).toEqual(200);
+      expect(emailConfirmationResponse.status).toBe(200);
 
       expect(emailConfirmationResponseBody).toStrictEqual({
         id: emailConfirmationResponseBody.id,
@@ -221,12 +221,12 @@ describe('PATCH /api/v1/email-confirmation', () => {
         updated_at: emailConfirmationResponseBody.updated_at,
       });
 
-      expect(uuidVersion(emailConfirmationResponseBody.id)).toEqual(4);
+      expect(uuidVersion(emailConfirmationResponseBody.id)).toBe(4);
       expect(emailConfirmationResponseBody.updated_at > tokenObjectInDatabase.updated_at.toISOString()).toBe(true);
 
       // 4) CHECK IF EMAIL WAS UPDATED
       const userInDatabaseCheck2 = await user.findOneById(defaultUser.id);
-      expect(userInDatabaseCheck2.email).toEqual('new@email.com');
+      expect(userInDatabaseCheck2.email).toBe('new@email.com');
     });
 
     test('With an already used, but valid token', async () => {
@@ -248,7 +248,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const userInDatabase = await user.findOneById(defaultUser.id);
-      expect(userInDatabase.email).toEqual('idempotent@patch.com');
+      expect(userInDatabase.email).toBe('idempotent@patch.com');
 
       const firstTryResponseBody = await firstTryResponse.json();
 
@@ -265,7 +265,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const secondTryResponseBody = await secondTryResponse.json();
 
-      expect(secondTryResponse.status).toEqual(200);
+      expect(secondTryResponse.status).toBe(200);
 
       expect(secondTryResponseBody).toStrictEqual({
         id: emailConfirmationToken.id,
@@ -277,8 +277,8 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       expect(secondTryResponseBody.updated_at > emailConfirmationToken.updated_at.toISOString()).toBe(true);
 
-      expect(firstTryResponse.status).toEqual(secondTryResponse.status);
-      expect(firstTryResponseBody).toEqual(secondTryResponseBody);
+      expect(firstTryResponse.status).toStrictEqual(secondTryResponse.status);
+      expect(firstTryResponseBody).toStrictEqual(secondTryResponseBody);
     });
 
     test('With an already used email (before creating the token)', async () => {
@@ -355,7 +355,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -369,7 +369,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('validation.error@after.com');
+      expect(userInDatabaseCheck1.email).toBe('validation.error@after.com');
     });
 
     test('With an expired token', async () => {
@@ -399,7 +399,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -413,7 +413,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('expired.token@email.com');
+      expect(userInDatabaseCheck1.email).toBe('expired.token@email.com');
     });
   });
 });

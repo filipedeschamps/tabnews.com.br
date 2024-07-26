@@ -16,14 +16,14 @@ describe('GET /api/v1/status/votes', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:votes:others".');
-      expect(responseBody.status_code).toEqual(403);
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:votes:others".');
+      expect(responseBody.status_code).toBe(403);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -43,14 +43,14 @@ describe('GET /api/v1/status/votes', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:votes:others".');
-      expect(responseBody.status_code).toEqual(403);
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:votes:others".');
+      expect(responseBody.status_code).toBe(403);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -76,8 +76,8 @@ describe('GET /api/v1/status/votes', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody).toEqual({ updated_at: expect.any(String), votesGraph: { edges: [], nodes: [] } });
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({ updated_at: expect.any(String), votesGraph: { edges: [], nodes: [] } });
     });
 
     test('Should retrieve voting data', async () => {
@@ -94,18 +94,18 @@ describe('GET /api/v1/status/votes', () => {
       const responseBody = await response.json();
       const votesData = responseBody.votesGraph;
 
-      expect(response.status).toEqual(200);
-      expect(votesData.edges.length).toEqual(1);
-      expect(votesData.edges[0].type).toEqual('credit');
-      expect(votesData.edges[0].value).toEqual(1);
-      expect(votesData.nodes.length).toEqual(2);
-      expect(votesData.nodes[0].group).toEqual('users');
-      expect(votesData.nodes[1].group).toEqual('users');
-      expect(votesData.nodes[0].votes).toEqual(1);
-      expect(votesData.nodes[1].votes).toEqual(1);
-      expect(votesData.edges[0].from).toEqual(votesData.nodes[0].id);
-      expect(votesData.edges[0].to).toEqual(votesData.nodes[1].id);
-      expect(votesData.edges[0].id).toEqual(`credit-${votesData.nodes[0].id}-${votesData.nodes[1].id}`);
+      expect(response.status).toBe(200);
+      expect(votesData.edges.length).toBe(1);
+      expect(votesData.edges[0].type).toBe('credit');
+      expect(votesData.edges[0].value).toBe(1);
+      expect(votesData.nodes.length).toBe(2);
+      expect(votesData.nodes[0].group).toBe('users');
+      expect(votesData.nodes[1].group).toBe('users');
+      expect(votesData.nodes[0].votes).toBe(1);
+      expect(votesData.nodes[1].votes).toBe(1);
+      expect(votesData.edges[0].from).toBe(votesData.nodes[0].id);
+      expect(votesData.edges[0].to).toBe(votesData.nodes[1].id);
+      expect(votesData.edges[0].id).toBe(`credit-${votesData.nodes[0].id}-${votesData.nodes[1].id}`);
     });
 
     describe('Same user after losing "read:votes:others" feature', () => {
@@ -122,14 +122,14 @@ describe('GET /api/v1/status/votes', () => {
 
         const responseBody = await responseAfter.json();
 
-        expect(responseAfter.status).toEqual(403);
-        expect(responseBody.name).toEqual('ForbiddenError');
-        expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-        expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "read:votes:others".');
-        expect(responseBody.status_code).toEqual(403);
-        expect(uuidVersion(responseBody.error_id)).toEqual(4);
-        expect(uuidVersion(responseBody.request_id)).toEqual(4);
-        expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+        expect(responseAfter.status).toBe(403);
+        expect(responseBody.name).toBe('ForbiddenError');
+        expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+        expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:votes:others".');
+        expect(responseBody.status_code).toBe(403);
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+        expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
       });
     });
   });

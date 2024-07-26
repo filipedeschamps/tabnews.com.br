@@ -31,7 +31,7 @@ describe('GET /api/v1/users', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
+      expect(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -42,8 +42,8 @@ describe('GET /api/v1/users', () => {
         request_id: responseBody.request_id,
         error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -60,7 +60,7 @@ describe('GET /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
+      expect(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -71,8 +71,8 @@ describe('GET /api/v1/users', () => {
         request_id: responseBody.request_id,
         error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -87,7 +87,7 @@ describe('GET /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: '"per_page" deve possuir um valor máximo de 100.',
@@ -100,15 +100,15 @@ describe('GET /api/v1/users', () => {
         type: 'number.max',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With an invalid value for "page"', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=first`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -122,8 +122,8 @@ describe('GET /api/v1/users', () => {
         type: 'number.base',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Retrieving user list with 2 users', async () => {
@@ -139,8 +139,8 @@ describe('GET /api/v1/users', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('2');
+      expect(response.status).toBe(200);
+      expect(responseTotalRowsHeader).toBe('2');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -179,13 +179,13 @@ describe('GET /api/v1/users', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(Date.parse(responseBody[0].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[0].updated_at)).not.toBeNaN();
 
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(Date.parse(responseBody[1].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[1].updated_at)).not.toBeNaN();
     });
 
     test('Retrieving user list with TabCoins and TabCash', async () => {
@@ -220,7 +220,7 @@ describe('GET /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -245,13 +245,13 @@ describe('GET /api/v1/users', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(Date.parse(responseBody[0].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(Date.parse(responseBody[0].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[0].updated_at)).not.toBeNaN();
 
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(Date.parse(responseBody[1].created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(Date.parse(responseBody[1].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[1].updated_at)).not.toBeNaN();
     });
 
     test('With a "page" out of bounds', async () => {
@@ -267,8 +267,8 @@ describe('GET /api/v1/users', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('2');
+      expect(response.status).toBe(200);
+      expect(responseTotalRowsHeader).toBe('2');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
@@ -373,8 +373,8 @@ describe('GET /api/v1/users', () => {
         const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
         const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-        expect(response.status).toEqual(200);
-        expect(responseTotalRowsHeader).toEqual('60');
+        expect(response.status).toBe(200);
+        expect(responseTotalRowsHeader).toBe('60');
         expect(responseLinkHeader).toStrictEqual({
           first: {
             page: '1',
@@ -410,8 +410,8 @@ describe('GET /api/v1/users', () => {
         const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
         const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-        expect(page2Response.status).toEqual(200);
-        expect(page2ResponseTotalRowsHeader).toEqual('60');
+        expect(page2Response.status).toBe(200);
+        expect(page2ResponseTotalRowsHeader).toBe('60');
         expect(page2ResponseLinkHeader).toStrictEqual({
           first: {
             page: '1',
@@ -463,7 +463,7 @@ describe('GET /api/v1/users', () => {
 
         const responseBody = await response.json();
 
-        expect(response.status).toEqual(200);
+        expect(response.status).toBe(200);
         expect(responseBody).toStrictEqual(getExpected());
       });
     });

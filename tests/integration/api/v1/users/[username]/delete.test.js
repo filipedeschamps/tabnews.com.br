@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -26,7 +27,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toStrictEqual(403);
+      expect(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -38,8 +39,8 @@ describe('DELETE /api/v1/users/[username]', () => {
         error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toStrictEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toStrictEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -65,7 +66,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toStrictEqual(403);
+      expect(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -77,8 +78,8 @@ describe('DELETE /api/v1/users/[username]', () => {
         error_location_code: 'MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toStrictEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toStrictEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -103,7 +104,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toStrictEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -117,8 +118,8 @@ describe('DELETE /api/v1/users/[username]', () => {
         type: 'any.required',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toStrictEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toStrictEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "ban_type" with an invalid value', async () => {
@@ -143,7 +144,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toStrictEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -157,8 +158,8 @@ describe('DELETE /api/v1/users/[username]', () => {
         type: 'any.only',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toStrictEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toStrictEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "ban_type" with "nuke" value', async () => {
@@ -183,7 +184,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'firstUserRootContent',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         }),
       });
@@ -198,7 +199,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'firstUserChildContent - Body with relevant texts needs to contain a good amount of words',
+          body: 'firstUserChildContent' + relevantBody,
           status: 'published',
         }),
       });
@@ -214,7 +215,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'secondUserRootContent',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         }),
       });
@@ -229,7 +230,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'secondUserChildContent #1 - Body with relevant texts needs to contain a good amount of words',
+          body: 'secondUserChildContent #1' + relevantBody,
           status: 'published',
         }),
       });
@@ -244,7 +245,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           parent_id: firstUserRootContentBody.id,
-          body: 'secondUserChildContent #2 - Body with relevant texts needs to contain a good amount of words',
+          body: 'secondUserChildContent #2' + relevantBody,
           status: 'published',
         }),
       });
@@ -259,7 +260,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'Draft Content',
-          body: 'Draft Content - Body with relevant texts needs to contain a good amount of words',
+          body: 'Draft Content' + relevantBody,
           status: 'draft',
         }),
       });
@@ -272,7 +273,7 @@ describe('DELETE /api/v1/users/[username]', () => {
         },
         body: JSON.stringify({
           title: 'Deleted Content',
-          body: 'Deleted Content - Body with relevant texts needs to contain a good amount of words',
+          body: 'Deleted Content' + relevantBody,
           status: 'published',
         }),
       });
@@ -337,8 +338,8 @@ describe('DELETE /api/v1/users/[username]', () => {
       //  +1 TabCoin from the credit of the secondUser to the root content.
       //  -1 TabCoin from the debit of the secondUser to the child content.
       const firstUserCheck1Body = await firstUserCheck1.json();
-      expect(firstUserCheck1Body.tabcoins).toStrictEqual(2);
-      expect(firstUserCheck1Body.tabcash).toStrictEqual(0);
+      expect(firstUserCheck1Body.tabcoins).toBe(2);
+      expect(firstUserCheck1Body.tabcash).toBe(0);
       expect(firstUserCheck1Body.features).toContain('ban:user');
 
       // 7) CHECK SECOND USER (PRE-BAN)
@@ -356,8 +357,8 @@ describe('DELETE /api/v1/users/[username]', () => {
       //  -2 TabCoins / +1 TabCash from credit to the firstUser root content
       //  -2 TabCoins / +1 TabCash from debit to the firstUser child content
       const secondUserCheck1Body = await secondUserCheck1.json();
-      expect(secondUserCheck1Body.tabcoins).toStrictEqual(2);
-      expect(secondUserCheck1Body.tabcash).toStrictEqual(2);
+      expect(secondUserCheck1Body.tabcoins).toBe(2);
+      expect(secondUserCheck1Body.tabcash).toBe(2);
 
       // 8) CHECK FIRST USER ROOT CONTENT (PRE-BAN)
       const firstUserRootContentCheck1 = await fetch(
@@ -365,10 +366,10 @@ describe('DELETE /api/v1/users/[username]', () => {
       );
       const firstUserRootContentCheck1Body = await firstUserRootContentCheck1.json();
 
-      expect(firstUserRootContentCheck1.status).toStrictEqual(200);
-      expect(firstUserRootContentCheck1Body.status).toStrictEqual('published');
-      expect(firstUserRootContentCheck1Body.tabcoins).toStrictEqual(2);
-      expect(firstUserRootContentCheck1Body.children_deep_count).toStrictEqual(3);
+      expect(firstUserRootContentCheck1.status).toBe(200);
+      expect(firstUserRootContentCheck1Body.status).toBe('published');
+      expect(firstUserRootContentCheck1Body.tabcoins).toBe(2);
+      expect(firstUserRootContentCheck1Body.children_deep_count).toBe(3);
 
       // 9) CHECK FIRST USER CHILD CONTENT (PRE-BAN)
       const firstUserChildCheck1 = await fetch(
@@ -376,10 +377,10 @@ describe('DELETE /api/v1/users/[username]', () => {
       );
       const firstUserChildCheck1Body = await firstUserChildCheck1.json();
 
-      expect(firstUserChildCheck1.status).toStrictEqual(200);
-      expect(firstUserRootContentCheck1Body.status).toStrictEqual('published');
-      expect(firstUserChildCheck1Body.tabcoins).toStrictEqual(-1);
-      expect(firstUserChildCheck1Body.children_deep_count).toStrictEqual(0);
+      expect(firstUserChildCheck1.status).toBe(200);
+      expect(firstUserRootContentCheck1Body.status).toBe('published');
+      expect(firstUserChildCheck1Body.tabcoins).toBe(-1);
+      expect(firstUserChildCheck1Body.children_deep_count).toBe(0);
 
       // 10) CHECK SECOND USER CONTENTS (PRE-BAN)
       const secondUserRootContentCheck1 = await fetch(
@@ -396,12 +397,12 @@ describe('DELETE /api/v1/users/[username]', () => {
       const secondUserChildContent1Check1Body = await secondUserChildContent1Check1.json();
       const secondUserChildContent2Check1Body = await secondUserChildContent2Check1.json();
 
-      expect(secondUserRootContentCheck1.status).toStrictEqual(200);
-      expect(secondUserRootContentCheck1Body.status).toStrictEqual('published');
-      expect(secondUserChildContent1Check1.status).toStrictEqual(200);
-      expect(secondUserChildContent1Check1Body.status).toStrictEqual('published');
-      expect(secondUserChildContent2Check1.status).toStrictEqual(200);
-      expect(secondUserChildContent2Check1Body.status).toStrictEqual('published');
+      expect(secondUserRootContentCheck1.status).toBe(200);
+      expect(secondUserRootContentCheck1Body.status).toBe('published');
+      expect(secondUserChildContent1Check1.status).toBe(200);
+      expect(secondUserChildContent1Check1Body.status).toBe('published');
+      expect(secondUserChildContent2Check1.status).toBe(200);
+      expect(secondUserChildContent2Check1Body.status).toBe('published');
 
       // 11) NUKE THE SECOND USER
       const nukeResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -418,7 +419,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const nukeResponseBody = await nukeResponse.json();
 
-      expect(nukeResponse.status).toStrictEqual(200);
+      expect(nukeResponse.status).toBe(200);
 
       expect(nukeResponseBody).toStrictEqual({
         id: secondUser.id,
@@ -438,8 +439,8 @@ describe('DELETE /api/v1/users/[username]', () => {
       });
 
       const firstUserCheck2Body = await firstUserCheck2.json();
-      expect(firstUserCheck2Body.tabcoins).toStrictEqual(2);
-      expect(firstUserCheck2Body.tabcash).toStrictEqual(0);
+      expect(firstUserCheck2Body.tabcoins).toBe(2);
+      expect(firstUserCheck2Body.tabcash).toBe(0);
 
       // 13) CHECK SECOND USER (POST-BAN)
       const secondUserCheck2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
@@ -451,16 +452,16 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const secondUserCheck2Body = await secondUserCheck2.json();
 
-      expect(secondUserCheck2.status).toEqual(404);
-      expect(secondUserCheck2Body.status_code).toEqual(404);
-      expect(secondUserCheck2Body.name).toEqual('NotFoundError');
-      expect(secondUserCheck2Body.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(secondUserCheck2Body.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(secondUserCheck2Body.status_code).toEqual(404);
-      expect(secondUserCheck2Body.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
-      expect(uuidVersion(secondUserCheck2Body.error_id)).toEqual(4);
-      expect(uuidVersion(secondUserCheck2Body.request_id)).toEqual(4);
-      expect(secondUserCheck2Body.key).toEqual('username');
+      expect(secondUserCheck2.status).toBe(404);
+      expect(secondUserCheck2Body.status_code).toBe(404);
+      expect(secondUserCheck2Body.name).toBe('NotFoundError');
+      expect(secondUserCheck2Body.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(secondUserCheck2Body.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(secondUserCheck2Body.status_code).toBe(404);
+      expect(secondUserCheck2Body.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(secondUserCheck2Body.error_id)).toBe(4);
+      expect(uuidVersion(secondUserCheck2Body.request_id)).toBe(4);
+      expect(secondUserCheck2Body.key).toBe('username');
 
       // 14) CHECK FIRST USER ROOT CONTENT (POST-BAN)
       const firstUserRootContentCheck2 = await fetch(
@@ -468,10 +469,10 @@ describe('DELETE /api/v1/users/[username]', () => {
       );
       const firstUserRootContentCheck2Body = await firstUserRootContentCheck2.json();
 
-      expect(firstUserRootContentCheck2.status).toStrictEqual(200);
-      expect(firstUserRootContentCheck2Body.status).toStrictEqual('published');
-      expect(firstUserRootContentCheck2Body.tabcoins).toStrictEqual(1);
-      expect(firstUserRootContentCheck2Body.children_deep_count).toStrictEqual(1);
+      expect(firstUserRootContentCheck2.status).toBe(200);
+      expect(firstUserRootContentCheck2Body.status).toBe('published');
+      expect(firstUserRootContentCheck2Body.tabcoins).toBe(1);
+      expect(firstUserRootContentCheck2Body.children_deep_count).toBe(1);
 
       // 15) CHECK FIRST USER CHILD CONTENT (POST-BAN)
       const firstUserChildCheck2 = await fetch(
@@ -479,10 +480,10 @@ describe('DELETE /api/v1/users/[username]', () => {
       );
       const firstUserChildCheck2Body = await firstUserChildCheck2.json();
 
-      expect(firstUserChildCheck2.status).toStrictEqual(200);
-      expect(firstUserRootContentCheck2Body.status).toStrictEqual('published');
-      expect(firstUserChildCheck2Body.tabcoins).toStrictEqual(0);
-      expect(firstUserChildCheck2Body.children_deep_count).toStrictEqual(0);
+      expect(firstUserChildCheck2.status).toBe(200);
+      expect(firstUserRootContentCheck2Body.status).toBe('published');
+      expect(firstUserChildCheck2Body.tabcoins).toBe(0);
+      expect(firstUserChildCheck2Body.children_deep_count).toBe(0);
 
       // 16) CHECK SECOND USER CONTENTS (POST-BAN)
       const secondUserRootContentCheck2 = await fetch(
@@ -495,9 +496,9 @@ describe('DELETE /api/v1/users/[username]', () => {
         `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserChildContent2Body.slug}`,
       );
 
-      expect(secondUserRootContentCheck2.status).toStrictEqual(404);
-      expect(secondUserChildContent1Check2.status).toStrictEqual(404);
-      expect(secondUserChildContent2Check2.status).toStrictEqual(404);
+      expect(secondUserRootContentCheck2.status).toBe(404);
+      expect(secondUserChildContent1Check2.status).toBe(404);
+      expect(secondUserChildContent2Check2.status).toBe(404);
 
       // 17) TRY TO CREATE NEW CONTENT AS THE SECOND USER
       const secondUserRootContent2 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
@@ -515,7 +516,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const secondUserRootContent2Body = await secondUserRootContent2.json();
 
-      expect(secondUserRootContent2.status).toStrictEqual(401);
+      expect(secondUserRootContent2.status).toBe(401);
 
       expect(secondUserRootContent2Body).toStrictEqual({
         name: 'UnauthorizedError',
@@ -547,16 +548,16 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const nukeResponseBody = await nukeResponse.json();
 
-      expect(nukeResponse.status).toEqual(404);
-      expect(nukeResponseBody.status_code).toEqual(404);
-      expect(nukeResponseBody.name).toEqual('NotFoundError');
-      expect(nukeResponseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(nukeResponseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(nukeResponseBody.status_code).toEqual(404);
-      expect(nukeResponseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
-      expect(uuidVersion(nukeResponseBody.error_id)).toEqual(4);
-      expect(uuidVersion(nukeResponseBody.request_id)).toEqual(4);
-      expect(nukeResponseBody.key).toEqual('username');
+      expect(nukeResponse.status).toBe(404);
+      expect(nukeResponseBody.status_code).toBe(404);
+      expect(nukeResponseBody.name).toBe('NotFoundError');
+      expect(nukeResponseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(nukeResponseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(nukeResponseBody.status_code).toBe(404);
+      expect(nukeResponseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(nukeResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(nukeResponseBody.request_id)).toBe(4);
+      expect(nukeResponseBody.key).toBe('username');
     });
 
     test('With "ban_type" on an user with "nuked" feature', async () => {
@@ -583,7 +584,7 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const nuke1ResponseBody = await nuke1Response.json();
 
-      expect(nuke1Response.status).toStrictEqual(200);
+      expect(nuke1Response.status).toBe(200);
 
       expect(nuke1ResponseBody).toStrictEqual({
         id: secondUser.id,
@@ -608,16 +609,16 @@ describe('DELETE /api/v1/users/[username]', () => {
 
       const nuke2ResponseBody = await nuke2Response.json();
 
-      expect(nuke2Response.status).toEqual(404);
-      expect(nuke2ResponseBody.status_code).toEqual(404);
-      expect(nuke2ResponseBody.name).toEqual('NotFoundError');
-      expect(nuke2ResponseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(nuke2ResponseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(nuke2ResponseBody.status_code).toEqual(404);
-      expect(nuke2ResponseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
-      expect(uuidVersion(nuke2ResponseBody.error_id)).toEqual(4);
-      expect(uuidVersion(nuke2ResponseBody.request_id)).toEqual(4);
-      expect(nuke2ResponseBody.key).toEqual('username');
+      expect(nuke2Response.status).toBe(404);
+      expect(nuke2ResponseBody.status_code).toBe(404);
+      expect(nuke2ResponseBody.name).toBe('NotFoundError');
+      expect(nuke2ResponseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(nuke2ResponseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(nuke2ResponseBody.status_code).toBe(404);
+      expect(nuke2ResponseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(uuidVersion(nuke2ResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(nuke2ResponseBody.request_id)).toBe(4);
+      expect(nuke2ResponseBody.key).toBe('username');
     });
   });
 });

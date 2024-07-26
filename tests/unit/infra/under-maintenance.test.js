@@ -9,7 +9,7 @@ beforeAll(() => {
   originalUnderMaintenanceProcessEnv = process.env.UNDER_MAINTENANCE;
 });
 
-beforeEach(async () => {
+beforeEach(() => {
   vi.resetModules();
 });
 

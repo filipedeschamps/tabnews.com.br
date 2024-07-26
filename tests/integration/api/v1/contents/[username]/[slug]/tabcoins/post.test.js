@@ -1,3 +1,4 @@
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
 
@@ -110,7 +111,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -141,13 +142,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
-      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcoins).toBe(1);
+      expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+      expect(secondUserResponseBody.tabcoins).toBe(0);
+      expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
     test('With "transaction_type" set to "debit"', async () => {
@@ -155,7 +156,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -186,13 +187,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(-1);
-      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcoins).toBe(-1);
+      expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+      expect(secondUserResponseBody.tabcoins).toBe(0);
+      expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
     test('With "transaction_type" set to "credit" four times (should be blocked)', async () => {
@@ -255,13 +256,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(3);
-      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcoins).toBe(3);
+      expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(3);
+      expect(secondUserResponseBody.tabcoins).toBe(2);
+      expect(secondUserResponseBody.tabcash).toBe(3);
     });
 
     test('With "transaction_type" set to "debit" four times (should be blocked)', async () => {
@@ -324,13 +325,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(-3);
-      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcoins).toBe(-3);
+      expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponseBody.tabcoins).toStrictEqual(2);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(3);
+      expect(secondUserResponseBody.tabcoins).toBe(2);
+      expect(secondUserResponseBody.tabcash).toBe(3);
     });
 
     test('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
@@ -338,7 +339,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -370,13 +371,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponse1Body } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponse1Body.tabcoins).toStrictEqual(-1);
-      expect(firstUserResponse1Body.tabcash).toStrictEqual(0);
+      expect(firstUserResponse1Body.tabcoins).toBe(-1);
+      expect(firstUserResponse1Body.tabcash).toBe(0);
 
       const { responseBody: secondUserResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponse1Body.tabcoins).toStrictEqual(2);
-      expect(secondUserResponse1Body.tabcash).toStrictEqual(1);
+      expect(secondUserResponse1Body.tabcoins).toBe(2);
+      expect(secondUserResponse1Body.tabcash).toBe(1);
 
       // ROUND 2 OF DEBIT
       const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
@@ -394,13 +395,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const { responseBody: firstUserResponse2Body } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponse2Body.tabcoins).toStrictEqual(-2);
-      expect(firstUserResponse2Body.tabcash).toStrictEqual(0);
+      expect(firstUserResponse2Body.tabcoins).toBe(-2);
+      expect(firstUserResponse2Body.tabcash).toBe(0);
 
       const { responseBody: secondUserResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponse2Body.tabcoins).toStrictEqual(0);
-      expect(secondUserResponse2Body.tabcash).toStrictEqual(2);
+      expect(secondUserResponse2Body.tabcoins).toBe(0);
+      expect(secondUserResponse2Body.tabcash).toBe(2);
     });
 
     test('With 20 simultaneous posts, but enough TabCoins for 1', async () => {
@@ -437,9 +438,9 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const successPostIndex1 = postTabCoinsResponsesStatus.indexOf(201);
       const successPostIndex2 = postTabCoinsResponsesStatus.indexOf(201, successPostIndex1 + 1);
 
-      expect(successPostIndex1).not.toEqual(-1);
-      expect(successPostIndex2).toEqual(-1);
-      expect(postTabCoinsResponsesStatus[successPostIndex1]).toEqual(201);
+      expect(successPostIndex1).not.toBe(-1);
+      expect(successPostIndex2).toBe(-1);
+      expect(postTabCoinsResponsesStatus[successPostIndex1]).toBe(201);
 
       expect(postTabCoinsResponsesBody[successPostIndex1]).toStrictEqual({
         tabcoins: 1,
@@ -450,7 +451,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       postTabCoinsResponsesStatus.splice(successPostIndex1, 1);
       postTabCoinsResponsesBody.splice(successPostIndex1, 1);
 
-      postTabCoinsResponsesStatus.forEach((status) => expect(status).toEqual(422));
+      postTabCoinsResponsesStatus.forEach((status) => expect(status).toBe(422));
 
       expect(postTabCoinsResponsesBody).toContainEqual({
         name: 'UnprocessableEntityError',
@@ -465,13 +466,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(1);
-      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcoins).toBe(1);
+      expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(1);
+      expect(secondUserResponseBody.tabcoins).toBe(0);
+      expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
     // This tests are being temporarily skipped because of the new feature of not allowing
@@ -516,14 +517,14 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       for (let i = 0; i < timesSuccessfully; i++) {
         successPostIndexes.push(postTabCoinsResponsesStatus.indexOf(201, successPostIndexes[i] + 1));
-        expect(successPostIndexes[i]).not.toEqual(-1);
-        expect(postTabCoinsResponsesStatus[successPostIndexes[i]]).toEqual(201);
+        expect(successPostIndexes[i]).not.toBe(-1);
+        expect(postTabCoinsResponsesStatus[successPostIndexes[i]]).toBe(201);
         expect(postTabCoinsResponsesBody).toContainEqual({
           tabcoins: 2 + i,
         });
       }
 
-      expect(successPostIndexes[timesSuccessfully]).toEqual(-1);
+      expect(successPostIndexes[timesSuccessfully]).toBe(-1);
 
       successPostIndexes.splice(-1, 1);
       successPostIndexes.reverse();
@@ -533,7 +534,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         postTabCoinsResponsesBody.splice(idx, 1);
       });
 
-      postTabCoinsResponsesStatus.forEach((status) => expect(status).toEqual(422));
+      postTabCoinsResponsesStatus.forEach((status) => expect(status).toBe(422));
 
       postTabCoinsResponsesBody.forEach((responseBody) =>
         expect(responseBody).toStrictEqual({
@@ -550,13 +551,13 @@ describe('POST /api/v1/contents/tabcoins', () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toStrictEqual(2 + timesSuccessfully);
-      expect(firstUserResponseBody.tabcash).toStrictEqual(0);
+      expect(firstUserResponseBody.tabcoins).toBe(2 + timesSuccessfully);
+      expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      expect(secondUserResponseBody.tabcoins).toStrictEqual(0);
-      expect(secondUserResponseBody.tabcash).toStrictEqual(timesSuccessfully);
+      expect(secondUserResponseBody.tabcoins).toBe(0);
+      expect(secondUserResponseBody.tabcash).toBe(timesSuccessfully);
     });
 
     // eslint-disable-next-line vitest/no-disabled-tests
@@ -599,7 +600,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
 
-      expect([201, 422]).toEqual(expect.arrayContaining(postTabCoinsResponsesStatus));
+      expect([201, 422]).toBe(expect.arrayContaining(postTabCoinsResponsesStatus));
 
       expect(postTabCoinsResponsesBody).toContainEqual(
         expect.objectContaining({
