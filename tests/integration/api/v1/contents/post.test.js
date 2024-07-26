@@ -1569,7 +1569,7 @@ describe('POST /api/v1/contents', () => {
         values: [responseBody.id],
       });
 
-      expect(contentInDatabase.rows[0].path).toEqual([]);
+      expect(contentInDatabase.rows[0].path).toStrictEqual([]);
     });
 
     test('"root" content with "title" containing custom slug special characters', async () => {
@@ -1692,7 +1692,7 @@ describe('POST /api/v1/contents', () => {
         values: [responseBody.id],
       });
 
-      expect(contentInDatabase.rows[0].path).toEqual([rootContent.id]);
+      expect(contentInDatabase.rows[0].path).toStrictEqual([rootContent.id]);
     });
 
     test('"child" content with "title" containing Null value', async () => {

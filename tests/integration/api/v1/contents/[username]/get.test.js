@@ -41,7 +41,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     test('"username" existent, but with no "published" "root" content', async () => {
@@ -67,7 +67,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     test('"username" existent and only with "published" "child" content (short body)', async () => {
@@ -107,7 +107,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([
+      expect(responseBody).toStrictEqual([
         {
           id: childContent.id,
           owner_id: firstUser.id,
@@ -167,7 +167,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([
+      expect(responseBody).toStrictEqual([
         {
           id: childContent.id,
           owner_id: firstUser.id,

@@ -225,7 +225,7 @@ describe('GET /api/v1/user', () => {
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
         expect(sessionObjectBeforeRenew).toStrictEqual(userRequestBuilder.sessionObject);
         expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);
-        expect(sessionObjectAfterRenew.created_at).toEqual(sessionObjectBeforeRenew.created_at);
+        expect(sessionObjectAfterRenew.created_at).toStrictEqual(sessionObjectBeforeRenew.created_at);
         expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toBe(true);
         expect(sessionObjectAfterRenew.updated_at > sessionObjectBeforeRenew.updated_at).toBe(true);
       });
@@ -269,7 +269,7 @@ describe('GET /api/v1/user', () => {
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
         expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);
-        expect(sessionObjectAfterRenew.created_at).toEqual(sessionObjectBeforeRenew.created_at);
+        expect(sessionObjectAfterRenew.created_at).toStrictEqual(sessionObjectBeforeRenew.created_at);
         expect(sessionObjectAfterRenew.expires_at > sessionObjectBeforeRenew.expires_at).toBe(true);
         expect(sessionObjectAfterRenew.updated_at > sessionObjectBeforeRenew.updated_at).toBe(true);
       });

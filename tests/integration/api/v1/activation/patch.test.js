@@ -202,7 +202,7 @@ describe('PATCH /api/v1/activation', () => {
       expect(secondTryRespondeBody.updated_at > secondTryRespondeBody.created_at).toBe(true);
 
       expect(firstTryResponde.status).toBe(secondTryResponde.status);
-      expect(firstTryRespondeBody).toEqual(secondTryRespondeBody);
+      expect(firstTryRespondeBody).toStrictEqual(secondTryRespondeBody);
     });
 
     test('Activating using an expired token', async () => {

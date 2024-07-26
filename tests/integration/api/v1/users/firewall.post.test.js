@@ -94,8 +94,8 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));
       const user2Email = allEmails.find((email) => email.recipients.includes(`<${user2.email}>`));
 
-      expect(user1Email.recipients).toEqual([`<${user1.email}>`]);
-      expect(user2Email.recipients).toEqual([`<${user2.email}>`]);
+      expect(user1Email.recipients).toStrictEqual([`<${user1.email}>`]);
+      expect(user2Email.recipients).toStrictEqual([`<${user2.email}>`]);
 
       expect(user1Email.subject).toBe('Sua conta foi desativada');
       expect(user2Email.subject).toBe('Sua conta foi desativada');

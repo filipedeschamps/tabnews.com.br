@@ -188,7 +188,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       );
 
       expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
-      expect(confirmationEmail.recipients).toEqual(['<new@email.com>']);
+      expect(confirmationEmail.recipients).toStrictEqual(['<new@email.com>']);
       expect(confirmationEmail.subject).toBe('Confirme seu novo email');
       expect(confirmationEmail.text).toContain(defaultUser.username);
       expect(confirmationEmail.html).toContain(defaultUser.username);
@@ -277,8 +277,8 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       expect(secondTryResponseBody.updated_at > emailConfirmationToken.updated_at.toISOString()).toBe(true);
 
-      expect(firstTryResponse.status).toEqual(secondTryResponse.status);
-      expect(firstTryResponseBody).toEqual(secondTryResponseBody);
+      expect(firstTryResponse.status).toStrictEqual(secondTryResponse.status);
+      expect(firstTryResponseBody).toStrictEqual(secondTryResponseBody);
     });
 
     test('With an already used email (before creating the token)', async () => {

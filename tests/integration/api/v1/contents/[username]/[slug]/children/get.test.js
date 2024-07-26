@@ -72,7 +72,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     test('From "root" content with "published" status with 6 "published" and 1 "draft" children', async () => {

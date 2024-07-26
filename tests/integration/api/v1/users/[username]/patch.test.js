@@ -668,7 +668,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       );
 
       expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
-      expect(confirmationEmail.recipients).toEqual(['<different@email.com>']);
+      expect(confirmationEmail.recipients).toStrictEqual(['<different@email.com>']);
       expect(confirmationEmail.subject).toBe('Confirme seu novo email');
       expect(confirmationEmail.text).toContain(defaultUser.username);
       expect(confirmationEmail.html).toContain(defaultUser.username);

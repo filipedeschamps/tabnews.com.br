@@ -149,7 +149,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(content1.status).toBe('firewall');
         expect(content2.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(content2.deleted_at).toEqual(content2BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).toStrictEqual(content2BeforeFirewall.deleted_at);
         expect(content2.deleted_at).not.toBeNull();
         expect(content3).toBeUndefined();
 
@@ -371,7 +371,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(content1.status).toBe('firewall');
         expect(content2.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(content2.deleted_at).toEqual(content2BeforeFirewall.deleted_at);
+        expect(content2.deleted_at).toStrictEqual(content2BeforeFirewall.deleted_at);
         expect(content2.deleted_at).not.toBeNull();
         expect(content3).toBeUndefined();
 

@@ -34,7 +34,7 @@ describe('GET /api/v1/sponsored-beta', () => {
       const { response, responseBody } = await adsRequestBuilder.get();
 
       expect.soft(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     it('should never get unpublished ad', async () => {
@@ -57,7 +57,7 @@ describe('GET /api/v1/sponsored-beta', () => {
       const { response, responseBody } = await adsRequestBuilder.get();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     it('should return ads', async () => {
@@ -91,7 +91,7 @@ describe('GET /api/v1/sponsored-beta', () => {
       const { response, responseBody } = await adsRequestBuilder.get(`?ignore_id=${createdAds[0].id}`);
 
       expect.soft(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     it('should get from specific owner', async () => {

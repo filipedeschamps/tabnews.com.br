@@ -66,7 +66,7 @@ describe('GET /api/v1/contents', () => {
       const { response, responseBody } = await contentsRequestBuilder.get();
 
       expect(response.status).toBe(200);
-      expect(responseBody).toEqual([]);
+      expect(responseBody).toStrictEqual([]);
     });
 
     test('With invalid strategy', async () => {
@@ -975,7 +975,7 @@ describe('GET /api/v1/contents', () => {
       expect(firstPage.status).toBe(200);
       expect(firstPageTotalRowsHeader).toBe(page1TotalRowsHeader);
       expect(firstPageLinkHeader).toStrictEqual(page1LinkHeader);
-      expect(firstPageBody).toEqual(page1Body);
+      expect(firstPageBody).toStrictEqual(page1Body);
 
       const lastPageRequestBuilder = new RequestBuilder(page1LinkHeader.last.url);
       const { response: lastPage, responseBody: lastPageBody } = await lastPageRequestBuilder.get();
@@ -985,7 +985,7 @@ describe('GET /api/v1/contents', () => {
       expect(lastPage.status).toBe(200);
       expect(lastPageTotalRowsHeader).toBe(page3TotalRowsHeader);
       expect(lastPageLinkHeader).toStrictEqual(page3LinkHeader);
-      expect(lastPageBody).toEqual(page3Body);
+      expect(lastPageBody).toStrictEqual(page3Body);
     });
 
     test('With 9 entries but "page" out of bounds and strategy "new"', async () => {
@@ -1470,7 +1470,7 @@ describe('GET /api/v1/contents', () => {
           const { response, responseBody } = await contentsRequestBuilder.get(params);
 
           expect(response.status).toBe(200);
-          expect(responseBody).toEqual([]);
+          expect(responseBody).toStrictEqual([]);
         },
       );
     });

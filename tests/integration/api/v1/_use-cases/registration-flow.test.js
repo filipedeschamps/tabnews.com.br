@@ -37,7 +37,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(postUserResponse.status).toBe(201);
     expect(uuidVersion(postUserResponseBody.id)).toBe(4);
     expect(postUserResponseBody.username).toBe('RegularRegistrationFlow');
-    expect(postUserResponseBody.features).toEqual(['read:activation_token']);
+    expect(postUserResponseBody.features).toStrictEqual(['read:activation_token']);
     expect(Date.parse(postUserResponseBody.created_at)).not.toBeNaN();
     expect(Date.parse(postUserResponseBody.updated_at)).not.toBeNaN();
     expect(postUserResponseBody).not.toHaveProperty('email');
@@ -59,7 +59,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     const activationPageEndpoint = `${activation.getActivationPageEndpoint()}/${tokenObjectInDatabase.id}`;
 
     expect(activationEmail.sender).toBe('<contato@tabnews.com.br>');
-    expect(activationEmail.recipients).toEqual(['<regularregistrationflow@gmail.com>']);
+    expect(activationEmail.recipients).toStrictEqual(['<regularregistrationflow@gmail.com>']);
     expect(activationEmail.subject).toBe('Ative seu cadastro no TabNews');
     expect(activationEmail.text).toContain(postUserResponseBody.username);
     expect(activationEmail.html).toContain(postUserResponseBody.username);
@@ -91,7 +91,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(activationApiResponseBody).not.toHaveProperty('user_id');
 
     const activatedUserInDatabase = await user.findOneByUsername('RegularRegistrationFlow');
-    expect(activatedUserInDatabase.features).toEqual([
+    expect(activatedUserInDatabase.features).toStrictEqual([
       'create:session',
       'read:session',
       'create:content',
