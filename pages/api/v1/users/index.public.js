@@ -80,8 +80,8 @@ async function postHandler(request, response) {
 
     await event.create({
       type: 'create:user',
-      originatorUserId: request.context.user.id || newUser.id,
-      originatorIp: request.context.clientIp,
+      originator_user_id: request.context.user.id || newUser.id,
+      originator_ip: request.context.clientIp,
       metadata: {
         id: newUser.id,
       },

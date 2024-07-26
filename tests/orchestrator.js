@@ -201,7 +201,7 @@ async function createContent(contentObject) {
 
   const currentEvent = await event.create({
     type: contentObject?.parent_id ? 'create:content:text_child' : 'create:content:text_root',
-    originatorUserId: contentObject?.owner_id,
+    originator_user_id: contentObject?.owner_id,
     metadata: {
       id: contentId,
     },
@@ -251,7 +251,7 @@ async function createBalance(balanceObject) {
 
 async function createRate(contentObject, amount, fromUserId) {
   const tabCoinsRequiredAmount = 2;
-  const originatorIp = faker.internet.ip();
+  const originator_ip = faker.internet.ip();
   const transactionType = amount < 0 ? 'debit' : 'credit';
 
   if (!fromUserId) {
@@ -269,8 +269,8 @@ async function createRate(contentObject, amount, fromUserId) {
   for (let i = 0; i < Math.abs(amount); i++) {
     const currentEvent = await event.create({
       type: 'update:content:tabcoins',
-      originatorUserId: fromUserId,
-      originatorIp,
+      originator_user_id: fromUserId,
+      originator_ip,
       metadata: {
         transaction_type: transactionType,
         from_user_id: fromUserId,

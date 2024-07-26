@@ -92,8 +92,8 @@ async function postHandler(request, response) {
       const currentEvent = await event.create(
         {
           type: 'update:content:tabcoins',
-          originatorUserId: request.context.user.id,
-          originatorIp: request.context.clientIp,
+          originator_user_id: request.context.user.id,
+          originator_ip: request.context.clientIp,
           metadata: {
             transaction_type: request.body.transaction_type,
             from_user_id: userTryingToPost.id,

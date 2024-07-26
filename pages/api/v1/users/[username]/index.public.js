@@ -121,8 +121,8 @@ async function patchHandler(request, response) {
     await event.create(
       {
         type: 'update:user',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: getEventMetadata(targetUser, updatedUser),
       },
       {
@@ -219,8 +219,8 @@ async function deleteHandler(request, response) {
     const currentEvent = await event.create(
       {
         type: 'ban:user',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: {
           ban_type: secureInputValues.ban_type,
           user_id: targetUser.id,

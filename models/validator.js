@@ -621,8 +621,8 @@ const schemas = {
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',
         }),
-      originatorUserId: Joi.string().guid({ version: 'uuidv4' }).optional(),
-      originatorIp: Joi.string()
+      originator_user_id: Joi.string().allow(null).guid({ version: 'uuidv4' }).optional(),
+      originator_ip: Joi.string()
         .ip({
           version: ['ipv4', 'ipv6'],
         })
