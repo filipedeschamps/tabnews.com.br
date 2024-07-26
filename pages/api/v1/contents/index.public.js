@@ -9,7 +9,7 @@ import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
-import firewall from 'models/firewall.js';
+import firewall from 'models/firewall';
 import notification from 'models/notification.js';
 import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
@@ -146,8 +146,8 @@ async function postHandler(request, response) {
     const currentEvent = await event.create(
       {
         type: secureInputValues.parent_id ? 'create:content:text_child' : 'create:content:text_root',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: {
           id: secureInputValues.id,
         },

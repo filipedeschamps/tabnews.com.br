@@ -8,7 +8,7 @@ import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
-import firewall from 'models/firewall.js';
+import firewall from 'models/firewall';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
@@ -80,8 +80,8 @@ async function postHandler(request, response) {
 
     await event.create({
       type: 'create:user',
-      originatorUserId: request.context.user.id || newUser.id,
-      originatorIp: request.context.clientIp,
+      originator_user_id: request.context.user.id || newUser.id,
+      originator_ip: request.context.clientIp,
       metadata: {
         id: newUser.id,
       },

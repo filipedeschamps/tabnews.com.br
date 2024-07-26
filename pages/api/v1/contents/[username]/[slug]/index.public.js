@@ -148,8 +148,8 @@ async function patchHandler(request, response) {
     const currentEvent = await event.create(
       {
         type: contentToBeUpdated.parent_id ? 'update:content:text_child' : 'update:content:text_root',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: {
           id: contentToBeUpdated.id,
         },

@@ -89,8 +89,8 @@ async function saveReward(request, reward, { transaction }) {
       const currentEvent = await event.create(
         {
           type: 'reward:user:tabcoins',
-          originatorUserId: request.context.user.id,
-          originatorIp: request.context.clientIp,
+          originator_user_id: request.context.user.id,
+          originator_ip: request.context.clientIp,
           metadata: {
             reward_type: 'daily',
             amount: reward,

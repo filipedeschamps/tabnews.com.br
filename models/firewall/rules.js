@@ -53,8 +53,8 @@ async function createUserRuleSideEffect(context) {
 
   const createdEvent = await event.create({
     type: 'firewall:block_users',
-    originatorUserId: context.user.id,
-    originatorIp: context.clientIp,
+    originator_user_id: context.user.id,
+    originator_ip: context.clientIp,
     metadata: {
       from_rule: 'create:user',
       users: affectedUsersIds,
@@ -107,8 +107,8 @@ async function createContentTextRootRuleSideEffect(context) {
 
   const createdEvent = await event.create({
     type: 'firewall:block_contents:text_root',
-    originatorUserId: context.user.id,
-    originatorIp: context.clientIp,
+    originator_user_id: context.user.id,
+    originator_ip: context.clientIp,
     metadata: {
       from_rule: 'create:content:text_root',
       contents: affectedContentsIds,
@@ -146,8 +146,8 @@ async function createContentTextChildRuleSideEffect(context) {
 
   const createdEvent = await event.create({
     type: 'firewall:block_contents:text_child',
-    originatorUserId: context.user.id,
-    originatorIp: context.clientIp,
+    originator_user_id: context.user.id,
+    originator_ip: context.clientIp,
     metadata: {
       from_rule: 'create:content:text_child',
       contents: affectedContentsIds,

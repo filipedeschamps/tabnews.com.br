@@ -2,12 +2,12 @@ import database from 'infra/database.js';
 import validator from 'models/validator.js';
 
 async function create(object, options = {}) {
-  object = validateObject(object);
+  const cleanObject = validateObject(object);
 
   const query = {
     text: `INSERT INTO events (type, originator_user_id, originator_ip, metadata)
                VALUES($1, $2, $3, $4) RETURNING *;`,
-    values: [object.type, object.originatorUserId, object.originatorIp, object.metadata],
+    values: [cleanObject.type, cleanObject.originator_user_id, cleanObject.originator_ip, cleanObject.metadata],
   };
 
   const results = await database.query(query, options);
