@@ -420,6 +420,15 @@ async function getLastEvent() {
   return results.rows[0];
 }
 
+async function updateEventCreatedAt(id, createdAt) {
+  const query = {
+    text: 'UPDATE events SET created_at = $1 WHERE id = $2;',
+    values: [createdAt, id],
+  };
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
 function parseSetCookies(response) {
   const setCookieHeaderValues = response.headers.get('set-cookie');
   const parsedCookies = setCookieParser.parse(setCookieHeaderValues, { map: true });
@@ -447,6 +456,7 @@ const orchestrator = {
   removeFeaturesFromUser,
   runPendingMigrations,
   updateContent,
+  updateEventCreatedAt,
   updateRewardedAt,
   waitForAllServices,
   webserverUrl,

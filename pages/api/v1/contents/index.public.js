@@ -9,7 +9,7 @@ import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
-import firewall from 'models/firewall.js';
+import firewall from 'models/firewall';
 import notification from 'models/notification.js';
 import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';

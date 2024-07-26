@@ -6,7 +6,10 @@ import emailConfirmation from 'models/email-confirmation.js';
 import pagination from 'models/pagination.js';
 import validator from 'models/validator.js';
 
-async function findAll() {
+async function findAll(values = {}, options) {
+  const where = values.where ?? {};
+
+  const whereClause = buildWhereClause(where);
   const query = {
     text: `
       SELECT
@@ -18,12 +21,29 @@ async function findAll() {
           get_user_current_tabcoins(users.id) as tabcoins,
           get_user_current_tabcash(users.id) as tabcash
       ) as balance
+      ${whereClause.text}
       ORDER BY
         created_at ASC
       ;`,
+    values: whereClause.values,
   };
-  const results = await database.query(query);
+
+  const results = await database.query(query, options);
   return results.rows;
+}
+
+function buildWhereClause(where, nextArgumentIndex = 1) {
+  const values = [];
+  const conditions = Object.entries(where).map(([column, value]) => {
+    values.push(value);
+    return Array.isArray(value) ? `${column} = ANY ($${nextArgumentIndex++})` : `${column} = $${nextArgumentIndex++}`;
+  });
+
+  return {
+    text: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '',
+    values: values,
+    nextArgumentIndex: nextArgumentIndex,
+  };
 }
 
 async function findAllWithPagination(values) {

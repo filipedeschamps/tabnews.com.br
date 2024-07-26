@@ -8,7 +8,7 @@ import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
-import firewall from 'models/firewall.js';
+import firewall from 'models/firewall';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
