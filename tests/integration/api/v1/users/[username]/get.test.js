@@ -98,8 +98,8 @@ describe('GET /api/v1/users/[username]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('email');
     });
@@ -127,8 +127,8 @@ describe('GET /api/v1/users/[username]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody).not.toHaveProperty('password');
       expect(responseBody).not.toHaveProperty('email');
     });

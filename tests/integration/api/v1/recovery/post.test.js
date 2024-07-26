@@ -101,9 +101,9 @@ describe('POST /api/v1/recovery', () => {
         updated_at: tokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
       const lastEmail = await orchestrator.getLastEmail();
@@ -301,9 +301,9 @@ describe('POST /api/v1/recovery', () => {
         updated_at: tokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
       const lastEmail = await orchestrator.getLastEmail();

@@ -180,12 +180,12 @@ describe('GET /api/v1/users', () => {
       ]);
 
       expect(uuidVersion(responseBody[0].id)).toBe(4);
-      expect(Date.parse(responseBody[0].created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody[0].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[0].updated_at)).not.toBeNaN();
 
       expect(uuidVersion(responseBody[1].id)).toBe(4);
-      expect(Date.parse(responseBody[1].created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody[1].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[1].updated_at)).not.toBeNaN();
     });
 
     test('Retrieving user list with TabCoins and TabCash', async () => {
@@ -246,12 +246,12 @@ describe('GET /api/v1/users', () => {
       ]);
 
       expect(uuidVersion(responseBody[0].id)).toBe(4);
-      expect(Date.parse(responseBody[0].created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody[0].updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody[0].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[0].updated_at)).not.toBeNaN();
 
       expect(uuidVersion(responseBody[1].id)).toBe(4);
-      expect(Date.parse(responseBody[1].created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody[1].updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody[1].created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody[1].updated_at)).not.toBeNaN();
     });
 
     test('With a "page" out of bounds', async () => {

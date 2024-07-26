@@ -35,9 +35,9 @@ describe('POST /api/v1/sessions', () => {
       expect(response.status).toBe(201);
       expect(responseBody.token.length).toBe(96);
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const sessionObjectInDatabase = await session.findOneById(responseBody.id);
       expect(sessionObjectInDatabase.user_id).toBe(defaultUser.id);

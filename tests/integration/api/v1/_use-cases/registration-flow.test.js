@@ -38,8 +38,8 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(uuidVersion(postUserResponseBody.id)).toBe(4);
     expect(postUserResponseBody.username).toBe('RegularRegistrationFlow');
     expect(postUserResponseBody.features).toEqual(['read:activation_token']);
-    expect(Date.parse(postUserResponseBody.created_at)).not.toBe(NaN);
-    expect(Date.parse(postUserResponseBody.updated_at)).not.toBe(NaN);
+    expect(Date.parse(postUserResponseBody.created_at)).not.toBeNaN();
+    expect(Date.parse(postUserResponseBody.updated_at)).not.toBeNaN();
     expect(postUserResponseBody).not.toHaveProperty('email');
     expect(postUserResponseBody).not.toHaveProperty('password');
 
@@ -84,8 +84,8 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(uuidVersion(activationApiResponseBody.id)).toBe(4);
     expect(activationApiResponseBody.id).toBe(tokenObjectInDatabase.id);
     expect(activationApiResponseBody.used).toBe(true);
-    expect(Date.parse(activationApiResponseBody.created_at)).not.toBe(NaN);
-    expect(Date.parse(activationApiResponseBody.updated_at)).not.toBe(NaN);
+    expect(Date.parse(activationApiResponseBody.created_at)).not.toBeNaN();
+    expect(Date.parse(activationApiResponseBody.updated_at)).not.toBeNaN();
     expect(activationApiResponseBody).not.toHaveProperty('password');
     expect(activationApiResponseBody).not.toHaveProperty('email');
     expect(activationApiResponseBody).not.toHaveProperty('user_id');
@@ -119,9 +119,9 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(postSessionResponse.status).toBe(201);
     expect(postSessionResponseBody.token.length).toBe(96);
     expect(uuidVersion(postSessionResponseBody.id)).toBe(4);
-    expect(Date.parse(postSessionResponseBody.expires_at)).not.toBe(NaN);
-    expect(Date.parse(postSessionResponseBody.created_at)).not.toBe(NaN);
-    expect(Date.parse(postSessionResponseBody.updated_at)).not.toBe(NaN);
+    expect(Date.parse(postSessionResponseBody.expires_at)).not.toBeNaN();
+    expect(Date.parse(postSessionResponseBody.created_at)).not.toBeNaN();
+    expect(Date.parse(postSessionResponseBody.updated_at)).not.toBeNaN();
 
     const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.id);
     expect(sessionObjectInDatabase.user_id).toBe(postUserResponseBody.id);

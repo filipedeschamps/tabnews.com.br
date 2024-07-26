@@ -40,8 +40,8 @@ describe('POST /api/v1/users', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const userInDatabase = await user.findOneByUsername('uniqueUserName');
       const passwordsMatch = await password.compare('validpassword', userInDatabase.password);
@@ -82,8 +82,8 @@ describe('POST /api/v1/users', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const userInDatabase = await user.findOneById(responseBody.id);
       expect(userInDatabase.email).toBe('postwithunknownkey@gmail.com');
@@ -118,8 +118,8 @@ describe('POST /api/v1/users', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const userInDatabase = await user.findOneByUsername('extraSpaceInTheEnd');
       const passwordsMatch = await password.compare('validpassword', userInDatabase.password);

@@ -65,11 +65,11 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         'update:user',
       ]);
       expect(user1.updated_at.toISOString()).toBe(activatedUser1.updated_at.toISOString());
-      expect(Date.parse(user1.updated_at)).not.toBe(NaN);
+      expect(Date.parse(user1.updated_at)).not.toBeNaN();
 
       expect(user2.features).toStrictEqual([]);
       expect(user2.updated_at.toISOString()).toBe(response2Body.updated_at);
-      expect(Date.parse(user2.updated_at)).not.toBe(NaN);
+      expect(Date.parse(user2.updated_at)).not.toBeNaN();
 
       const lastEvent = await orchestrator.getLastEvent();
 
@@ -86,7 +86,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
       const allEmails = await orchestrator.getEmails();
       expect(allEmails).toHaveLength(2);

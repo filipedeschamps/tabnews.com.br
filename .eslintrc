@@ -33,6 +33,7 @@
         "vitest/no-conditional-in-test": "error",
         "vitest/no-disabled-tests": "warn",
         "vitest/no-focused-tests": "error",
+        "vitest/prefer-to-be": "error",
         "vitest/require-to-throw-message": "error"
       },
       "env": {

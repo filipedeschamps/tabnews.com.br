@@ -33,7 +33,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
   });
 
@@ -68,7 +68,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "create:content:text_root" event', async () => {
@@ -95,7 +95,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "create:content:text_child" event', async () => {
@@ -129,7 +129,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "update:content:text_root" event', async () => {
@@ -162,7 +162,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "update:content:text_child" event', async () => {
@@ -200,7 +200,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "update:content:tabcoins" with "transaction_type" set to "credit"', async () => {
@@ -245,7 +245,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "update:content:tabcoins" with "transaction_type" set to "debit"', async () => {
@@ -290,7 +290,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "reward:user:tabcoins" event', async () => {
@@ -320,7 +320,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
       expect(Date.parse(lastEvent.created_at)).toBeGreaterThan(Date.now() - 1000);
     });
   });
@@ -353,7 +353,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "ban:user" event', async () => {
@@ -380,7 +380,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "update:content:text_root" event', async () => {
@@ -415,7 +415,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "update:content:text_child" event', async () => {
@@ -455,7 +455,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
   });
 
@@ -502,7 +502,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "firewall:block_contents:text_root" event', async () => {
@@ -542,7 +542,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
 
     test('Create "firewall:block_contents:text_child" event', async () => {
@@ -587,7 +587,7 @@ describe('models/event', () => {
       });
 
       expect(uuidVersion(lastEvent.id)).toBe(4);
-      expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
   });
 });

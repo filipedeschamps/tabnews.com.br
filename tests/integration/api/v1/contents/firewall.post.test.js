@@ -68,12 +68,12 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
 
         expect(content1.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(Date.parse(content1.updated_at)).not.toBe(NaN);
+        expect(Date.parse(content1.updated_at)).not.toBeNaN();
         expect(content1.updated_at.toISOString()).toBe(response1Body.updated_at);
 
         expect(content2.status).toBe('firewall');
         expect(content2.deleted_at).toBeNull();
-        expect(Date.parse(content2.updated_at)).not.toBe(NaN);
+        expect(Date.parse(content2.updated_at)).not.toBeNaN();
         expect(content2.updated_at.toISOString()).toBe(response2Body.updated_at);
 
         expect(content3).toBeUndefined();
@@ -92,7 +92,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           created_at: lastEvent.created_at,
         });
         expect(uuidVersion(lastEvent.id)).toBe(4);
-        expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);
@@ -167,7 +167,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           created_at: lastEvent.created_at,
         });
         expect(uuidVersion(lastEvent.id)).toBe(4);
-        expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);
@@ -283,12 +283,12 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
 
         expect(content1.status).toBe('firewall');
         expect(content1.deleted_at).toBeNull();
-        expect(Date.parse(content1.updated_at)).not.toBe(NaN);
+        expect(Date.parse(content1.updated_at)).not.toBeNaN();
         expect(content1.updated_at.toISOString()).toBe(response1Body.updated_at);
 
         expect(content2.status).toBe('firewall');
         expect(content2.deleted_at).toBeNull();
-        expect(Date.parse(content2.updated_at)).not.toBe(NaN);
+        expect(Date.parse(content2.updated_at)).not.toBeNaN();
         expect(content2.updated_at.toISOString()).toBe(response2Body.updated_at);
 
         expect(content3).toBeUndefined();
@@ -307,7 +307,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           created_at: lastEvent.created_at,
         });
         expect(uuidVersion(lastEvent.id)).toBe(4);
-        expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);
@@ -389,7 +389,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           created_at: lastEvent.created_at,
         });
         expect(uuidVersion(lastEvent.id)).toBe(4);
-        expect(Date.parse(lastEvent.created_at)).not.toBe(NaN);
+        expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
         const allEmails = await orchestrator.getEmails();
         expect(allEmails).toHaveLength(0);

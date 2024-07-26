@@ -165,9 +165,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
   });
@@ -212,9 +212,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > rootContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -466,8 +466,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.published_at).toBe(firstUserContent.published_at.toISOString());
       expect(responseBody.updated_at > firstUserContent.updated_at.toISOString()).toBe(true);
     });
@@ -510,8 +510,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -556,8 +556,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -657,8 +657,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" and "body" containing invalid characters', async () => {
@@ -777,8 +777,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -846,8 +846,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -986,9 +986,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" containing a blank String', async () => {
@@ -1062,8 +1062,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1157,8 +1157,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1200,8 +1200,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1362,8 +1362,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1405,8 +1405,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1448,8 +1448,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1491,8 +1491,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1535,9 +1535,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1613,10 +1613,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(uuidVersion(responseBody.owner_id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.deleted_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.deleted_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
       expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toBe(true);
     });
@@ -1804,8 +1804,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1847,8 +1847,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1890,8 +1890,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -1933,8 +1933,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -2111,9 +2111,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(responseBody.published_at).toBe(null);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.published_at).toBeNull();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -2155,9 +2155,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(responseBody.published_at).toBe(null);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.published_at).toBeNull();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -2225,8 +2225,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -2317,8 +2317,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
 
@@ -3213,9 +3213,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
       expect(responseBody.published_at).toBe(secondUserContent.published_at.toISOString());
       expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toBe(true);
     });

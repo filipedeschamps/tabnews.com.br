@@ -162,8 +162,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "body" not declared', async () => {
@@ -310,8 +310,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" and "body" containing invalid characters', async () => {
@@ -403,8 +403,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "body" containing Null value', async () => {
@@ -459,8 +459,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" containing a blank String', async () => {
@@ -522,8 +522,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" containing special characters', async () => {
@@ -678,9 +678,9 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" with trailing hyphen', async () => {
@@ -716,8 +716,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing a blank String', async () => {
@@ -801,8 +801,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing Braille Pattern Blank Unicode Character', async () => {
@@ -837,8 +837,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test(`Content with "title" containing special characters occupying more than ${maxTitleLength} bytes`, async () => {
@@ -873,8 +873,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing untrimmed values', async () => {
@@ -909,8 +909,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing unescaped characters', async () => {
@@ -945,8 +945,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "status" set to "draft"', async () => {
@@ -982,8 +982,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "status" set to "published"', async () => {
@@ -1019,9 +1019,9 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
     });
 
     test('Content with "status" set to "deleted"', async () => {
@@ -1171,8 +1171,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a valid HTTPS URL', async () => {
@@ -1208,8 +1208,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a valid long TLD', async () => {
@@ -1245,8 +1245,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a valid short URL', async () => {
@@ -1282,8 +1282,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a invalid short TLD', async () => {
@@ -1429,8 +1429,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing fragment component', async () => {
@@ -1466,8 +1466,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing an empty String', async () => {
@@ -1523,8 +1523,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('"root" content with minimum valid data', async () => {
@@ -1561,8 +1561,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const contentInDatabase = await database.query({
         text: 'SELECT * FROM contents WHERE id = $1',
@@ -1604,8 +1604,8 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('"root" content with "title" not declared', async () => {
@@ -1684,8 +1684,8 @@ describe('POST /api/v1/contents', () => {
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(uuidVersion(responseBody.slug)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const contentInDatabase = await database.query({
         text: 'SELECT * FROM contents WHERE id = $1',
@@ -1736,9 +1736,9 @@ describe('POST /api/v1/contents', () => {
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(uuidVersion(responseBody.slug)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
     });
 
     test('"child" content with "title"', async () => {
@@ -1781,9 +1781,9 @@ describe('POST /api/v1/contents', () => {
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
     });
 
     test('"child" content with "parent_id" containing a Number', async () => {
@@ -1883,7 +1883,7 @@ describe('POST /api/v1/contents', () => {
         const getLastEmail = await orchestrator.getLastEmail();
 
         expect(response.status).toBe(201);
-        expect(getLastEmail).toBe(null);
+        expect(getLastEmail).toBeNull();
       });
 
       test('My "root" content replied by myself', async () => {
@@ -1909,7 +1909,7 @@ describe('POST /api/v1/contents', () => {
 
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
-        expect(getLastEmail).toBe(null);
+        expect(getLastEmail).toBeNull();
       });
 
       test('My "root" content with short "title" replied by other user', async () => {
@@ -2139,7 +2139,7 @@ describe('POST /api/v1/contents', () => {
 
         // 5) CHECK IF FIRST USER RECEIVED ANY EMAIL
         const getLastEmail1 = await orchestrator.getLastEmail();
-        expect(getLastEmail1).toBe(null);
+        expect(getLastEmail1).toBeNull();
 
         // 6) ENABLE NOTIFICATIONS FOR FIRST USER
         const { response: userPatchResponse2 } = await usersRequestBuilder.patch(`/${firstUser.username}`, {
@@ -2454,8 +2454,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
@@ -2506,8 +2506,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
@@ -2550,8 +2550,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
@@ -2602,8 +2602,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
@@ -2646,8 +2646,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
@@ -2698,8 +2698,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
@@ -2888,8 +2888,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
@@ -2940,8 +2940,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
@@ -2986,8 +2986,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
@@ -3038,8 +3038,8 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(uuidVersion(responseBody.id)).toBe(4);
-        expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 

@@ -43,9 +43,9 @@ describe('PATCH /api/v1/recovery', () => {
         updated_at: updatedTokenInDatabase.updated_at.toISOString(),
       });
 
-      expect(Date.parse(responseBody.expires_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.created_at)).not.toBe(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toBe(NaN);
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
       expect(responseBody.updated_at > recoveryToken.updated_at.toISOString()).toBe(true);
 

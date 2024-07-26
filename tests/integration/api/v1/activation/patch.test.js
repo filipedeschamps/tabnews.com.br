@@ -136,9 +136,9 @@ describe('PATCH /api/v1/activation', () => {
       expect(uuidVersion(activationToken.id)).toBe(4);
       expect(activationToken.user_id).toBe(defaultUser.id);
       expect(activationToken.used).toBe(false);
-      expect(Date.parse(activationToken.expires_at)).not.toBe(NaN);
-      expect(Date.parse(activationToken.created_at)).not.toBe(NaN);
-      expect(Date.parse(activationToken.updated_at)).not.toBe(NaN);
+      expect(Date.parse(activationToken.expires_at)).not.toBeNaN();
+      expect(Date.parse(activationToken.created_at)).not.toBeNaN();
+      expect(Date.parse(activationToken.updated_at)).not.toBeNaN();
       expect(activationToken.expires_at - activationToken.created_at).toBe(900000); // 15 minutes
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
@@ -157,9 +157,9 @@ describe('PATCH /api/v1/activation', () => {
       expect(response.status).toBe(200);
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(responseBody.used).toBe(true);
-      expect(Date.parse(activationToken.expires_at)).not.toBe(NaN);
-      expect(Date.parse(activationToken.created_at)).not.toBe(NaN);
-      expect(Date.parse(activationToken.updated_at)).not.toBe(NaN);
+      expect(Date.parse(activationToken.expires_at)).not.toBeNaN();
+      expect(Date.parse(activationToken.created_at)).not.toBeNaN();
+      expect(Date.parse(activationToken.updated_at)).not.toBeNaN();
       expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
 
@@ -196,9 +196,9 @@ describe('PATCH /api/v1/activation', () => {
       expect(secondTryResponde.status).toBe(200);
       expect(uuidVersion(secondTryRespondeBody.id)).toBe(4);
       expect(secondTryRespondeBody.used).toBe(true);
-      expect(Date.parse(activationToken.expires_at)).not.toBe(NaN);
-      expect(Date.parse(activationToken.created_at)).not.toBe(NaN);
-      expect(Date.parse(activationToken.updated_at)).not.toBe(NaN);
+      expect(Date.parse(activationToken.expires_at)).not.toBeNaN();
+      expect(Date.parse(activationToken.created_at)).not.toBeNaN();
+      expect(Date.parse(activationToken.updated_at)).not.toBeNaN();
       expect(secondTryRespondeBody.updated_at > secondTryRespondeBody.created_at).toBe(true);
 
       expect(firstTryResponde.status).toBe(secondTryResponde.status);
