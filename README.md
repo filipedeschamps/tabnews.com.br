@@ -38,7 +38,7 @@ Você precisa ter duas principais dependências instaladas:
 Com o repositório clonado e as dependências globais instaladas, você pode instalar as dependências locais do projeto:
 
 ```bash
-npm install
+npm ci
 ```
 
 ### Rodar o projeto
