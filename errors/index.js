@@ -1,5 +1,3 @@
-import { randomUUID as uuid } from 'crypto';
-
 class BaseError extends Error {
   constructor({
     name,
@@ -20,7 +18,7 @@ class BaseError extends Error {
     this.message = message;
     this.action = action;
     this.statusCode = statusCode || 500;
-    this.errorId = errorId || uuid();
+    this.errorId = errorId || crypto.randomUUID();
     this.requestId = requestId;
     this.context = context;
     this.stack = stack;
