@@ -293,12 +293,20 @@ async function update(targetUser, postedUserData, options = {}) {
     'email' in validPostedUserData && validPostedUserData.email.toLowerCase() !== currentUser.email.toLowerCase();
 
   if (shouldValidateUsername || shouldValidateEmail) {
-    await validateUniqueUser({ ...validPostedUserData, id: currentUser.id }, { transaction: options.transaction });
-    if (shouldValidateEmail && !options.skipEmailConfirmation) {
-      await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
-        transaction: options.transaction,
-      });
-      delete validPostedUserData.email;
+    try {
+      await validateUniqueUser({ ...validPostedUserData, id: currentUser.id }, { transaction: options.transaction });
+      if (shouldValidateEmail && !options.skipEmailConfirmation) {
+        await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
+          transaction: options.transaction,
+        });
+        delete validPostedUserData.email;
+      }
+    } catch (error) {
+      if (error instanceof ValidationError && error.key === 'email' && Object.keys(validPostedUserData).length > 1) {
+        delete validPostedUserData.email;
+      } else {
+        throw error;
+      }
     }
   }
 

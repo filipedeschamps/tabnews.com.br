@@ -311,7 +311,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       expect(responseBody).toStrictEqual({
         id: firstUser.id,
         username: firstUser.username,
-        email: 'other.user.email@before.com',
+        email: firstUser.email,
         description: firstUser.description,
         features: firstUser.features,
         notifications: firstUser.notifications,

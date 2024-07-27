@@ -140,7 +140,6 @@ async function patchHandler(request, response) {
     if (error instanceof ValidationError && error.key === 'email') {
       updatedUser = {
         ...targetUser,
-        ...secureInputValues,
         updated_at: new Date(),
       };
     } else {
