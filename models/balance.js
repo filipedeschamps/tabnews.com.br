@@ -23,23 +23,24 @@ const sqlFunctionMap = {
 };
 
 async function findAllByOriginatorId(originatorId, options) {
+  const where = Array.isArray(originatorId) ? 'WHERE originator_id = ANY($1)' : 'WHERE originator_id = $1';
   const query = {
     text: `
       SELECT * FROM (
         SELECT id, recipient_id, amount, originator_type, originator_id,
           'user:tabcoin' AS balance_type
         FROM user_tabcoin_operations
-        WHERE originator_id = $1
+        ${where}
       UNION ALL
         SELECT id, recipient_id, amount, originator_type, originator_id,
           'user:tabcash' AS balance_type
         FROM user_tabcash_operations
-        WHERE originator_id = $1
+        ${where}
       UNION ALL
         SELECT id, recipient_id, amount, originator_type, originator_id,
           CONCAT('content:tabcoin:', balance_type) AS balance_type
         FROM content_tabcoin_operations
-        WHERE originator_id = $1
+        ${where}
       ) AS all_operations;
     `,
     values: [originatorId],

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { version as uuidVersion } from 'uuid';
 
 import content from 'models/content';
+import user from 'models/user';
 import orchestrator from 'tests/orchestrator';
 import RequestBuilder from 'tests/request-builder';
 
@@ -273,6 +274,91 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       });
     });
 
+    test.each([
+      {
+        action: 'undo',
+        eventType: 'moderation:unblock_users',
+      },
+      {
+        action: 'confirm',
+        eventType: 'moderation:block_users',
+      },
+    ])('With a review $action "firewall:block_users" event', async ({ action, eventType }) => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      // Create users
+      const { responseBody: user1 } = await usersRequestBuilder.post({
+        username: 'firstUser',
+        email: 'first-user@gmail.com',
+        password: 'password',
+      });
+      const { responseBody: user2 } = await usersRequestBuilder.post({
+        username: 'secondUser',
+        email: 'second-user@gmail.com',
+        password: 'password',
+      });
+      const { response: user3Response } = await usersRequestBuilder.post({
+        username: 'thirdUser',
+        email: 'third-user@gmail.com',
+        password: 'password',
+      });
+
+      expect(user3Response.status).toBe(429);
+
+      // Check firewall side-effect
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      expect(firewallEvent.type).toBe('firewall:block_users');
+      expect(firewallEvent.metadata.users).toStrictEqual([user1.id, user2.id]);
+
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
+      expect(reviewResponse.status).toBe(200);
+
+      // Get reviewed firewall event
+      const reviewEvent = await orchestrator.getLastEvent();
+
+      const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
+
+      const user1AfterFirewall = await user.findOneById(user1.id);
+      const user2AfterFirewall = await user.findOneById(user2.id);
+
+      const expectedEvents = mapEventsData([
+        {
+          ...firewallEvent,
+          metadata: {
+            users: [user1.id, user2.id],
+            from_rule: 'create:user',
+          },
+          type: 'firewall:block_users',
+        },
+        {
+          ...reviewEvent,
+          metadata: {
+            users: [user1.id, user2.id],
+            related_events: [firewallEvent.id],
+          },
+          type: eventType,
+        },
+      ]);
+
+      expect.soft(response.status).toBe(200);
+
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(responseBody.events));
+      expect(responseBody).toStrictEqual({
+        affected: {
+          users: mapUsersData(user1AfterFirewall, user2AfterFirewall),
+        },
+        events: expect.arrayContaining(expectedEvents),
+      });
+    });
+
     test('With a "firewall:block_contents:text_root" event', async () => {
       const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
       await firewallRequestBuilder.buildUser({ with: ['read:firewall'] });
@@ -465,6 +551,85 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       });
     });
 
+    test.each([
+      {
+        action: 'undo',
+        eventType: 'moderation:unblock_contents:text_root',
+      },
+      {
+        action: 'confirm',
+        eventType: 'moderation:block_contents:text_root',
+      },
+    ])('With a review $action "firewall:block_contents:text_root" event', async ({ action, eventType }) => {
+      const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      // Create users and contents
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const user1 = await contentsRequestBuilder.buildUser();
+
+      const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder);
+      const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
+      const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
+
+      expect(responseContent3.status).toBe(429);
+
+      // Check firewall side-effect
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      expect(firewallEvent.type).toBe('firewall:block_contents:text_root');
+      expect(firewallEvent.metadata.contents).toStrictEqual([content1.id, content2.id]);
+
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
+
+      expect(reviewResponse.status).toBe(200);
+
+      // Get reviewed firewall event
+      const reviewEvent = await orchestrator.getLastEvent();
+
+      const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
+
+      const user1AfterFirewall = await user.findOneById(user1.id);
+
+      const content1AfterFirewall = await content.findOne({ where: { id: content1.id } });
+      const content2AfterFirewall = await content.findOne({ where: { id: content2.id } });
+
+      const expectedEvents = mapEventsData([
+        {
+          ...firewallEvent,
+          metadata: {
+            from_rule: 'create:content:text_root',
+            contents: [content1.id, content2.id],
+          },
+          type: 'firewall:block_contents:text_root',
+        },
+        {
+          ...reviewEvent,
+          metadata: {
+            contents: [content1.id, content2.id],
+            related_events: [firewallEvent.id],
+          },
+          type: eventType,
+        },
+      ]);
+
+      expect.soft(response.status).toBe(200);
+
+      expect.soft(expectedEvents).toEqual(expect.arrayContaining(responseBody.events));
+      expect(responseBody).toStrictEqual({
+        affected: {
+          contents: [mapContentData(content1AfterFirewall), mapContentData(content2AfterFirewall)],
+          users: mapUsersData(user1AfterFirewall),
+        },
+        events: expect.arrayContaining(expectedEvents),
+      });
+    });
+
     test('With a "firewall:block_contents:text_child" event', async () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
@@ -519,6 +684,95 @@ describe('GET /api/v1/events/firewall/[id]', () => {
             type: 'firewall:block_contents:text_child',
           },
         ],
+      });
+    });
+
+    test.each([
+      {
+        action: 'undo',
+        eventType: 'moderation:unblock_contents:text_child',
+      },
+      {
+        action: 'confirm',
+        eventType: 'moderation:block_contents:text_child',
+      },
+    ])('With a review $action "firewall:block_contents:text_child" event', async ({ action, eventType }) => {
+      const firewallRequestBuilder = new RequestBuilder(`/api/v1/events/firewall`);
+      const firewallUser = await firewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      // Create users and contents
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.setUser(firewallUser);
+
+      const { responseBody: rootContent } = await createContentViaApi(contentsRequestBuilder);
+
+      const user1 = await contentsRequestBuilder.buildUser();
+
+      const { responseBody: content1 } = await createContentViaApi(contentsRequestBuilder, {
+        parent_id: rootContent.id,
+      });
+      const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder, {
+        parent_id: rootContent.id,
+      });
+      const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder, {
+        parent_id: rootContent.id,
+      });
+
+      expect(responseContent3.status).toBe(429);
+
+      // Check firewall side-effect
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      expect(firewallEvent.type).toBe('firewall:block_contents:text_child');
+      expect(firewallEvent.metadata.contents).toStrictEqual([content1.id, content2.id]);
+
+      // Review firewall side-effect
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      await reviewFirewallRequestBuilder.setUser(firewallUser);
+      const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
+
+      expect(reviewResponse.status).toBe(200);
+
+      // Get reviewed firewall event
+      const reviewEvent = await orchestrator.getLastEvent();
+
+      const { response, responseBody } = await firewallRequestBuilder.get(`/${firewallEvent.id}`);
+
+      const user1AfterFirewall = await user.findOneById(user1.id);
+
+      const content1AfterFirewall = await content.findOne({ where: { id: content1.id } });
+      const content2AfterFirewall = await content.findOne({ where: { id: content2.id } });
+
+      const expectedEvents = mapEventsData([
+        {
+          ...firewallEvent,
+          metadata: {
+            from_rule: 'create:content:text_child',
+            contents: [content1.id, content2.id],
+          },
+          type: 'firewall:block_contents:text_child',
+        },
+        {
+          ...reviewEvent,
+          metadata: {
+            contents: [content1.id, content2.id],
+            related_events: [firewallEvent.id],
+          },
+          type: eventType,
+        },
+      ]);
+
+      expect.soft(response.status).toBe(200);
+
+      expect.soft(expectedEvents).toEqual(expect.arrayContaining(responseBody.events));
+      expect(responseBody).toStrictEqual({
+        affected: {
+          contents: [mapContentData(content1AfterFirewall), mapContentData(content2AfterFirewall)],
+          users: mapUsersData(user1AfterFirewall),
+        },
+        events: expect.arrayContaining(expectedEvents),
       });
     });
 
@@ -739,7 +993,7 @@ function mapContentData(content) {
     parent_id: content.parent_id,
     published_at:
       typeof content.published_at?.toISOString === 'function'
-        ? content.published_at?.toISOString()
+        ? content.published_at.toISOString()
         : content.published_at,
     slug: content.slug,
     source_url: content.source_url,

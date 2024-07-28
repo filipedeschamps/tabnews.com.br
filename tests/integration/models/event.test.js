@@ -590,4 +590,314 @@ describe('models/event', () => {
       expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
     });
   });
+
+  describe('Moderation', () => {
+    beforeEach(async () => {
+      await orchestrator.dropAllTables();
+      await orchestrator.runPendingMigrations();
+      await orchestrator.createFirewallTestFunctions();
+    });
+
+    test('Create "moderation:block_users" event', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+      const { responseBody: user1 } = await usersRequestBuilder.post({
+        username: 'request1',
+        email: 'request1@gmail.com',
+        password: 'validpassword',
+      });
+
+      const { responseBody: user2 } = await usersRequestBuilder.post({
+        username: 'request2',
+        email: 'request2@gmail.com',
+        password: 'validpassword',
+      });
+
+      await usersRequestBuilder.post({
+        username: 'request3',
+        email: 'request3@gmail.com',
+        password: 'validpassword',
+      });
+
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      const reviewerUser = await reviewFirewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      await reviewFirewallRequestBuilder.post({ action: 'confirm' });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'moderation:block_users',
+        originator_user_id: reviewerUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          related_events: [firewallEvent.id],
+          users: [user1.id, user2.id],
+        },
+        created_at: lastEvent.created_at,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "moderation:unblock_users" event', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+      const { responseBody: user1 } = await usersRequestBuilder.post({
+        username: 'request1',
+        email: 'request1@gmail.com',
+        password: 'validpassword',
+      });
+
+      const { responseBody: user2 } = await usersRequestBuilder.post({
+        username: 'request2',
+        email: 'request2@gmail.com',
+        password: 'validpassword',
+      });
+
+      await usersRequestBuilder.post({
+        username: 'request3',
+        email: 'request3@gmail.com',
+        password: 'validpassword',
+      });
+
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      const reviewerUser = await reviewFirewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      await reviewFirewallRequestBuilder.post({ action: 'undo' });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'moderation:unblock_users',
+        originator_user_id: reviewerUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          related_events: [firewallEvent.id],
+          users: [user1.id, user2.id],
+        },
+        created_at: lastEvent.created_at,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "moderation:block_contents:text_root" event', async () => {
+      const contentRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentRequestBuilder.buildUser();
+
+      const { responseBody: content1 } = await contentRequestBuilder.post({
+        title: 'Título 1',
+        body: 'Corpo',
+        status: 'published',
+      });
+
+      const { responseBody: content2 } = await contentRequestBuilder.post({
+        title: 'Título 2',
+        body: 'Corpo',
+        status: 'published',
+      });
+
+      await contentRequestBuilder.post({
+        title: 'Título 3',
+        body: 'Corpo',
+        status: 'published',
+      });
+
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      const reviewerUser = await reviewFirewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      await reviewFirewallRequestBuilder.post({ action: 'confirm' });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'moderation:block_contents:text_root',
+        originator_user_id: reviewerUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          related_events: [firewallEvent.id],
+          contents: [content1.id, content2.id],
+        },
+        created_at: lastEvent.created_at,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "moderation:unblock_contents:text_root" event', async () => {
+      const contentRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentRequestBuilder.buildUser();
+
+      const { responseBody: content1 } = await contentRequestBuilder.post({
+        title: 'Título 1',
+        body: 'Corpo',
+        status: 'published',
+      });
+
+      const { responseBody: content2 } = await contentRequestBuilder.post({
+        title: 'Título 2',
+        body: 'Corpo',
+        status: 'published',
+      });
+
+      await contentRequestBuilder.post({
+        title: 'Título 3',
+        body: 'Corpo',
+        status: 'published',
+      });
+
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      const reviewerUser = await reviewFirewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      await reviewFirewallRequestBuilder.post({ action: 'undo' });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'moderation:unblock_contents:text_root',
+        originator_user_id: reviewerUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          related_events: [firewallEvent.id],
+          contents: [content1.id, content2.id],
+        },
+        created_at: lastEvent.created_at,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "moderation:block_contents:text_child" event', async () => {
+      const contentRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentRequestBuilder.buildUser();
+
+      const { responseBody: rootContentBody } = await contentRequestBuilder.post({
+        title: 'Root Content',
+        body: 'Corpo',
+      });
+
+      const { responseBody: content1 } = await contentRequestBuilder.post({
+        body: 'Corpo',
+        parent_id: rootContentBody.id,
+        status: 'published',
+      });
+
+      const { responseBody: content2 } = await contentRequestBuilder.post({
+        body: 'Corpo',
+        parent_id: rootContentBody.id,
+        status: 'published',
+      });
+
+      await contentRequestBuilder.post({
+        body: 'Corpo',
+        parent_id: rootContentBody.id,
+        status: 'published',
+      });
+
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      const reviewerUser = await reviewFirewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      await reviewFirewallRequestBuilder.post({ action: 'confirm' });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'moderation:block_contents:text_child',
+        originator_user_id: reviewerUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          related_events: [firewallEvent.id],
+          contents: [content1.id, content2.id],
+        },
+        created_at: lastEvent.created_at,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "moderation:unblock_contents:text_child" event', async () => {
+      const contentRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentRequestBuilder.buildUser();
+
+      const { responseBody: rootContentBody } = await contentRequestBuilder.post({
+        title: 'Root Content',
+        body: 'Corpo',
+      });
+
+      const { responseBody: content1 } = await contentRequestBuilder.post({
+        body: 'Corpo',
+        parent_id: rootContentBody.id,
+        status: 'published',
+      });
+
+      const { responseBody: content2 } = await contentRequestBuilder.post({
+        body: 'Corpo',
+        parent_id: rootContentBody.id,
+        status: 'published',
+      });
+
+      await contentRequestBuilder.post({
+        body: 'Corpo',
+        parent_id: rootContentBody.id,
+        status: 'published',
+      });
+
+      const firewallEvent = await orchestrator.getLastEvent();
+
+      const reviewFirewallRequestBuilder = new RequestBuilder(
+        `/api/v1/moderations/review_firewall/${firewallEvent.id}`,
+      );
+      const reviewerUser = await reviewFirewallRequestBuilder.buildUser({ with: ['read:firewall', 'review:firewall'] });
+
+      await reviewFirewallRequestBuilder.post({ action: 'undo' });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'moderation:unblock_contents:text_child',
+        originator_user_id: reviewerUser.id,
+        originator_ip: '127.0.0.1',
+        metadata: {
+          related_events: [firewallEvent.id],
+          contents: [content1.id, content2.id],
+        },
+        created_at: lastEvent.created_at,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+  });
 });

@@ -224,11 +224,6 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(Date.parse(content2.updated_at)).not.toBeNaN();
         expect(content2.updated_at.toISOString()).toBe(response2Body.updated_at);
 
-        expect(content2.status).toBe('firewall');
-        expect(content2.deleted_at).toBeNull();
-        expect(Date.parse(content2.updated_at)).not.toBeNaN();
-        expect(content2.updated_at.toISOString()).toBe(response2Body.updated_at);
-
         expect(content3).toBeUndefined();
 
         const lastEvent = await orchestrator.getLastEvent();
@@ -727,7 +722,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const userRootContent = await contentsRequestBuilder.buildUser();
         const { responseBody: rootContentBody } = await createContentViaApi(contentsRequestBuilder);
 
-        await user.update(userRootContent.username, { notifications: false });
+        await user.update(userRootContent, { notifications: false });
 
         const user1 = await contentsRequestBuilder.buildUser();
         const { response: response1, responseBody: response1Body } = await createContentViaApi(contentsRequestBuilder, {

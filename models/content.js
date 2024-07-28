@@ -488,7 +488,8 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   // or if it was deleted and is catch by firewall: "deleted" -> "firewall".
   if (
     oldContent &&
-    ((!oldContent.published_at && newContent.status !== 'published') || oldContent.status === 'deleted')
+    ((!oldContent.published_at && newContent.status !== 'published') ||
+      ['deleted', 'firewall'].includes(oldContent.status))
   ) {
     return;
   }
@@ -753,6 +754,89 @@ async function update(contentId, postedContent, options = {}) {
   }
 }
 
+async function confirmFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = 'deleted',
+          deleted_at = CASE
+            WHEN deleted_at IS NULL THEN (now() at time zone 'utc')
+            ELSE deleted_at
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *)
+      
+      SELECT
+        updated_contents.*,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        users.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[updated_contents.id]
+           AND children.status = 'published'
+        ) as children_deep_count
+      FROM
+        updated_contents
+      INNER JOIN
+        users ON updated_contents.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
+async function undoFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = CASE
+            WHEN deleted_at IS NULL THEN 'published'
+            ELSE 'deleted'
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *
+      )
+  
+      SELECT
+        updated_contents.*,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        users.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          LEFT JOIN updated_contents as uc ON children.id = uc.id
+          WHERE children.path @> ARRAY[updated_contents.id]
+           AND COALESCE(uc.status, children.status) = 'published'
+        ) as children_deep_count
+      FROM
+        updated_contents
+      INNER JOIN
+        users ON updated_contents.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
     slug: 'optional',
@@ -989,5 +1073,7 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  confirmFirewallStatus,
+  undoFirewallStatus,
   creditOrDebitTabCoins,
 });

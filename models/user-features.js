@@ -39,6 +39,10 @@ const availableFeatures = new Set([
   'ban:user',
   'create:recovery_token:username',
   'read:firewall',
+  'review:firewall',
+
+  // BANNED
+  'nuked',
 
   // ADVERTISEMENT
   'read:ad:list',
