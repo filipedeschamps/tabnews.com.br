@@ -614,7 +614,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
-        email: 'someone@example.com',
+        email: defaultUser.email,
         description: defaultUser.description,
         features: defaultUser.features,
         notifications: defaultUser.notifications,
@@ -632,11 +632,53 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(foundUser.email).toBe(defaultUser.email);
     });
 
+    test('Patching itself with "email" duplicated exactly and other fields', async () => {
+      await orchestrator.deleteAllEmails();
+      await orchestrator.createUser({
+        email: 'this_user_already_exists@example.com',
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'New description',
+        email: 'this_user_already_exists@example.com',
+        notifications: false,
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        email: defaultUser.email,
+        description: 'New description',
+        features: defaultUser.features,
+        notifications: false,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+      expect(foundUser.description).toBe('New description');
+      expect(foundUser.notifications).toBe(false);
+      expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
+    });
+
     test('Patching itself with another "email"', async () => {
-      const defaultUser = await orchestrator.createUser({
+      let defaultUser = await orchestrator.createUser({
         email: 'original@email.com',
       });
-      await orchestrator.activateUser(defaultUser);
+      defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
@@ -651,7 +693,19 @@ describe('PATCH /api/v1/users/[username]', () => {
         }),
       });
 
-      expect(response.status).toBe(200);
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
 
       // Attention: it should not update the email in the database
       // before the user clicks on the confirmation link sent to the new email.
@@ -676,6 +730,33 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
       expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
       expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
+    });
+
+    test('Patching itself with the same "email"', async () => {
+      await orchestrator.deleteAllEmails();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: defaultUser.email,
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
     });
 
     test('Patching itself with "notifications"', async () => {
@@ -800,6 +881,82 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Patching itself with the user having TabCoins and TabCash', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: defaultUser.id,
+        amount: 200,
+      });
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: defaultUser.id,
+        amount: 55,
+      });
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'new description',
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: 'new description',
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        tabcoins: 200,
+        tabcash: 55,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itself with "email", "username", "description" and "notifications"', async () => {
+      await orchestrator.deleteAllEmails();
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'Updating all possible fields.',
+        email: 'random_new_email@example.com',
+        username: 'UpdatedUsername',
+        notifications: false,
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: 'UpdatedUsername',
+        email: defaultUser.email,
+        description: 'Updating all possible fields.',
+        features: defaultUser.features,
+        notifications: false,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+      expect(foundUser.description).toBe('Updating all possible fields.');
+      expect(foundUser.notifications).toBe(false);
+      expect(foundUser.username).toBe('UpdatedUsername');
+      expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail.recipients).toStrictEqual(['<random_new_email@example.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
     });
 
     describe('TEMPORARY BEHAVIOR', () => {

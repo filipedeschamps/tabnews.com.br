@@ -234,7 +234,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         email: 'already.used.token@email.com',
       });
 
-      const emailConfirmationToken = await emailConfirmation.create(defaultUser.id, 'idempotent@patch.com');
+      const emailConfirmationToken = await emailConfirmation.create(defaultUser.id, 'not.idempotent@patch.com');
 
       const firstTryResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/email-confirmation`, {
         method: 'PATCH',
@@ -247,10 +247,10 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      const userInDatabase = await user.findOneById(defaultUser.id);
-      expect(userInDatabase.email).toBe('idempotent@patch.com');
+      expect(firstTryResponse.status).toBe(200);
 
-      const firstTryResponseBody = await firstTryResponse.json();
+      const userInDatabase = await user.findOneById(defaultUser.id);
+      expect(userInDatabase.email).toBe('not.idempotent@patch.com');
 
       const secondTryResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/email-confirmation`, {
         method: 'PATCH',
@@ -265,20 +265,18 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const secondTryResponseBody = await secondTryResponse.json();
 
-      expect(secondTryResponse.status).toBe(200);
+      expect(secondTryResponse.status).toBe(404);
 
       expect(secondTryResponseBody).toStrictEqual({
-        id: emailConfirmationToken.id,
-        used: true,
-        expires_at: emailConfirmationToken.expires_at.toISOString(),
-        created_at: emailConfirmationToken.created_at.toISOString(),
-        updated_at: secondTryResponseBody.updated_at,
+        name: 'NotFoundError',
+        message: 'O token de confirmação de email utilizado não foi encontrado no sistema ou expirou.',
+        action: 'Solicite uma nova alteração de email.',
+        status_code: 404,
+        error_id: secondTryResponseBody.error_id,
+        request_id: secondTryResponseBody.request_id,
+        error_location_code: 'MODEL:EMAIL_CONFIRMATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+        key: 'token_id',
       });
-
-      expect(secondTryResponseBody.updated_at > emailConfirmationToken.updated_at.toISOString()).toBe(true);
-
-      expect(firstTryResponse.status).toStrictEqual(secondTryResponse.status);
-      expect(firstTryResponseBody).toStrictEqual(secondTryResponseBody);
     });
 
     test('With an already used email (before creating the token)', async () => {
@@ -313,7 +311,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       expect(responseBody).toStrictEqual({
         id: firstUser.id,
         username: firstUser.username,
-        email: 'other.user.email@before.com',
+        email: firstUser.email,
         description: firstUser.description,
         features: firstUser.features,
         notifications: firstUser.notifications,
@@ -382,7 +380,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         'expired.token.will.reject@email.com',
       );
 
-      await emailConfirmation.update(emailConfirmationToken.id, {
+      await orchestrator.updateEmailConfirmationToken(emailConfirmationToken.id, {
         expires_at: new Date(Date.now() - 1000),
       });
 

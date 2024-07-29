@@ -76,7 +76,7 @@ async function resetUserPassword(secureInputValues) {
   if (!tokenObject.used) {
     const userToken = await markTokenAsUsed(tokenObject.id);
     await session.expireAllFromUserId(tokenObject.user_id);
-    await updateUserPassword(tokenObject.user_id, secureInputValues.password);
+    await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
     return userToken;
   }
 
@@ -166,11 +166,6 @@ async function markTokenAsUsed(tokenId) {
 
   const results = await database.query(query);
   return results.rows[0];
-}
-
-async function updateUserPassword(userId, password) {
-  const currentUser = await user.findOneById(userId);
-  await user.update(currentUser.username, { password });
 }
 
 async function update(tokenId, tokenBody) {

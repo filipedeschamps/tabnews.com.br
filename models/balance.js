@@ -77,18 +77,6 @@ async function create({ balanceType, recipientId, amount, originatorType, origin
   return results.rows[0];
 }
 
-async function getTotal({ balanceType, recipientId }, options) {
-  const sqlFunction = sqlFunctionMap[balanceType] || sqlFunctionMap.default;
-
-  const query = {
-    text: `SELECT ${sqlFunction}($1) AS total;`,
-    values: [recipientId],
-  };
-
-  const results = await database.query(query, options);
-  return results.rows[0].total;
-}
-
 async function getContentTabcoinsCreditDebit({ recipientId }, options = {}) {
   const query = {
     text: 'SELECT * FROM get_content_balance_credit_debit($1);',
@@ -200,7 +188,6 @@ async function undo(balanceOperation, options) {
 export default Object.freeze({
   findAllByOriginatorId,
   create,
-  getTotal,
   getContentTabcoinsCreditDebit,
   rateContent,
   undo,

@@ -78,7 +78,8 @@ function patchValidationHandler(request, response, next) {
 async function patchHandler(request, response) {
   const userTryingToPatch = request.context.user;
   const targetUsername = request.query.username;
-  const targetUser = await user.findOneByUsername(targetUsername);
+  const targetUser =
+    targetUsername === userTryingToPatch.username ? userTryingToPatch : await user.findOneByUsername(targetUsername);
   const insecureInputValues = request.body;
 
   let updateAnotherUser = false;
@@ -114,7 +115,7 @@ async function patchHandler(request, response) {
   try {
     await transaction.query('BEGIN');
 
-    updatedUser = await user.update(targetUsername, secureInputValues, {
+    updatedUser = await user.update(targetUser, secureInputValues, {
       transaction: transaction,
     });
 
@@ -139,7 +140,6 @@ async function patchHandler(request, response) {
     if (error instanceof ValidationError && error.key === 'email') {
       updatedUser = {
         ...targetUser,
-        ...secureInputValues,
         updated_at: new Date(),
       };
     } else {
