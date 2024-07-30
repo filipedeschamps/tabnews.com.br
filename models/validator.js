@@ -630,6 +630,12 @@ const schemas = {
           'firewall:block_users',
           'firewall:block_contents:text_root',
           'firewall:block_contents:text_child',
+          'moderation:block_users',
+          'moderation:block_contents:text_root',
+          'moderation:block_contents:text_child',
+          'moderation:unblock_users',
+          'moderation:unblock_contents:text_root',
+          'moderation:unblock_contents:text_child',
           'reward:user:tabcoins',
           'system:update:tabcoins',
         )
@@ -694,6 +700,25 @@ const schemas = {
             contents: Joi.array().required(),
           }),
         },
+        {
+          is: Joi.string().valid('moderation:block_users', 'moderation:unblock_users'),
+          then: Joi.object({
+            related_events: Joi.array().items(Joi.string()).required(),
+            users: Joi.array().required(),
+          }),
+        },
+        {
+          is: Joi.string().valid(
+            'moderation:block_contents:text_root',
+            'moderation:block_contents:text_child',
+            'moderation:unblock_contents:text_root',
+            'moderation:unblock_contents:text_child',
+          ),
+          then: Joi.object({
+            related_events: Joi.array().items(Joi.string()).required(),
+            contents: Joi.array().required(),
+          }),
+        },
       ]),
     });
   },
@@ -705,6 +730,15 @@ const schemas = {
         users: Joi.array().items(schemas.user()).min(1).required(),
       }),
       events: Joi.array().items(schemas.event()).min(1).required(),
+    });
+  },
+
+  firewall_review_action: function () {
+    return Joi.object({
+      action: Joi.string()
+        .trim()
+        .valid('confirm', 'undo')
+        .when('$required.firewall_review_action', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 

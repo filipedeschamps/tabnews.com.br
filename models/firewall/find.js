@@ -33,8 +33,8 @@ async function getAffectedData(events) {
   const affectedData = {};
 
   for (const event of events) {
-    if (event.metadata.users?.length) event.metadata.users.forEach((userId) => usersIds.add(userId));
-    if (event.metadata.contents?.length) event.metadata.contents.forEach((contentId) => contentsIds.add(contentId));
+    event.metadata.users?.forEach((userId) => usersIds.add(userId));
+    event.metadata.contents?.forEach((contentId) => contentsIds.add(contentId));
   }
 
   if (contentsIds.size) {
@@ -64,7 +64,6 @@ async function findAllRelatedEvents(id) {
     WITH RECURSIVE related_events AS (
       SELECT
         id,
-        metadata->>'original_event_id' AS original_event_id,
         jsonb_array_elements_text(metadata->'contents') AS content_id,
         jsonb_array_elements_text(metadata->'users') AS user_id
       FROM
@@ -76,7 +75,6 @@ async function findAllRelatedEvents(id) {
 
       SELECT
         e.id,
-        e.metadata->>'original_event_id' AS original_event_id,
         jsonb_array_elements_text(e.metadata->'contents') AS content_id,
         jsonb_array_elements_text(e.metadata->'users') AS user_id
       FROM
@@ -101,5 +99,6 @@ async function findAllRelatedEvents(id) {
 }
 
 export default Object.freeze({
+  findAllRelatedEvents,
   findByEventId,
 });

@@ -476,25 +476,41 @@ async function removeFeatures(userId, features, options = {}) {
   return lastUpdatedUser;
 }
 
-async function addFeatures(userId, features, options) {
+async function addFeatures(userId, features, options = {}) {
+  const where = { id: userId };
+  const firstWhereArgumentIndex = 2;
+  const whereClause = buildWhereClause(where, firstWhereArgumentIndex);
+
+  const updateQuery = `
+    UPDATE
+      users
+    SET
+      ${options.ignoreUpdatedAt ? '' : "updated_at = (now() at time zone 'utc'),"}
+      features = array_cat(features, $1)
+    ${whereClause.text}
+    RETURNING
+      *`;
+
+  const updateWithBalanceQuery = `
+    WITH updated_user AS (
+      ${updateQuery}
+    )
+    SELECT
+      updated_user.*,
+      get_user_current_tabcoins(updated_user.id) as tabcoins,
+      get_user_current_tabcash(updated_user.id) as tabcash
+    FROM
+      updated_user;
+    `;
+
   const query = {
-    text: `
-      UPDATE
-        users
-      SET
-        features = array_cat(features, $1),
-        updated_at = (now() at time zone 'utc')
-      WHERE
-        id = $2
-      RETURNING
-        *
-    ;`,
+    text: options.withBalance ? updateWithBalanceQuery : updateQuery,
     values: [features, userId],
   };
 
   const results = await database.query(query, options);
 
-  return results.rows[0];
+  return Array.isArray(userId) ? results.rows : results.rows[0];
 }
 
 async function updateRewardedAt(userId, options) {
