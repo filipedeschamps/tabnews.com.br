@@ -405,24 +405,27 @@ async function validateUniqueUser(userData, options) {
 
   const results = await database.query(query, options);
 
-  if (results.rowCount > 0) {
-    const isSameUsername = results.rows[0].username.toLowerCase() === userData.username?.toLowerCase();
-    if (isSameUsername) {
-      throw new ValidationError({
-        message: `O "username" informado já está sendo usado.`,
-        stack: new Error().stack,
-        errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS`,
-        key: 'username',
-      });
-    } else {
-      throw new ValidationError({
-        message: `O email informado já está sendo usado.`,
-        stack: new Error().stack,
-        errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS`,
-        key: 'email',
-      });
-    }
+  if (!results.rowCount) return;
+
+  const isSameUsername = results.rows.some(
+    ({ username }) => username.toLowerCase() === userData.username?.toLowerCase(),
+  );
+
+  if (isSameUsername) {
+    throw new ValidationError({
+      message: `O "username" informado já está sendo usado.`,
+      stack: new Error().stack,
+      errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS`,
+      key: 'username',
+    });
   }
+
+  throw new ValidationError({
+    message: `O email informado já está sendo usado.`,
+    stack: new Error().stack,
+    errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS`,
+    key: 'email',
+  });
 }
 
 async function hashPasswordInObject(userObject) {
