@@ -674,6 +674,64 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
     });
 
+    test('Patching itself with duplicate "email" and "username" should only return "username" error', async () => {
+      await orchestrator.createUser({ username: 'usernameStoredPreviously' });
+      await orchestrator.createUser({ email: 'this_email_already_exists@example.com' });
+      await orchestrator.createUser({ username: 'usernameStoredLater' });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      await orchestrator.deleteAllEmails();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
+        email: 'this_email_already_exists@example.com',
+        username: 'usernameStoredPreviously',
+      });
+      expect.soft(response.status).toBe(400);
+
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'O "username" informado já está sendo usado.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        key: 'username',
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      const { response: response2, responseBody: responseBody2 } = await usersRequestBuilder.patch(
+        defaultUser.username,
+        {
+          email: 'this_email_already_exists@example.com',
+          username: 'usernameStoredLater',
+        },
+      );
+      expect.soft(response2.status).toBe(400);
+
+      expect(responseBody2).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'O "username" informado já está sendo usado.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+        error_id: responseBody2.error_id,
+        request_id: responseBody2.request_id,
+        key: 'username',
+      });
+      expect(uuidVersion(responseBody2.error_id)).toBe(4);
+      expect(uuidVersion(responseBody2.request_id)).toBe(4);
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+      expect(foundUser.updated_at).toStrictEqual(defaultUser.updated_at);
+    });
+
     test('Patching itself with another "email"', async () => {
       let defaultUser = await orchestrator.createUser({
         email: 'original@email.com',
