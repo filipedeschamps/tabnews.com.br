@@ -1,5 +1,7 @@
-import nextConnect from 'next-connect';
 import { formatISO } from 'date-fns';
+import nextConnect from 'next-connect';
+
+import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import health from 'models/health.js';
 
@@ -10,6 +12,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(5))
   .get(getHandler);
 
 async function getHandler(request, response) {
@@ -20,8 +23,6 @@ async function getHandler(request, response) {
   if (checkedDependencies.database.status === 'unhealthy') {
     statusCode = 503;
   }
-
-  response.setHeader('Cache-Control', 'public, s-maxage=5, stale-while-revalidate');
 
   return response.status(statusCode).json({
     updated_at: formatISO(Date.now()),

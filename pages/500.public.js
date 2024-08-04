@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import { DefaultLayout } from 'pages/interface/index.js';
-import { Box, Link } from '@primer/react';
+
+import { Box, DefaultLayout, Link } from '@/TabNewsUI';
 import botDeadFaceDarkTransparent from 'public/brand/bot-dead-face-dark-transparent.svg';
 
 export default function Custom500() {

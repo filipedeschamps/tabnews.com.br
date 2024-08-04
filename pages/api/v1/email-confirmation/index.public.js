@@ -1,7 +1,9 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import emailConfirmation from 'models/email-confirmation.js';
 import validator from 'models/validator.js';
 
@@ -13,6 +15,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.noCache)
   .patch(patchValidationHandler, patchHandler);
 
 function patchValidationHandler(request, response, next) {
@@ -34,7 +37,7 @@ async function patchHandler(request, response) {
   const authorizedValuesToReturn = authorization.filterOutput(
     userTryingToChangeEmail,
     'read:email_confirmation_token',
-    tokenObject
+    tokenObject,
   );
 
   return response.status(200).json(authorizedValuesToReturn);

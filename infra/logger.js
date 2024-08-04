@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import pino from 'pino';
 
 function getLogger() {
@@ -7,16 +8,17 @@ function getLogger() {
         environment: process.env.VERCEL_ENV,
       },
       nestedKey: 'payload',
-      redact: [
-        'headers.cookie',
-        'password',
-        'email',
-        'body.password',
-        'body.email',
-        'context.user.password',
-        'context.user.email',
-        'context.session.token',
-      ],
+      redact: {
+        paths: [
+          'password',
+          'email',
+          'context.user.password',
+          'context.user.email',
+          'context.user.description',
+          'context.session.token',
+        ],
+        remove: true,
+      },
     });
 
     return pinoLogger;

@@ -1,13 +1,15 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
+import { NotFoundError, UnprocessableEntityError, ValidationError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
-import content from 'models/content.js';
-import event from 'models/event.js';
-import database from 'infra/database.js';
 import balance from 'models/balance.js';
-import { NotFoundError, UnprocessableEntityError } from 'errors/index.js';
+import cacheControl from 'models/cache-control';
+import content from 'models/content.js';
+import controller from 'models/controller.js';
+import event from 'models/event.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -17,6 +19,7 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
+  .use(cacheControl.noCache)
   .post(postValidationHandler, authorization.canRequest('update:content'), postHandler);
 
 function postValidationHandler(request, response, next) {
@@ -67,6 +70,10 @@ async function postHandler(request, response) {
     });
   }
 
+  // TODO: Refactor firewall.js to accept other parameters such as content.id
+  // and move this function to there.
+  await canIpUpdateContentTabCoins(request.context.clientIp, contentFound.id);
+
   let currentContentTabCoinsBalance;
 
   await tabcoinsTransaction(null, 5);
@@ -85,8 +92,8 @@ async function postHandler(request, response) {
       const currentEvent = await event.create(
         {
           type: 'update:content:tabcoins',
-          originatorUserId: request.context.user.id,
-          originatorIp: request.context.clientIp,
+          originator_user_id: request.context.user.id,
+          originator_ip: request.context.clientIp,
           metadata: {
             transaction_type: request.body.transaction_type,
             from_user_id: userTryingToPost.id,
@@ -97,7 +104,7 @@ async function postHandler(request, response) {
         },
         {
           transaction: transaction,
-        }
+        },
       );
 
       currentContentTabCoinsBalance = await balance.rateContent(
@@ -110,7 +117,7 @@ async function postHandler(request, response) {
         {
           eventId: currentEvent.id,
           transaction: transaction,
-        }
+        },
       );
 
       await transaction.query('COMMIT');
@@ -119,7 +126,7 @@ async function postHandler(request, response) {
       await transaction.query('ROLLBACK');
 
       if (
-        error.databaseErrorCode === '40001' ||
+        error.databaseErrorCode === database.errorCodes.SERIALIZATION_FAILURE ||
         error.stack?.startsWith('error: could not serialize access due to read/write dependencies among transaction')
       ) {
         if (remainingAttempts > 0) {
@@ -142,8 +149,34 @@ async function postHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(
     userTryingToPost,
     'read:content:tabcoins',
-    currentContentTabCoinsBalance
+    currentContentTabCoinsBalance,
   );
 
   return response.status(201).json(secureOutputValues);
+}
+
+async function canIpUpdateContentTabCoins(clientIp, contentId) {
+  const results = await database.query({
+    text: `
+      SELECT
+        count(*)
+      FROM
+        events
+      WHERE
+        type = 'update:content:tabcoins'
+        AND originator_ip = $1
+        AND metadata->>'content_id' = $2
+        AND created_at > NOW() - INTERVAL '72 hours'
+      ;`,
+    values: [clientIp, contentId],
+  });
+
+  const pass = results.rows[0].count > 2 ? false : true;
+
+  if (!pass) {
+    throw new ValidationError({
+      message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+      action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+    });
+  }
 }

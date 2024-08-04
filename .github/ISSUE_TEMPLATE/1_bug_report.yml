@@ -1,0 +1,48 @@
+name: Reportar bug
+description: Reporte um problema ou comportamento diferente do esperado.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de abrir um novo issue, faça uma [pesquisa](https://github.com/filipedeschamps/tabnews.com.br/issues) para garantir que não está reportando um problema duplicado. Caso encontre um issue equivalente, contribua com informações adicionais, se necessário.
+  - type: textarea
+    attributes:
+      label: Descrição
+      description: Que tipo de problema você encontrou? Por favor, descreva-o de forma clara e adicione imagens, se aplicável.
+      placeholder: |
+        Eu encontrei um problema na página de ... quando eu estava tentando...
+        O resultado foi esse:
+        ![imagem](https://example.com/imagem)
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Passos para reproduzir o problema
+      description: Quais são os passos necessários para que outra pessoa consiga encontrar o mesmo problema?
+      placeholder: |
+        1. Como usuário logado, acesse a página...
+        2. Clique em...
+        3. Faça...
+        4. Volte para ... e veja o erro.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Navegadores testados
+      description: Em quais navegadores você percebeu esse problema?
+      multiple: true
+      options:
+        - Chrome
+        - Firefox
+        - Microsoft Edge
+        - Safari
+        - Outro
+  - type: textarea
+    attributes:
+      label: Possível solução
+      description: Você pensou em algo que pode resolver esse problema? Se sim, compartilhe abaixo.
+      placeholder: |
+        Ao invés de ... poderíamos mudar ... para...
+        Aqui está um exemplo de como ficaria:
+        ![imagem](https://example.com/imagem)

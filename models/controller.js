@@ -1,21 +1,20 @@
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
-import ipAnonymize from 'ip-anonymize';
-
-import ip from 'models/ip.js';
-import session from 'models/session.js';
-import logger from 'infra/logger.js';
-import webserver from 'infra/webserver.js';
 
 import {
-  InternalServerError,
-  NotFoundError,
-  ValidationError,
   ForbiddenError,
-  UnauthorizedError,
+  InternalServerError,
+  MethodNotAllowedError,
+  NotFoundError,
   TooManyRequestsError,
+  UnauthorizedError,
   UnprocessableEntityError,
-} from '/errors/index.js';
+  ValidationError,
+} from 'errors';
+import logger from 'infra/logger.js';
+import webserver from 'infra/webserver.js';
+import ip from 'models/ip.js';
+import session from 'models/session.js';
 
 async function injectRequestMetadata(request, response, next) {
   request.context = {
@@ -24,65 +23,96 @@ async function injectRequestMetadata(request, response, next) {
     clientIp: ip.extractFromRequest(request),
   };
 
-  next();
+  if (next) {
+    next();
+  }
 }
 
 async function onNoMatchHandler(request, response) {
-  const errorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
-  logger.info(snakeize(errorObject));
-  return response.status(errorObject.statusCode).json(snakeize(errorObject));
+  if (request.method === 'OPTIONS') {
+    return response.status(200).end();
+  }
+
+  injectRequestMetadata(request);
+  const publicErrorObject = new MethodNotAllowedError({
+    message: `Método "${request.method}" não permitido para "${request.url}".`,
+    action: 'Utilize um método HTTP válido para este recurso.',
+    requestId: request.context?.requestId || uuidV4(),
+  });
+
+  const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+  logger.info(snakeize(privateErrorObject));
+
+  return errorResponse(response, publicErrorObject.statusCode, snakeize(publicErrorObject));
 }
 
 function onErrorHandler(error, request, response) {
   if (
     error instanceof ValidationError ||
+    error instanceof MethodNotAllowedError ||
     error instanceof NotFoundError ||
     error instanceof ForbiddenError ||
-    error instanceof UnprocessableEntityError
+    error instanceof UnprocessableEntityError ||
+    error instanceof TooManyRequestsError
   ) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
-    return response.status(error.statusCode).json(snakeize(errorObject));
+    const publicErrorObject = { ...error, requestId: request.context.requestId };
+
+    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+    logger.info(snakeize(privateErrorObject));
+
+    return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
   }
 
   if (error instanceof UnauthorizedError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
+    const publicErrorObject = { ...error, requestId: request.context.requestId };
+
+    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
+    logger.info(snakeize(privateErrorObject));
+
     session.clearSessionIdCookie(response);
-    return response.status(error.statusCode).json(snakeize(errorObject));
+
+    return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
   }
 
-  if (error instanceof TooManyRequestsError) {
-    const errorObject = { ...error, requestId: request.context.requestId };
-    logger.info(snakeize(errorObject));
-    return response.status(error.statusCode).json(snakeize(errorObject));
-  }
-
-  const errorObject = new InternalServerError({
-    requestId: request.context.requestId,
+  const publicErrorObject = new InternalServerError({
+    requestId: request.context?.requestId,
     errorId: error.errorId,
-    stack: error.stack,
     statusCode: error.statusCode,
     errorLocationCode: error.errorLocationCode,
   });
 
-  // TODO: Understand why `snakeize` is not logging the
-  // `stack` property of the error object.
-  logger.error(snakeize({ ...errorObject, stack: error.stack }));
+  const privateErrorObject = {
+    ...new InternalServerError({
+      ...error,
+      requestId: request.context?.requestId,
+    }),
+    context: { ...request.context },
+  };
 
-  return response.status(errorObject.statusCode).json(snakeize(errorObject));
+  logger.error(snakeize(privateErrorObject));
+
+  return errorResponse(response, publicErrorObject.statusCode, snakeize(publicErrorObject));
+}
+
+function errorResponse(response, statusCode, publicErrorObject) {
+  response.status(statusCode);
+
+  const isStream = response.getHeader('Content-Type') === 'application/x-ndjson';
+  if (isStream) {
+    response.write(JSON.stringify(publicErrorObject) + '\n');
+    response.end();
+  }
+
+  return response.json(publicErrorObject);
 }
 
 function logRequest(request, response, next) {
-  const { method, url, headers, query, body, context } = request;
+  const { headers, body, context } = request;
 
   const log = {
-    method,
-    url,
-    headers,
-    query,
-    context,
-    body,
+    headers: clearHeaders(headers),
+    body: clearBody(body),
+    context: clearContext(context),
   };
 
   logger.info(log);
@@ -90,24 +120,82 @@ function logRequest(request, response, next) {
   next();
 }
 
-function injectPaginationHeaders(pagination, endpoint, response) {
+const headersToRedact = ['authorization', 'cookie'];
+const headerToOmit = ['access-control-allow-headers', 'forwarded', 'x-vercel-proxy-signature', 'x-vercel-sc-headers'];
+
+function clearHeaders(headers) {
+  const cleanHeaders = { ...headers };
+
+  headersToRedact.forEach((header) => {
+    if (cleanHeaders[header]) {
+      cleanHeaders[header] = '**';
+    }
+  });
+
+  headerToOmit.forEach((header) => {
+    delete cleanHeaders[header];
+  });
+
+  return [cleanHeaders];
+}
+
+const bodyToRedact = ['email', 'password'];
+
+function clearBody(requestBody) {
+  const cleanBody = { ...requestBody };
+
+  if (typeof cleanBody.body === 'string') {
+    cleanBody.body = cleanBody.body.substring(0, 300);
+  }
+
+  bodyToRedact.forEach((key) => {
+    if (cleanBody[key]) {
+      cleanBody[key] = '**';
+    }
+  });
+
+  return [cleanBody];
+}
+
+function clearContext(context) {
+  const cleanContext = { ...context };
+
+  if (cleanContext.user) {
+    cleanContext.user = {
+      id: context.user.id,
+      username: context.user.username,
+    };
+  }
+
+  return cleanContext;
+}
+
+function injectPaginationHeaders(pagination, endpoint, request, response) {
   const links = [];
-  const baseUrl = `${webserver.getHost()}${endpoint}?strategy=${pagination.strategy}`;
+  const baseUrl = `${webserver.host}${endpoint}`;
 
-  if (pagination.firstPage) {
-    links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
-  }
+  const searchParams = new URLSearchParams();
 
-  if (pagination.previousPage) {
-    links.push(`<${baseUrl}&page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
-  }
+  const acceptedParams = ['strategy', 'with_root', 'with_children', 'page', 'per_page'];
 
-  if (pagination.nextPage) {
-    links.push(`<${baseUrl}&page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
-  }
+  acceptedParams.forEach((param) => {
+    if (request?.query?.[param] !== undefined) {
+      searchParams.set(param, request.query[param]);
+    }
+  });
 
-  if (pagination.lastPage) {
-    links.push(`<${baseUrl}&page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
+  const pages = [
+    { page: pagination.firstPage, rel: 'first' },
+    { page: pagination.previousPage, rel: 'prev' },
+    { page: pagination.nextPage, rel: 'next' },
+    { page: pagination.lastPage, rel: 'last' },
+  ];
+
+  for (const { page, rel } of pages) {
+    if (page) {
+      searchParams.set('page', page);
+      links.push(`<${baseUrl}?${searchParams.toString()}>; rel="${rel}"`);
+    }
   }
 
   const linkHeaderString = links.join(', ');

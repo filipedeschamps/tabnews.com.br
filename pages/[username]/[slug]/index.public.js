@@ -1,55 +1,23 @@
-import useSWR from 'swr';
+import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
-import Confetti from 'react-confetti';
-import { Link, DefaultLayout, Content, TabCoinButtons } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import validator from 'models/validator.js';
-import authorization from 'models/authorization.js';
-import removeMarkdown from 'models/remove-markdown.js';
-import { NotFoundError } from 'errors/index.js';
-import { Box, Tooltip } from '@primer/react';
-import { CommentIcon, CommentDiscussionIcon } from '@primer/octicons-react';
+
+import { AdBanner, Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
+import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
+import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
+import ad from 'models/advertisement';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown.js';
+import user from 'models/user.js';
+import { useCollapse } from 'pages/interface';
 
-export default function Post({
-  contentFound: contentFoundFallback,
-  childrenFound: childrenFallback,
-  rootContentFound,
-  parentContentFound,
-  contentMetadata,
-}) {
-  const { data: contentFound } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}`,
-    {
-      fallbackData: contentFoundFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
-  // TODO: understand why enabling "revalidateOn..." breaks children rendering.
-  const { data: children } = useSWR(
-    `/api/v1/contents/${contentFoundFallback.owner_username}/${contentFoundFallback.slug}/children`,
-    {
-      fallbackData: childrenFallback,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
-
-  const [confettiWidth, setConfettiWidth] = useState(0);
-  const [confettiHeight, setConfettiHeight] = useState(0);
+export default function Post({ adFound, contentFound, rootContentFound, parentContentFound, contentMetadata }) {
+  const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    function handleResize() {
-      setConfettiWidth(window.screen.width);
-      setConfettiHeight(window.screen.height);
-    }
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
+    setChildrenToShow(Math.ceil(window.innerHeight / 10));
 
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
@@ -57,22 +25,11 @@ export default function Post({
       setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }
-
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
     <>
-      {showConfetti && (
-        <Confetti
-          width={confettiWidth}
-          height={confettiHeight}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
-      )}
+      {showConfetti && <Confetti />}
       <DefaultLayout metadata={contentMetadata}>
         <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
 
@@ -83,26 +40,27 @@ export default function Post({
           }}>
           <Box
             sx={{
-              pr: [0, null, null, 2],
+              pr: 2,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
             }}>
-            <TabCoinButtons content={contentFound} />
+            <TabCoinButtons key={contentFound.id} content={contentFound} />
             <Box
               sx={{
                 borderWidth: 0,
                 borderRightWidth: 1,
-                borderColor: 'border.muted',
+                borderColor: 'btn.activeBorder',
                 borderStyle: 'dotted',
                 width: '50%',
                 height: '100%',
+                minHeight: '8px',
               }}
             />
           </Box>
 
-          <Box sx={{ width: '100%', overflow: 'auto' }}>
-            <Content content={contentFound} mode="view" />
+          <Box sx={{ width: '100%', mt: contentFound.title ? 0 : '9px', pl: '1px', overflow: 'auto' }}>
+            <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
 
@@ -114,14 +72,27 @@ export default function Post({
               borderColor: 'border.default',
               borderStyle: 'solid',
               mt: 4,
-              mb: 4,
+              mb: 3,
               p: 4,
               wordWrap: 'break-word',
             }}>
-            <Content key={contentFound.id} content={{ parent_id: contentFound.id }} mode="compact" />
+            <Content
+              key={contentFound.id}
+              content={{ owner_id: contentFound.owner_id, parent_id: contentFound.id }}
+              mode="compact"
+            />
           </Box>
 
-          <RenderChildrenTree childrenList={children} level={0} />
+          {adFound && <AdBanner ad={adFound} sx={{ ml: 5, pl: 1 }} />}
+
+          <RenderChildrenTree
+            key={contentFound.id}
+            childrenDeepCount={contentFound.children_deep_count}
+            childrenList={contentFound.children}
+            pageRootOwnerId={contentFound.owner_id}
+            renderIntent={childrenToShow}
+            renderIncrement={Math.ceil(childrenToShow / 2)}
+          />
         </Box>
       </DefaultLayout>
     </>
@@ -135,7 +106,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
         [root]->[child]->[child]
       */}
       {content.parent_id && parentContent.id === rootContent.id && (
-        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ fontSize: 1, mb: 2, display: 'flex', flexDirection: 'row' }}>
           <Box
             sx={{
               textAlign: 'center',
@@ -167,7 +138,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
         [root]->[child]->[child]
       */}
       {content.parent_id && parentContent.id !== rootContent.id && (
-        <Box sx={{ fontSize: 1, mb: 3, display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{ fontSize: 1, mb: 2, display: 'flex', flexDirection: 'row' }}>
           <Box
             sx={{
               textAlign: 'center',
@@ -180,7 +151,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             Respondendo a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
-                <strong>"{parentContent.body}..."</strong>{' '}
+                <strong>{`"${parentContent.body}"`}</strong>{' '}
               </Link>
             )}
             {parentContent.status !== 'published' && (
@@ -202,7 +173,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
                 aria-label={`Este conteúdo está atualmente com status "${rootContent.status}"`}
                 direction="s"
                 noDelay={true}>
-                <strong>{rootContent.body}</strong>{' '}
+                <strong>{rootContent.title}</strong>{' '}
               </Tooltip>
             )}
           </Box>
@@ -212,46 +183,110 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, level }) {
-  return childrenList.map((child) => {
-    return (
+function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, renderIncrement }) {
+  const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
+
+  return childrenState.map((child) => {
+    const { children, children_deep_count, groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
+    const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
+    const plural = labelShowMore != 1 ? 's' : '';
+    const isPageRootOwner = pageRootOwnerId === owner_id;
+
+    return !renderIntent && !renderShowMore ? null : (
       <Box
         sx={{
           width: '100%',
           wordWrap: 'break-word',
           display: 'flex',
-          mt: 4,
+          mt: 3,
         }}
-        key={child.id}>
-        <Box
-          sx={{
-            pr: [0, null, null, 2],
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-          <TabCoinButtons content={child} />
-          <Box
-            sx={{
-              borderWidth: 0,
-              borderRightWidth: 1,
-              borderColor: 'border.muted',
-              borderStyle: 'dotted',
-              width: '50%',
-              height: '100%',
-            }}
-          />
-        </Box>
+        key={id}>
+        {renderIntent ? (
+          <>
+            <Box
+              sx={{
+                mr: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}>
+              <TabCoinButtons content={child} />
+              <Tooltip
+                direction="ne"
+                aria-label={`Ocultar resposta${plural}`}
+                role="button"
+                onClick={() => handleCollapse(id)}
+                sx={{
+                  cursor: 'pointer',
+                  width: '80%',
+                  height: '100%',
+                  minHeight: '24px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mt: 1,
+                  mx: '10%',
+                  '&:hover': {
+                    div: {
+                      display: 'block',
+                      borderLeftWidth: 1,
+                      borderColor: 'btn.danger.hoverBg',
+                      borderStyle: 'dashed',
+                    },
+                    svg: {
+                      backgroundColor: 'canvas.default',
+                    },
+                  },
+                }}>
+                <Box
+                  sx={{
+                    display: 'none',
+                    position: 'relative',
+                    width: '0%',
+                    left: '-7px',
+                    color: 'btn.danger.hoverBg',
+                    borderStyle: 'hidden!important',
+                  }}>
+                  <FoldIcon />
+                </Box>
+                <Box
+                  sx={{
+                    borderWidth: 0,
+                    borderRightWidth: 1,
+                    borderLeftWidth: 0,
+                    borderColor: 'btn.activeBorder',
+                    borderStyle: 'dotted',
+                    width: 0,
+                    transition: 'border 0.1s cubic-bezier(1,1,1,0)',
+                  }}
+                />
+              </Tooltip>
+            </Box>
 
-        <Box sx={{ width: '100%', overflow: 'auto' }}>
-          <Content content={child} mode="view" />
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', width: '100%', mt: '9px', pl: '1px', overflow: 'auto' }}>
+              <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />
 
-          <Box sx={{ mt: 4 }}>
-            <Content content={{ parent_id: child.id }} mode="compact" viewFrame={true} />
-          </Box>
+              <Box sx={{ display: 'flex', flex: 1, mt: 4, alignItems: 'end' }}>
+                <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
+              </Box>
 
-          {child.children.length > 0 && <RenderChildrenTree childrenList={child.children} level={level + 1} />}
-        </Box>
+              {children_deep_count > 0 && (
+                <RenderChildrenTree
+                  childrenDeepCount={children_deep_count}
+                  childrenList={children}
+                  pageRootOwnerId={pageRootOwnerId}
+                  renderIntent={renderIntent - 1}
+                  renderIncrement={renderIncrement}
+                />
+              )}
+            </Box>
+          </>
+        ) : (
+          <Button onClick={() => handleExpand(id)} variant="invisible">
+            <UnfoldIcon /> {`Ver mais ${labelShowMore} resposta${plural}`}
+            {labelShowMore != groupedCount && ` (${groupedCount} ocultas)`}
+          </Button>
+        )}
       </Box>
     );
   });
@@ -286,33 +321,20 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const userTryingToGet = user.createAnonymous();
 
-  try {
-    context.params = validator(context.params, {
-      username: 'required',
-      slug: 'required',
-    });
-  } catch (error) {
-    return {
-      notFound: true,
-      revalidate: 1,
-    };
-  }
-
-  let contentFound;
+  let contentTreeFound;
 
   try {
-    contentFound = await content.findOne({
+    contentTreeFound = await content.findTree({
       where: {
         owner_username: context.params.username,
         slug: context.params.slug,
-        status: 'published',
       },
     });
 
-    if (!contentFound) {
+    if (!contentTreeFound?.length) {
       throw new NotFoundError({
         message: `O conteúdo informado não foi encontrado no sistema.`,
         action: 'Verifique se o "slug" está digitado corretamente.',
@@ -322,6 +344,12 @@ export async function getStaticProps(context) {
       });
     }
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return {
+        notFound: true,
+      };
+    }
+
     if (error instanceof NotFoundError) {
       return {
         notFound: true,
@@ -332,39 +360,35 @@ export async function getStaticProps(context) {
     throw error;
   }
 
-  const secureContentFound = authorization.filterOutput(userTryingToGet, 'read:content', contentFound);
+  const secureContentTree = authorization.filterOutput(userTryingToGet, 'read:content:list', contentTreeFound);
 
-  const childrenFound = await content.findChildrenTree({
-    where: {
-      parent_id: contentFound.id,
-    },
-  });
+  const secureContentFound = secureContentTree[0];
 
-  const secureChildrenList = authorization.filterOutput(userTryingToGet, 'read:content:list', childrenFound);
-
-  const oneLineBody = removeMarkdown(secureContentFound.body).replace(/\s+/g, ' ');
-
-  const webserverHost = webserver.getHost();
+  const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
   const contentMetadata = {
     title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
-    image: `${webserverHost}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
-    url: `${webserverHost}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
-    description: oneLineBody.substring(0, 190),
+    image: `${webserver.host}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
+    url: `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
+    description: oneLineBody,
     published_time: secureContentFound.published_at,
     modified_time: secureContentFound.updated_at,
     author: secureContentFound.owner_username,
     type: 'article',
+    canonical: secureContentFound.parent_id
+      ? undefined
+      : `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
   };
 
   let secureRootContentFound = null;
   let secureParentContentFound = null;
 
-  if (secureContentFound.parent_id) {
-    const rootContentFound = await content.findRootContent({
+  if (contentTreeFound[0].path.length > 1) {
+    const rootContentFound = await content.findOne({
       where: {
-        id: secureContentFound.id,
+        id: contentTreeFound[0].path[0],
       },
+      attributes: { exclude: ['body'] },
     });
 
     secureRootContentFound = authorization.filterOutput(userTryingToGet, 'read:content', rootContentFound);
@@ -375,18 +399,41 @@ export async function getStaticProps(context) {
       },
     });
 
-    parentContentFound.body = removeMarkdown(parentContentFound.body).replace(/\s+/g, ' ').substring(0, 50);
+    parentContentFound.body = removeMarkdown(parentContentFound.body, { maxLength: 50 });
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
   }
 
+  if (contentTreeFound[0].path.length === 1) {
+    const parentContentFound = await content.findOne({
+      where: {
+        id: secureContentFound.parent_id,
+      },
+    });
+
+    secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
+
+    secureRootContentFound = secureParentContentFound;
+
+    delete secureRootContentFound.body;
+    secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
+  }
+
+  const adsFound = await ad.getRandom(1, {
+    ignoreId: secureContentFound.id,
+    ownerId: secureContentFound.owner_id,
+    tryOtherOwners: secureContentFound.type === 'content',
+  });
+  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
+
   return {
     props: {
+      adFound: secureAdValues[0] ?? null,
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
-      childrenFound: JSON.parse(JSON.stringify(secureChildrenList)),
       rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
-    revalidate: 10,
+    revalidate: 1,
+    swr: { revalidateOnFocus: false },
   };
-}
+});

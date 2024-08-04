@@ -1,149 +1,151 @@
-import useSWR from 'swr';
-import { Box, Text } from '@primer/react';
-import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@primer/octicons-react';
+import {
+  AdBanner,
+  Box,
+  EmptyState,
+  Link,
+  Pagination,
+  PastTime,
+  TabCoinBalanceTooltip,
+  Text,
+  Tooltip,
+} from '@/TabNewsUI';
+import { CommentIcon } from '@/TabNewsUI/icons';
 
-import { Link, PublishedSince, EmptyState } from 'pages/interface';
-
-export default function ContentList({ contentList, pagination, paginationBasePath, revalidatePath, emptyStateProps }) {
-  const listNumberOffset = pagination.perPage * (pagination.currentPage - 1);
-
-  // const { data: list } = useSWR(revalidatePath, { fallbackData: contentList, revalidateOnMount: true });
-  const list = contentList;
-
-  const previousPageUrl = `${paginationBasePath}/${pagination?.previousPage}`;
-  const nextPageUrl = `${paginationBasePath}/${pagination?.nextPage}`;
+export default function ContentList({ ad, contentList: list, pagination, paginationBasePath, emptyStateProps }) {
+  const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
 
   return (
     <>
       {list.length > 0 ? (
         <Box
+          as="ol"
           sx={{
             display: 'grid',
             gap: '0.5rem',
-            gridTemplateColumns: 'auto 1fr',
-          }}>
+            gridTemplateColumns: 'min-content minmax(0, 1fr)',
+            padding: 0,
+            margin: 0,
+          }}
+          key={`content-list-${listNumberStart}`}
+          start={listNumberStart}>
+          {ad && (
+            <Box as="li" sx={{ display: 'block', gridColumnStart: 2, '::marker': 'none' }}>
+              <AdBanner ad={ad} />
+            </Box>
+          )}
+
           <RenderItems />
+
           <EndOfRelevant />
         </Box>
       ) : (
         <RenderEmptyMessage {...emptyStateProps} />
       )}
 
-      {list.length > 0 ? (
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'center',
-            gap: 4,
-            m: 4,
-            mb: 2,
-          }}>
-          {pagination.previousPage ? (
-            <Link href={previousPageUrl}>
-              <ChevronLeftIcon size={16} />
-              Anterior
-            </Link>
-          ) : (
-            <Text color="fg.muted">
-              <ChevronLeftIcon size={16} />
-              Anterior
-            </Text>
-          )}
-
-          {pagination.nextPage ? (
-            <Link href={nextPageUrl}>
-              Próximo
-              <ChevronRightIcon size={16} />
-            </Link>
-          ) : (
-            <Text color="fg.muted">
-              Próximo
-              <ChevronRightIcon size={16} />
-            </Text>
-          )}
-        </Box>
-      ) : null}
+      {list.length > 0 ? <Pagination {...pagination} basePath={paginationBasePath} /> : null}
     </>
   );
 
   function RenderItems() {
     function ChildrenDeepCountText({ count }) {
-      return count !== 1 ? `${count} comentários` : `${count} comentário`;
+      return count > 1 ? `${count} comentários` : `${count} comentário`;
     }
 
     function TabCoinsText({ count }) {
-      return Math.abs(count) !== 1 ? `${count} tabcoins` : `${count} tabcoin`;
+      return count > 1 || count < -1 ? `${count} tabcoins` : `${count} tabcoin`;
     }
 
-    return list.map((contentObject, index) => {
-      const itemCount = index + 1 + listNumberOffset;
-      return [
-        <Box key={itemCount} sx={{ textAlign: 'right' }}>
-          <Text sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right' }}>
-            {itemCount}.
-          </Text>
-        </Box>,
-        <Box as="article" key={contentObject.id} sx={{ overflow: 'auto' }}>
-          <Box
-            sx={{
-              overflow: 'auto',
+    return list.map((contentObject) => {
+      return (
+        <Box
+          key={contentObject.id}
+          as="li"
+          sx={{
+            display: 'contents',
+            ':before': {
+              content: 'counter(list-item) "."',
+              counterIncrement: 'list-item',
               fontWeight: 'semibold',
-              fontSize: 2,
-              '> a': {
-                ':link': {
-                  color: 'fg.default',
+              width: 'min-content',
+              marginLeft: 'auto',
+            },
+          }}>
+          <Box as="article">
+            <Box
+              sx={{
+                overflow: 'auto',
+                fontWeight: 'semibold',
+                fontSize: 2,
+                '> a': {
+                  ':link': {
+                    color: 'fg.default',
+                  },
+                  ':visited': {
+                    color: 'fg.subtle',
+                  },
                 },
-                ':visited': {
-                  color: 'fg.subtle',
-                },
-              },
-            }}>
-            {contentObject.parent_id ? (
-              <Link
-                sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
-                href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                <CommentIcon verticalAlign="middle" size="small" /> "{contentObject.body}"
-              </Link>
-            ) : (
-              <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
-                {contentObject.title}
-              </Link>
-            )}
+              }}>
+              {contentObject.parent_id ? (
+                <Link
+                  sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
+                  href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  <CommentIcon verticalAlign="middle" size="small" />
+                  {` "${contentObject.body}"`}
+                </Link>
+              ) : (
+                <Link sx={{ wordWrap: 'break-word' }} href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  {contentObject.title}
+                </Link>
+              )}
+            </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gap: 1,
+                gridTemplateColumns:
+                  'max-content max-content max-content max-content minmax(20px, max-content) max-content max-content',
+                fontSize: 0,
+                whiteSpace: 'nowrap',
+                color: 'neutral.emphasis',
+              }}>
+              {contentObject.type === 'ad' ? (
+                <Text sx={{ color: 'success.fg' }}>Patrocinado</Text>
+              ) : (
+                <TabCoinBalanceTooltip
+                  direction="ne"
+                  credit={contentObject.tabcoins_credit}
+                  debit={contentObject.tabcoins_debit}>
+                  <TabCoinsText count={contentObject.tabcoins} />
+                </TabCoinBalanceTooltip>
+              )}
+              {' · '}
+              <Text>
+                <ChildrenDeepCountText count={contentObject.children_deep_count} />
+              </Text>
+              {' · '}
+              <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
+                <Text as="address" sx={{ fontStyle: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                    {contentObject.owner_username}
+                  </Link>
+                </Text>
+              </Tooltip>
+              {' · '}
+              <Text>
+                <PastTime direction="nw" date={contentObject.published_at} />
+              </Text>
+            </Box>
           </Box>
-          <Box sx={{ fontSize: 0, color: 'neutral.emphasis' }}>
-            <Text>
-              <TabCoinsText count={contentObject.tabcoins} />
-            </Text>
-            {' · '}
-            <Text>
-              <ChildrenDeepCountText count={contentObject.children_deep_count} />
-            </Text>
-            {' · '}
-            <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
-            </Link>
-            {' · '}
-            <Text>
-              <PublishedSince date={contentObject.published_at} />
-            </Text>
-          </Box>
-        </Box>,
-      ];
+        </Box>
+      );
     });
   }
 
   function EndOfRelevant() {
-    if (paginationBasePath == '/pagina' && !pagination.nextPage)
-      return [
-        <Box key={0} sx={{ textAlign: 'right' }}>
-          <Text
-            sx={{ fontSize: 2, color: 'fg.default', fontWeight: 'semibold', textAlign: 'right', visibility: 'hidden' }}>
-            0.
-          </Text>
-        </Box>,
-        <Box key={-1}>
-          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes'}>
+    if (paginationBasePath == '/pagina' && !pagination.nextPage) {
+      return (
+        <Box key="end-of-relevant" sx={{ gridColumnStart: 2 }}>
+          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes/pagina/1'}>
             <Box
               sx={{
                 overflow: 'auto',
@@ -154,8 +156,9 @@ export default function ContentList({ contentList, pagination, paginationBasePat
             </Box>
             <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
           </Link>
-        </Box>,
-      ];
+        </Box>
+      );
+    }
     return null;
   }
 

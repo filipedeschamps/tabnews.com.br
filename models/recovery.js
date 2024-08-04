@@ -1,9 +1,10 @@
-import email from 'infra/email.js';
+import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
+import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
-import user from 'models/user.js';
 import session from 'models/session';
-import { NotFoundError, ValidationError } from 'errors/index.js';
+import { RecoveryEmail } from 'models/transactional';
+import user from 'models/user.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
   const userFound = await findUserByUsernameOrEmail(secureInputValues);
@@ -30,9 +31,8 @@ async function findUserByUsernameOrEmail({ username, email }) {
         errorLocationCode: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
       });
     }
+    throw error;
   }
-
-  throw error;
 }
 
 async function create(user) {
@@ -49,6 +49,11 @@ async function create(user) {
 async function sendEmailToUser(user, tokenId) {
   const recoverPageEndpoint = getRecoverPageEndpoint(tokenId);
 
+  const { html, text } = RecoveryEmail({
+    username: user.username,
+    recoveryLink: recoverPageEndpoint,
+  });
+
   await email.send({
     from: {
       name: 'TabNews',
@@ -56,21 +61,13 @@ async function sendEmailToUser(user, tokenId) {
     },
     to: user.email,
     subject: 'Recuperação de Senha',
-    text: `${user.username}, uma solicitação de recuperação de senha foi solicitada. Caso você não tenha feito esta solicitação, ignore esse email.
-
-Caso você tenha feito essa solicitação, clique no link abaixo para definir uma nova senha:
-
-${recoverPageEndpoint}
-
-Atenciosamente,
-Equipe TabNews
-Rua Antônio da Veiga, 495, Blumenau, SC, 89012-500`,
+    html,
+    text,
   });
 }
 
 function getRecoverPageEndpoint(tokenId) {
-  const webserverHost = webserver.getHost();
-  return `${webserverHost}/cadastro/recuperar/${tokenId}`;
+  return `${webserver.host}/cadastro/recuperar/${tokenId}`;
 }
 
 async function resetUserPassword(secureInputValues) {
@@ -79,7 +76,7 @@ async function resetUserPassword(secureInputValues) {
   if (!tokenObject.used) {
     const userToken = await markTokenAsUsed(tokenObject.id);
     await session.expireAllFromUserId(tokenObject.user_id);
-    await updateUserPassword(tokenObject.user_id, secureInputValues.password);
+    await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
     return userToken;
   }
 
@@ -169,11 +166,6 @@ async function markTokenAsUsed(tokenId) {
 
   const results = await database.query(query);
   return results.rows[0];
-}
-
-async function updateUserPassword(userId, password) {
-  const currentUser = await user.findOneById(userId);
-  await user.update(currentUser.username, { password });
 }
 
 async function update(tokenId, tokenBody) {

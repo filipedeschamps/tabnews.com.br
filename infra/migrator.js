@@ -1,6 +1,7 @@
-const { join, resolve } = require('path');
-import database from 'infra/database.js';
 import migrationRunner from 'node-pg-migrate';
+import { join, resolve } from 'node:path';
+
+import database from 'infra/database.js';
 import logger from 'infra/logger.js';
 
 const defaultConfigurations = {
@@ -27,8 +28,6 @@ async function listPendingMigrations() {
     });
 
     return pendingMigrations;
-  } catch (error) {
-    throw error;
   } finally {
     await databaseClient.end();
   }
@@ -46,14 +45,14 @@ async function runPendingMigrations() {
     });
 
     return migratedMigrations;
-  } catch (error) {
-    throw error;
   } finally {
     await databaseClient.end();
   }
 }
 
-export default {
+const migrator = {
   listPendingMigrations,
   runPendingMigrations,
 };
+
+export default migrator;

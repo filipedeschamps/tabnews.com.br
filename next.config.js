@@ -1,4 +1,7 @@
 module.exports = {
+  experimental: {
+    scrollRestoration: true,
+  },
   pageExtensions: ['public.js'],
   eslint: {
     ignoreDuringBuilds: true,
@@ -6,7 +9,6 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
-  swcMinify: false,
   async redirects() {
     return [
       {
@@ -17,6 +19,31 @@ module.exports = {
       {
         source: '/rss.xml',
         destination: '/recentes/rss',
+        permanent: true,
+      },
+      {
+        source: '/pagina/1',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/recentes',
+        destination: '/recentes/pagina/1',
+        permanent: true,
+      },
+      {
+        source: '/recentes/comentarios',
+        destination: '/recentes/comentarios/1',
+        permanent: true,
+      },
+      {
+        source: '/recentes/classificados',
+        destination: '/recentes/classificados/1',
+        permanent: true,
+      },
+      {
+        source: '/recentes/todos',
+        destination: '/recentes/todos/1',
         permanent: true,
       },
     ];

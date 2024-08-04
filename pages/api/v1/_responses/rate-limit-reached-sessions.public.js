@@ -1,10 +1,12 @@
 import nextConnect from 'next-connect';
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
+
+import { ForbiddenError, TooManyRequestsError, UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';
 import controller from 'models/controller.js';
+import ip from 'models/ip.js';
 import validator from 'models/validator.js';
-import { UnauthorizedError, ForbiddenError, TooManyRequestsError } from 'errors/index.js';
 
 export default nextConnect({
   onError: controller.onErrorHandler,
@@ -30,6 +32,8 @@ function logRequest(request, response, next) {
       method: request.method,
       url: request.url,
       body: request.body,
+      clientIp: ip.extractFromRequest(request),
+      type: 'sessions',
     },
   });
 

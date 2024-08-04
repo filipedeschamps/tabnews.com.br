@@ -1,9 +1,10 @@
-import { Pool, Client } from 'pg';
 import retry from 'async-retry';
-import { ServiceError } from 'errors/index.js';
+import { Client, Pool } from 'pg';
+import snakeize from 'snakeize';
+
+import { ServiceError } from 'errors';
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
-import snakeize from 'snakeize';
 
 const configurations = {
   user: process.env.POSTGRES_USER,
@@ -11,7 +12,7 @@ const configurations = {
   database: process.env.POSTGRES_DB,
   password: process.env.POSTGRES_PASSWORD,
   port: process.env.POSTGRES_PORT,
-  connectionTimeoutMillis: 1000,
+  connectionTimeoutMillis: 2000,
   idleTimeoutMillis: 30000,
   max: 1,
   ssl: {
@@ -20,7 +21,7 @@ const configurations = {
   allowExitOnIdle: true,
 };
 
-if (!webserver.isLambdaServer()) {
+if (!webserver.isServerlessRuntime) {
   configurations.max = 30;
 
   // https://github.com/filipedeschamps/tabnews.com.br/issues/84
@@ -33,10 +34,12 @@ const cache = {
   reservedConnections: null,
   openedConnections: null,
   openedConnectionsLastUpdate: null,
+  poolQueryCount: 0,
 };
 
 async function query(query, options = {}) {
   let client;
+  cache.poolQueryCount += 1;
 
   try {
     client = options.transaction ? options.transaction : await tryToGetNewClientFromPool();
@@ -47,11 +50,7 @@ async function query(query, options = {}) {
     if (client && !options.transaction) {
       const tooManyConnections = await checkForTooManyConnections(client);
 
-      client.release();
-      if (tooManyConnections && webserver.isLambdaServer()) {
-        await cache.pool.end();
-        cache.pool = null;
-      }
+      client.release(tooManyConnections && webserver.isServerlessRuntime);
     }
   }
 }
@@ -80,22 +79,25 @@ async function checkForTooManyConnections(client) {
 
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 5000;
-  const maxConnectionsTolerance = 0.7;
+  const maxConnectionsTolerance = 0.8;
 
-  if (cache.maxConnections === null || cache.reservedConnections === null) {
-    const [maxConnections, reservedConnections] = await getConnectionLimits();
-    cache.maxConnections = maxConnections;
-    cache.reservedConnections = reservedConnections;
-  }
+  try {
+    if (cache.maxConnections === null || cache.reservedConnections === null) {
+      const [maxConnections, reservedConnections] = await getConnectionLimits();
+      cache.maxConnections = maxConnections;
+      cache.reservedConnections = reservedConnections;
+    }
 
-  if (
-    !cache.openedConnections === null ||
-    !cache.openedConnectionsLastUpdate === null ||
-    currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge
-  ) {
-    const openedConnections = await getOpenedConnections();
-    cache.openedConnections = openedConnections;
-    cache.openedConnectionsLastUpdate = currentTime;
+    if (cache.openedConnections === null || currentTime - cache.openedConnectionsLastUpdate > openedConnectionsMaxAge) {
+      const openedConnections = await getOpenedConnections();
+      cache.openedConnections = openedConnections;
+      cache.openedConnectionsLastUpdate = currentTime;
+    }
+  } catch (error) {
+    if (error.code === 'ECONNRESET') {
+      return true;
+    }
+    throw error;
   }
 
   if (cache.openedConnections > (cache.maxConnections - cache.reservedConnections) * maxConnectionsTolerance) {
@@ -106,7 +108,7 @@ async function checkForTooManyConnections(client) {
 
   async function getConnectionLimits() {
     const [maxConnectionsResult, reservedConnectionResult] = await client.query(
-      'SHOW max_connections; SHOW superuser_reserved_connections;'
+      'SHOW max_connections; SHOW superuser_reserved_connections;',
     );
     return [
       maxConnectionsResult.rows[0].max_connections,
@@ -156,20 +158,22 @@ async function tryToGetNewClient() {
   }
 }
 
-function parseQueryErrorAndLog(error, query) {
-  const expectedErrorsCode = [
-    '23505', // unique constraint violation
-    '40001', // serialization_failure
-  ];
+const UNIQUE_CONSTRAINT_VIOLATION = '23505';
+const SERIALIZATION_FAILURE = '40001';
+const UNDEFINED_FUNCTION = '42883';
 
-  if (!webserver.isLambdaServer()) {
-    expectedErrorsCode.push('42883'); // undefined_function
+function parseQueryErrorAndLog(error, query) {
+  const expectedErrorsCode = [UNIQUE_CONSTRAINT_VIOLATION, SERIALIZATION_FAILURE];
+
+  if (!webserver.isServerlessRuntime) {
+    expectedErrorsCode.push(UNDEFINED_FUNCTION);
   }
 
   const errorToReturn = new ServiceError({
     message: error.message,
     context: {
       query: query.text,
+      databaseCache: { ...cache, pool: !!cache.pool },
     },
     errorLocationCode: 'INFRA:DATABASE:QUERY',
     databaseErrorCode: error.code,
@@ -190,4 +194,9 @@ export default Object.freeze({
   query,
   getNewClient,
   transaction,
+  errorCodes: {
+    UNIQUE_CONSTRAINT_VIOLATION,
+    SERIALIZATION_FAILURE,
+    UNDEFINED_FUNCTION,
+  },
 });

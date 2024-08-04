@@ -1,7 +1,4 @@
-import { Box, Heading } from '@primer/react';
-import { Viewer } from '@bytemd/react';
-
-import { DefaultLayout } from 'pages/interface/index.js';
+import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const body = `Leia com atenção qual a melhor forma de entrar em contato:
@@ -32,7 +29,7 @@ export default function Page() {
     <DefaultLayout metadata={{ title: 'Contato' }}>
       <Box>
         <Heading as="h1">Contato</Heading>
-        <Viewer value={body} />
+        <Viewer value={body} clobberPrefix="" />
       </Box>
     </DefaultLayout>
   );

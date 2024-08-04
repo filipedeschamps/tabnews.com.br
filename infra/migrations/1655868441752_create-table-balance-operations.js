@@ -79,7 +79,7 @@ exports.up = async (pgm) => {
 
       RETURN total_balance;
     END;
-  `
+  `,
   );
 };
 

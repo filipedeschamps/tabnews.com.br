@@ -1,9 +1,8 @@
-import setCookieParser from 'set-cookie-parser';
-import session from 'models/session.js';
-import user from 'models/user.js';
+import { ForbiddenError, UnauthorizedError } from 'errors';
 import authorization from 'models/authorization.js';
 import password from 'models/password.js';
-import { ForbiddenError, UnauthorizedError } from 'errors/index.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 async function hashPassword(unhashedPassword) {
@@ -22,23 +21,23 @@ async function comparePasswords(providedPassword, passwordHash) {
   }
 }
 
-async function injectAnonymousOrUser(request, response, next) {
+async function injectAnonymousOrUser(request, response, next, options = {}) {
   if (request.cookies?.session_id) {
     const cleanCookies = validator(request.cookies, {
       session_id: 'required',
     });
     request.cookies.session_id = cleanCookies.session_id;
 
-    await injectAuthenticatedUser(request, response);
+    await injectAuthenticatedUser(request, options);
     return next();
   } else {
     injectAnonymousUser(request);
     return next();
   }
 
-  async function injectAuthenticatedUser(request, response) {
+  async function injectAuthenticatedUser(request, options = {}) {
     const sessionObject = await session.findOneValidFromRequest(request);
-    const userObject = await user.findOneById(sessionObject.user_id);
+    const userObject = await user.findOneById(sessionObject.user_id, options);
 
     if (!authorization.can(userObject, 'read:session')) {
       throw new ForbiddenError({
@@ -48,12 +47,10 @@ async function injectAnonymousOrUser(request, response, next) {
       });
     }
 
-    const sessionRenewed = await session.renew(sessionObject.id, response);
-
     request.context = {
       ...request.context,
       user: userObject,
-      session: sessionRenewed,
+      session: sessionObject,
     };
   }
 
@@ -66,13 +63,6 @@ async function injectAnonymousOrUser(request, response, next) {
   }
 }
 
-//TODO: this should be here or inside the session model?
-function parseSetCookies(response) {
-  const setCookieHeaderValues = response.headers.raw()['set-cookie'];
-  const parsedCookies = setCookieParser.parse(setCookieHeaderValues, { map: true });
-  return parsedCookies;
-}
-
 async function createSessionAndSetCookies(userId, response) {
   const sessionObject = await session.create(userId);
   session.setSessionIdCookieInResponse(sessionObject.token, response);
@@ -83,6 +73,5 @@ export default Object.freeze({
   hashPassword,
   comparePasswords,
   injectAnonymousOrUser,
-  parseSetCookies,
   createSessionAndSetCookies,
 });

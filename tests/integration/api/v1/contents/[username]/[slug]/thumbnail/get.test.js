@@ -1,7 +1,7 @@
-const { join, resolve } = require('path');
-import { readFileSync } from 'fs';
-import fetch from 'cross-fetch';
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { version as uuidVersion } from 'uuid';
+
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -21,11 +21,11 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -39,8 +39,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('"root" content with "deleted" status', async () => {
@@ -54,11 +54,11 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -72,8 +72,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('"root" content with short "title", short "username" and 0 "children"', async () => {
@@ -81,9 +81,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         username: 'abc',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-01-01T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const rootContent = await orchestrator.createContent({
@@ -92,13 +91,13 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -111,12 +110,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'root-short-title-short-username-0-children.png'
-        )
+          'root-short-title-short-username-0-children.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"root" content with long "title", long "username" and 0 "children"', async () => {
@@ -124,9 +123,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         username: 'ThisUsernameHas30Characterssss',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-06-06T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const rootContent = await orchestrator.createContent({
@@ -136,13 +134,13 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -155,12 +153,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'root-long-title-long-username-0-children.png'
-        )
+          'root-long-title-long-username-0-children.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"root" content with long "title", long "username" and 2 "children"', async () => {
@@ -168,9 +166,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         username: 'ThisUsernameHas30Charactersss2',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-07-01T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const rootContent = await orchestrator.createContent({
@@ -180,7 +177,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const childContent1 = await orchestrator.createContent({
         parent_id: rootContent.id,
@@ -197,10 +194,10 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -213,12 +210,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'root-long-title-long-username-2-children.png'
-        )
+          'root-long-title-long-username-2-children.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" content with short "parent_title", short "body" and 0 "children"', async () => {
@@ -232,9 +229,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-02-02T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const childContent = await orchestrator.createContent({
@@ -244,13 +240,13 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -263,12 +259,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-short-parent-title-short-body-0-children.png'
-        )
+          'child-short-parent-title-short-body-0-children.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" content with long "parent_title", long "body" and 0 "children"', async () => {
@@ -283,9 +279,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-10-10T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const childContent = await orchestrator.createContent({
@@ -295,13 +290,13 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -314,12 +309,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-long-parent-title-long-body-0-children.png'
-        )
+          'child-long-parent-title-long-body-0-children.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" of a "child" content with "parent_title"', async () => {
@@ -333,9 +328,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-02-02T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const contentLevel2 = await orchestrator.createContent({
@@ -352,13 +346,13 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -371,12 +365,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-child-content-with-parent-title.png'
-        )
+          'child-child-content-with-parent-title.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
     test('"child" of a "child" content without "parent_title"', async () => {
@@ -390,9 +384,8 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: Date.parse('2022-02-02T12:00:00.000Z'),
-        advanceTimers: true,
       });
 
       const contentLevel2 = await orchestrator.createContent({
@@ -409,13 +402,13 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         status: 'published',
       });
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${contentLevel3.slug}/thumbnail`,
       );
 
-      const responseBody = await response.buffer();
+      const responseBody = Buffer.from(await response.arrayBuffer());
 
       const benchmarkFile = readFileSync(
         join(
@@ -428,12 +421,12 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
           '[username]',
           '[slug]',
           'thumbnail',
-          'child-child-content-without-parent-title.png'
-        )
+          'child-child-content-without-parent-title.png',
+        ),
       );
 
-      expect(response.status).toEqual(200);
-      expect(Buffer.compare(benchmarkFile, responseBody)).toEqual(0); // has the same bytes
+      expect(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
   });
 });

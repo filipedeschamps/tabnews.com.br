@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { DefaultLayout, useUser } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash } from '@primer/react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
   return (
@@ -16,18 +16,17 @@ export default function RecoverPassword() {
 }
 
 function RecoverPasswordForm() {
-  const router = useRouter();
   const { user, isLoading: userIsLoading } = useUser();
 
   const userInputRef = useRef('');
 
   useEffect(() => {
     if (user && !userIsLoading) {
-      userInputRef.current.value = user.username;
+      userInputRef.current.value = user.email;
     }
   }, [user, userIsLoading]);
 
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
+  const [globalMessageObject, setGlobalMessageObject] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
 
@@ -70,11 +69,20 @@ function RecoverPasswordForm() {
         }),
       });
 
-      setGlobalErrorMessage(undefined);
+      setGlobalMessageObject(undefined);
       const responseBody = await response.json();
 
       if (response.status === 201) {
-        router.push('/cadastro/recuperar/confirmar');
+        const message =
+          userInput === user?.email || username
+            ? `Um e-mail será enviado para "${userInput}" com um link para definir uma nova senha.`
+            : `Caso o e-mail "${userInput}" esteja cadastrado, um link será enviado para definir uma nova senha.`;
+
+        setGlobalMessageObject({
+          message: message,
+          type: 'success',
+        });
+        setIsLoading(false);
         return;
       }
 
@@ -85,12 +93,15 @@ function RecoverPasswordForm() {
       }
 
       if (response.status >= 401) {
-        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} (${responseBody.error_id})`);
+        setGlobalMessageObject({ type: 'danger', message: createErrorMessage(responseBody) });
         setIsLoading(false);
         return;
       }
     } catch (error) {
-      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+      setGlobalMessageObject({
+        type: 'danger',
+        message: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.',
+      });
       setIsLoading(false);
     }
   }
@@ -98,40 +109,79 @@ function RecoverPasswordForm() {
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+        {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.message}</Flash>}
 
-        <FormControl id="username">
-          <FormControl.Label>Digite seu usuário ou e-mail</FormControl.Label>
-          <TextInput
-            ref={userInputRef}
-            onChange={clearErrors}
-            name="userInput"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu usuário ou e-mail"
-          />
-          {['userInput', 'email', 'username'].includes(errorObject?.key) && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
+        {user?.features.includes('create:recovery_token:username') && (
+          <Flash variant="default">
+            Você pode ajudar outra pessoa a recuperar sua senha, é só digitar o nome de usuário dela.
+          </Flash>
+        )}
 
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
-          )}
-        </FormControl>
+        {user?.features.includes('create:recovery_token:username') && (
+          <FormControl id="userInput">
+            <FormControl.Label>Digite seu e-mail ou o nome de usuário da pessoa que deseja ajudar</FormControl.Label>
+            <TextInput
+              contrast
+              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              ref={userInputRef}
+              onChange={clearErrors}
+              name="userInput"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Digite seu e-mail ou o nome de usuário de outra pessoa"
+            />
+            {['userInput', 'email', 'username'].includes(errorObject?.key) && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            {errorObject?.type === 'string.alphanum' && (
+              <FormControl.Caption>
+                Dica: use somente letras e números, por exemplo: nomeSobrenome4{' '}
+              </FormControl.Caption>
+            )}
+          </FormControl>
+        )}
+
+        {!user?.features.includes('create:recovery_token:username') && (
+          <FormControl id="userInput">
+            <FormControl.Label>Digite seu e-mail</FormControl.Label>
+            <TextInput
+              contrast
+              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              ref={userInputRef}
+              onChange={clearErrors}
+              name="userInput"
+              size="large"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              block={true}
+              aria-label="Seu e-mail"
+            />
+            {['userInput', 'email'].includes(errorObject?.key) && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            {errorObject?.key === 'username' && (
+              <FormControl.Validation variant="error">Insira um endereço de email válido.</FormControl.Validation>
+            )}
+          </FormControl>
+        )}
+
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <Button
+          <ButtonWithLoader
             variant="primary"
             size="large"
             type="submit"
-            disabled={isLoading}
             sx={{ width: '100%' }}
-            aria-label="Recuperar">
+            aria-label="Recuperar"
+            isLoading={isLoading}>
             Recuperar
-          </Button>
+          </ButtonWithLoader>
         </FormControl>
       </Box>
     </form>

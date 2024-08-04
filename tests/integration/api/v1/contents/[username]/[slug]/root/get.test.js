@@ -1,6 +1,6 @@
-import { setTimeout } from 'timers/promises';
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
+
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -20,11 +20,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -37,8 +37,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "root" content with "deleted" status', async () => {
@@ -52,11 +52,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       await orchestrator.updateContent(rootContent.id, { status: 'deleted' });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -69,8 +69,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "root" content with "published" status', async () => {
@@ -82,11 +82,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -100,8 +100,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'parent_id',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "child" content 1 level deep with "draft" status', async () => {
@@ -124,11 +124,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -141,8 +141,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "child" content 1 level deep with "deleted" status', async () => {
@@ -169,11 +169,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -186,8 +186,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "child" content 1 level deep with "published" status', async () => {
@@ -197,7 +197,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -210,11 +210,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel1.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -222,9 +222,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
+        body: relevantBody,
         children_deep_count: 1,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -232,6 +233,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
       });
     });
 
@@ -242,7 +245,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -271,11 +274,11 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -283,9 +286,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
+        body: relevantBody,
         children_deep_count: 3,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -293,6 +297,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
       });
     });
 
@@ -303,7 +309,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -336,12 +342,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -349,9 +355,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Root content body',
-        children_deep_count: 1,
+        body: relevantBody,
+        children_deep_count: 2,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -359,6 +366,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: null,
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
       });
     });
 
@@ -370,7 +379,6 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         title: 'Root content title',
         body: 'Root content body',
-        status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
 
@@ -403,12 +411,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -418,13 +426,16 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         title: '[Não disponível]',
         body: '[Não disponível]',
         status: 'draft',
+        type: 'content',
         source_url: null,
-        published_at: rootContent.published_at.toISOString(),
+        published_at: null,
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDrafted.updated_at.toISOString(),
         deleted_at: null,
         owner_username: firstUser.username,
-        tabcoins: 1,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         children_deep_count: 0,
       });
     });
@@ -436,7 +447,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root content body',
+        body: relevantBody,
         status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
@@ -470,12 +481,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       });
 
       const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`
+        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContentLevel3.slug}/root`,
       );
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -485,6 +496,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         title: '[Não disponível]',
         body: '[Não disponível]',
         status: 'deleted',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -492,7 +504,68 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         deleted_at: rootContentDeleted.deleted_at.toISOString(),
         owner_username: firstUser.username,
         tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
         children_deep_count: 0,
+      });
+    });
+
+    test('Root containing TabCoins credits and debits', async () => {
+      const firstUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root content title',
+        body: relevantBody,
+        status: 'published',
+      });
+
+      await orchestrator.createRate(rootContent, 2);
+      await orchestrator.createRate(rootContent, -6);
+
+      const childContentLevel1 = await orchestrator.createContent({
+        owner_id: secondUser.id,
+        parent_id: rootContent.id,
+        title: 'Child content title Level 1',
+        body: 'Child content body Level 1',
+        status: 'published',
+      });
+
+      const childContentLevel2 = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        parent_id: childContentLevel1.id,
+        title: 'Child content title Level 2',
+        body: 'Child content body Level 2',
+        status: 'published',
+      });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${childContentLevel2.slug}/root`,
+      );
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(200);
+
+      expect(responseBody).toStrictEqual({
+        id: rootContent.id,
+        parent_id: null,
+        owner_id: firstUser.id,
+        slug: 'root-content-title',
+        title: 'Root content title',
+        body: relevantBody,
+        children_deep_count: 2,
+        status: 'published',
+        type: 'content',
+        source_url: null,
+        published_at: rootContent.published_at.toISOString(),
+        created_at: rootContent.created_at.toISOString(),
+        updated_at: rootContent.updated_at.toISOString(),
+        deleted_at: null,
+        owner_username: firstUser.username,
+        tabcoins: -3,
+        tabcoins_credit: 2,
+        tabcoins_debit: -6,
       });
     });
   });

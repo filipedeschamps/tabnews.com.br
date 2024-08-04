@@ -1,19 +1,29 @@
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { DefaultLayout, useUser } from 'pages/interface/index.js';
-import { FormControl, Box, Heading, Button, TextInput, Flash, Link, Text } from '@primer/react';
+import { useRef, useState } from 'react';
+
+import {
+  Box,
+  ButtonWithLoader,
+  DefaultLayout,
+  Flash,
+  FormControl,
+  Heading,
+  Link,
+  PasswordInput,
+  Text,
+  TextInput,
+} from '@/TabNewsUI';
+import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function Login() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Login' }}>
+    <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
       <LoginForm />
     </DefaultLayout>
   );
 }
 
 function LoginForm() {
-  const { user, fetchUser } = useUser();
-  const router = useRouter();
+  const { fetchUser } = useUser();
 
   const emailRef = useRef('');
   const passwordRef = useRef('');
@@ -21,26 +31,6 @@ function LoginForm() {
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState(undefined);
-  const [capsLockWarningMessage, setCapsLockWarningMessage] = useState(false);
-
-  useEffect(() => {
-    if (user && router) {
-      if (router.query?.redirect) {
-        router.push(router.query.redirect);
-      } else {
-        router.push('/publicar');
-      }
-    }
-  }, [user, router]);
-
-  function detectCapsLock(event) {
-    if (event.getModifierState('CapsLock')) {
-      setCapsLockWarningMessage('Atenção: Caps Lock está ativado.');
-      return;
-    }
-
-    setCapsLockWarningMessage(false);
-  }
 
   function clearErrors() {
     setErrorObject(undefined);
@@ -84,7 +74,7 @@ function LoginForm() {
       }
 
       if (response.status >= 401) {
-        setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+        setGlobalErrorMessage(createErrorMessage(responseBody));
         setIsLoading(false);
         return;
       }
@@ -115,45 +105,32 @@ function LoginForm() {
               spellCheck={false}
               block={true}
               aria-label="Seu email"
+              contrast
+              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
             />
             {errorObject?.key === 'email' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
           </FormControl>
-          <FormControl id="password">
-            <FormControl.Label>Senha</FormControl.Label>
-            <TextInput
-              ref={passwordRef}
-              onChange={clearErrors}
-              onKeyDown={detectCapsLock}
-              onKeyUp={detectCapsLock}
-              name="password"
-              type="password"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              size="large"
-              block={true}
-              aria-label="Sua senha"
-            />
-            {capsLockWarningMessage && (
-              <FormControl.Validation variant="warning">{capsLockWarningMessage}</FormControl.Validation>
-            )}
-            {errorObject?.key === 'password' && (
-              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-            )}
-          </FormControl>
+          <PasswordInput
+            inputRef={passwordRef}
+            id="password"
+            name="password"
+            label="Senha"
+            errorObject={errorObject}
+            setErrorObject={setErrorObject}
+          />
           <FormControl>
             <FormControl.Label visuallyHidden>Login</FormControl.Label>
-            <Button
+            <ButtonWithLoader
               variant="primary"
               size="large"
               type="submit"
-              disabled={isLoading}
               sx={{ width: '100%' }}
-              aria-label="Login">
+              aria-label="Login"
+              isLoading={isLoading}>
               Login
-            </Button>
+            </ButtonWithLoader>
           </FormControl>
         </Box>
       </form>

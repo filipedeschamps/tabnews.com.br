@@ -1,12 +1,15 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
+import { ForbiddenError, NotFoundError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
-import database from 'infra/database.js';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import { ForbiddenError, NotFoundError } from 'errors/index.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -14,10 +17,15 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
-  .patch(patchValidationHandler, authorization.canRequest('update:content'), patchHandler);
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
+  .patch(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    patchValidationHandler,
+    authorization.canRequest('update:content'),
+    patchHandler,
+  );
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -30,9 +38,8 @@ function getValidationHandler(request, response, next) {
   next();
 }
 
-// TODO: cache the response
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
+  const userTryingToGet = user.createAnonymous();
 
   const contentFound = await content.findOne({
     where: {
@@ -66,7 +73,6 @@ function patchValidationHandler(request, response, next) {
   request.query = cleanQueryValues;
 
   const cleanBodyValues = validator(request.body, {
-    parent_id: 'optional',
     slug: 'optional',
     title: 'optional',
     body: 'optional',
@@ -87,7 +93,7 @@ async function patchHandler(request, response) {
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      $or: [{ status: 'draft' }, { status: 'published' }],
+      status: ['draft', 'published'],
     },
   });
 
@@ -109,31 +115,30 @@ async function patchHandler(request, response) {
     });
   }
 
-  let filteredBodyValues;
-
-  if (!unfilteredBodyValues.parent_id) {
-    if (!authorization.can(userTryingToPatch, 'create:content:text_root', unfilteredBodyValues)) {
+  if (!contentToBeUpdated.parent_id) {
+    if (!authorization.can(userTryingToPatch, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos na raiz do site.',
         action: 'Verifique se você possui a feature "create:content:text_root".',
         errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       });
     }
-
-    filteredBodyValues = authorization.filterInput(userTryingToPatch, 'update:content', unfilteredBodyValues);
-  }
-
-  if (unfilteredBodyValues.parent_id) {
-    if (!authorization.can(userTryingToPatch, 'create:content:text_child', unfilteredBodyValues)) {
+  } else {
+    if (!authorization.can(userTryingToPatch, 'create:content:text_child')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos dentro de outros conteúdos.',
         action: 'Verifique se você possui a feature "create:content:text_child".',
         errorLocationCode: 'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       });
     }
-
-    filteredBodyValues = authorization.filterInput(userTryingToPatch, 'update:content', unfilteredBodyValues);
   }
+
+  const filteredBodyValues = authorization.filterInput(
+    userTryingToPatch,
+    'update:content',
+    unfilteredBodyValues,
+    contentToBeUpdated,
+  );
 
   const transaction = await database.transaction();
 
@@ -142,31 +147,23 @@ async function patchHandler(request, response) {
 
     const currentEvent = await event.create(
       {
-        type: filteredBodyValues.parent_id ? 'update:content:text_child' : 'update:content:text_root',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
-      },
-      {
-        transaction: transaction,
-      }
-    );
-
-    const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues, {
-      eventId: currentEvent.id,
-      transaction: transaction,
-    });
-
-    await event.updateMetadata(
-      currentEvent.id,
-      {
+        type: contentToBeUpdated.parent_id ? 'update:content:text_child' : 'update:content:text_root',
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: {
-          id: updatedContent.id,
+          id: contentToBeUpdated.id,
         },
       },
       {
         transaction: transaction,
-      }
+      },
     );
+
+    const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues, {
+      oldContent: contentToBeUpdated,
+      eventId: currentEvent.id,
+      transaction: transaction,
+    });
 
     await transaction.query('COMMIT');
     await transaction.release();

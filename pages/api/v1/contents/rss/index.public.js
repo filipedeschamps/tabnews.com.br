@@ -1,9 +1,11 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
+
 import authorization from 'models/authorization.js';
-import user from 'models/user.js';
-import rss from 'models/rss';
+import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
+import controller from 'models/controller.js';
+import rss from 'models/rss';
+import user from 'models/user.js';
 
 export default nextConnect({
   attachParams: true,
@@ -12,6 +14,7 @@ export default nextConnect({
 })
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
+  .use(cacheControl.swrMaxAge(60))
   .get(handleRequest);
 
 async function handleRequest(request, response) {
@@ -22,6 +25,7 @@ async function handleRequest(request, response) {
     where: {
       parent_id: null,
       status: 'published',
+      type: 'content',
     },
     page: 1,
     per_page: 30,
@@ -33,6 +37,5 @@ async function handleRequest(request, response) {
   const rss2 = rss.generateRss2(secureContentListFound);
 
   response.setHeader('Content-Type', 'text/xml; charset=utf-8');
-  response.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate');
   response.status(200).send(rss2);
 }

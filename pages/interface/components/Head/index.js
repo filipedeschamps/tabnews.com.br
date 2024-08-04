@@ -1,13 +1,13 @@
-import webserver from 'infra/webserver.js';
 import NextHead from 'next/head';
 import { useRouter } from 'next/router';
-import { useMediaQuery } from 'pages/interface/index.js';
 
-const webserverHost = webserver.getHost();
+import webserver from 'infra/webserver.js';
+import { useMediaQuery } from 'pages/interface';
+
+const webserverHost = webserver.host;
 
 export function DefaultHead() {
   const router = useRouter();
-  const pathName = router.pathname;
 
   const systemTheme = useMediaQuery('(prefers-color-scheme: dark)');
   const favicon = systemTheme ? '/favicon-dark.png' : '/favicon-light.png';
@@ -18,10 +18,9 @@ export function DefaultHead() {
     description: 'Conteúdos com valor concreto para quem trabalha com tecnologia.',
     url: `${webserverHost}${router.asPath}`,
     type: 'website',
-    noIndex: false,
   };
 
-  const { type, title, description, image, url, noIndex } = defaultMetadata;
+  const { type, title, description, image, url } = defaultMetadata;
 
   return (
     <NextHead>
@@ -30,7 +29,7 @@ export function DefaultHead() {
       <meta name="description" content={description} key="description" />
       <meta name="robots" content="index follow" key="robots" />
 
-      {(pathName === '/' || pathName === '/recentes') && (
+      {(router.asPath === '/' || router.asPath === '/recentes/pagina/1') && (
         <link rel="alternate" type="application/rss+xml" title="TabNews: Recentes" href="/recentes/rss" />
       )}
 
@@ -47,17 +46,23 @@ export function DefaultHead() {
       <meta property="twitter:description" content={description} key="twitter:description" />
       <meta property="twitter:image" content={image} key="twitter:image" />
 
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="icon" href={favicon} type="image/png" />
       <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
+      {webserverHost.startsWith('https') && (
+        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+      )}
     </NextHead>
   );
 }
 
 export default function Head({ metadata, children }) {
-  const { type, title, description, image, url, noIndex, author, published_time, modified_time } = metadata || {};
+  const { type, title, description, image, url, noIndex, author, published_time, modified_time, canonical } =
+    metadata || {};
+
+  const canonicalUrl = canonical?.startsWith('http') ? canonical : `${webserverHost}${canonical}`;
 
   return (
     <NextHead>
@@ -77,6 +82,8 @@ export default function Head({ metadata, children }) {
           <meta property="twitter:description" content={description} key="twitter:description" />
         </>
       )}
+
+      {canonical && <link rel="canonical" href={canonicalUrl} key="canonical" />}
 
       {url && (
         <>

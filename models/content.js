@@ -1,22 +1,25 @@
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID as uuidV4 } from 'node:crypto';
 import slug from 'slug';
+
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
-import validator from 'models/validator.js';
-import user from 'models/user.js';
 import balance from 'models/balance.js';
-import { ValidationError } from 'errors/index.js';
-import queries from 'models/queries';
+import pagination from 'models/pagination.js';
+import prestige from 'models/prestige';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+import queries from 'queries/rankingQueries';
 
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
   await replaceOwnerUsernameWithOwnerId(values);
-  const offset = (values.page - 1) * values.per_page;
 
   const query = {
     values: [],
   };
 
   if (!values.count) {
+    const offset = (values.page - 1) * values.per_page;
     query.values = [values.limit || values.per_page, offset];
   }
 
@@ -32,8 +35,8 @@ async function findAll(values = {}, options = {}) {
   }
 
   const selectClause = buildSelectClause(values);
-  const whereClause = buildWhereClause(values?.where);
-  const orderByClause = buildOrderByClause(values?.order);
+  const whereClause = buildWhereClause(values.where);
+  const orderByClause = buildOrderByClause(values);
 
   query.text = `
       WITH content_window AS (
@@ -47,17 +50,14 @@ async function findAll(values = {}, options = {}) {
       ${values.count ? 'LIMIT 1' : 'LIMIT $1 OFFSET $2'}
       )
       ${selectClause}
+      ${orderByClause}
       ;`;
 
   if (values.where) {
     Object.keys(values.where).forEach((key) => {
-      if (key === '$or') {
-        values.where[key].forEach(($orObject) => {
-          query.values.push(Object.values($orObject)[0]);
-        });
-      } else {
-        query.values.push(values.where[key]);
-      }
+      if (key === '$not_null') return;
+
+      query.values.push(values.where[key]);
     });
   }
   const results = await database.query(query, { transaction: options.transaction });
@@ -65,7 +65,7 @@ async function findAll(values = {}, options = {}) {
   return results.rows;
 
   async function replaceOwnerUsernameWithOwnerId(values) {
-    if (values?.where?.owner_username) {
+    if (values.where?.owner_username) {
       const userOwner = await user.findOneByUsername(values.where.owner_username);
       values.where.owner_id = userOwner.id;
       delete values.where.owner_username;
@@ -79,7 +79,7 @@ async function findAll(values = {}, options = {}) {
       order: 'optional',
       where: 'optional',
       count: 'optional',
-      $or: 'optional',
+      $not_null: 'optional',
       limit: 'optional',
       attributes: 'optional',
     });
@@ -104,49 +104,25 @@ async function findAll(values = {}, options = {}) {
         contents.parent_id,
         contents.slug,
         contents.title,
-        ${!values?.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
+        ${!values.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
         contents.status,
+        contents.type,
         contents.source_url,
         contents.created_at,
         contents.updated_at,
         contents.published_at,
         contents.deleted_at,
+        contents.path,
         users.username as owner_username,
         content_window.total_rows,
-        get_current_balance('content:tabcoin', contents.id) as tabcoins,
-
-        -- Originally this query returned a list of contents to the server and
-        -- afterward made an additional roundtrip to the database for every item using
-        -- the findChildrenCount() method to get the children count. Now we perform a
-        -- subquery that is not performant but everything is embedded in one travel.
-        -- https://github.com/filipedeschamps/tabnews.com.br/blob/de65be914f0fd7b5eed8905718e4ab286b10557e/models/content.js#L51
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
         (
-          WITH RECURSIVE children AS (
-            SELECT
-                id,
-                parent_id
-            FROM
-              contents as all_contents
-            WHERE
-              all_contents.id = contents.id AND
-              all_contents.status = 'published'
-            UNION ALL
-              SELECT
-                all_contents.id,
-                all_contents.parent_id
-              FROM
-                contents as all_contents
-              INNER JOIN
-                children ON all_contents.parent_id = children.id
-              WHERE
-                all_contents.status = 'published'
-          )
-          SELECT
-            count(children.id)::integer
-          FROM
-            children
-          WHERE
-            children.id NOT IN (contents.id)
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[contents.id]
+           AND children.status = 'published'
         ) as children_deep_count
       FROM
         contents
@@ -154,6 +130,7 @@ async function findAll(values = {}, options = {}) {
         content_window ON contents.id = content_window.id
       INNER JOIN
         users ON contents.owner_id = users.id
+      LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
     `;
   }
 
@@ -179,30 +156,33 @@ async function findAll(values = {}, options = {}) {
           return `contents.${columnName} IS NOT DISTINCT FROM $${globalIndex}`;
         }
 
-        if (columnName === '$or') {
-          const $orQuery = columnValue
-            .map((orColumn) => {
-              globalIndex += 1;
-              const orColumnName = Object.keys(orColumn)[0];
-              return `contents.${orColumnName} = $${globalIndex}`;
+        if (columnName === '$not_null') {
+          const $notNullQuery = columnValue
+            .map((notColumnName) => {
+              return `contents.${notColumnName} IS NOT NULL`;
             })
-            .join(' OR ');
+            .join(' AND ');
 
-          return `(${$orQuery})`;
+          return `(${$notNullQuery})`;
         }
 
         globalIndex += 1;
+
+        if (Array.isArray(columnValue)) {
+          return `contents.${columnName}  = ANY ($${globalIndex})`;
+        }
+
         return `contents.${columnName} = $${globalIndex}`;
       }
     }, '');
   }
 
-  function buildOrderByClause(orderBy) {
-    if (!orderBy) {
+  function buildOrderByClause({ order, count }) {
+    if (!order || count) {
       return '';
     }
 
-    return `ORDER BY contents.${orderBy}`;
+    return `ORDER BY contents.${order}`;
   }
 }
 
@@ -226,7 +206,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at DESC';
     results.rows = await findAll(options);
-    options.totalRows = results.rows[0]?.total_rows;
+    options.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -237,7 +217,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at ASC';
     results.rows = await findAll(options);
-    options.totalRows = results.rows[0]?.total_rows;
+    options.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -247,7 +227,7 @@ async function findWithStrategy(options = {}) {
     const results = {};
     const options = {};
 
-    if (!values?.where?.owner_username) {
+    if (!values.where?.owner_username && values.where?.parent_id === null) {
       options.strategy = 'relevant_global';
     }
     values.order = 'published_at DESC';
@@ -260,34 +240,17 @@ async function findWithStrategy(options = {}) {
       results.rows = rankContentListByRelevance(contentList);
     }
 
-    values.totalRows = results.rows[0]?.total_rows;
+    values.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(values, options);
 
     return results;
   }
 }
 
-async function getPagination(values, options = {}) {
+async function getPagination(values, options) {
   values.count = true;
-
-  const totalRows = values.totalRows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
-  const perPage = values.per_page;
-  const firstPage = 1;
-  const lastPage = Math.ceil(totalRows / values.per_page);
-  const nextPage = values.page >= lastPage ? null : values.page + 1;
-  const previousPage = values.page <= 1 ? null : values.page > lastPage ? lastPage : values.page - 1;
-  const strategy = values.strategy;
-
-  return {
-    currentPage: values.page,
-    totalRows: totalRows,
-    perPage: perPage,
-    firstPage: firstPage,
-    nextPage: nextPage,
-    previousPage: previousPage,
-    lastPage: lastPage,
-    strategy: strategy,
-  };
+  values.total_rows = values.total_rows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
+  return pagination.get(values);
 }
 
 async function create(postedContent, options = {}) {
@@ -297,32 +260,35 @@ async function create(postedContent, options = {}) {
 
   checkRootContentTitle(validContent);
 
-  if (validContent.parent_id) {
-    await checkIfParentIdExists(validContent, {
-      transaction: options.transaction,
-    });
-  }
-
   populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent, {
     transaction: options.transaction,
   });
 
+  throwIfSpecifiedParentDoesNotExist(postedContent, newContent);
+
   await creditOrDebitTabCoins(null, newContent, {
     eventId: options.eventId,
     transaction: options.transaction,
   });
 
-  newContent.tabcoins = await balance.getTotal(
+  await updateTabCashBalance(null, newContent, {
+    eventId: options.eventId,
+    transaction: options.transaction,
+  });
+
+  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
-      balanceType: 'content:tabcoin',
       recipientId: newContent.id,
     },
     {
       transaction: options.transaction,
-    }
+    },
   );
+  newContent.tabcoins = tabcoinsCount.tabcoins;
+  newContent.tabcoins_credit = tabcoinsCount.tabcoins_credit;
+  newContent.tabcoins_debit = tabcoinsCount.tabcoins_debit;
 
   return newContent;
 
@@ -330,10 +296,22 @@ async function create(postedContent, options = {}) {
     const query = {
       text: `
       WITH
+        parent AS (
+          SELECT
+            owner_id,
+            CASE 
+              WHEN id IS NULL THEN ARRAY[]::uuid[]
+              ELSE ARRAY_APPEND(path, id)
+            END AS child_path
+          FROM (SELECT 1) AS dummy
+          LEFT JOIN contents
+          ON id = $2
+        ),
         inserted_content as (
           INSERT INTO
-            contents (parent_id, owner_id, slug, title, body, status, source_url, published_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, type, path)
+            SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, parent.child_path
+            FROM parent
             RETURNING *
         )
       SELECT
@@ -344,18 +322,24 @@ async function create(postedContent, options = {}) {
         inserted_content.title,
         inserted_content.body,
         inserted_content.status,
+        inserted_content.type,
         inserted_content.source_url,
         inserted_content.created_at,
         inserted_content.updated_at,
         inserted_content.published_at,
         inserted_content.deleted_at,
-        users.username as owner_username
+        inserted_content.path,
+        users.username as owner_username,
+        parent.owner_id as parent_owner_id
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
+      LEFT JOIN
+        parent ON true
       ;`,
       values: [
+        content.id,
         content.parent_id,
         content.owner_id,
         content.slug,
@@ -364,6 +348,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
+        content.type,
       ],
     };
 
@@ -382,50 +367,41 @@ function populateSlug(postedContent) {
   }
 }
 
+slug.extend({
+  '%': ' por cento',
+  '>': '-',
+  '<': '-',
+  '@': '-',
+  '.': '-',
+  ',': '-',
+  '&': ' e ',
+  _: '-',
+  '/': '-',
+});
+
 function getSlug(title) {
   if (!title) {
     return;
   }
 
-  slug.extend({
-    '%': ' por cento',
-    '>': '-',
-    '<': '-',
-    '@': '-',
-    '.': '-',
-    ',': '-',
-    '&': ' e ',
-    _: '-',
-    '/': '-',
-  });
-
-  const generatedSlug = slug(title, {
+  const generatedSlug = slug(title.substring(0, 160), {
     trim: true,
   });
 
-  const truncatedSlug = generatedSlug.substring(0, 256);
-
-  return truncatedSlug;
+  return generatedSlug;
 }
 
 function populateStatus(postedContent) {
   postedContent.status = postedContent.status || 'draft';
 }
 
-async function checkIfParentIdExists(content, options) {
-  const existingContent = await findOne(
-    {
-      where: {
-        id: content.parent_id,
-      },
-    },
-    options
-  );
+function throwIfSpecifiedParentDoesNotExist(postedContent, newContent) {
+  const existingParentId = newContent.path.at(-1);
 
-  if (!existingContent) {
+  if (postedContent.parent_id && postedContent.parent_id !== existingParentId) {
     throw new ValidationError({
-      message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
-      action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
+      message: `Você está tentando criar um comentário em um conteúdo que não existe.`,
+      action: `Utilize um "parent_id" que aponte para um conteúdo existente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
       statusCode: 400,
@@ -435,10 +411,10 @@ async function checkIfParentIdExists(content, options) {
 }
 
 function parseQueryErrorToCustomError(error) {
-  if (error.databaseErrorCode === '23505') {
+  if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "title" ou "slug" diferente.`,
+      action: `Utilize um "title" ou "slug" com começo diferente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
@@ -451,21 +427,23 @@ function parseQueryErrorToCustomError(error) {
 
 function validateCreateSchema(content) {
   const cleanValues = validator(content, {
+    id: 'required',
     parent_id: 'optional',
     owner_id: 'required',
     slug: 'required',
     title: 'optional',
     body: 'required',
     status: 'required',
+    content_type: 'optional',
     source_url: 'optional',
   });
 
-  if (cleanValues.status === 'deleted') {
+  if (cleanValues.status === 'deleted' || cleanValues.status === 'firewall') {
     throw new ValidationError({
-      message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
+      message: `Não é possível criar um novo conteúdo diretamente com status "${cleanValues.status}".`,
       key: 'status',
       type: 'any.only',
-      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
     });
   }
 
@@ -502,144 +480,194 @@ function populatePublishedAtValue(oldContent, newContent) {
 }
 
 async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
-  const userDefaultEarnings = 2;
-  const contentDefaultEarnings = 1;
-
-  // We should not credit or debit if the parent content is from the same user.
-  if (newContent.parent_id) {
-    const parentContent = await findOne(
-      {
-        where: {
-          id: newContent.parent_id,
-        },
-      },
-      options
-    );
-
-    if (parentContent.owner_id === newContent.owner_id) {
-      return;
-    }
-  }
+  let contentEarnings = 0;
+  let userEarnings = 0;
 
   // We should not credit or debit if the content has never been published before
-  // and is being directly deleted, example: "draft" -> "deleted".
-  if (oldContent && !oldContent.published_at && newContent.status === 'deleted') {
+  // and is not published now, example: "draft" -> "deleted"
+  // or if it was deleted and is catch by firewall: "deleted" -> "firewall".
+  if (
+    oldContent &&
+    ((!oldContent.published_at && newContent.status !== 'published') ||
+      ['deleted', 'firewall'].includes(oldContent.status))
+  ) {
     return;
   }
 
-  // We should debit if the content was once "published", but now is being "deleted".
-  // 1) If content `tabcoins` is positive, we need to extract the `contentDefaultEarnings`
-  // from it and then debit all additional tabcoins from the user, including `userDefaultEarnings`.
+  // We should debit if the content was once "published", but now it is not.
+  // 1) If content `tabcoins` is positive, we need to debit all tabcoins earning by the user.
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
-  // creation of the content represented in `userDefaultEarnings`.
-  if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
+  // creation of the content represented by `initialTabcoins`.
+  if (oldContent?.published_at && newContent.status !== 'published') {
     let amountToDebit;
 
+    const userEarningsByContent = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
+
     if (oldContent.tabcoins > 0) {
-      amountToDebit = oldContent.tabcoins - contentDefaultEarnings + userDefaultEarnings;
+      amountToDebit = -userEarningsByContent.totalTabcoins;
     } else {
-      amountToDebit = userDefaultEarnings;
+      amountToDebit = -userEarningsByContent.initialTabcoins;
     }
 
+    if (!amountToDebit) return;
+
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: amountToDebit * -1,
+        amount: amountToDebit,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
     return;
   }
 
-  // We should credit if the content already existed and is now being published for the first time.
-  if (oldContent && !oldContent.published_at && newContent.status === 'published') {
+  if (
+    // We should credit if the content is being created directly with "published" status.
+    (!oldContent && newContent.published_at) ||
+    // We should credit if the content already existed and is now being published for the first time.
+    (oldContent && !oldContent.published_at && newContent.status === 'published')
+  ) {
+    contentEarnings = 1;
+    userEarnings = await prestige.getByUserId(newContent.owner_id, {
+      isRoot: !newContent.parent_id,
+      transaction: options.transaction,
+    });
+
+    if (userEarnings < 0) {
+      throw new ForbiddenError({
+        message: 'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
+        action: 'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
+        errorLocationCode: 'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
+      });
+    }
+
+    // We should not credit TabCoins to the user if the "type" is not "content".
+    if (newContent.type !== 'content') {
+      userEarnings = 0;
+    }
+
+    // We should not credit if the content has little or no value.
+    if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
+
+    if (newContent.parent_id) {
+      let parentOwnerId = newContent.parent_owner_id;
+
+      if (parentOwnerId === undefined) {
+        const queryParent = {
+          text: `SELECT owner_id FROM contents WHERE id = $1;`,
+          values: [newContent.parent_id],
+        };
+        const parentQueryResult = await database.query(queryParent, options);
+        const parentContent = parentQueryResult.rows[0];
+        parentOwnerId = parentContent.owner_id;
+      }
+
+      // We should not credit if the parent content is from the same user.
+      if (parentOwnerId === newContent.owner_id) return;
+    }
+  }
+
+  if (userEarnings > 0) {
     await balance.create(
       {
         balanceType: 'user:tabcoin',
         recipientId: newContent.owner_id,
-        amount: userDefaultEarnings,
+        amount: userEarnings,
         originatorType: options.eventId ? 'event' : 'content',
         originatorId: options.eventId ? options.eventId : newContent.id,
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
+  }
 
+  if (contentEarnings > 0) {
     await balance.create(
       {
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:initial',
         recipientId: newContent.id,
-        amount: contentDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
+        amount: contentEarnings,
+        originatorType: 'user',
+        originatorId: newContent.owner_id,
       },
       {
         transaction: options.transaction,
-      }
+      },
     );
+  }
+}
+
+async function updateTabCashBalance(oldContent, newContent, options = {}) {
+  if (newContent.type === 'content') {
     return;
   }
 
-  // We should credit if the content is being created directly with "published" status.
-  if (!oldContent && newContent.published_at) {
-    await balance.create(
-      {
-        balanceType: 'user:tabcoin',
-        recipientId: newContent.owner_id,
-        amount: userDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
+  const initialTabCash = 100;
 
-    await balance.create(
-      {
-        balanceType: 'content:tabcoin',
-        recipientId: newContent.id,
-        amount: contentDefaultEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
-      },
-      {
-        transaction: options.transaction,
-      }
-    );
-    return;
+  const userBalance = await balance.create(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: newContent.owner_id,
+      amount: -initialTabCash,
+      originatorType: options.eventId ? 'event' : 'content',
+      originatorId: options.eventId ? options.eventId : newContent.id,
+    },
+    {
+      transaction: options.transaction,
+      withBalance: true,
+    },
+  );
+
+  if (userBalance.total < 0) {
+    throw new UnprocessableEntityError({
+      message: `Não foi possível criar a publicação.`,
+      action: `Você precisa de pelo menos ${Math.abs(initialTabCash)} TabCash para realizar esta ação.`,
+      errorLocationCode: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
+    });
   }
+
+  const contentBalance = await balance.create(
+    {
+      balanceType: 'ad:budget',
+      recipientId: newContent.id,
+      amount: initialTabCash,
+      originatorType: 'user',
+      originatorId: newContent.owner_id,
+    },
+    {
+      transaction: options.transaction,
+      withBalance: true,
+    },
+  );
+
+  newContent.tabcash = contentBalance.total;
 }
 
 async function update(contentId, postedContent, options = {}) {
   const validPostedContent = validateUpdateSchema(postedContent);
 
-  const oldContent = await findOne(
-    {
-      where: {
-        id: contentId,
+  const oldContent =
+    options.oldContent ??
+    (await findOne(
+      {
+        where: {
+          id: contentId,
+        },
       },
-    },
-    options
-  );
+      options,
+    ));
 
   const newContent = { ...oldContent, ...validPostedContent };
 
   throwIfContentIsAlreadyDeleted(oldContent);
+  throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
   checkRootContentTitle(newContent);
-  checkForParentIdRecursion(newContent);
-
-  if (newContent.parent_id) {
-    await checkIfParentIdExists(newContent, {
-      transaction: options.transaction,
-    });
-  }
 
   populatePublishedAtValue(oldContent, newContent);
   populateDeletedAtValue(newContent);
@@ -653,15 +681,17 @@ async function update(contentId, postedContent, options = {}) {
     });
   }
 
-  updatedContent.tabcoins = await balance.getTotal(
+  const tabcoinsCount = await balance.getContentTabcoinsCreditDebit(
     {
-      balanceType: 'content:tabcoin',
       recipientId: updatedContent.id,
     },
     {
       transaction: options.transaction,
-    }
+    },
   );
+  updatedContent.tabcoins = tabcoinsCount.tabcoins;
+  updatedContent.tabcoins_credit = tabcoinsCount.tabcoins_credit;
+  updatedContent.tabcoins_debit = tabcoinsCount.tabcoins_debit;
 
   return updatedContent;
 
@@ -671,15 +701,14 @@ async function update(contentId, postedContent, options = {}) {
       WITH
         updated_content as (
           UPDATE contents SET
-            parent_id = $2,
-            slug = $3,
-            title = $4,
-            body = $5,
-            status = $6,
-            source_url = $7,
-            published_at = $8,
+            slug = $2,
+            title = $3,
+            body = $4,
+            status = $5,
+            source_url = $6,
+            published_at = $7,
             updated_at = (now() at time zone 'utc'),
-            deleted_at = $9
+            deleted_at = $8
           WHERE
             id = $1
           RETURNING *
@@ -692,11 +721,13 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.title,
         updated_content.body,
         updated_content.status,
+        updated_content.type,
         updated_content.source_url,
         updated_content.created_at,
         updated_content.updated_at,
         updated_content.published_at,
         updated_content.deleted_at,
+        updated_content.path,
         users.username as owner_username
       FROM
         updated_content
@@ -705,7 +736,6 @@ async function update(contentId, postedContent, options = {}) {
       ;`,
       values: [
         content.id,
-        content.parent_id,
         content.slug,
         content.title,
         content.body,
@@ -724,9 +754,91 @@ async function update(contentId, postedContent, options = {}) {
   }
 }
 
+async function confirmFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = 'deleted',
+          deleted_at = CASE
+            WHEN deleted_at IS NULL THEN (now() at time zone 'utc')
+            ELSE deleted_at
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *)
+      
+      SELECT
+        updated_contents.*,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        users.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[updated_contents.id]
+           AND children.status = 'published'
+        ) as children_deep_count
+      FROM
+        updated_contents
+      INNER JOIN
+        users ON updated_contents.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
+async function undoFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = CASE
+            WHEN deleted_at IS NULL THEN 'published'
+            ELSE 'deleted'
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *
+      )
+  
+      SELECT
+        updated_contents.*,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        users.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          LEFT JOIN updated_contents as uc ON children.id = uc.id
+          WHERE children.path @> ARRAY[updated_contents.id]
+           AND COALESCE(uc.status, children.status) = 'published'
+        ) as children_deep_count
+      FROM
+        updated_contents
+      INNER JOIN
+        users ON updated_contents.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
-    parent_id: 'optional',
     slug: 'optional',
     title: 'optional',
     body: 'optional',
@@ -734,20 +846,16 @@ function validateUpdateSchema(content) {
     source_url: 'optional',
   });
 
-  return cleanValues;
-}
-
-function checkForParentIdRecursion(content) {
-  if (content.parent_id === content.id) {
+  if (cleanValues.status === 'firewall') {
     throw new ValidationError({
-      message: `"parent_id" não deve apontar para o próprio conteúdo.`,
-      action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
-      statusCode: 400,
-      key: 'parent_id',
+      message: 'Não é possível atualizar um conteúdo para o status "firewall".',
+      key: 'status',
+      type: 'any.only',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_UPDATE_SCHEMA:INVALID_STATUS',
     });
   }
+
+  return cleanValues;
 }
 
 function populateDeletedAtValue(contentObject) {
@@ -768,95 +876,117 @@ function throwIfContentIsAlreadyDeleted(oldContent) {
   }
 }
 
-async function findChildrenTree(options) {
-  options.where = validateWhereSchema(options?.where);
-  const childrenFlatList = await recursiveDatabaseLookup(options);
-  const childrenFlatListRanked = rankContentListByRelevance(childrenFlatList);
-  const childrenTree = flatListToTree(childrenFlatListRanked);
-  return childrenTree.children;
+function throwIfContentPublishedIsChangedToDraft(oldContent, newContent) {
+  if (oldContent.status === 'published' && newContent.status === 'draft') {
+    throw new ValidationError({
+      message: `Não é possível alterar para rascunho um conteúdo já publicado.`,
+      stack: new Error().stack,
+      errorLocationCode: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
+      statusCode: 400,
+      key: 'status',
+    });
+  }
+}
 
-  async function recursiveDatabaseLookup(options) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            id,
-            owner_id,
-            parent_id,
-            slug,
-            title,
-            body,
-            status,
-            source_url,
-            created_at,
-            updated_at,
-            published_at,
-            deleted_at
-        FROM
-          contents
-        WHERE
-          contents.id = $1 AND
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.id,
-            contents.owner_id,
-            contents.parent_id,
-            contents.slug,
-            contents.title,
-            contents.body,
-            contents.status,
-            contents.source_url,
-            contents.created_at,
-            contents.updated_at,
-            contents.published_at,
-            contents.deleted_at
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
+async function findTree(options = {}) {
+  options.where = validateWhereSchema(options.where);
+  let values;
+  if (options.where.parent_id) {
+    values = [options.where.parent_id];
+  } else if (options.where.id) {
+    values = [options.where.id];
+  } else if (options.where.slug) {
+    values = [options.where.owner_username, options.where.slug];
+  }
 
-      )
+  const flatList = await databaseLookup(options);
+  return flatListToTree(flatList);
+
+  async function databaseLookup(options) {
+    const queryChildrenByParentId = `
       SELECT
-        children.id,
-        children.owner_id,
-        children.parent_id,
-        children.slug,
-        children.title,
-        children.body,
-        children.status,
-        children.source_url,
-        children.created_at,
-        children.updated_at,
-        children.published_at,
-        children.deleted_at,
+        *,
         users.username as owner_username,
-        get_current_balance('content:tabcoin', children.id) as tabcoins
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
       FROM
-        children
+        contents
       INNER JOIN
-        users ON children.owner_id = users.id
-      ORDER BY
-        children.published_at ASC;
-      ;`,
-      values: [options.where.parent_id],
+        users ON owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(c.id) tabcoins_count ON true
+      WHERE
+        path @> ARRAY[$1]::uuid[] AND
+        status = 'published';`;
+
+    const queryTree = `
+      WITH parent AS (SELECT * FROM contents
+        WHERE
+          ${options.where.id ? 'contents.id = $1 AND' : ''}
+          ${options.where.owner_username ? `${whereOwnerUsername('$1')} AND` : ''}
+          ${options.where.slug ? 'contents.slug = $2 AND' : ''}
+          contents.status = 'published')
+
+      SELECT
+        parent.*,
+        users.username as owner_username,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
+      FROM
+        parent
+      INNER JOIN
+        users ON parent.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(parent.id) tabcoins_count ON true
+
+      UNION ALL
+
+      SELECT
+        c.*,
+        users.username as owner_username,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit
+      FROM
+        contents c
+      INNER JOIN
+        parent ON c.path @> ARRAY[parent.id]::uuid[]
+      INNER JOIN
+        users ON c.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(c.id) tabcoins_count ON true
+      WHERE
+        c.status = 'published';`;
+
+    const query = {
+      text: options.where.parent_id ? queryChildrenByParentId : queryTree,
+      values: values,
     };
     const results = await database.query(query);
     return results.rows;
   }
 
   function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      parent_id: 'required',
-    });
+    const options = {};
+
+    if (where.parent_id) {
+      options.parent_id = 'required';
+    } else if (where.slug) {
+      options.owner_username = 'required';
+      options.slug = 'required';
+    } else {
+      options.id = 'required';
+    }
+
+    const cleanValues = validator(where, options);
 
     return cleanValues;
   }
 
   function flatListToTree(list) {
-    let tree;
+    const tree = { children: [] };
     const table = {};
 
     list.forEach((row) => {
@@ -867,17 +997,20 @@ async function findChildrenTree(options) {
     list.forEach((row) => {
       if (table[row.parent_id]) {
         table[row.parent_id].children.push(row);
-      } else {
-        tree = row;
+      } else if (!row.path.some((id) => table[id])) {
+        tree.children.push(row);
       }
     });
 
     recursiveInjectChildrenDeepCount(tree);
 
+    return tree.children;
+
     function recursiveInjectChildrenDeepCount(node) {
       let count = node.children.length;
 
       if (node.children) {
+        node.children = rankContentListByRelevance(node.children);
         node.children.forEach((child) => {
           count += recursiveInjectChildrenDeepCount(child);
         });
@@ -886,9 +1019,17 @@ async function findChildrenTree(options) {
       node.children_deep_count = count;
       return count;
     }
-
-    return tree;
   }
+}
+
+function whereOwnerUsername($n) {
+  return `
+  contents.owner_id = (
+    SELECT id FROM users
+    WHERE
+      LOWER(username) = LOWER(${$n})
+    LIMIT 1)
+  `;
 }
 
 function rankContentListByRelevance(contentList) {
@@ -906,171 +1047,33 @@ function rankContentListByRelevance(contentList) {
   function sortByScore(first, second) {
     return second.score - first.score;
   }
-
-  // Inspired by:
-  // https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
-  // https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
-  function getContentScore(contentObject) {
-    const tabcoins = contentObject.tabcoins;
-    const secondsSinceEpoch = Math.floor(new Date() / 1000);
-    const publishedAtInSeconds = Math.floor(new Date(contentObject.published_at) / 1000);
-    const ageInSeconds = secondsSinceEpoch - publishedAtInSeconds;
-    const ageBase = 60 * 60 * 1; // 1 hour
-    const boostPeriodInSeconds = 60 * 10; // 10 minutes
-    const initialBoost = ageInSeconds < boostPeriodInSeconds ? 10 : 1;
-    const tabcoinsAntiGravity = 1.5;
-    const tabcoinsWithAntiGravity = Math.pow(Math.abs(tabcoins), tabcoinsAntiGravity);
-    const tabcoinsWithCorrectSign = tabcoins > 0 ? tabcoinsWithAntiGravity : tabcoinsWithAntiGravity * -1;
-    const gravity = 1.8;
-
-    const scoreDecimals = (tabcoinsWithCorrectSign + initialBoost) / Math.pow(ageInSeconds + ageBase, gravity);
-    const finalScore = scoreDecimals * 10000;
-    return finalScore;
-  }
 }
 
-async function findChildrenCount(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const childrenCount = await recursiveDatabaseLookup(values, options);
-  return childrenCount;
+// Inspired by:
+// https://medium.com/hacking-and-gonzo/how-hacker-news-ranking-algorithm-works-1d9b0cf2c08d
+// https://medium.com/hacking-and-gonzo/how-reddit-ranking-algorithms-work-ef111e33d0d9
+const ageBaseInMilliseconds = 1000 * 60 * 60 * 6; // 6 hours
+const boostPeriodInMilliseconds = 1000 * 60 * 10; // 10 minutes
+const offset = 0.5;
 
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE children AS (
-        SELECT
-            id,
-            parent_id
-        FROM
-          contents
-        WHERE
-          contents.id = $1 AND
-          contents.status = 'published'
-        UNION ALL
-          SELECT
-            contents.id,
-            contents.parent_id
-          FROM
-            contents
-          INNER JOIN
-            children ON contents.parent_id = children.id
-          WHERE
-            contents.status = 'published'
-      )
-      SELECT
-        count(children.id)::integer
-      FROM
-        children
-      WHERE
-        children.id NOT IN ($1);`,
-      values: [values.where.id],
-    };
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0].count;
-  }
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
-}
-
-async function findRootContent(values, options = {}) {
-  values.where = validateWhereSchema(values?.where);
-  const rootContentFound = await recursiveDatabaseLookup(values, options);
-  return rootContentFound;
-
-  function validateWhereSchema(where) {
-    const cleanValues = validator(where, {
-      id: 'required',
-    });
-
-    return cleanValues;
-  }
-
-  async function recursiveDatabaseLookup(values, options = {}) {
-    const query = {
-      text: `
-      WITH RECURSIVE child_to_root_tree AS (
-        SELECT
-          *
-        FROM
-          contents
-        WHERE
-          id = $1
-          AND parent_id IS NOT NULL
-      UNION ALL
-        SELECT
-          contents.*
-        FROM
-          contents
-        JOIN
-          child_to_root_tree
-        ON
-          contents.id = child_to_root_tree.parent_id
-      )
-      SELECT
-        child_to_root_tree.*,
-        users.username as owner_username,
-        get_current_balance('content:tabcoin', child_to_root_tree.id) as tabcoins,
-
-        -- Originally this query returned the root content object to the server and
-        -- afterward made an additional roundtrip to the database using the
-        -- findChildrenCount() method to get the children count. Now we perform a
-        -- subquery that is not performant but everything is embedded in one travel.
-        -- https://github.com/filipedeschamps/tabnews.com.br/blob/3ab1c65fdfc03d079791d17fde693010ab4caa60/models/content.js#L1013
-        (
-          WITH RECURSIVE children AS (
-            SELECT
-                id,
-                parent_id
-            FROM
-              contents
-            WHERE
-              contents.id = child_to_root_tree.id AND
-              contents.status = 'published'
-            UNION ALL
-              SELECT
-                contents.id,
-                contents.parent_id
-              FROM
-                contents
-              INNER JOIN
-                children ON contents.parent_id = children.id
-              WHERE
-                contents.status = 'published'
-          )
-          SELECT
-            count(children.id)::integer
-          FROM
-            children
-          WHERE
-            children.id NOT IN (child_to_root_tree.id)
-        ) as children_deep_count
-      FROM
-        child_to_root_tree
-      INNER JOIN
-        users ON child_to_root_tree.owner_id = users.id
-      WHERE
-        parent_id IS NULL;
-      ;`,
-      values: [values.where.id],
-    };
-
-    const results = await database.query(query, { transaction: options.transaction });
-    return results.rows[0];
-  }
+function getContentScore(contentObject) {
+  const tabcoins = contentObject.tabcoins;
+  const ageInMilliseconds = Date.now() - new Date(contentObject.published_at);
+  const initialBoost = ageInMilliseconds < boostPeriodInMilliseconds ? 3 : 1;
+  const gravity = Math.exp(-ageInMilliseconds / ageBaseInMilliseconds);
+  const score = (tabcoins - offset) * initialBoost;
+  const finalScore = tabcoins > 0 ? score * (1 + gravity) : score * (1 - gravity);
+  return finalScore;
 }
 
 export default Object.freeze({
   findAll,
   findOne,
-  findChildrenTree,
+  findTree,
   findWithStrategy,
-  findRootContent,
   create,
   update,
+  confirmFirewallStatus,
+  undoFirewallStatus,
+  creditOrDebitTabCoins,
 });

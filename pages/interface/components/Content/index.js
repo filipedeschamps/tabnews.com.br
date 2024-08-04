@@ -1,40 +1,44 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
-  FormControl,
-  Box,
-  Button,
-  TextInput,
-  Flash,
-  Heading,
-  Text,
-  BranchName,
-  ActionMenu,
   ActionList,
+  ActionMenu,
+  Box,
+  BranchName,
+  Button,
+  ButtonWithLoader,
+  Checkbox,
+  Editor,
+  Flash,
+  FormControl,
+  Heading,
   IconButton,
+  Label,
+  LabelGroup,
+  Link,
+  PastTime,
+  ReadTime,
+  Text,
+  TextInput,
   Tooltip,
   useConfirm,
-} from '@primer/react';
-import { KebabHorizontalIcon, PencilIcon, TrashIcon, LinkIcon } from '@primer/octicons-react';
-import PublishedSince from 'pages/interface/components/PublishedSince';
-import { Link, useUser } from 'pages/interface';
+  Viewer,
+} from '@/TabNewsUI';
+import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
-// Markdown Editor dependencies:
-import { Editor, Viewer } from '@bytemd/react';
-import gfmPlugin from '@bytemd/plugin-gfm';
-import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
-import breaksPlugin from '@bytemd/plugin-breaks';
-import gemojiPlugin from '@bytemd/plugin-gemoji';
-import byteMDLocale from 'bytemd/locales/pt_BR.json';
-import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
-import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
-import 'bytemd/dist/index.min.css';
-import 'highlight.js/styles/github.css';
-import 'github-markdown-css/github-markdown-light.css';
+const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
+  'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
+  'e.g. Desafios ao empreender como desenvolvedor',
+  'e.g. Como funciona o conceito de ownership em Rust',
+  'e.g. 5 livros fundamentais para desenvolvedores',
+  'e.g. Como os jogos de Atari eram desenvolvidos',
+  'e.g. Ferramentas para melhorar sua produtividade',
+  'e.g. Como renomear uma branch local no Git?',
+];
 
-export default function Content({ content, mode = 'view', viewFrame = false }) {
+export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -60,7 +64,7 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [contentObject]);
 
   useEffect(() => {
-    if (user && contentObject?.owner_id === user?.id) {
+    if (user && contentObject?.owner_id === user.id) {
       const localStorageContent = localStorage.getItem(localStorageKey);
       if (isValidJsonString(localStorageContent)) {
         setComponentMode('edit');
@@ -69,9 +73,16 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }, [localStorageKey, user, contentObject]);
 
   if (componentMode === 'view') {
-    return <ViewMode setComponentMode={setComponentMode} contentObject={contentObject} viewFrame={viewFrame} />;
+    return (
+      <ViewMode
+        setComponentMode={setComponentMode}
+        contentObject={contentObject}
+        isPageRootOwner={isPageRootOwner}
+        viewFrame={viewFrame}
+      />
+    );
   } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} />;
+    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
   } else if (componentMode === 'edit') {
     return (
       <EditMode
@@ -79,7 +90,6 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
         setComponentMode={setComponentMode}
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
-        mode={mode}
       />
     );
   } else if (componentMode === 'deleted') {
@@ -87,17 +97,50 @@ export default function Content({ content, mode = 'view', viewFrame = false }) {
   }
 }
 
-function ViewMode({ setComponentMode, contentObject, viewFrame }) {
+function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
+  return (
+    <Box sx={{ position: 'relative', minWidth: '28px' }}>
+      <Box sx={{ position: 'absolute', right: 0 }}>
+        {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
+        flickering after this menu appears, because without `position: absolute` it increases the row height */}
+        <ActionMenu>
+          <ActionMenu.Anchor>
+            <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
+          </ActionMenu.Anchor>
+
+          <ActionMenu.Overlay>
+            <ActionList>
+              <ActionList.Item onSelect={() => onComponentModeChange('edit')}>
+                <ActionList.LeadingVisual>
+                  <PencilIcon />
+                </ActionList.LeadingVisual>
+                Editar
+              </ActionList.Item>
+              <ActionList.Item variant="danger" onSelect={onDelete}>
+                <ActionList.LeadingVisual>
+                  <TrashIcon />
+                </ActionList.LeadingVisual>
+                Apagar
+              </ActionList.Item>
+            </ActionList>
+          </ActionMenu.Overlay>
+        </ActionMenu>
+      </Box>
+    </Box>
+  );
+}
+
+function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
-
-  const bytemdPluginList = [gfmPlugin(), highlightSsrPlugin(), mermaidPlugin(), breaksPlugin(), gemojiPlugin()];
 
   const handleClickDelete = async () => {
     const confirmDelete = await confirm({
       title: 'Você tem certeza?',
       content: 'Deseja realmente apagar essa publicação?',
+      cancelButtonContent: 'Cancelar',
+      confirmButtonContent: 'Sim',
     });
 
     if (!confirmDelete) return;
@@ -120,58 +163,17 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
 
     if (response.status === 200) {
       setComponentMode('deleted');
-      return;
-    }
-
-    if ([400, 401, 403].includes(response.status)) {
-      setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-      return;
-    }
-
-    if (response.status >= 500) {
-      setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
-      return;
+    } else {
+      setGlobalErrorMessage({ error: responseBody });
     }
   };
 
-  function ViewModeOptionsMenu() {
-    return (
-      <Box sx={{ position: 'relative' }}>
-        <Box sx={{ position: 'absolute', right: 0 }}>
-          {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
-            flickering after this menu appears */}
-          <ActionMenu>
-            <ActionMenu.Anchor>
-              <IconButton size="small" icon={KebabHorizontalIcon} aria-label="Editar conteúdo" />
-            </ActionMenu.Anchor>
-
-            <ActionMenu.Overlay>
-              <ActionList>
-                <ActionList.Item
-                  onClick={() => {
-                    setComponentMode('edit');
-                  }}>
-                  <ActionList.LeadingVisual>
-                    <PencilIcon />
-                  </ActionList.LeadingVisual>
-                  Editar
-                </ActionList.Item>
-                <ActionList.Item variant="danger" onClick={handleClickDelete}>
-                  <ActionList.LeadingVisual>
-                    <TrashIcon />
-                  </ActionList.LeadingVisual>
-                  Apagar
-                </ActionList.Item>
-              </ActionList>
-            </ActionMenu.Overlay>
-          </ActionMenu>
-        </Box>
-      </Box>
-    );
-  }
+  const isOptionsMenuVisible = user?.id === contentObject.owner_id || user?.features?.includes('update:content:others');
 
   return (
     <Box
+      as="article"
+      id={`${contentObject.owner_username}-${contentObject.slug}`}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -185,49 +187,69 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
         wordBreak: 'break-word',
       }}>
       <Box>
-        {globalErrorMessage && (
-          <Flash variant="danger" sx={{ mb: 4 }}>
-            {globalErrorMessage}
-          </Flash>
-        )}
+        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', whiteSpace: 'nowrap', gap: 1, mt: '2px' }}>
-            <BranchName as={Link} href={`/${contentObject.owner_username}`}>
-              {contentObject.owner_username}
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              whiteSpace: 'nowrap',
+              gap: 1,
+              color: 'fg.muted',
+            }}>
+            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
+              <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
             </BranchName>
+            <LabelGroup>
+              {isPageRootOwner && (
+                <Tooltip aria-label="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                  <Label>Autor</Label>
+                </Tooltip>
+              )}
+              {contentObject.type === 'ad' && (
+                <Tooltip aria-label="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                  <Label variant="success">Patrocinado</Label>
+                </Tooltip>
+              )}
+            </LabelGroup>
+            {!contentObject.parent_id && (
+              <>
+                <ReadTime text={contentObject.body} />
+                {' · '}
+              </>
+            )}
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted', mr: '100px', height: '22px' }}>
-              <Tooltip
-                sx={{ position: 'absolute', ml: 1, mt: '1px' }}
-                aria-label={new Date(contentObject.published_at).toLocaleString('pt-BR', {
-                  dateStyle: 'full',
-                  timeStyle: 'short',
-                })}>
-                <PublishedSince date={contentObject.published_at} />
-              </Tooltip>
+              sx={{ fontSize: 0, color: 'fg.muted' }}>
+              <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
             </Link>
           </Box>
-          {(user?.id === contentObject.owner_id || user?.features?.includes('update:content:others')) &&
-            ViewModeOptionsMenu()}
+          {isOptionsMenuVisible && (
+            <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
+          )}
         </Box>
 
-        {!contentObject?.parent_id && contentObject?.title && (
+        {!contentObject.parent_id && contentObject.title && (
           <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
             {contentObject.title}
           </Heading>
         )}
       </Box>
       <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} plugins={bytemdPluginList} />
+        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
       </Box>
       {contentObject.source_url && (
         <Box>
           <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
-            <LinkIcon size={16} /> Fonte: <Link href={contentObject.source_url}>{contentObject.source_url}</Link>
+            <LinkIcon size={16} /> Fonte:{' '}
+            <Link
+              href={contentObject.source_url}
+              rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
+              {contentObject.source_url}
+            </Link>
           </Text>
         </Box>
       )}
@@ -235,7 +257,7 @@ function ViewMode({ setComponentMode, contentObject, viewFrame }) {
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, mode }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
@@ -245,17 +267,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     title: contentObject?.title || '',
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
+    isSponsoredContent: contentObject?.type === 'ad',
   });
-
-  const editorRef = useRef();
-
-  const bytemdPluginList = [
-    gfmPlugin({ locale: gfmLocale }),
-    highlightSsrPlugin(),
-    mermaidPlugin({ locale: mermaidLocale }),
-    breaksPlugin(),
-    gemojiPlugin(),
-  ];
+  const [titlePlaceholder, setTitlePlaceholder] = useState('');
 
   const confirm = useConfirm();
 
@@ -281,6 +295,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     return () => removeEventListener('focus', onFocus);
   }, [localStorageKey]);
 
+  useEffect(() => {
+    setTitlePlaceholder(randomTitlePlaceholder());
+  }, []);
+
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -288,6 +306,28 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         router.push(`/login?redirect=${router.asPath}`);
         return;
       }
+
+      const confirmBodyValue =
+        newData.body.split(/[a-z]{5,}/i, 6).length < 6
+          ? await confirm({
+              title: 'Tem certeza que deseja publicar essa mensagem curta?',
+              content: (
+                <Flash variant="warning">
+                  ⚠ Atenção: Pedimos encarecidamente que{' '}
+                  <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
+                    leia isso antes
+                  </Link>{' '}
+                  de fazer essa publicação.
+                </Flash>
+              ),
+              cancelButtonContent: 'Cancelar',
+              confirmButtonContent: 'Publicar',
+              confirmButtonType: 'danger',
+            })
+          : true;
+
+      if (!confirmBodyValue) return;
+
       setIsPosting(true);
       setErrorObject(undefined);
 
@@ -301,6 +341,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         : `/api/v1/contents`;
       const requestBody = {
         status: 'published',
+        type: newData.isSponsoredContent ? 'ad' : 'content',
       };
 
       if (title || contentObject?.title) {
@@ -319,75 +360,93 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         requestBody.parent_id = contentObject.parent_id;
       }
 
-      try {
-        const response = await fetch(requestUrl, {
-          method: requestMethod,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
+      fetch(requestUrl, {
+        method: requestMethod,
+        headers: {
+          Accept: 'application/json, application/x-ndjson',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+        .then(processResponse)
+        .catch(() => {
+          setGlobalErrorMessage({
+            error: { message: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.' },
+          });
+          setIsPosting(false);
         });
 
+      function processResponse(response) {
         setGlobalErrorMessage(undefined);
-
-        const responseBody = await response.json();
         fetchUser();
 
-        if (response.status === 200) {
+        if (response.ok) {
           localStorage.removeItem(localStorageKey);
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
+        } else {
+          setIsPosting(false);
+        }
+
+        processNdJsonStream(response.body, getResponseBodyCallback(response));
+      }
+
+      function getResponseBodyCallback(response) {
+        if (response.status === 200) {
+          return (responseBody) => {
+            setContentObject(responseBody);
+            setComponentMode('view');
+          };
         }
 
         if (response.status === 201) {
-          localStorage.removeItem(localStorageKey);
+          return (responseBody) => {
+            if (responseBody.message) {
+              setGlobalErrorMessage({ error: responseBody });
+              console.error(responseBody);
+              return;
+            }
 
-          if (!responseBody.parent_id) {
-            localStorage.setItem('justPublishedNewRootContent', true);
-            router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
-            return;
-          }
+            if (!responseBody.parent_id) {
+              localStorage.setItem('justPublishedNewRootContent', true);
+              router.push(`/${responseBody.owner_username}/${responseBody.slug}`);
+              return;
+            }
 
-          setContentObject(responseBody);
-          setComponentMode('view');
-          return;
+            setContentObject(responseBody);
+            setComponentMode('view');
+          };
         }
 
         if (response.status === 400) {
-          setErrorObject(responseBody);
+          return (responseBody) => {
+            setErrorObject(responseBody);
 
-          if (responseBody.key === 'slug') {
-            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-          }
-          setIsPosting(false);
-          return;
+            if (responseBody.key === 'slug') {
+              setGlobalErrorMessage({ error: responseBody, omitErrorId: true });
+            }
+          };
         }
 
         if (response.status >= 401) {
-          setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
-          setIsPosting(false);
-          return;
+          return (responseBody) => {
+            setGlobalErrorMessage({ error: responseBody });
+          };
         }
-      } catch (error) {
-        setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-        setIsPosting(false);
       }
     },
-    [contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser]
+    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
   );
 
   const handleChange = useCallback(
     (event) => {
       setErrorObject(undefined);
       setNewData((oldData) => {
-        const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
+        const value = event.target?.name === 'isSponsoredContent' ? event.target.checked : event.target?.value ?? event;
+        const newData = { ...oldData, [event.target?.name || 'body']: value };
         localStorage.setItem(localStorageKey, JSON.stringify(newData));
         return newData;
       });
     },
-    [localStorageKey]
+    [localStorageKey],
   );
 
   const handleCancel = useCallback(async () => {
@@ -396,6 +455,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         ? await confirm({
             title: 'Tem certeza que deseja sair da edição?',
             content: 'Os dados não salvos serão perdidos.',
+            cancelButtonContent: 'Cancelar',
+            confirmButtonContent: 'Sim',
           })
         : true;
 
@@ -416,29 +477,28 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
   const onKeyDown = useCallback(
     (event) => {
+      if (isPosting) return;
       if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
         handleSubmit(event);
+      } else if (event.key === 'Escape') {
+        handleCancel();
       }
     },
-    [handleSubmit]
+    [handleCancel, handleSubmit, isPosting],
   );
-
-  useEffect(() => {
-    const editorElement = editorRef.current;
-    editorElement?.addEventListener('keydown', onKeyDown);
-    return () => editorElement?.removeEventListener('keydown', onKeyDown);
-  }, [onKeyDown]);
 
   return (
     <Box sx={{ mb: 4, width: '100%' }}>
-      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+      <form onSubmit={handleSubmit} style={{ width: '100%' }} noValidate>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+          {globalErrorMessage && <ErrorMessage {...globalErrorMessage} />}
 
           {!contentObject?.parent_id && (
-            <FormControl id="title">
-              <FormControl.Label visuallyHidden>Título</FormControl.Label>
+            <FormControl id="title" required>
+              <FormControl.Label>Título</FormControl.Label>
               <TextInput
+                contrast
+                sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
                 name="title"
@@ -446,8 +506,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Título"
-                aria-label="Título"
+                placeholder={titlePlaceholder}
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
@@ -460,18 +519,16 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             </FormControl>
           )}
 
-          {/* <Editor> is not part of Primer, so error messages and styling need to be created manually */}
-          <FormControl id="body">
-            <FormControl.Label visuallyHidden>Corpo</FormControl.Label>
-            <Box sx={{ width: '100%' }} ref={editorRef} className={errorObject?.key === 'body' ? 'is-invalid' : ''}>
-              <Editor
-                value={newData.body}
-                plugins={bytemdPluginList}
-                onChange={handleChange}
-                mode="tab"
-                locale={byteMDLocale}
-              />
-            </Box>
+          <FormControl id="body" required={!contentObject?.parent_id}>
+            <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
+            <Editor
+              isValid={errorObject?.key === 'body'}
+              value={newData.body}
+              onChange={handleChange}
+              onKeyDown={onKeyDown}
+              compact={!!contentObject?.parent_id}
+              clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
+            />
 
             {errorObject?.key === 'body' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -480,8 +537,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
           {!contentObject?.parent_id && (
             <FormControl id="source_url">
-              <FormControl.Label visuallyHidden>Fonte (opcional)</FormControl.Label>
+              <FormControl.Label>Fonte</FormControl.Label>
               <TextInput
+                contrast
+                sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
                 name="source_url"
@@ -489,8 +548,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck={false}
-                placeholder="Fonte (opcional)"
-                aria-label="Fonte (opcional)"
+                placeholder="https://origem.site/noticia"
                 block={true}
                 value={newData.source_url}
               />
@@ -499,6 +557,23 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
             </FormControl>
+          )}
+
+          {!contentObject?.id && !contentObject?.parent_id && (
+            <FormControl>
+              <Checkbox name="isSponsoredContent" onChange={handleChange} checked={newData.isSponsoredContent} />
+              <FormControl.Label>
+                Criar como publicação patrocinada. <Link href="/faq#publicacao-patrocinada">Saiba mais.</Link>
+              </FormControl.Label>
+
+              <FormControl.Caption>
+                Serão consumidos 100 TabCash para criar a publicação patrocinada.
+              </FormControl.Caption>
+            </FormControl>
+          )}
+
+          {!contentObject?.parent_id && (
+            <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
           )}
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -513,74 +588,46 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 Cancelar
               </Button>
             )}
-            <Button variant="primary" type="submit" disabled={isPosting} aria-label="Publicar">
+            <ButtonWithLoader
+              variant="primary"
+              type="submit"
+              aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
+              isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
-            </Button>
+            </ButtonWithLoader>
           </Box>
         </Box>
       </form>
-
-      <style global jsx>{`
-        .bytemd {
-          height: ${mode === 'edit' ? 'calc(100vh - 350px)' : 'calc(100vh - 600px)'};
-          min-height: 200px;
-          border-radius: 6px;
-          padding: 1px;
-          border: 1px solid #d0d7de;
-        }
-
-        .bytemd:focus-within {
-          border-color: #0969da;
-          box-shadow: inset 0 0 0 1px #0969da;
-        }
-
-        .is-invalid .bytemd {
-          border-color: #cf222e;
-        }
-
-        .is-invalid .bytemd:focus-within {
-          border-color: #cf222e;
-          box-shadow: 0 0 0 3px rgb(164 14 38 / 40%);
-        }
-
-        .bytemd .bytemd-toolbar {
-          border-top-left-radius: 6px;
-          border-top-right-radius: 6px;
-        }
-
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(1),
-        .bytemd .bytemd-toolbar-icon.bytemd-tippy.bytemd-tippy-right:nth-of-type(4) {
-          display: none;
-        }
-
-        .bytemd .bytemd-status {
-          display: none;
-        }
-
-        .bytemd-fullscreen.bytemd {
-          z-index: 100;
-        }
-
-        .tippy-box {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
-            'Segoe UI Emoji';
-        }
-      `}</style>
     </Box>
   );
 }
 
-function CompactMode({ setComponentMode }) {
+function CompactMode({ contentObject, setComponentMode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
+  const confirm = useConfirm();
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     if (user && !isLoading) {
+      const confirmReply =
+        contentObject?.owner_id === user.id
+          ? await confirm({
+              title: 'Você deseja responder ao seu próprio conteúdo?',
+              content:
+                'Ao responder à sua própria publicação, você não acumulará TabCoins. É recomendado editar o conteúdo existente caso precise complementar informações.',
+              cancelButtonContent: 'Cancelar',
+              confirmButtonContent: 'Responder',
+              confirmButtonType: 'danger',
+            })
+          : true;
+
+      if (!confirmReply) return;
+
       setComponentMode('edit');
     } else if (router) {
       router.push(`/login?redirect=${router.asPath}`);
     }
-  }, [isLoading, router, setComponentMode, user]);
+  }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
   return (
     <Button
@@ -620,15 +667,24 @@ function DeletedMode({ viewFrame }) {
   );
 }
 
-function isValidJsonString(jsonString) {
-  if (!(jsonString && typeof jsonString === 'string')) {
-    return false;
-  }
+function ErrorMessage({ error, omitErrorId, ...props }) {
+  const isErrorWithReadMore =
+    error.error_location_code === 'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS';
 
-  try {
-    JSON.parse(jsonString);
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return (
+    <Flash variant="danger" {...props}>
+      {createErrorMessage(error, { omitErrorId: omitErrorId || isErrorWithReadMore })}
+
+      {isErrorWithReadMore && (
+        <Text sx={{ display: 'block', mt: 1 }}>
+          Para mais informações, leia:{' '}
+          <Link href="/faq#erro-nova-publicacao">Não consigo criar novas publicações. O que fazer?</Link>
+        </Text>
+      )}
+    </Flash>
+  );
+}
+
+function randomTitlePlaceholder() {
+  return CONTENT_TITLE_PLACEHOLDER_EXAMPLES[Math.floor(Math.random() * CONTENT_TITLE_PLACEHOLDER_EXAMPLES.length)];
 }

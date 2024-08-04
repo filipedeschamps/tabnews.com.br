@@ -1,12 +1,13 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { ServiceError } from 'errors/index.js';
+
+import { ServiceError } from 'errors';
 import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
 
 async function check(request) {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    if (!webserver.isLambdaServer()) {
+    if (!webserver.isServerlessRuntime) {
       return { success: true };
     }
 
@@ -26,6 +27,8 @@ async function check(request) {
   const method = request.method;
   const path = request.nextUrl.pathname;
   const limit = getLimit(method, path, realIp);
+  if (!limit) return { success: true };
+
   let timeout;
 
   try {
@@ -60,6 +63,7 @@ async function check(request) {
 
 function getLimit(method, path, ip) {
   const defaultLimits = {
+    rateLimitPaths: [],
     general: {
       requests: 1000,
       window: '5 m',
@@ -96,6 +100,11 @@ function getLimit(method, path, ip) {
 
   const configurationFromEnvironment = process.env.RATE_LIMITS ? JSON.parse(process.env.RATE_LIMITS) : {};
   const configuration = { ...defaultLimits, ...configurationFromEnvironment };
+
+  if (!configuration.rateLimitPaths.find((rateLimitPath) => path?.startsWith(rateLimitPath))) {
+    return;
+  }
+
   const limitKey = configuration[`${method} ${path}`] ? `${method} ${path}` : 'general';
 
   const limit = {

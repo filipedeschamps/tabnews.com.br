@@ -1,74 +1,27 @@
+import { ForbiddenError, ValidationError } from 'errors';
+import availableFeatures from 'models/user-features';
 import validator from 'models/validator.js';
-import { ValidationError, ForbiddenError } from 'errors/index.js';
-
-const availableFeatures = new Set([
-  // USER
-  'create:user',
-  'read:user',
-  'read:user:self',
-  'read:user:list',
-  'update:user',
-  'ban:user',
-
-  // MIGRATION
-  'read:migration',
-  'create:migration',
-
-  // ACTIVATION_TOKEN
-  'read:activation_token',
-
-  // RECOVERY_TOKEN
-  'read:recovery_token',
-
-  // EMAIL_CONFIRMATION_TOKEN
-  'read:email_confirmation_token',
-
-  // SESSION
-  'create:session',
-  'read:session',
-
-  // CONTENT
-  'read:content',
-  'update:content',
-  'update:content:others',
-  'create:content',
-  'create:content:text_root',
-  'create:content:text_child',
-  'read:content:list',
-  'read:content:tabcoins',
-]);
 
 function can(user, feature, resource) {
   validateUser(user);
   validateFeature(feature);
 
-  let authorized = false;
+  if (!user.features.includes(feature)) return false;
 
-  if (user.features.includes(feature)) {
-    authorized = true;
+  switch (feature) {
+    case 'update:user':
+      return resource?.id && user.id === resource.id;
+
+    case 'update:content':
+      return (resource?.owner_id && user.id === resource.owner_id) || user.features.includes('update:content:others');
   }
 
-  // TODO: Double check if this is right and covered by tests
-  if (feature === 'update:user' && resource) {
-    authorized = false;
+  if (!resource) return true;
 
-    if (user.id === resource.id) {
-      authorized = true;
-    }
-  }
-
-  if (feature === 'update:content' && resource) {
-    authorized = false;
-
-    if (user.id === resource.owner_id || can(user, 'update:content:others')) {
-      authorized = true;
-    }
-  }
-
-  return authorized;
+  return false;
 }
 
-function filterInput(user, feature, input) {
+function filterInput(user, feature, input, target) {
   validateUser(user);
   validateFeature(feature);
   validateInput(input);
@@ -90,12 +43,19 @@ function filterInput(user, feature, input) {
     };
   }
 
-  if (feature === 'update:user' && can(user, feature)) {
+  if (feature === 'update:user' && can(user, feature, target)) {
     filteredInputValues = {
       username: input.username,
       email: input.email,
       password: input.password,
+      description: input.description,
       notifications: input.notifications,
+    };
+  }
+
+  if (feature === 'update:user:others' && can(user, feature)) {
+    filteredInputValues = {
+      description: input.description,
     };
   }
 
@@ -117,6 +77,7 @@ function filterInput(user, feature, input) {
       title: input.title,
       body: input.body,
       status: input.status,
+      type: input.type,
       source_url: input.source_url,
     };
   }
@@ -132,7 +93,7 @@ function filterInput(user, feature, input) {
     };
   }
 
-  if (feature === 'update:content' && can(user, feature)) {
+  if (feature === 'update:content' && can(user, feature, target)) {
     filteredInputValues = {
       parent_id: input.parent_id,
       slug: input.slug,
@@ -181,6 +142,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = {
       id: output.id,
       username: output.username,
+      description: output.description,
       features: output.features,
       tabcoins: output.tabcoins,
       tabcash: output.tabcash,
@@ -195,6 +157,7 @@ function filterOutput(user, feature, output) {
         id: output.id,
         username: output.username,
         email: output.email,
+        description: output.description,
         notifications: output.notifications,
         features: output.features,
         tabcoins: output.tabcoins,
@@ -209,6 +172,7 @@ function filterOutput(user, feature, output) {
     filteredOutputValues = output.map((user) => ({
       id: user.id,
       username: user.username,
+      description: user.description,
       features: user.features,
       tabcoins: user.tabcoins,
       tabcash: user.tabcash,
@@ -234,6 +198,7 @@ function filterOutput(user, feature, output) {
       clonedOutput.body = '[Não disponível]';
       clonedOutput.slug = 'nao-disponivel';
       clonedOutput.source_url = null;
+      clonedOutput.children_deep_count = 0;
     }
 
     filteredOutputValues = validator(clonedOutput, {
@@ -241,9 +206,18 @@ function filterOutput(user, feature, output) {
     });
   }
 
+  if (feature === 'read:firewall' && can(user, feature)) {
+    filteredOutputValues = validator(output, {
+      firewall_event: 'required',
+    });
+    filteredOutputValues.events.forEach((event) => delete event.originator_ip);
+  }
+
   if (feature === 'read:content:tabcoins') {
     filteredOutputValues = validator(output, {
       tabcoins: 'required',
+      tabcoins_credit: 'required',
+      tabcoins_debit: 'required',
     });
   }
 
@@ -256,13 +230,20 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:recovery_token') {
-    filteredOutputValues = validator(output, {
-      id: 'required',
-      used: 'required',
-      expires_at: 'required',
-      created_at: 'required',
-      updated_at: 'required',
-    });
+    filteredOutputValues = validator(
+      {
+        used: output.used,
+        expires_at: output.expires_at,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
+      },
+      {
+        used: 'required',
+        expires_at: 'required',
+        created_at: 'required',
+        updated_at: 'required',
+      },
+    );
   }
 
   if (feature === 'read:email_confirmation_token') {
@@ -273,6 +254,17 @@ function filterOutput(user, feature, output) {
       created_at: 'required',
       updated_at: 'required',
     });
+  }
+
+  if (feature === 'read:ad:list') {
+    filteredOutputValues = validator(
+      {
+        ad_list: output,
+      },
+      {
+        ad_list: 'required',
+      },
+    ).ad_list;
   }
 
   // Force the clean up of "undefined" values
@@ -336,7 +328,7 @@ function canRequest(feature) {
   return function (request, response, next) {
     const userTryingToRequest = request.context.user;
 
-    if (!can(userTryingToRequest, feature)) {
+    if (!userTryingToRequest.features.includes(feature)) {
       throw new ForbiddenError({
         message: `Usuário não pode executar esta operação.`,
         action: `Verifique se este usuário possui a feature "${feature}".`,

@@ -1,13 +1,16 @@
 import nextConnect from 'next-connect';
+import { randomUUID as uuidV4 } from 'node:crypto';
 
-import controller from 'models/controller.js';
-import user from 'models/user.js';
+import { ValidationError } from 'errors';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import firewall from 'models/firewall.js';
+import firewall from 'models/firewall';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -17,20 +20,39 @@ export default nextConnect({
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(authorization.canRequest('read:user:list'), getHandler)
+  .use(cacheControl.noCache)
+  .get(getValidationHandler, authorization.canRequest('read:user:list'), getHandler)
   .post(
     postValidationHandler,
     authorization.canRequest('create:user'),
     firewall.canRequest('create:user'),
-    postHandler
+    postHandler,
   );
+
+function getValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    page: 'optional',
+    per_page: 'optional',
+  });
+
+  request.query = cleanValues;
+
+  next();
+}
 
 async function getHandler(request, response) {
   const userTryingToList = request.context.user;
 
-  const userList = await user.findAll();
+  const results = await user.findAllWithPagination({
+    page: request.query.page,
+    per_page: request.query.per_page,
+  });
+
+  const userList = results.rows;
 
   const secureOutputValues = authorization.filterOutput(userTryingToList, 'read:user:list', userList);
+
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/users', request, response);
 
   return response.status(200).json(secureOutputValues);
 }
@@ -52,18 +74,37 @@ async function postHandler(request, response) {
   const insecureInputValues = request.body;
   const secureInputValues = authorization.filterInput(userTryingToCreate, 'create:user', insecureInputValues);
 
-  const newUser = await user.create(secureInputValues);
+  let newUser;
+  try {
+    newUser = await user.create(secureInputValues);
 
-  await event.create({
-    type: 'create:user',
-    originatorUserId: request.context.user.id || newUser.id,
-    originatorIp: request.context.clientIp,
-    metadata: {
-      id: newUser.id,
-    },
-  });
+    await event.create({
+      type: 'create:user',
+      originator_user_id: request.context.user.id || newUser.id,
+      originator_ip: request.context.clientIp,
+      metadata: {
+        id: newUser.id,
+      },
+    });
 
-  await activation.createAndSendActivationEmail(newUser);
+    await activation.createAndSendActivationEmail(newUser);
+  } catch (error) {
+    if (error instanceof ValidationError && error.key === 'email') {
+      const now = new Date();
+      newUser = {
+        id: uuidV4(),
+        username: secureInputValues.username,
+        description: secureInputValues.description || '',
+        features: ['read:activation_token'],
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: now,
+        updated_at: now,
+      };
+    } else {
+      throw error;
+    }
+  }
 
   const secureOutputValues = authorization.filterOutput(newUser, 'read:user', newUser);
 

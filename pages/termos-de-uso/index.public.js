@@ -1,7 +1,4 @@
-import { Box, Heading } from '@primer/react';
-import { Viewer } from '@bytemd/react';
-
-import { DefaultLayout } from 'pages/interface/index.js';
+import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const body = `Ao utilizar o TabNews você está de acordo com os seguintes termos:
@@ -18,7 +15,7 @@ export default function Page() {
   ## Usuário
 
   1. O usuário do TabNews é uma pessoa brutalmente exata e empática, **simultaneamente**, onde o **termômetro** para entender se isso está sendo aplicado é simples: as pessoas estão se **afastando** ou se **aproximando** dentro de uma discussão?
-  2. Qualquer usuário que através de suas publicações esteja propositalmente afastando outros usuários, que contenha posturas negativas aplicadas de forma genérica ou generalizada, que contenha sarcasmo gratuito, que esteja atacando ou sendo agressivo, poderá ter sua conta conta **permanentemente bloqueada**, junto com a invalidação de todas as suas publicações e ativos gerados por elas.
+  2. Qualquer usuário que através de suas publicações esteja propositalmente afastando outros usuários, que contenha posturas negativas aplicadas de forma genérica ou generalizada, que contenha sarcasmo gratuito, que esteja atacando ou sendo agressivo, poderá ter sua conta **permanentemente bloqueada**, junto com a invalidação de todas as suas publicações e ativos gerados por elas.
   3. O usuário se compromete a não manipular ou movimentar de forma artificial a qualificação das publicações e entende que, para um **ecossistema saudável**, isso precisa acontecer de forma espontânea. Qualquer manipulação, de qualquer natureza, poderá resultar no banimento permanente da conta do usuário.
   4. Da mesma forma, está **estritamente proibido** atos discriminatórios de qualquer tipo, como homofobia, transfobia, xenofobia, capacitismo, discriminação pelo sexo, idade, raça, cor, classe social ou qualquer outra forma de segregação.
   5. O usuário se compromete em não realizar publicações com foco **exclusivo** comercial e se compromete em não utilizar técnicas passivas de _tracking_, como _tracking pixel_ ou qualquer outro tipo de identificação que não necessite da interação dos outros usuários do site. Apesar disto, será muito bem vindo o usuário realizar um \`Pitch\` sobre projetos em que esteja **diretamente envolvido** e que conseguirá devolver para comunidade conhecimentos sobre como o projeto foi executado, principalmente sobre a parte técnica.
@@ -38,9 +35,10 @@ export default function Page() {
 
   ## Alterações nos Termos de Uso
 
-  1. Os termos naturalmente poderão ser alterados quando necessário e estas alterações serão acompanhadas de publicações dentro do próprio TabNews. Iremos sempre destacar com linguajar simples e com total clareza quais alterações foram realizadas.`;
+  1. Os termos naturalmente poderão ser alterados quando necessário e estas alterações serão acompanhadas de publicações dentro do próprio TabNews. Iremos sempre destacar com linguajar simples e com total clareza quais alterações foram realizadas.
+  
+  ## Histórico de alterações
 
-  const changelog = `
   * 2022-09-11 - Criação do documento através do PR [#728](https://github.com/filipedeschamps/tabnews.com.br/issues/728).
   `;
 
@@ -48,12 +46,7 @@ export default function Page() {
     <DefaultLayout metadata={{ title: 'Termos de Uso' }}>
       <Box>
         <Heading as="h1">Termos de Uso</Heading>
-        <Viewer value={body} />
-      </Box>
-
-      <Box sx={{ mt: 5 }}>
-        <Heading as="h2">Histórico de alterações</Heading>
-        <Viewer value={changelog} />
+        <Viewer areLinksTrusted value={body} clobberPrefix="" />
       </Box>
     </DefaultLayout>
   );

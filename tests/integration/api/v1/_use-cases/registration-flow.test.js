@@ -1,11 +1,10 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
-import orchestrator from 'tests/orchestrator.js';
-import user from 'models/user.js';
-import authentication from 'models/authentication';
+
 import activation from 'models/activation.js';
-import session from 'models/session.js';
 import password from 'models/password.js';
+import session from 'models/session.js';
+import user from 'models/user.js';
+import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -22,7 +21,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Create account (successfully)', async () => {
     const postUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -35,12 +34,12 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     postUserResponseBody = await postUserResponse.json();
 
-    expect(postUserResponse.status).toEqual(201);
-    expect(uuidVersion(postUserResponseBody.id)).toEqual(4);
-    expect(postUserResponseBody.username).toEqual('RegularRegistrationFlow');
-    expect(postUserResponseBody.features).toEqual(['read:activation_token']);
-    expect(Date.parse(postUserResponseBody.created_at)).not.toEqual(NaN);
-    expect(Date.parse(postUserResponseBody.updated_at)).not.toEqual(NaN);
+    expect(postUserResponse.status).toBe(201);
+    expect(uuidVersion(postUserResponseBody.id)).toBe(4);
+    expect(postUserResponseBody.username).toBe('RegularRegistrationFlow');
+    expect(postUserResponseBody.features).toStrictEqual(['read:activation_token']);
+    expect(Date.parse(postUserResponseBody.created_at)).not.toBeNaN();
+    expect(Date.parse(postUserResponseBody.updated_at)).not.toBeNaN();
     expect(postUserResponseBody).not.toHaveProperty('email');
     expect(postUserResponseBody).not.toHaveProperty('password');
 
@@ -50,7 +49,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     expect(passwordsMatch).toBe(true);
 
     const userInDatabase = await user.findOneById(postUserResponseBody.id);
-    expect(userInDatabase.email).toEqual('regularregistrationflow@gmail.com');
+    expect(userInDatabase.email).toBe('regularregistrationflow@gmail.com');
   });
 
   test('Receive email (successfully)', async () => {
@@ -59,11 +58,13 @@ describe('Use case: Registration Flow (all successfully)', () => {
     tokenObjectInDatabase = await activation.findOneTokenByUserId(postUserResponseBody.id);
     const activationPageEndpoint = `${activation.getActivationPageEndpoint()}/${tokenObjectInDatabase.id}`;
 
-    expect(activationEmail.sender).toEqual('<contato@tabnews.com.br>');
-    expect(activationEmail.recipients).toEqual(['<regularregistrationflow@gmail.com>']);
-    expect(activationEmail.subject).toEqual('Ative seu cadastro no TabNews');
-    expect(activationEmail.text.includes(postUserResponseBody.username)).toBe(true);
-    expect(activationEmail.text.includes(activationPageEndpoint)).toBe(true);
+    expect(activationEmail.sender).toBe('<contato@tabnews.com.br>');
+    expect(activationEmail.recipients).toStrictEqual(['<regularregistrationflow@gmail.com>']);
+    expect(activationEmail.subject).toBe('Ative seu cadastro no TabNews');
+    expect(activationEmail.text).toContain(postUserResponseBody.username);
+    expect(activationEmail.html).toContain(postUserResponseBody.username);
+    expect(activationEmail.text).toContain(activationPageEndpoint);
+    expect(activationEmail.html).toContain(activationPageEndpoint);
   });
 
   test('Activate (successfully)', async () => {
@@ -79,18 +80,18 @@ describe('Use case: Registration Flow (all successfully)', () => {
     });
     const activationApiResponseBody = await activationApiResponse.json();
 
-    expect(activationApiResponse.status).toEqual(200);
-    expect(uuidVersion(activationApiResponseBody.id)).toEqual(4);
-    expect(activationApiResponseBody.id).toEqual(tokenObjectInDatabase.id);
-    expect(activationApiResponseBody.used).toEqual(true);
-    expect(Date.parse(activationApiResponseBody.created_at)).not.toEqual(NaN);
-    expect(Date.parse(activationApiResponseBody.updated_at)).not.toEqual(NaN);
+    expect(activationApiResponse.status).toBe(200);
+    expect(uuidVersion(activationApiResponseBody.id)).toBe(4);
+    expect(activationApiResponseBody.id).toBe(tokenObjectInDatabase.id);
+    expect(activationApiResponseBody.used).toBe(true);
+    expect(Date.parse(activationApiResponseBody.created_at)).not.toBeNaN();
+    expect(Date.parse(activationApiResponseBody.updated_at)).not.toBeNaN();
     expect(activationApiResponseBody).not.toHaveProperty('password');
     expect(activationApiResponseBody).not.toHaveProperty('email');
     expect(activationApiResponseBody).not.toHaveProperty('user_id');
 
     const activatedUserInDatabase = await user.findOneByUsername('RegularRegistrationFlow');
-    expect(activatedUserInDatabase.features).toEqual([
+    expect(activatedUserInDatabase.features).toStrictEqual([
       'create:session',
       'read:session',
       'create:content',
@@ -103,7 +104,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
   test('Login (successfully)', async () => {
     const postSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -115,48 +116,54 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     postSessionResponseBody = await postSessionResponse.json();
 
-    expect(postSessionResponse.status).toEqual(201);
-    expect(postSessionResponseBody.token.length).toEqual(96);
-    expect(uuidVersion(postSessionResponseBody.id)).toEqual(4);
-    expect(Date.parse(postSessionResponseBody.expires_at)).not.toEqual(NaN);
-    expect(Date.parse(postSessionResponseBody.created_at)).not.toEqual(NaN);
-    expect(Date.parse(postSessionResponseBody.updated_at)).not.toEqual(NaN);
+    expect(postSessionResponse.status).toBe(201);
+    expect(postSessionResponseBody.token.length).toBe(96);
+    expect(uuidVersion(postSessionResponseBody.id)).toBe(4);
+    expect(Date.parse(postSessionResponseBody.expires_at)).not.toBeNaN();
+    expect(Date.parse(postSessionResponseBody.created_at)).not.toBeNaN();
+    expect(Date.parse(postSessionResponseBody.updated_at)).not.toBeNaN();
 
     const sessionObjectInDatabase = await session.findOneById(postSessionResponseBody.id);
-    expect(sessionObjectInDatabase.user_id).toEqual(postUserResponseBody.id);
+    expect(sessionObjectInDatabase.user_id).toBe(postUserResponseBody.id);
 
-    parsedCookiesFromPost = authentication.parseSetCookies(postSessionResponse);
-    expect(parsedCookiesFromPost.session_id.name).toEqual('session_id');
-    expect(parsedCookiesFromPost.session_id.value).toEqual(postSessionResponseBody.token);
-    expect(parsedCookiesFromPost.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-    expect(parsedCookiesFromPost.session_id.path).toEqual('/');
-    expect(parsedCookiesFromPost.session_id.httpOnly).toEqual(true);
+    parsedCookiesFromPost = orchestrator.parseSetCookies(postSessionResponse);
+    expect(parsedCookiesFromPost.session_id.name).toBe('session_id');
+    expect(parsedCookiesFromPost.session_id.value).toBe(postSessionResponseBody.token);
+    expect(parsedCookiesFromPost.session_id.maxAge).toBe(60 * 60 * 24 * 30);
+    expect(parsedCookiesFromPost.session_id.path).toBe('/');
+    expect(parsedCookiesFromPost.session_id.httpOnly).toBe(true);
   });
 
-  test('Use session (successfully)', async () => {
-    const getSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-      method: 'get',
+  test('Get user (successfully)', async () => {
+    const getUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
+      method: 'GET',
       headers: {
         cookie: `session_id=${parsedCookiesFromPost.session_id.value}`,
       },
     });
 
-    const getSessionResponseBody = await getSessionResponse.json();
+    const getUserResponseBody = await getUserResponse.json();
 
-    expect(getSessionResponse.status).toEqual(200);
-    expect(getSessionResponseBody.id).toEqual(postSessionResponseBody.id);
-    expect(Date.parse(getSessionResponseBody.expires_at)).not.toEqual(NaN);
-    expect(Date.parse(getSessionResponseBody.created_at)).not.toEqual(NaN);
-    expect(Date.parse(getSessionResponseBody.updated_at)).not.toEqual(NaN);
-    expect(getSessionResponseBody.expires_at > postSessionResponseBody.expires_at).toBe(true);
-    expect(getSessionResponseBody.created_at === postSessionResponseBody.created_at).toBe(true);
-    expect(getSessionResponseBody.updated_at > postSessionResponseBody.updated_at).toBe(true);
-
-    const parsedCookiesFromGet = authentication.parseSetCookies(getSessionResponse);
-    expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-    expect(parsedCookiesFromGet.session_id.value).toEqual(parsedCookiesFromPost.session_id.value);
-    expect(parsedCookiesFromGet.session_id.maxAge).toEqual(60 * 60 * 24 * 30);
-    expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-    expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+    expect(getUserResponse.status).toBe(200);
+    expect(getUserResponseBody).toStrictEqual({
+      id: postUserResponseBody.id,
+      username: postUserResponseBody.username,
+      email: 'regularregistrationflow@gmail.com',
+      description: '',
+      notifications: true,
+      features: [
+        'create:session',
+        'read:session',
+        'create:content',
+        'create:content:text_root',
+        'create:content:text_child',
+        'update:content',
+        'update:user',
+      ],
+      tabcoins: 0,
+      tabcash: 0,
+      created_at: postUserResponseBody.created_at,
+      updated_at: getUserResponseBody.updated_at,
+    });
   });
 });

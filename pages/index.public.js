@@ -1,19 +1,22 @@
-import { DefaultLayout, ContentList } from 'pages/interface/index.js';
-import user from 'models/user.js';
-import content from 'models/content.js';
-import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
-import { FaTree } from 'react-icons/fa';
+import { getStaticPropsRevalidate } from 'next-swr';
 
-export default function Home({ contentListFound, pagination }) {
+import { ContentList, DefaultLayout } from '@/TabNewsUI';
+import { FaTree } from '@/TabNewsUI/icons';
+import ad from 'models/advertisement';
+import authorization from 'models/authorization.js';
+import content from 'models/content.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
+
+export default function Home({ adFound, contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout>
         <ContentList
+          ad={adFound}
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"
-          revalidatePath="/api/v1/contents?strategy=relevant"
           emptyStateProps={{
             title: 'Nenhum conteúdo encontrado',
             description: 'Quando eu cheguei era tudo mato...',
@@ -25,22 +28,10 @@ export default function Home({ contentListFound, pagination }) {
   );
 }
 
-export async function getStaticProps(context) {
+export const getStaticProps = getStaticPropsRevalidate(async () => {
   const userTryingToGet = user.createAnonymous();
 
-  context.params = context.params ? context.params : {};
-
-  try {
-    context.params = validator(context.params, {
-      page: 'optional',
-      per_page: 'optional',
-    });
-  } catch (error) {
-    return {
-      notFound: true,
-      revalidate: 1,
-    };
-  }
+  const params = validator({}, { per_page: 'optional' });
 
   const results = await content.findWithStrategy({
     strategy: 'relevant',
@@ -51,19 +42,23 @@ export async function getStaticProps(context) {
     attributes: {
       exclude: ['body'],
     },
-    page: context.params.page,
-    per_page: context.params.per_page,
+    page: 1,
+    per_page: params.per_page,
   });
 
   const contentListFound = results.rows;
 
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
+  const adsFound = await ad.getRandom(1);
+  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
+
   return {
     props: {
-      contentListFound: JSON.parse(JSON.stringify(secureContentValues)),
+      adFound: secureAdValues[0] ?? null,
+      contentListFound: secureContentValues,
       pagination: results.pagination,
     },
     revalidate: 10,
   };
-}
+});

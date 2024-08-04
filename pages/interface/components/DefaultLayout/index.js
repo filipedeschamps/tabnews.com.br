@@ -1,12 +1,13 @@
-import { Box, Flash } from '@primer/react';
-import { Footer, Head, Header } from 'pages/interface/index.js';
+import { Box, Footer, GoToTopButton, Header } from '@/TabNewsUI';
+import { Head } from 'pages/interface';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
   return (
-    <>
+    <Box sx={{ minHeight: '100vh', backgroundColor: 'canvas.default' }}>
       {metadata && <Head metadata={metadata} />}
       <Header />
       <Box
+        as="main"
         maxWidth={containerWidth}
         sx={{
           marginX: 'auto',
@@ -25,6 +26,15 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           paddingTop: 3,
         }}
       />
-    </>
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          padding: 3,
+        }}>
+        <GoToTopButton />
+      </Box>
+    </Box>
   );
 }

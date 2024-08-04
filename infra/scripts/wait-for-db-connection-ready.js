@@ -1,5 +1,5 @@
-const { exec } = require('node:child_process');
 const retry = require('async-retry');
+const { exec } = require('node:child_process');
 
 /**
  * Check Postgres database connection status
@@ -12,13 +12,13 @@ const healthCheckDB = async () => {
     async (bail, tries) => {
       if (tries > 25) {
         console.log(
-          `> Trying to connect to Database #${tries}. Are you running the postgres container? Run npm run services:up to start database service`
+          `> Trying to connect to Database #${tries}. Are you running the postgres container? Run npm run services:up to start database service`,
         );
       }
 
       return await new Promise((resolve, reject) => {
-        exec(`docker exec postgres-dev pg_isready`, async (error, stdout, stderr) => {
-          healthCheckStatus = stdout;
+        exec(`docker exec postgres-dev pg_isready`, async (error, stdout) => {
+          const healthCheckStatus = stdout;
           console.log('health check postgres: ', healthCheckStatus);
 
           if (healthCheckStatus?.indexOf('accepting connections') != -1) {
@@ -38,7 +38,7 @@ const healthCheckDB = async () => {
       minTimeout: 3000,
       maxTimeout: 3000,
       factor: 1.1,
-    }
+    },
   );
 };
 

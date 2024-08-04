@@ -1,13 +1,15 @@
 import nextConnect from 'next-connect';
-import controller from 'models/controller.js';
-import user from 'models/user.js';
-import ban from 'models/ban.js';
+
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
+import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
-import validator from 'models/validator.js';
+import ban from 'models/ban.js';
+import cacheControl from 'models/cache-control';
+import controller from 'models/controller.js';
 import event from 'models/event.js';
-import database from 'infra/database.js';
-import { ForbiddenError, UnprocessableEntityError } from 'errors/index.js';
+import user from 'models/user.js';
+import validator from 'models/validator.js';
 
 export default nextConnect({
   attachParams: true,
@@ -15,11 +17,22 @@ export default nextConnect({
   onError: controller.onErrorHandler,
 })
   .use(controller.injectRequestMetadata)
-  .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
-  .get(getValidationHandler, getHandler)
-  .patch(patchValidationHandler, authorization.canRequest('update:user'), patchHandler)
-  .delete(deleteValidationHandler, authorization.canRequest('ban:user'), deleteHandler);
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
+  .patch(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    patchValidationHandler,
+    authorization.canRequest('update:user'),
+    patchHandler,
+  )
+  .delete(
+    cacheControl.noCache,
+    authentication.injectAnonymousOrUser,
+    deleteValidationHandler,
+    authorization.canRequest('ban:user'),
+    deleteHandler,
+  );
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -32,8 +45,10 @@ function getValidationHandler(request, response, next) {
 }
 
 async function getHandler(request, response) {
-  const userTryingToGet = request.context.user;
-  const userStoredFromDatabase = await user.findOneByUsername(request.query.username);
+  const userTryingToGet = user.createAnonymous();
+  const userStoredFromDatabase = await user.findOneByUsername(request.query.username, {
+    withBalance: true,
+  });
 
   const secureOutputValues = authorization.filterOutput(userTryingToGet, 'read:user', userStoredFromDatabase);
 
@@ -51,6 +66,7 @@ function patchValidationHandler(request, response, next) {
     username: 'optional',
     email: 'optional',
     password: 'optional',
+    description: 'optional',
     notifications: 'optional',
   });
 
@@ -62,28 +78,105 @@ function patchValidationHandler(request, response, next) {
 async function patchHandler(request, response) {
   const userTryingToPatch = request.context.user;
   const targetUsername = request.query.username;
-  const targetUser = await user.findOneByUsername(targetUsername);
+  const targetUser =
+    targetUsername === userTryingToPatch.username ? userTryingToPatch : await user.findOneByUsername(targetUsername);
   const insecureInputValues = request.body;
-  const secureInputValues = authorization.filterInput(userTryingToPatch, 'update:user', insecureInputValues);
+
+  let updateAnotherUser = false;
 
   if (!authorization.can(userTryingToPatch, 'update:user', targetUser)) {
-    throw new ForbiddenError({
-      message: 'Você não possui permissão para atualizar outro usuário.',
-      action: 'Verifique se você possui a feature "update:user:others".',
-      errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
-    });
+    if (!authorization.can(userTryingToPatch, 'update:user:others')) {
+      throw new ForbiddenError({
+        message: 'Você não possui permissão para atualizar outro usuário.',
+        action: 'Verifique se você possui a feature "update:user:others".',
+        errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER',
+      });
+    }
+
+    updateAnotherUser = true;
   }
+
+  const secureInputValues = authorization.filterInput(
+    userTryingToPatch,
+    updateAnotherUser ? 'update:user:others' : 'update:user',
+    insecureInputValues,
+    targetUser,
+  );
 
   // TEMPORARY BEHAVIOR
   // TODO: only let user update "password"
   // once we have double confirmation.
   delete secureInputValues.password;
 
-  const updatedUser = await user.update(targetUsername, secureInputValues);
+  const transaction = await database.transaction();
 
-  const secureOutputValues = authorization.filterOutput(userTryingToPatch, 'read:user', updatedUser);
+  let updatedUser;
+
+  try {
+    await transaction.query('BEGIN');
+
+    updatedUser = await user.update(targetUser, secureInputValues, {
+      transaction: transaction,
+    });
+
+    await event.create(
+      {
+        type: 'update:user',
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
+        metadata: getEventMetadata(targetUser, updatedUser),
+      },
+      {
+        transaction: transaction,
+      },
+    );
+
+    await transaction.query('COMMIT');
+    await transaction.release();
+  } catch (error) {
+    await transaction.query('ROLLBACK');
+    await transaction.release();
+
+    if (error instanceof ValidationError && error.key === 'email') {
+      updatedUser = {
+        ...targetUser,
+        updated_at: new Date(),
+      };
+    } else {
+      throw error;
+    }
+  }
+
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToPatch,
+    updateAnotherUser ? 'read:user' : 'read:user:self',
+    updatedUser,
+  );
 
   return response.status(200).json(secureOutputValues);
+
+  function getEventMetadata(originalUser, updatedUser) {
+    const metadata = {
+      id: originalUser.id,
+      updatedFields: [],
+    };
+
+    const updatableFields = ['description', 'notifications', 'username'];
+    for (const field of updatableFields) {
+      if (originalUser[field] !== updatedUser[field]) {
+        metadata.updatedFields.push(field);
+
+        if (field === 'username') {
+          metadata.username = {
+            old: originalUser.username,
+            new: updatedUser.username,
+          };
+        }
+      }
+    }
+
+    return metadata;
+  }
 }
 
 function deleteValidationHandler(request, response, next) {
@@ -126,8 +219,8 @@ async function deleteHandler(request, response) {
     const currentEvent = await event.create(
       {
         type: 'ban:user',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: {
           ban_type: secureInputValues.ban_type,
           user_id: targetUser.id,
@@ -135,7 +228,7 @@ async function deleteHandler(request, response) {
       },
       {
         transaction: transaction,
-      }
+      },
     );
 
     if (secureInputValues.ban_type === 'nuke') {

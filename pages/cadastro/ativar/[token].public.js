@@ -1,9 +1,8 @@
-import Confetti from 'react-confetti';
-import fetch from 'cross-fetch';
-import { Box, Flash } from '@primer/react';
-import { DefaultLayout } from 'pages/interface/index.js';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+
+import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
+import { createErrorMessage } from 'pages/interface';
 
 export default function ActiveUser() {
   const router = useRouter();
@@ -12,21 +11,6 @@ export default function ActiveUser() {
   const [globalMessage, setGlobalMessage] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [confettiWidth, setConfettiWidth] = useState(0);
-  const [confettiHeight, setConfettiHeight] = useState(0);
-
-  useEffect(() => {
-    function handleResize() {
-      setConfettiWidth(window.screen.width);
-      setConfettiHeight(window.screen.height);
-    }
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleActivateUser = async (token) => {
     try {
@@ -51,7 +35,7 @@ export default function ActiveUser() {
 
       if (response.status >= 400 && response.status <= 503) {
         const responseBody = await response.json();
-        setGlobalMessage(`${responseBody.message} ${responseBody.action}`);
+        setGlobalMessage(createErrorMessage(responseBody));
         setIsSuccess(false);
         return;
       }
@@ -73,16 +57,7 @@ export default function ActiveUser() {
 
   return (
     <>
-      {isSuccess && (
-        <Confetti
-          width={confettiWidth}
-          height={confettiHeight}
-          recycle={false}
-          numberOfPieces={800}
-          tweenDuration={15000}
-          gravity={0.15}
-        />
-      )}
+      {isSuccess && <Confetti />}
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Ativar cadastro' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
           {isLoading ? (
