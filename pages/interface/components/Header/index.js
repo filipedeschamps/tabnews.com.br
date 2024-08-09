@@ -196,7 +196,7 @@ export default function HeaderComponent() {
                     </>
                   )}
 
-                  <ThemeSelector onSelect={() => setIsOpenMenu(false)} as="li" role="none" sx={{ listStyle: 'none' }} />
+                  <ThemeSelector onSelect={() => setIsOpenMenu(true)} as="li" role="none" sx={{ listStyle: 'none' }} />
                   <ActionList.Divider />
 
                   <ActionList.Item variant="danger" onSelect={logout}>
