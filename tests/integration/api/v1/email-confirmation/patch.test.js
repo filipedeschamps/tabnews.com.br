@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import emailConfirmation from 'models/email-confirmation.js';
@@ -21,11 +20,11 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: 'Body enviado deve ser do tipo Object.',
+        message: '"body" enviado deve ser do tipo Object.',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
@@ -50,7 +49,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -79,7 +78,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -108,7 +107,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -137,7 +136,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -161,7 +160,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const updateUserResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -172,13 +171,13 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      expect(updateUserResponse.status).toEqual(200);
+      expect(updateUserResponse.status).toBe(200);
 
       // Attention: it should not update the email in the database
       // before the user clicks on the confirmation link sent to the new email.
       // See `/tests/integration/email-confirmation` for more details.
       const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('fresh.valid.token@email.com');
+      expect(userInDatabaseCheck1.email).toBe('fresh.valid.token@email.com');
 
       // 2) RECEIVE CONFIRMATION EMAIL
       const confirmationEmail = await orchestrator.getLastEmail();
@@ -188,9 +187,9 @@ describe('PATCH /api/v1/email-confirmation', () => {
         tokenObjectInDatabase.id,
       );
 
-      expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');
-      expect(confirmationEmail.recipients).toEqual(['<new@email.com>']);
-      expect(confirmationEmail.subject).toEqual('Confirme seu novo email');
+      expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toStrictEqual(['<new@email.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
       expect(confirmationEmail.text).toContain(defaultUser.username);
       expect(confirmationEmail.html).toContain(defaultUser.username);
       expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
@@ -212,7 +211,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const emailConfirmationResponseBody = await emailConfirmationResponse.json();
 
-      expect(emailConfirmationResponse.status).toEqual(200);
+      expect(emailConfirmationResponse.status).toBe(200);
 
       expect(emailConfirmationResponseBody).toStrictEqual({
         id: emailConfirmationResponseBody.id,
@@ -222,12 +221,12 @@ describe('PATCH /api/v1/email-confirmation', () => {
         updated_at: emailConfirmationResponseBody.updated_at,
       });
 
-      expect(uuidVersion(emailConfirmationResponseBody.id)).toEqual(4);
+      expect(uuidVersion(emailConfirmationResponseBody.id)).toBe(4);
       expect(emailConfirmationResponseBody.updated_at > tokenObjectInDatabase.updated_at.toISOString()).toBe(true);
 
       // 4) CHECK IF EMAIL WAS UPDATED
       const userInDatabaseCheck2 = await user.findOneById(defaultUser.id);
-      expect(userInDatabaseCheck2.email).toEqual('new@email.com');
+      expect(userInDatabaseCheck2.email).toBe('new@email.com');
     });
 
     test('With an already used, but valid token', async () => {
@@ -235,7 +234,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         email: 'already.used.token@email.com',
       });
 
-      const emailConfirmationToken = await emailConfirmation.create(defaultUser.id, 'idempotent@patch.com');
+      const emailConfirmationToken = await emailConfirmation.create(defaultUser.id, 'not.idempotent@patch.com');
 
       const firstTryResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/email-confirmation`, {
         method: 'PATCH',
@@ -248,10 +247,10 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      const userInDatabase = await user.findOneById(defaultUser.id);
-      expect(userInDatabase.email).toEqual('idempotent@patch.com');
+      expect(firstTryResponse.status).toBe(200);
 
-      const firstTryResponseBody = await firstTryResponse.json();
+      const userInDatabase = await user.findOneById(defaultUser.id);
+      expect(userInDatabase.email).toBe('not.idempotent@patch.com');
 
       const secondTryResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/email-confirmation`, {
         method: 'PATCH',
@@ -266,27 +265,27 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const secondTryResponseBody = await secondTryResponse.json();
 
-      expect(secondTryResponse.status).toEqual(200);
+      expect(secondTryResponse.status).toBe(404);
 
       expect(secondTryResponseBody).toStrictEqual({
-        id: emailConfirmationToken.id,
-        used: true,
-        expires_at: emailConfirmationToken.expires_at.toISOString(),
-        created_at: emailConfirmationToken.created_at.toISOString(),
-        updated_at: secondTryResponseBody.updated_at,
+        name: 'NotFoundError',
+        message: 'O token de confirmação de email utilizado não foi encontrado no sistema ou expirou.',
+        action: 'Solicite uma nova alteração de email.',
+        status_code: 404,
+        error_id: secondTryResponseBody.error_id,
+        request_id: secondTryResponseBody.request_id,
+        error_location_code: 'MODEL:EMAIL_CONFIRMATION:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
+        key: 'token_id',
       });
-
-      expect(secondTryResponseBody.updated_at > emailConfirmationToken.updated_at.toISOString()).toBe(true);
-
-      expect(firstTryResponse.status).toEqual(secondTryResponse.status);
-      expect(firstTryResponseBody).toEqual(secondTryResponseBody);
     });
 
     test('With an already used email (before creating the token)', async () => {
-      const firstUser = await orchestrator.createUser({
+      await orchestrator.deleteAllEmails();
+
+      let firstUser = await orchestrator.createUser({
         email: 'validation.error@before.com',
       });
-      await orchestrator.activateUser(firstUser);
+      firstUser = await orchestrator.activateUser(firstUser);
       const firstUserSession = await orchestrator.createSession(firstUser);
 
       await orchestrator.createUser({
@@ -294,7 +293,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${firstUserSession.token}`,
@@ -307,21 +306,27 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
-        message: 'O email informado já está sendo usado.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS',
-        key: 'email',
+        id: firstUser.id,
+        username: firstUser.username,
+        email: firstUser.email,
+        description: firstUser.description,
+        features: firstUser.features,
+        notifications: firstUser.notifications,
+        created_at: firstUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
       });
 
+      expect(responseBody.updated_at).not.toBe(firstUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('validation.error@before.com');
+      expect(userInDatabaseCheck1.email).toBe('validation.error@before.com');
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
     });
 
     test('With an already used email (after creating the token)', async () => {
@@ -348,7 +353,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -362,7 +367,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('validation.error@after.com');
+      expect(userInDatabaseCheck1.email).toBe('validation.error@after.com');
     });
 
     test('With an expired token', async () => {
@@ -375,7 +380,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         'expired.token.will.reject@email.com',
       );
 
-      await emailConfirmation.update(emailConfirmationToken.id, {
+      await orchestrator.updateEmailConfirmationToken(emailConfirmationToken.id, {
         expires_at: new Date(Date.now() - 1000),
       });
 
@@ -392,7 +397,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -406,7 +411,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
 
       const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
-      expect(userInDatabaseCheck1.email).toEqual('expired.token@email.com');
+      expect(userInDatabaseCheck1.email).toBe('expired.token@email.com');
     });
   });
 });

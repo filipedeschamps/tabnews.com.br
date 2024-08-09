@@ -16,7 +16,7 @@ import {
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
-import { suggestEmail, useUser } from 'pages/interface';
+import { createErrorMessage, suggestEmail, useUser } from 'pages/interface';
 
 export default function EditProfile() {
   return (
@@ -44,6 +44,7 @@ function EditProfileForm() {
   const [errorObject, setErrorObject] = useState(undefined);
   const [emailDisabled, setEmailDisabled] = useState(false);
   const [description, setDescription] = useState(user?.description || '');
+  const [showUsernameCaption, setShowUsernameCaption] = useState(false);
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
@@ -76,12 +77,14 @@ function EditProfileForm() {
     const payload = {};
 
     if (user.username !== username) {
-      const confirmChangeUsername = await confirm({
-        title: `Você realmente deseja alterar seu nome de usuário?`,
-        content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
-        cancelButtonContent: 'Cancelar',
-        confirmButtonContent: 'Sim',
-      });
+      const confirmChangeUsername =
+        user.username.toLowerCase() === username.toLowerCase() ||
+        (await confirm({
+          title: `Você realmente deseja alterar seu nome de usuário?`,
+          content: `Isso irá quebrar todas as URLs das suas publicações e comentários.`,
+          cancelButtonContent: 'Cancelar',
+          confirmButtonContent: 'Sim',
+        }));
 
       if (!confirmChangeUsername) {
         setIsLoading(false);
@@ -143,8 +146,8 @@ function EditProfileForm() {
         if (user.email !== email) {
           const hasSavedModifications = Object.keys(payload).length > 1;
           const text = hasSavedModifications
-            ? `Alterações salvas. O email será alterado apenas após a confirmação pelo link enviado para "${email}".`
-            : `Alteração pendente. Um email de confirmação foi enviado para "${email}".`;
+            ? `Alterações salvas. O email será alterado apenas após a confirmação pelo link enviado para "${email}", caso o email esteja disponível.`
+            : `Alteração pendente. Um email de confirmação será enviado para "${email}", caso o email esteja disponível.`;
           setGlobalMessageObject({ text, type: 'warning' });
           setEmailDisabled(true);
         } else {
@@ -167,7 +170,7 @@ function EditProfileForm() {
       if (response.status >= 403) {
         setGlobalMessageObject({
           type: 'danger',
-          text: `${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`,
+          text: createErrorMessage(responseBody),
         });
         setIsLoading(false);
         return;
@@ -197,13 +200,22 @@ function EditProfileForm() {
             aria-label="Seu nome de usuário"
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            onChange={() => setShowUsernameCaption(true)}
           />
-          {errorObject?.key === 'username' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+          {showUsernameCaption && (
+            <FormControl.Caption>
+              Alterar o nome de usuário pode quebrar todas as URLs das suas publicações e comentários.
+            </FormControl.Caption>
           )}
 
-          {errorObject?.type === 'string.alphanum' && (
-            <FormControl.Caption>Dica: use somente letras e números, por exemplo: nomeSobrenome4 </FormControl.Caption>
+          {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
+            <FormControl.Validation variant="error">
+              Nome de usuário deve conter apenas letras e números, por exemplo: &quot;nomeSobrenome4&quot;.
+            </FormControl.Validation>
+          )}
+
+          {errorObject?.key === 'username' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
         </FormControl>
 
@@ -257,6 +269,7 @@ function EditProfileForm() {
             value={description}
             isValid={errorObject?.key === 'description'}
             compact={true}
+            clobberPrefix={`${user?.username}-content-`}
           />
 
           {errorObject?.key === 'description' && errorObject.type === 'string.max' && (

@@ -1,4 +1,4 @@
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID as uuidV4 } from 'node:crypto';
 
 import database, { mockQuery, mockRelease } from 'infra/database';
 import balance from 'models/balance';
@@ -11,43 +11,57 @@ import user from 'models/user';
 const tabcoinsBase = 20;
 const contentAgeBase = 1000 * 60 * 60 * 24 * 7; // one week in milliseconds
 
-jest.mock('infra/database', () => {
-  const mockQuery = jest.fn();
-  const mockRelease = jest.fn();
+vi.mock('infra/database', () => {
+  const mockQuery = vi.fn();
+  const mockRelease = vi.fn();
   return {
-    transaction: jest.fn().mockResolvedValue({
-      query: mockQuery,
-      release: mockRelease,
-    }),
-    errorCodes: {
-      SERIALIZATION_FAILURE: '40001',
+    default: {
+      transaction: vi.fn().mockResolvedValue({
+        query: mockQuery,
+        release: mockRelease,
+      }),
+      errorCodes: {
+        SERIALIZATION_FAILURE: '40001',
+      },
     },
     mockQuery,
     mockRelease,
   };
 });
 
-jest.mock('models/balance');
+vi.mock('models/balance');
 
-jest.mock('models/content.js', () => ({
-  findWithStrategy: jest.fn().mockResolvedValue({
-    rows: [{ created_at: new Date() }],
-  }),
+vi.mock('models/content', () => ({
+  default: {
+    findWithStrategy: vi.fn().mockResolvedValue({
+      rows: [
+        {
+          created_at: new Date(),
+        },
+      ],
+    }),
+  },
 }));
 
-jest.mock('models/event', () => ({
-  create: jest.fn().mockResolvedValue({ id: uuidV4() }),
+vi.mock('models/event', () => ({
+  default: {
+    create: vi.fn().mockResolvedValue({ id: uuidV4() }),
+  },
 }));
 
-jest.mock('models/prestige', () => ({
-  getByUserId: jest.fn().mockResolvedValue(2),
+vi.mock('models/prestige', () => ({
+  default: {
+    getByUserId: vi.fn().mockResolvedValue(2),
+  },
 }));
 
-jest.mock('models/user', () => ({
-  findOneById: jest.fn().mockResolvedValue({
-    rewarded_at: new Date('2021-01-01'),
-  }),
-  updateRewardedAt: jest.fn(),
+vi.mock('models/user', () => ({
+  default: {
+    findOneById: vi.fn().mockResolvedValue({
+      rewarded_at: new Date('2021-01-01'),
+    }),
+    updateRewardedAt: vi.fn(),
+  },
 }));
 
 function createRequestObj(props = {}) {
@@ -235,8 +249,8 @@ describe('reward model', () => {
           amount: result,
           reward_type: 'daily',
         },
-        originatorIp: request.context.clientIp,
-        originatorUserId: request.context.user.id,
+        originator_ip: request.context.clientIp,
+        originator_user_id: request.context.user.id,
         type: 'reward:user:tabcoins',
       },
       { transaction: expect.any(Object) },

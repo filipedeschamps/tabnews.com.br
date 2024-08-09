@@ -1,6 +1,4 @@
-import { Link, Text } from '@react-email/components';
-
-import { DefaultLayout, DefaultLayoutText } from '../components/default-layout';
+import { DefaultLayout, DefaultLayoutText, Link, LinkText, Text } from '../components';
 
 export const NotificationEmailText = ({ username, bodyReplyLine, contentLink }) => {
   const content = `${bodyReplyLine} Para ler a resposta, utilize o link abaixo:
@@ -11,16 +9,12 @@ ${contentLink}`;
 };
 
 export const NotificationEmailHtml = ({ username, bodyReplyLine, contentLink }) => (
-  <DefaultLayout username={username} previewText="Nova resposta no Tabnews">
+  <DefaultLayout username={username} previewText="Nova resposta no TabNews">
     <Text style={text}>{bodyReplyLine}</Text>
 
-    <Link href={contentLink} style={link}>
-      Clique aqui para ler a resposta.
-    </Link>
+    <Link href={contentLink}>Clique aqui para ler a resposta.</Link>
 
-    <Text style={text}>Se você não conseguir clicar no link, copie e cole o endereço abaixo no seu navegador:</Text>
-
-    <code style={code}>{contentLink}</code>
+    <LinkText>{contentLink}</LinkText>
   </DefaultLayout>
 );
 
@@ -32,26 +26,6 @@ NotificationEmailHtml.PreviewProps = {
 
 export default NotificationEmailHtml;
 
-const link = {
-  color: '#2754C5',
-  fontSize: '14px',
-  textDecoration: 'underline',
-  display: 'block',
-  marginBottom: '16px',
-};
-
 const text = {
-  color: '#333',
-  fontSize: '14px',
   margin: '24px 0',
-};
-
-const code = {
-  backgroundColor: '#f3f3f3',
-  color: '#333',
-  display: 'block',
-  fontSize: '14px',
-  padding: '12px',
-  borderRadius: '8px',
-  marginBottom: '24px',
 };

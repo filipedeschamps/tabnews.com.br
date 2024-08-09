@@ -39,6 +39,8 @@ async function seedDevelopmentUsers() {
     'create:recovery_token:username',
     'read:votes:others',
     'read:user:list',
+    'read:firewall',
+    'review:firewall',
   ]);
   await insertUser('user', 'user@user.com', '$2a$04$v0hvAu/y6pJ17LzeCfcKG.rDStO9x5ficm2HTLZIfeDBG8oR/uQXi', [
     'create:session',

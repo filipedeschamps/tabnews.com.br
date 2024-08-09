@@ -1,4 +1,5 @@
 import nextConnect from 'next-connect';
+import { randomUUID as uuidV4 } from 'node:crypto';
 
 import { ForbiddenError } from 'errors';
 import database from 'infra/database.js';
@@ -8,7 +9,7 @@ import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
-import firewall from 'models/firewall.js';
+import firewall from 'models/firewall';
 import notification from 'models/notification.js';
 import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
@@ -53,6 +54,7 @@ async function getHandler(request, response) {
     where: {
       parent_id: request.query.with_children ? undefined : null,
       status: 'published',
+      type: 'content',
       $not_null: request.query.with_root === false ? ['parent_id'] : undefined,
     },
     attributes: {
@@ -76,7 +78,7 @@ async function getHandler(request, response) {
     }
   }
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', response);
+  controller.injectPaginationHeaders(results.pagination, '/api/v1/contents', request, response);
 
   return response.status(200).json(secureOutputValues);
 }
@@ -85,9 +87,10 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     parent_id: 'optional',
     slug: 'optional',
-    title: request.body.parent_id ? 'optional' : 'required',
+    title: 'optional',
     body: 'required',
     status: 'optional',
+    content_type: 'optional',
     source_url: 'optional',
   });
 
@@ -133,6 +136,7 @@ async function postHandler(request, response) {
   }
 
   secureInputValues.owner_id = userTryingToCreate.id;
+  secureInputValues.id = uuidV4();
 
   const transaction = await database.transaction();
 
@@ -142,8 +146,11 @@ async function postHandler(request, response) {
     const currentEvent = await event.create(
       {
         type: secureInputValues.parent_id ? 'create:content:text_child' : 'create:content:text_root',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
+        metadata: {
+          id: secureInputValues.id,
+        },
       },
       {
         transaction: transaction,
@@ -154,18 +161,6 @@ async function postHandler(request, response) {
       eventId: currentEvent.id,
       transaction: transaction,
     });
-
-    await event.updateMetadata(
-      currentEvent.id,
-      {
-        metadata: {
-          id: createdContent.id,
-        },
-      },
-      {
-        transaction: transaction,
-      },
-    );
 
     await transaction.query('COMMIT');
     await transaction.release();

@@ -1,5 +1,4 @@
-import fetch from 'cross-fetch';
-
+import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 describe('GET /recentes/rss', () => {
@@ -12,12 +11,12 @@ describe('GET /recentes/rss', () => {
   describe('Anonymous user', () => {
     test('With `/rss` alias`', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/rss`);
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
     });
 
     test('With `/rss.xml` alias`', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/rss.xml`);
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
     });
 
     test('With 0 contents', async () => {
@@ -26,13 +25,13 @@ describe('GET /recentes/rss', () => {
 
       const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
-      expect(responseBody).toStrictEqual(`<?xml version="1.0" encoding="utf-8"?>
+      expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0">
     <channel>
         <title>TabNews</title>
-        <link>http://localhost:3000/recentes/rss</link>
+        <link>${orchestrator.webserverUrl}/recentes/rss</link>
         <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
         <lastBuildDate>${lastBuildDateFromResponseBody}</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
@@ -40,8 +39,51 @@ describe('GET /recentes/rss', () => {
         <language>pt</language>
         <image>
             <title>TabNews</title>
-            <url>http://localhost:3000/favicon-mobile.png</url>
-            <link>http://localhost:3000/recentes/rss</link>
+            <url>${orchestrator.webserverUrl}/favicon-mobile.png</url>
+            <link>${orchestrator.webserverUrl}/recentes/rss</link>
+        </image>
+    </channel>
+</rss>`);
+    });
+
+    test('With 1 "ad" content`', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: defaultUser.id,
+        amount: defaultTabCashForAdCreation,
+      });
+
+      await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Ad Title',
+        body: relevantBody,
+        status: 'published',
+        type: 'ad',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
+      const responseBody = await response.text();
+
+      const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
+
+      expect(response.status).toBe(200);
+
+      expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>TabNews</title>
+        <link>${orchestrator.webserverUrl}/recentes/rss</link>
+        <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
+        <lastBuildDate>${lastBuildDateFromResponseBody}</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>pt</language>
+        <image>
+            <title>TabNews</title>
+            <url>${orchestrator.webserverUrl}/favicon-mobile.png</url>
+            <link>${orchestrator.webserverUrl}/recentes/rss</link>
         </image>
     </channel>
 </rss>`);
@@ -79,37 +121,37 @@ describe('GET /recentes/rss', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/rss`);
       const responseBody = await response.text();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody).toStrictEqual(`<?xml version="1.0" encoding="utf-8"?>
+      expect(response.status).toBe(200);
+      expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>
         <title>TabNews</title>
-        <link>http://localhost:3000/recentes/rss</link>
+        <link>${orchestrator.webserverUrl}/recentes/rss</link>
         <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
-        <lastBuildDate>${new Date(secondRootContent.published_at).toUTCString()}</lastBuildDate>
+        <lastBuildDate>${new Date(secondRootContent.updated_at).toUTCString()}</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <language>pt</language>
         <image>
             <title>TabNews</title>
-            <url>http://localhost:3000/favicon-mobile.png</url>
-            <link>http://localhost:3000/recentes/rss</link>
+            <url>${orchestrator.webserverUrl}/favicon-mobile.png</url>
+            <link>${orchestrator.webserverUrl}/recentes/rss</link>
         </image>
         <item>
             <title><![CDATA[Conteúdo #2 (mais novo)]]></title>
-            <link>http://localhost:3000/${secondRootContent.owner_username}/${secondRootContent.slug}</link>
-            <guid>http://localhost:3000/${secondRootContent.owner_username}/${secondRootContent.slug}</guid>
+            <link>${orchestrator.webserverUrl}/${secondRootContent.owner_username}/${secondRootContent.slug}</link>
+            <guid>${orchestrator.webserverUrl}/${secondRootContent.owner_username}/${secondRootContent.slug}</guid>
             <pubDate>${new Date(secondRootContent.published_at).toUTCString()}</pubDate>
             <description><![CDATA[Este é um corpo bastante longo, vamos ver como que a propriedade description irá reagir, pois por padrão ela deverá cortar após um número X de caracteres. Não vou tomar nota aqui da quant...]]></description>
             <content:encoded><![CDATA[<div class="markdown-body"><p>Este é um corpo bastante longo, vamos ver como que a propriedade description irá reagir, pois por padrão ela deverá cortar após um número X de caracteres. Não vou tomar nota aqui da quantidade exata de caracteres, pois isso pode mudar ao longo do tempo.</p></div>]]></content:encoded>
         </item>
         <item>
             <title><![CDATA[Conteúdo #1 (mais antigo)]]></title>
-            <link>http://localhost:3000/${firstRootContent.owner_username}/${firstRootContent.slug}</link>
-            <guid>http://localhost:3000/${firstRootContent.owner_username}/${firstRootContent.slug}</guid>
+            <link>${orchestrator.webserverUrl}/${firstRootContent.owner_username}/${firstRootContent.slug}</link>
+            <guid>${orchestrator.webserverUrl}/${firstRootContent.owner_username}/${firstRootContent.slug}</guid>
             <pubDate>${new Date(firstRootContent.published_at).toUTCString()}</pubDate>
             <description><![CDATA[Corpo com HTML É importante lidar corretamente com o HTML, incluindo estilos especiais do GFM.]]></description>
-            <content:encoded><![CDATA[<div class="markdown-body"><h1>Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>, incluindo estilos <del>especiais</del> do <code>GFM</code>.</p></div>]]></content:encoded>
+            <content:encoded><![CDATA[<div class="markdown-body"><h1 id="${defaultUser.username.toLowerCase()}-content-corpo-com-html">Corpo com HTML</h1><p>É <strong>importante</strong> lidar corretamente com o <code>HTML</code>, incluindo estilos <del>especiais</del> do <code>GFM</code>.</p></div>]]></content:encoded>
         </item>
     </channel>
 </rss>`);

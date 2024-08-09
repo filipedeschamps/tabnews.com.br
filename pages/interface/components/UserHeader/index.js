@@ -1,6 +1,6 @@
 import { Box, CounterLabel, Heading, PrimerTabNav, TabNavLink } from '@/TabNewsUI';
 
-export default function UserHeader({ username, children, rootContentCount, childContentCount }) {
+export default function UserHeader({ username, children, rootContentCount, childContentCount, adContentCount }) {
   return (
     <>
       <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
@@ -27,6 +27,14 @@ export default function UserHeader({ username, children, rootContentCount, child
             query: { username, page: 1 },
           }}>
           Comentários {!!childContentCount && <CounterLabel>{childContentCount}</CounterLabel>}
+        </TabNavLink>
+
+        <TabNavLink
+          href={{
+            pathname: '/[username]/classificados/[page]',
+            query: { username, page: 1 },
+          }}>
+          Classificados {!!adContentCount && <CounterLabel>{adContentCount}</CounterLabel>}
         </TabNavLink>
       </PrimerTabNav>
     </>

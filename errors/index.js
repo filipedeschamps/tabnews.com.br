@@ -1,5 +1,3 @@
-import { v4 as uuid } from 'uuid';
-
 class BaseError extends Error {
   constructor({
     name,
@@ -20,7 +18,7 @@ class BaseError extends Error {
     this.message = message;
     this.action = action;
     this.statusCode = statusCode || 500;
-    this.errorId = errorId || uuid();
+    this.errorId = errorId || crypto.randomUUID();
     this.requestId = requestId;
     this.context = context;
     this.stack = stack;
@@ -51,7 +49,7 @@ export class NotFoundError extends BaseError {
     super({
       name: 'NotFoundError',
       message: message || 'Não foi possível encontrar este recurso no sistema.',
-      action: action || 'Verifique se o caminho (PATH) e o método (GET, POST, PUT, DELETE) estão corretos.',
+      action: action || 'Verifique se o caminho (PATH) está correto.',
       statusCode: 404,
       requestId: requestId,
       errorId: errorId,
@@ -142,6 +140,21 @@ export class UnprocessableEntityError extends BaseError {
       message: message || 'Não foi possível realizar esta operação.',
       action: action || 'Os dados enviados estão corretos, porém não foi possível realizar esta operação.',
       statusCode: 422,
+      stack: stack,
+      errorLocationCode: errorLocationCode,
+    });
+  }
+}
+
+export class MethodNotAllowedError extends BaseError {
+  constructor({ message, action, requestId, errorId, stack, errorLocationCode }) {
+    super({
+      name: 'MethodNotAllowedError',
+      message: message || 'Método não permitido para este recurso.',
+      action: action || 'Verifique se o método HTTP utilizado é válido para este recurso.',
+      statusCode: 405,
+      requestId: requestId,
+      errorId: errorId,
       stack: stack,
       errorLocationCode: errorLocationCode,
     });

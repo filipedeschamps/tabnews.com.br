@@ -1,11 +1,10 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
-import authentication from 'models/authentication';
 import emailConfirmation from 'models/email-confirmation.js';
 import password from 'models/password.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -19,7 +18,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -31,14 +30,14 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:user".');
-      expect(responseBody.status_code).toEqual(403);
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:user".');
+      expect(responseBody.status_code).toBe(403);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
@@ -47,10 +46,10 @@ describe('PATCH /api/v1/users/[username]', () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
-      let secondUser = await orchestrator.createUser();
+      const secondUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -63,30 +62,29 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para atualizar outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:user:others".');
-      expect(responseBody.status_code).toEqual(403);
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER');
+      expect(response.status).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para atualizar outro usuário.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "update:user:others".');
+      expect(responseBody.status_code).toBe(403);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER');
     });
 
     test('With expired session', async () => {
-      jest.useFakeTimers({
-        now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30), // 30 days ago
-        advanceTimers: true,
+      vi.useFakeTimers({
+        now: new Date(Date.now() - 1000 - 1000 * 60 * 60 * 24 * 30), // 30 days and 1 second ago
       });
 
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -99,20 +97,20 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(401);
-      expect(responseBody.status_code).toEqual(401);
-      expect(responseBody.name).toEqual('UnauthorizedError');
-      expect(responseBody.message).toEqual('Usuário não possui sessão ativa.');
-      expect(responseBody.action).toEqual('Verifique se este usuário está logado.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(response.status).toBe(401);
+      expect(responseBody.status_code).toBe(401);
+      expect(responseBody.name).toBe('UnauthorizedError');
+      expect(responseBody.message).toBe('Usuário não possui sessão ativa.');
+      expect(responseBody.action).toBe('Verifique se este usuário está logado.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
 
-      const parsedCookiesFromGet = authentication.parseSetCookies(response);
-      expect(parsedCookiesFromGet.session_id.name).toEqual('session_id');
-      expect(parsedCookiesFromGet.session_id.value).toEqual('invalid');
-      expect(parsedCookiesFromGet.session_id.maxAge).toEqual(-1);
-      expect(parsedCookiesFromGet.session_id.path).toEqual('/');
-      expect(parsedCookiesFromGet.session_id.httpOnly).toEqual(true);
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
+      expect(parsedCookiesFromGet.session_id.name).toBe('session_id');
+      expect(parsedCookiesFromGet.session_id.value).toBe('invalid');
+      expect(parsedCookiesFromGet.session_id.maxAge).toBe(-1);
+      expect(parsedCookiesFromGet.session_id.path).toBe('/');
+      expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
 
       const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
       expect(sessionObject).toBeUndefined();
@@ -124,7 +122,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -137,7 +135,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
@@ -152,13 +150,13 @@ describe('PATCH /api/v1/users/[username]', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
       expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
 
       const defaultUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
-      expect(defaultUserInDatabase.email).toEqual(defaultUser.email);
+      expect(defaultUserInDatabase.email).toBe(defaultUser.email);
     });
 
     test('Patching itself with a valid and same username but with different case letters', async () => {
@@ -169,7 +167,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -182,7 +180,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
@@ -197,13 +195,13 @@ describe('PATCH /api/v1/users/[username]', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
       expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
 
       const defaultUserInDatabase = await user.findOneById(responseBody.id);
       const passwordsMatch = await password.compare('password', defaultUserInDatabase.password);
       expect(passwordsMatch).toBe(true);
-      expect(defaultUserInDatabase.email).toEqual(defaultUser.email);
+      expect(defaultUserInDatabase.email).toBe(defaultUser.email);
     });
 
     test('Patching itself with a valid, unique but "untrimmed" username', async () => {
@@ -212,7 +210,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -225,7 +223,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
@@ -240,7 +238,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
       expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
     });
 
@@ -253,7 +251,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -266,15 +264,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('O "username" informado já está sendo usado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" duplicated (different uppercase letters)', async () => {
@@ -286,7 +284,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -299,15 +297,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('O "username" informado já está sendo usado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" set to a null value', async () => {
@@ -316,7 +314,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -329,15 +327,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" with an empty string', async () => {
@@ -346,7 +344,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -359,15 +357,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" that\'s not a String', async () => {
@@ -376,7 +374,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -389,15 +387,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" containing non alphanumeric characters', async () => {
@@ -406,7 +404,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -419,15 +417,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" too short', async () => {
@@ -436,7 +434,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -449,15 +447,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter no mínimo 3 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter no mínimo 3 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" too long', async () => {
@@ -466,7 +464,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -479,15 +477,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter no máximo 30 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter no máximo 30 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "username" in blocked list', async () => {
@@ -496,7 +494,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -509,15 +507,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Este nome de usuário não está disponível para uso.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(responseBody.key).toEqual('username');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Este nome de usuário não está disponível para uso.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.key).toBe('username');
     });
 
     test('Patching itself with "body" totally blank', async () => {
@@ -526,7 +524,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           cookie: `session_id=${defaultUserSession.token}`,
         },
@@ -534,15 +532,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('object');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('object');
     });
 
     test('Patching itself with "body" containing a String', async () => {
@@ -551,7 +549,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           cookie: `session_id=${defaultUserSession.token}`,
         },
@@ -560,15 +558,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('object');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('object');
     });
 
     test('Patching itself with "body" containing a blank Object', async () => {
@@ -577,7 +575,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -588,26 +586,161 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('object');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('object');
+    });
+
+    test('Patching itself with "email" duplicated exactly', async () => {
+      await orchestrator.deleteAllEmails();
+      await orchestrator.createUser({
+        email: 'someone@example.com',
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: 'someone@example.com',
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        email: defaultUser.email,
+        description: defaultUser.description,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+    });
+
+    test('Patching itself with "email" duplicated exactly and other fields', async () => {
+      await orchestrator.deleteAllEmails();
+      await orchestrator.createUser({
+        email: 'this_user_already_exists@example.com',
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'New description',
+        email: 'this_user_already_exists@example.com',
+        notifications: false,
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        email: defaultUser.email,
+        description: 'New description',
+        features: defaultUser.features,
+        notifications: false,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+      expect(foundUser.description).toBe('New description');
+      expect(foundUser.notifications).toBe(false);
+      expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
+    });
+
+    test('Patching itself with duplicate "email" and "username" should only return "username" error', async () => {
+      await orchestrator.createUser({ username: 'usernameStoredPreviously' });
+      await orchestrator.createUser({ email: 'this_email_already_exists@example.com' });
+      await orchestrator.createUser({ username: 'usernameStoredLater' });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      await orchestrator.deleteAllEmails();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
+        email: 'this_email_already_exists@example.com',
+        username: 'usernameStoredPreviously',
+      });
+      expect.soft(response.status).toBe(400);
+
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'O "username" informado já está sendo usado.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        key: 'username',
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      const { response: response2, responseBody: responseBody2 } = await usersRequestBuilder.patch(
+        defaultUser.username,
+        {
+          email: 'this_email_already_exists@example.com',
+          username: 'usernameStoredLater',
+        },
+      );
+      expect.soft(response2.status).toBe(400);
+
+      expect(responseBody2).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'O "username" informado já está sendo usado.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+        error_id: responseBody2.error_id,
+        request_id: responseBody2.request_id,
+        key: 'username',
+      });
+      expect(uuidVersion(responseBody2.error_id)).toBe(4);
+      expect(uuidVersion(responseBody2.request_id)).toBe(4);
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+      expect(foundUser.updated_at).toStrictEqual(defaultUser.updated_at);
     });
 
     test('Patching itself with another "email"', async () => {
-      const defaultUser = await orchestrator.createUser({
+      let defaultUser = await orchestrator.createUser({
         email: 'original@email.com',
       });
-      await orchestrator.activateUser(defaultUser);
+      defaultUser = await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -618,13 +751,25 @@ describe('PATCH /api/v1/users/[username]', () => {
         }),
       });
 
-      expect(response.status).toEqual(200);
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
 
       // Attention: it should not update the email in the database
       // before the user clicks on the confirmation link sent to the new email.
       // See `/tests/integration/email-confirmation` for more details.
       const userInDatabase = await user.findOneById(defaultUser.id);
-      expect(userInDatabase.email).toEqual('original@email.com');
+      expect(userInDatabase.email).toBe('original@email.com');
 
       // RECEIVING CONFIRMATION EMAIL
       const confirmationEmail = await orchestrator.getLastEmail();
@@ -634,15 +779,42 @@ describe('PATCH /api/v1/users/[username]', () => {
         tokenObjectInDatabase.id,
       );
 
-      expect(confirmationEmail.sender).toEqual('<contato@tabnews.com.br>');
-      expect(confirmationEmail.recipients).toEqual(['<different@email.com>']);
-      expect(confirmationEmail.subject).toEqual('Confirme seu novo email');
+      expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toStrictEqual(['<different@email.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
       expect(confirmationEmail.text).toContain(defaultUser.username);
       expect(confirmationEmail.html).toContain(defaultUser.username);
       expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
       expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
       expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
       expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
+    });
+
+    test('Patching itself with the same "email"', async () => {
+      await orchestrator.deleteAllEmails();
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: defaultUser.email,
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail).toBeNull();
     });
 
     test('Patching itself with "notifications"', async () => {
@@ -653,7 +825,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -664,7 +836,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         }),
       });
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       const userInDatabase = await user.findOneById(defaultUser.id);
       expect(userInDatabase.notifications).toBe(false);
@@ -676,7 +848,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -688,7 +860,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -717,7 +889,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -729,15 +901,15 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"description" deve conter no máximo 5000 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.type).toEqual('string.max');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"description" deve conter no máximo 5000 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.type).toBe('string.max');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Patching itself with a "description" containing value null', async () => {
@@ -746,7 +918,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
@@ -758,15 +930,91 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"description" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.type).toEqual('any.invalid');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"description" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.type).toBe('string.base');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Patching itself with the user having TabCoins and TabCash', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: defaultUser.id,
+        amount: 200,
+      });
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcash',
+        recipientId: defaultUser.id,
+        amount: 55,
+      });
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'new description',
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: 'new description',
+        email: defaultUser.email,
+        features: defaultUser.features,
+        notifications: defaultUser.notifications,
+        tabcoins: 200,
+        tabcash: 55,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itself with "email", "username", "description" and "notifications"', async () => {
+      await orchestrator.deleteAllEmails();
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'Updating all possible fields.',
+        email: 'random_new_email@example.com',
+        username: 'UpdatedUsername',
+        notifications: false,
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: 'UpdatedUsername',
+        email: defaultUser.email,
+        description: 'Updating all possible fields.',
+        features: defaultUser.features,
+        notifications: false,
+        tabcoins: 0,
+        tabcash: 0,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const foundUser = await user.findOneById(defaultUser.id);
+      expect(foundUser.email).toBe(defaultUser.email);
+      expect(foundUser.description).toBe('Updating all possible fields.');
+      expect(foundUser.notifications).toBe(false);
+      expect(foundUser.username).toBe('UpdatedUsername');
+      expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
+
+      const confirmationEmail = await orchestrator.getLastEmail();
+      expect(confirmationEmail.recipients).toStrictEqual(['<random_new_email@example.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
     });
 
     describe('TEMPORARY BEHAVIOR', () => {
@@ -778,7 +1026,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         const defaultUserSession = await orchestrator.createSession(defaultUser);
 
         const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'patch',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             cookie: `session_id=${defaultUserSession.token}`,
@@ -789,7 +1037,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           }),
         });
 
-        expect(response.status).toEqual(400);
+        expect(response.status).toBe(400);
 
         const defaultUserInDatabase = await user.findOneById(defaultUser.id);
         const passwordsMatch = await password.compare('thisPasswordWillNotChange', defaultUserInDatabase.password);
@@ -811,7 +1059,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       secondUser = await orchestrator.activateUser(secondUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${privilegedUserSession.token}`,
@@ -827,15 +1075,15 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.key).toEqual('object');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.key).toBe('object');
     });
 
     test('Patching other user with all fields', async () => {
@@ -850,7 +1098,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       secondUser = await orchestrator.activateUser(secondUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-        method: 'patch',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           cookie: `session_id=${privilegedUserSession.token}`,
@@ -867,7 +1115,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: secondUser.id,
         username: secondUser.username,

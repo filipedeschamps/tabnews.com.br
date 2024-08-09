@@ -1,7 +1,8 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
+import { maxSlugLength, maxTitleLength, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -12,65 +13,47 @@ beforeAll(async () => {
 describe('PATCH /api/v1/contents/[username]/[slug]', () => {
   describe('Anonymous user', () => {
     test('Content with minimum valid data', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/someUsername/slug`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: 'Anônimo tentando atualizar um conteúdo existente',
-          body: 'Não deveria conseguir.',
-        }),
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+
+      const { response, responseBody } = await contentsRequestBuilder.patch('/someUsername/slug', {
+        title: 'Anônimo tentando atualizar um conteúdo existente',
+        body: 'Não deveria conseguir.',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
   describe('User without "update:content" feature', () => {
     test('"root" content with valid data', async () => {
-      const userWithoutFeature = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithoutFeature);
-      await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['update:content']);
-      const sessionObject = await orchestrator.createSession(userWithoutFeature);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['update:content'] });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${userWithoutFeature.username}/slug`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Usuário válido, tentando atualizar conteúdo na raiz do site.',
-          body: 'Não deveria conseguir, pois não possui a feature "update:content".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.patch(`/${userWithoutFeature.username}/slug`, {
+        title: 'Usuário válido, tentando atualizar conteúdo na raiz do site.',
+        body: 'Não deveria conseguir, pois não possui a feature "update:content".',
       });
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
 
     test('"child" content with valid data', async () => {
-      const userWithoutFeature = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithoutFeature);
-      await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['update:content']);
-      const sessionObject = await orchestrator.createSession(userWithoutFeature);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['update:content'] });
 
       const rootContent = await orchestrator.createContent({
         owner_id: userWithoutFeature.id,
@@ -85,197 +68,304 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: rootContent.id,
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${userWithoutFeature.username}/${childContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${childContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Usuário válido, tentando atualizar conteúdo "child".',
-            body: 'Não deveria conseguir, pois não possui a feature "update:content".',
-          }),
+          title: 'Usuário válido, tentando atualizar conteúdo "child".',
+          body: 'Não deveria conseguir, pois não possui a feature "update:content".',
         },
       );
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "update:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+    });
+  });
+
+  describe('User without "create:content:text_root" feature', () => {
+    test('"root" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_root'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Root content title',
+        body: 'Root content body',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${rootContent.slug}`,
+        {
+          title: 'Valid user trying to update "root" content.',
+          body: "He shouldn't be able to do it because he lacks the 'create:content:text_root' feature.",
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para editar conteúdos na raiz do site.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_root".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
+        'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
+      );
+    });
+
+    test('"child" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_root'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Root content title',
+        body: 'Root content body',
+      });
+
+      const childContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        body: 'Child content with original body',
+        parent_id: rootContent.id,
+        status: 'published',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${childContent.slug}`,
+        {
+          body: 'Updated body, even without "create:content:text_root" feature.',
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: userWithoutFeature.id,
+        parent_id: rootContent.id,
+        slug: childContent.slug,
+        title: null,
+        body: 'Updated body, even without "create:content:text_root" feature.',
+        status: 'published',
+        type: 'content',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: userWithoutFeature.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
+    });
+  });
+
+  describe('User without "create:content:text_child" feature', () => {
+    test('"root" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_child'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Valid user trying to update "root" content.',
+        body: 'It should be possible, even without the "create:content:text_child" feature.',
+        status: 'published',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${rootContent.slug}`,
+        { source_url: 'http://www.tabnews.com.br/' },
+      );
+
+      expect(response.status).toBe(200);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: userWithoutFeature.id,
+        parent_id: null,
+        slug: 'valid-user-trying-to-update-root-content',
+        title: 'Valid user trying to update "root" content.',
+        body: 'It should be possible, even without the "create:content:text_child" feature.',
+        status: 'published',
+        type: 'content',
+        source_url: 'http://www.tabnews.com.br/',
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
+        deleted_at: null,
+        tabcoins: 1,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: userWithoutFeature.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > rootContent.updated_at.toISOString()).toBe(true);
+    });
+
+    test('"child" content with valid data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const userWithoutFeature = await contentsRequestBuilder.buildUser({ without: ['create:content:text_child'] });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        title: 'Root content title',
+        body: 'Root content body',
+      });
+
+      const childContent = await orchestrator.createContent({
+        owner_id: userWithoutFeature.id,
+        body: 'Child content body',
+        parent_id: rootContent.id,
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${userWithoutFeature.username}/${childContent.slug}`,
+        {
+          title: 'Valid user, trying to update "child" content.',
+          body: "He shouldn't be able to do it because he lacks the 'create:content:text_child' feature.",
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para editar conteúdos dentro de outros conteúdos.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_child".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
+        'CONTROLLER:CONTENT:PATCH_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
+      );
     });
   });
 
   describe('Default user', () => {
     test('Content without PATCH Body and "Content-Type"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents//${defaultUser.username}/slug`, {
-        method: 'PATCH',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-      });
+      const { response, responseBody } = await contentsRequestBuilder.patch(`/${defaultUser.username}/slug`);
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with PATCH Body containing an invalid JSON string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/slug`, {
-        method: 'PATCH',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: 'Texto corrido no lugar de um JSON',
-      });
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/slug`,
+        'Texto corrido no lugar de um JSON',
+      );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with PATCH Body containing an empty Object', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/slug`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({}),
-      });
+      const { response, responseBody } = await contentsRequestBuilder.patch(`/${defaultUser.username}/slug`, {});
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with invalid "username" in the URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/invalid-username/slug`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({}),
-      });
+      const { response, responseBody } = await contentsRequestBuilder.patch(`/invalid-username/slug`, {});
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"username" deve conter apenas caracteres alfanuméricos.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with invalid "slug" in the URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/%3Cscript%3Ealert%28%29%3Cscript%3E`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({}),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/%3Cscript%3Ealert%28%29%3Cscript%3E`,
+        {},
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" está no formato errado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" está no formato errado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "username" non-existent', async () => {
-      const firstUser = await orchestrator.createUser();
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/ThisUserDoesNotExists/slug`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${firstUserSessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Primeiro usuário tentando atualizar o conteúdo do Segundo usuário',
-          body: 'Não deveria conseguir',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.patch(`/ThisUserDoesNotExists/slug`, {
+        title: 'Primeiro usuário tentando atualizar o conteúdo do Segundo usuário',
+        body: 'Não deveria conseguir',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
     });
 
     test('Content with "username" existent, but "slug" non-existent', async () => {
-      const firstUser = await orchestrator.createUser();
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const firstUser = await contentsRequestBuilder.buildUser();
 
       await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -283,38 +373,27 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/esse-slug-nao-existe`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${firstUser.username}/esse-slug-nao-existe`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Tentando atualizar um conteúdo próprio, mas errando o slug',
-            body: 'Não deveria conseguir',
-          }),
+          title: 'Tentando atualizar um conteúdo próprio, mas errando o slug',
+          body: 'Não deveria conseguir',
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('Content with "username" and "slug" pointing to content from another user', async () => {
-      const firstUser = await orchestrator.createUser();
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
-
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
       const secondUser = await orchestrator.createUser();
 
       const secondUserContent = await orchestrator.createContent({
@@ -323,39 +402,29 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${secondUser.username}/${secondUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Primeiro usuário tentando atualizar o conteúdo do Segundo usuário',
-            body: 'Não deveria conseguir',
-          }),
+          title: 'Primeiro usuário tentando atualizar o conteúdo do Segundo usuário',
+          body: 'Não deveria conseguir',
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para atualizar o conteúdo de outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:content:others".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para atualizar o conteúdo de outro usuário.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "update:content:others".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
       );
     });
 
     test('Content with "owner_id" pointing to another user', async () => {
-      const firstUser = await orchestrator.createUser();
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const firstUser = await contentsRequestBuilder.buildUser();
       const secondUser = await orchestrator.createUser();
 
       const firstUserContent = await orchestrator.createContent({
@@ -365,25 +434,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}/${firstUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${firstUser.username}/${firstUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Tentando atualizar o dono do conteúdo.',
-            body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
-            owner_id: secondUser.id,
-          }),
+          title: 'Tentando atualizar o dono do conteúdo.',
+          body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
+          owner_id: secondUser.id,
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: firstUserContent.id,
@@ -393,6 +453,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Tentando atualizar o dono do conteúdo.',
         body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -404,17 +465,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: firstUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(firstUserContent.published_at.toISOString());
-      expect(responseBody.updated_at > firstUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.published_at).toBe(firstUserContent.published_at.toISOString());
+      expect(responseBody.updated_at > firstUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "body" declared solely', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -422,23 +482,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Body novo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: 'Body novo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -448,6 +497,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body novo',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -459,16 +509,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with TabCoins credits and debits', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -479,23 +528,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       await orchestrator.createRate(defaultUserContent, 3);
       await orchestrator.createRate(defaultUserContent, -2);
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'New body',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: 'New body' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -505,6 +543,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Title',
         body: 'New body',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -516,16 +555,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "body" containing blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -533,36 +571,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: '',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: '' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing empty Markdown', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -570,37 +596,27 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: `![](https://image-url.com/image.png)
+          body: `![](https://image-url.com/image.png)
             <div><a></a></div>`,
-          }),
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Markdown deve conter algum texto');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Markdown deve conter algum texto.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title", "body" and "source_url" containing \\u0000 null characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -609,25 +625,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         source_url: 'https://\u0000teste-caractere.invalido/',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: '\u0000Começando com caractere proibido no Postgres',
-            body: 'Terminando com caractere proibido no Postgres\u0000',
-            source_url: 'https://teste-caractere.invalido/\u0000',
-          }),
+          title: '\u0000Começando com caractere proibido no Postgres',
+          body: 'Terminando com caractere proibido no Postgres\u0000',
+          source_url: 'https://teste-caractere.invalido/\u0000',
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -637,6 +644,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Começando com caractere proibido no Postgres',
         body: 'Terminando com caractere proibido no Postgres',
         status: 'draft',
+        type: 'content',
         source_url: 'https://teste-caractere.invalido/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -648,15 +656,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" and "body" containing invalid characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -664,37 +671,27 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Texto começando com caracteres inválidos.',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Título terminando com caracteres inválidos.\u200f',
-            body: '\u2800Texto terminando com caracteres inválidos.\u200e',
-          }),
+          title: 'Título terminando com caracteres inválidos.\u200f',
+          body: '\u2800Texto terminando com caracteres inválidos.\u200e',
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing more than 20.000 characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -702,36 +699,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'A'.repeat(20001),
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: 'A'.repeat(20001) },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve conter no máximo 20000 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve conter no máximo 20000 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -739,36 +724,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: ' Espaço no início e no fim ',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: ' Espaço no início e no fim ' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" ending with untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -776,23 +749,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Espaço só no fim ',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: 'Espaço só no fim ' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -802,6 +764,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Espaço só no fim',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -813,16 +776,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "body" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -830,36 +792,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: null,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { body: null },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" declared solely', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -868,23 +818,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         slug: 'slug-velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: 'slug-novo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { slug: 'slug-novo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -894,6 +833,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -905,16 +845,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       // firstContent
       await orchestrator.createContent({
@@ -933,42 +872,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: 'primeiro-conteudo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${secondContent.slug}`,
+        { slug: 'primeiro-conteudo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
         error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       // firstContent
       await orchestrator.createContent({
@@ -987,42 +914,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: 'primeiro-conteudo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${secondContent.slug}`,
+        { slug: 'primeiro-conteudo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
         error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const firstContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1044,23 +959,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${secondContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: 'primeiro-conteudo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${secondContent.slug}`,
+        { slug: 'primeiro-conteudo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1070,6 +974,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Segundo conteúdo',
         body: 'Segundo conteúdo',
         status: 'published',
+        type: 'content',
         tabcoins: 0,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -1081,15 +986,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" containing a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1097,36 +1001,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: '',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { slug: '' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 226 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+    test(`Content with "slug" containing more than ${maxSlugLength} bytes`, async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1134,32 +1026,30 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-          }),
+          slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+            1 + maxSlugLength,
+            's',
+          ),
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+          maxSlugLength,
+          's',
+        ),
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1171,16 +1061,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "slug" containing special characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1188,36 +1077,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: 'slug-não-pode-ter-caracteres-especiais',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { slug: 'slug-não-pode-ter-caracteres-especiais' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" está no formato errado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" está no formato errado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1225,36 +1102,69 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { slug: null },
+      );
+
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "slug" with trailing hyphen', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título velho',
+        body: 'Body velho',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            slug: null,
-          }),
+          slug: 'slug-with-trailing-hyphen---',
         },
       );
 
-      const responseBody = await response.json();
+      expect(response.status).toBe(200);
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: 'slug-with-trailing-hyphen',
+        title: 'Título velho',
+        body: 'Body velho',
+        status: 'draft',
+        type: 'content',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" declared solely', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1262,23 +1172,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Título novo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { title: 'Título novo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1288,6 +1187,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título novo',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1299,16 +1199,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" containing a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1316,36 +1215,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: '',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { title: '' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title", but current content is "deleted"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1357,23 +1244,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'deleted',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Título novo',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { title: 'Título novo' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -1385,14 +1261,13 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
-    test('Content with "title" containing more than 255 characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+    test(`Content with "title" containing more than ${maxTitleLength} characters`, async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1400,37 +1275,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title:
-              'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-          }),
+          title: `Este título possui ${1 + maxTitleLength} caracteres`.padEnd(1 + maxTitleLength, 's'),
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" deve conter no máximo 255 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title" containing Null value in "root" content', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1438,36 +1302,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: null,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { title: null },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
     });
 
     test('Content with "title" containing Null value in "child" content', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const rootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1482,23 +1334,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Child old body',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: null,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${childContent.slug}`,
+        { title: null },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -1508,6 +1349,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: null,
         body: 'Child old body',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1519,16 +1361,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" containing untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1536,23 +1377,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: ' Título válido, mas com espaços em branco no início e no fim ',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { title: ' Título válido, mas com espaços em branco no início e no fim ' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1562,6 +1392,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título válido, mas com espaços em branco no início e no fim',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1573,16 +1404,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "title" containing unescaped characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1590,23 +1420,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'` },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1616,6 +1435,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1627,16 +1447,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "draft" set to "draft"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1644,23 +1463,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: 'draft',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'draft' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1670,6 +1478,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1681,41 +1490,29 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "draft" set to "published"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Título velho',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'draft',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: 'published',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'published' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1723,8 +1520,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'titulo-velho',
         title: 'Título velho',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1736,17 +1534,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "published" set to "draft"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1755,23 +1552,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: 'draft',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'draft' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1783,39 +1569,27 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'MODEL:CONTENT:CHECK_STATUS_CHANGE:STATUS_ALREADY_PUBLISHED',
         key: 'status',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "status" "published" set to "deleted"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: 'deleted',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'deleted' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1823,8 +1597,9 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: 'title',
         title: 'Title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'deleted',
+        type: 'content',
         tabcoins: 1,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -1836,20 +1611,19 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.deleted_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
-      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.owner_id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.deleted_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
+      expect(responseBody.deleted_at > defaultUserContent.published_at.toISOString()).toBe(true);
     });
 
     test('Content with "status" "published" set to "deleted", than "published"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const originalContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1858,34 +1632,14 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${originalContent.slug}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          status: 'deleted',
-        }),
+      await contentsRequestBuilder.patch(`/${defaultUser.username}/${originalContent.slug}`, {
+        status: 'deleted',
       });
 
-      const republishedResponse = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${originalContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: 'published',
-          }),
-        },
-      );
+      const { response: republishedResponse, responseBody: republishedResponseBody } =
+        await contentsRequestBuilder.patch(`/${defaultUser.username}/${originalContent.slug}`, { status: 'published' });
 
-      const republishedResponseBody = await republishedResponse.json();
-
-      expect(republishedResponse.status).toEqual(404);
+      expect(republishedResponse.status).toBe(404);
       expect(republishedResponseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
@@ -1896,14 +1650,13 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         error_location_code: 'CONTROLLER:CONTENT:PATCH_HANDLER:SLUG_NOT_FOUND',
         key: 'slug',
       });
-      expect(uuidVersion(republishedResponseBody.error_id)).toEqual(4);
-      expect(uuidVersion(republishedResponseBody.request_id)).toEqual(4);
+      expect(uuidVersion(republishedResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(republishedResponseBody.request_id)).toBe(4);
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1911,38 +1664,57 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: 'inexisting_status',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'non_existent_status' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test('Content with "status" set to "firewall"', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
+
+      const defaultUserContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Título',
+        body: 'Body',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: 'firewall' },
+      );
+
+      expect(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'Não é possível atualizar um conteúdo para o status "firewall".',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:CONTENT:VALIDATE_UPDATE_SCHEMA:INVALID_STATUS',
+        key: 'status',
+        type: 'any.only',
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "status" set to Null', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1950,38 +1722,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: null,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: null },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "status" set a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -1989,38 +1749,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            status: '',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { status: '' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a valid HTTP URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2028,23 +1776,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'http://www.tabnews.com.br/',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'http://www.tabnews.com.br/' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2054,6 +1791,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: 'http://www.tabnews.com.br/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2065,16 +1803,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a valid HTTPS URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2082,23 +1819,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://www.tabnews.com.br/museu',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://www.tabnews.com.br/museu' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2108,6 +1834,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/museu',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2119,16 +1846,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a valid long TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2136,23 +1862,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://nic.xn--vermgensberatung-pwb/',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://nic.xn--vermgensberatung-pwb/' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2162,6 +1877,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Alterar um baita de um Top-Level Domain',
         body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
         status: 'draft',
+        type: 'content',
         source_url: 'https://nic.xn--vermgensberatung-pwb/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2173,16 +1889,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a valid short URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2190,23 +1905,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Por exemplo o encurtador do Telegram',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://t.me',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://t.me' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2216,6 +1920,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Alterar URL bem curta',
         body: 'Por exemplo o encurtador do Telegram',
         status: 'draft',
+        type: 'content',
         source_url: 'https://t.me',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2227,16 +1932,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing a invalid short TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2244,38 +1948,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'TLDs precisam ter pelo menos dois caracteres',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'http://invalidtl.d',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'http://invalidtl.d' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a invalid long TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2283,38 +1975,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://tl.dcomvinteecincocaracteres',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://tl.dcomvinteecincocaracteres' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a not accepted Protocol', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2322,38 +2002,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'ftp://www.tabnews.com.br',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'ftp://www.tabnews.com.br' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" not containing a protocol', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2361,38 +2029,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'www.tabnews.com.br',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'www.tabnews.com.br' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing an incomplete URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2400,38 +2056,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://lol.',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://lol.' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing query parameters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2439,23 +2083,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2465,6 +2098,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2476,17 +2110,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.published_at).toBeNull();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing fragment component', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2494,23 +2127,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: 'https://www.tabnews.com.br/#:~:text=TabNews,-Status',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: 'https://www.tabnews.com.br/#:~:text=TabNews,-Status' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2520,6 +2142,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/#:~:text=TabNews,-Status',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2531,17 +2154,16 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(null);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.published_at).toBeNull();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "source_url" containing an empty String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2549,35 +2171,24 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Body velho',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: '',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: '' },
       );
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"source_url" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"source_url" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const defaultUserContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2586,22 +2197,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         source_url: 'https://www.tabnews.com.br',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            source_url: null,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${defaultUserContent.slug}`,
+        { source_url: null },
       );
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2611,6 +2212,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Título velho',
         body: 'Body velho',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2622,16 +2224,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > defaultUserContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content with "parent_id" declared solely', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const rootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2645,37 +2246,26 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Child content body',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            parent_id: rootContent.id,
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${childContent.slug}`,
+        { parent_id: rootContent.id },
       );
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Objeto enviado deve ter no mínimo uma chave.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title" and "parent_id" set to another "parent_id"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
       const rootContent1 = await orchestrator.createContent({
         owner_id: defaultUser.id,
@@ -2696,23 +2286,15 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         parent_id: rootContent1.id,
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${defaultUser.username}/${childContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Updated title, but not "parent_id"',
-            parent_id: rootContent2.id,
-          }),
+          title: 'Updated title, but not "parent_id"',
+          parent_id: rootContent2.id,
         },
       );
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2722,6 +2304,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Updated title, but not "parent_id"',
         body: 'Child content body',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2733,18 +2316,17 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > childContent.updated_at.toISOString()).toBe(true);
     });
 
     test('Content from another user', async () => {
-      const firstUser = await orchestrator.createUser();
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
       const secondUser = await orchestrator.createUser();
 
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
       const secondUserContent = await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo do Segundo Usuário antes do patch!',
@@ -2752,39 +2334,28 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Tentando atualizar o conteúdo.',
-          }),
-        },
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${secondUser.username}/${secondUserContent.slug}`,
+        { title: 'Tentando atualizar o conteúdo.' },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para atualizar o conteúdo de outro usuário.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "update:content:others".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para atualizar o conteúdo de outro usuário.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "update:content:others".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENTS:PATCH:USER_CANT_UPDATE_CONTENT_FROM_OTHER_USER',
       );
     });
 
     describe('TabCoins', () => {
       test('"root" content updated from "draft" to "draft" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
@@ -2794,85 +2365,49 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           status: 'draft',
         });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'draft',
-            }),
-          },
+        const { responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'draft' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "draft" to "published" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'published',
-            }),
-          },
+        const { responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'published' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "draft" to "deleted" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
@@ -2882,162 +2417,94 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           status: 'draft',
         });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "published" to "deleted" status (with prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         const prestigeContents = await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 8 });
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
-        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBodyBefore } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBodyBefore = await userResponseBefore.json();
-
-        expect(userResponseBodyBefore.tabcoins).toEqual(8);
-        expect(userResponseBodyBefore.tabcash).toEqual(0);
+        expect(userResponseBodyBefore.tabcoins).toBe(8);
+        expect(userResponseBodyBefore.tabcash).toBe(0);
 
         await orchestrator.createBalance({
-          balanceType: 'content:tabcoin',
+          balanceType: 'content:tabcoin:initial',
           recipientId: prestigeContents[0].id,
           amount: 1,
           originatorType: 'orchestrator',
           originatorId: prestigeContents[0].id,
         });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content updated from "published" to "deleted" status (without prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
-        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBodyBefore } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBodyBefore = await userResponseBefore.json();
-
-        expect(userResponseBodyBefore.tabcoins).toEqual(0);
-        expect(userResponseBodyBefore.tabcash).toEqual(0);
+        expect(userResponseBodyBefore.tabcoins).toBe(0);
+        expect(userResponseBodyBefore.tabcash).toBe(0);
 
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1 });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Deletion of "root" content that was first published without the minimum amount of relevant words', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 4 });
 
         const defaultUserContent = await orchestrator.createContent({
@@ -3047,64 +2514,39 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           status: 'published',
         });
 
-        const userResponseBefore = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBodyBefore } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBodyBefore = await userResponseBefore.json();
+        expect(userResponseBodyBefore.tabcoins).toBe(0);
+        expect(userResponseBodyBefore.tabcash).toBe(0);
 
-        expect(userResponseBodyBefore.tabcoins).toEqual(0);
-        expect(userResponseBodyBefore.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with positive tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         const prestigeContents = await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
         await orchestrator.createBalance({
-          balanceType: 'content:tabcoin',
+          balanceType: 'content:tabcoin:credit',
           recipientId: prestigeContents[0].id,
           amount: 8,
           originatorType: 'orchestrator',
@@ -3113,56 +2555,36 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         await orchestrator.createRate(defaultUserContent, 10);
 
-        const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(11);
 
-        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
-        const userFirstGetResponseBody = await userFirstGetResponse.json();
-        expect(userFirstGetResponseBody.tabcoins).toEqual(12);
+        const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+        expect(userFirstGetResponseBody.tabcoins).toBe(12);
 
-        const contentSecondResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentSecondResponseBody = await contentSecondResponse.json();
+        expect(contentSecondResponseBody.tabcoins).toBe(11);
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(11);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with positive tabcoins updated from "published" to "deleted" status (without prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3170,62 +2592,42 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         await orchestrator.createRate(defaultUserContent, 10);
 
-        const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(11);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(11);
 
-        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
-        const userFirstGetResponseBody = await userFirstGetResponse.json();
-        expect(userFirstGetResponseBody.tabcoins).toEqual(10);
+        const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+        expect(userFirstGetResponseBody.tabcoins).toBe(10);
 
-        const contentSecondResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentSecondResponseBody = await contentSecondResponse.json();
+        expect(contentSecondResponseBody.tabcoins).toBe(11);
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(11);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with negative tabcoins updated from "published" to "deleted" status (with prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         const prestigeContents = await orchestrator.createPrestige(defaultUser.id);
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
         await orchestrator.createBalance({
-          balanceType: 'content:tabcoin',
+          balanceType: 'content:tabcoin:credit',
           recipientId: prestigeContents[0].id,
           amount: 10,
           originatorType: 'orchestrator',
@@ -3234,56 +2636,36 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         await orchestrator.createRate(defaultUserContent, -10);
 
-        const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(-9);
 
-        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
-        const userFirstGetResponseBody = await userFirstGetResponse.json();
-        expect(userFirstGetResponseBody.tabcoins).toEqual(-8);
+        const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+        expect(userFirstGetResponseBody.tabcoins).toBe(-8);
 
-        const contentSecondResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentSecondResponseBody = await contentSecondResponse.json();
+        expect(contentSecondResponseBody.tabcoins).toBe(-9);
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(-9);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(-10);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(-10);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with negative tabcoins updated from "published" to "deleted" status (without prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const defaultUserSession = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
 
         const defaultUserContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3291,58 +2673,38 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         await orchestrator.createRate(defaultUserContent, -10);
 
-        const contentFirstGetResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
+        const { responseBody: contentFirstGetResponseBody } = await contentsRequestBuilder.get(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
         );
-        const contentFirstGetResponseBody = await contentFirstGetResponse.json();
-        expect(contentFirstGetResponseBody.tabcoins).toEqual(-9);
+        expect(contentFirstGetResponseBody.tabcoins).toBe(-9);
 
-        const userFirstGetResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`);
-        const userFirstGetResponseBody = await userFirstGetResponse.json();
-        expect(userFirstGetResponseBody.tabcoins).toEqual(-10);
+        const { responseBody: userFirstGetResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+        expect(userFirstGetResponseBody.tabcoins).toBe(-10);
 
-        const contentSecondResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${defaultUserContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${defaultUserSession.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: contentSecondResponseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${defaultUserContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentSecondResponseBody = await contentSecondResponse.json();
+        expect(contentSecondResponseBody.tabcoins).toBe(-9);
 
-        expect(contentSecondResponseBody.tabcoins).toEqual(-9);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(-10);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(-10);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "draft" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3350,51 +2712,33 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
         });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'draft',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${childContent.slug}`,
+          { status: 'draft' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "published" status (same user)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3402,53 +2746,35 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'published',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${childContent.slug}`,
+          { status: 'published' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "published" status (different user)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(firstUser.id);
         await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3456,64 +2782,39 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'published',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'published' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(2);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(2);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "deleted" status (same user)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3521,65 +2822,40 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(2);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(2);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(2);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(2);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "draft" to "deleted" status (different user)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(firstUser.id);
         await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3587,64 +2863,39 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'draft',
         });
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (same user - with prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3652,63 +2903,38 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(2);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(2);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(2);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(2);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (same user - without prestige)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
 
         // User will not receive tabcoins for publishing a root content.
         const rootContent = await orchestrator.createContent({
           owner_id: defaultUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3716,64 +2942,39 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${defaultUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (different user - with prestige)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3781,63 +2982,38 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
-        const secondUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: secondUserResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const secondUserResponse1Body = await secondUserResponse1.json();
+        expect(secondUserResponse1Body.tabcoins).toBe(2);
+        expect(secondUserResponse1Body.tabcash).toBe(0);
 
-        expect(secondUserResponse1Body.tabcoins).toEqual(2);
-        expect(secondUserResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
+        const { responseBody: secondUserResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const secondUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const secondUserResponse2Body = await secondUserResponse2.json();
-
-        expect(secondUserResponse2Body.tabcoins).toEqual(0);
-        expect(secondUserResponse2Body.tabcash).toEqual(0);
+        expect(secondUserResponse2Body.tabcoins).toBe(0);
+        expect(secondUserResponse2Body.tabcash).toBe(0);
       });
 
       test('"child" content updated from "published" to "deleted" status (different user - without prestige)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3845,64 +3021,39 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           owner_id: secondUser.id,
           parent_id: rootContent.id,
           title: 'Child',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
-        const secondUserResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: secondUserResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const secondUserResponse1Body = await secondUserResponse1.json();
+        expect(secondUserResponse1Body.tabcoins).toBe(0);
+        expect(secondUserResponse1Body.tabcash).toBe(0);
 
-        expect(secondUserResponse1Body.tabcoins).toEqual(0);
-        expect(secondUserResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
+        const { responseBody: secondUserResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const secondUserResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const secondUserResponse2Body = await secondUserResponse2.json();
-
-        expect(secondUserResponse2Body.tabcoins).toEqual(0);
-        expect(secondUserResponse2Body.tabcash).toEqual(0);
+        expect(secondUserResponse2Body.tabcoins).toBe(0);
+        expect(secondUserResponse2Body.tabcash).toBe(0);
       });
 
       test('Deletion of "child" content that was first published without the minimum amount of relevant words (without votes)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3914,60 +3065,35 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
           status: 'published',
         });
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(0);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(0);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('Deletion of "child" content that was first published without the minimum amount of relevant words (with positive votes)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -3981,60 +3107,35 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         await orchestrator.createRate(childContent, 10);
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(10);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(10);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(10);
 
-        expect(contentResponseBody.tabcoins).toEqual(10);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(0);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(0);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
 
       test('Deletion of "child" content that was first published without the minimum amount of relevant words (with negative votes)', async () => {
         const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const secondUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(secondUser.id);
 
         const rootContent = await orchestrator.createContent({
           owner_id: firstUser.id,
           title: 'Root',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
         });
 
@@ -4048,84 +3149,48 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
         await orchestrator.createRate(childContent, -10);
 
-        const userResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponse1Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse1Body = await userResponse1.json();
+        expect(userResponse1Body.tabcoins).toBe(-10);
+        expect(userResponse1Body.tabcash).toBe(0);
 
-        expect(userResponse1Body.tabcoins).toEqual(-10);
-        expect(userResponse1Body.tabcash).toEqual(0);
-
-        const contentResponse = await fetch(
-          `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${childContent.slug}`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              cookie: `session_id=${sessionObject.token}`,
-            },
-            body: JSON.stringify({
-              status: 'deleted',
-            }),
-          },
+        const { responseBody: responseBody } = await contentsRequestBuilder.patch(
+          `/${secondUser.username}/${childContent.slug}`,
+          { status: 'deleted' },
         );
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(-10);
 
-        expect(contentResponseBody.tabcoins).toEqual(-10);
+        const { responseBody: userResponse2Body } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponse2Body = await userResponse2.json();
-
-        expect(userResponse2Body.tabcoins).toEqual(-10);
-        expect(userResponse2Body.tabcash).toEqual(0);
+        expect(userResponse2Body.tabcoins).toBe(-10);
+        expect(userResponse2Body.tabcash).toBe(0);
       });
     });
   });
 
   describe('User with "update:content:others" feature', () => {
     test('Content from another user', async () => {
-      const privilegedUser = await orchestrator.createUser();
-      await orchestrator.addFeaturesToUser(privilegedUser, ['update:content:others']);
-      await orchestrator.activateUser(privilegedUser);
-      const privilegedUserSessionObject = await orchestrator.createSession(privilegedUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser({ with: ['update:content:others'] });
 
       const secondUser = await orchestrator.createUser();
       const secondUserContent = await orchestrator.createContent({
         owner_id: secondUser.id,
         title: 'Conteúdo do Segundo Usuário antes do patch!',
-        body: 'Body antes do patch! - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
-      const response = await fetch(
-        `${orchestrator.webserverUrl}/api/v1/contents/${secondUser.username}/${secondUserContent.slug}`,
+      const { response, responseBody } = await contentsRequestBuilder.patch(
+        `/${secondUser.username}/${secondUserContent.slug}`,
         {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${privilegedUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Novo title.',
-            body: 'Novo body.',
-          }),
+          title: 'Novo title.',
+          body: 'Novo body.',
         },
       );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: secondUserContent.id,
@@ -4135,6 +3200,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         title: 'Novo title.',
         body: 'Novo body.',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -4146,12 +3212,12 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         owner_username: secondUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
-      expect(responseBody.published_at).toEqual(secondUserContent.published_at.toISOString());
-      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toEqual(true);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(responseBody.published_at).toBe(secondUserContent.published_at.toISOString());
+      expect(responseBody.updated_at > secondUserContent.updated_at.toISOString()).toBe(true);
     });
   });
 });

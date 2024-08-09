@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
+import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
-import { v4 as uuidV4 } from 'uuid';
 
 import { ForbiddenError, TooManyRequestsError, UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';

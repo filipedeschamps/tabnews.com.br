@@ -30,8 +30,8 @@ Rodar o TabNews em sua máquina local é uma tarefa extremamente simples.
 
 Você precisa ter duas principais dependências instaladas:
 
-- Node.js LTS v18 (ou qualquer versão superior)
-- Docker Engine v17.12.0 com Docker Compose v1.24.1 (ou qualquer versão superior)
+- Node.js LTS v20 (ou qualquer versão superior)
+- Docker Engine v17.12.0 com Docker Compose v1.29.2 (ou qualquer versão superior)
 
 ### Dependências locais
 
@@ -88,13 +88,13 @@ Há várias formas de rodar os testes dependendo do que você deseja fazer, mas 
 npm test
 ```
 
-Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o comando abaixo:
+Caso queira manter os serviços e testes rodando enquanto desenvolve (e rodando novamente a cada alteração salva), use o modo `watch` com o comando abaixo:
 
 ```bash
 npm run test:watch:services
 ```
 
-Os logs do Serviço Web e Jest (dos testes) irão se misturar, então caso queira rodar eles de forma separada, abra dois terminais separados e rode o seguinte:
+Os logs do Serviço Web e Vitest (dos testes) irão se misturar, então caso queira rodar eles de forma separada, abra dois terminais separados e rode o seguinte:
 
 ```bash
 # Terminal 1
@@ -104,26 +104,26 @@ npm run dev
 npm run test:watch
 ```
 
-Caso não queira dar `watch` em todos os testes e queira isolar arquivos específicos de teste, você pode utilizar uma expressão regular (`regex`) para dar `match` no que quiser. Não é necessário digitar o caminho inteiro para o arquivo, veja alguns exemplos abaixo:
+Caso não queira executar (ou dar `watch`) em todos os testes e queira isolar arquivos específicos de teste, você pode filtrar pelo caminho. Não é necessário digitar o caminho inteiro para o arquivo e você também pode fornecer mais de um caminho, veja alguns exemplos abaixo:
 
 ```bash
-# Rodar todos os testes de "users" da api "v1"
-npm run test:watch -- v1/users/
+# Rodar todos os testes de "users" e "status" da api "v1"
+npm run test -- v1/users/ v1/status/
 
 # Rodar apenas o arquivo tests/integration/api/v1/_use-cases/registration-flow.test.js
-npm run test:watch -- registration-flow
+npm run test -- registration-flow
 
 # Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/patch.test.js
-npm run test:watch -- username./patch
+npm run test:watch:services -- username]/patch
 
 # Rodar apenas o arquivo tests/integration/api/v1/contents/[username]/[slug]/get.test.js
-npm run test:watch -- contents/.username./.slug./get
+npm run test:watch -- contents/[username]/[slug]/get
 ```
 
 Observações:
 
 - A forma como é tratado o caminho dos arquivos pode mudar dependendo do seu sistema operacional.
-- A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar, mas você poderá usar `regex` para evitar usar esses caracteres, como por exemplo utilizar o `.` que representa o `match` com qualquer caractere. Isto foi utilizado nos exemplos acima para evitar os caracteres `[` e `]` dos arquivos.
+- A forma como o seu terminal interpreta caracteres especiais como `/` ou `[` pode mudar.
 
 ## Formas de contribuir
 

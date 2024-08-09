@@ -1,9 +1,10 @@
+import { randomUUID as uuidV4 } from 'node:crypto';
 import slug from 'slug';
-import { v4 as uuidV4 } from 'uuid';
 
-import { ForbiddenError, ValidationError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import balance from 'models/balance.js';
+import pagination from 'models/pagination.js';
 import prestige from 'models/prestige';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
@@ -12,13 +13,13 @@ import queries from 'queries/rankingQueries';
 async function findAll(values = {}, options = {}) {
   values = validateValues(values);
   await replaceOwnerUsernameWithOwnerId(values);
-  const offset = (values.page - 1) * values.per_page;
 
   const query = {
     values: [],
   };
 
   if (!values.count) {
+    const offset = (values.page - 1) * values.per_page;
     query.values = [values.limit || values.per_page, offset];
   }
 
@@ -56,13 +57,7 @@ async function findAll(values = {}, options = {}) {
     Object.keys(values.where).forEach((key) => {
       if (key === '$not_null') return;
 
-      if (key === '$or') {
-        values.where[key].forEach(($orObject) => {
-          query.values.push(Object.values($orObject)[0]);
-        });
-      } else {
-        query.values.push(values.where[key]);
-      }
+      query.values.push(values.where[key]);
     });
   }
   const results = await database.query(query, { transaction: options.transaction });
@@ -84,7 +79,6 @@ async function findAll(values = {}, options = {}) {
       order: 'optional',
       where: 'optional',
       count: 'optional',
-      $or: 'optional',
       $not_null: 'optional',
       limit: 'optional',
       attributes: 'optional',
@@ -112,6 +106,7 @@ async function findAll(values = {}, options = {}) {
         contents.title,
         ${!values.attributes?.exclude?.includes('body') ? 'contents.body,' : ''}
         contents.status,
+        contents.type,
         contents.source_url,
         contents.created_at,
         contents.updated_at,
@@ -161,18 +156,6 @@ async function findAll(values = {}, options = {}) {
           return `contents.${columnName} IS NOT DISTINCT FROM $${globalIndex}`;
         }
 
-        if (columnName === '$or') {
-          const $orQuery = columnValue
-            .map((orColumn) => {
-              globalIndex += 1;
-              const orColumnName = Object.keys(orColumn)[0];
-              return `contents.${orColumnName} = $${globalIndex}`;
-            })
-            .join(' OR ');
-
-          return `(${$orQuery})`;
-        }
-
         if (columnName === '$not_null') {
           const $notNullQuery = columnValue
             .map((notColumnName) => {
@@ -184,6 +167,11 @@ async function findAll(values = {}, options = {}) {
         }
 
         globalIndex += 1;
+
+        if (Array.isArray(columnValue)) {
+          return `contents.${columnName}  = ANY ($${globalIndex})`;
+        }
+
         return `contents.${columnName} = $${globalIndex}`;
       }
     }, '');
@@ -218,7 +206,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at DESC';
     results.rows = await findAll(options);
-    options.totalRows = results.rows[0]?.total_rows;
+    options.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -229,7 +217,7 @@ async function findWithStrategy(options = {}) {
 
     options.order = 'published_at ASC';
     results.rows = await findAll(options);
-    options.totalRows = results.rows[0]?.total_rows;
+    options.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(options);
 
     return results;
@@ -252,34 +240,17 @@ async function findWithStrategy(options = {}) {
       results.rows = rankContentListByRelevance(contentList);
     }
 
-    values.totalRows = results.rows[0]?.total_rows;
+    values.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(values, options);
 
     return results;
   }
 }
 
-async function getPagination(values, options = {}) {
+async function getPagination(values, options) {
   values.count = true;
-
-  const totalRows = values.totalRows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
-  const perPage = values.per_page;
-  const firstPage = 1;
-  const lastPage = Math.ceil(totalRows / values.per_page);
-  const nextPage = values.page >= lastPage ? null : values.page + 1;
-  const previousPage = values.page <= 1 ? null : values.page > lastPage ? lastPage : values.page - 1;
-  const strategy = values.strategy;
-
-  return {
-    currentPage: values.page,
-    totalRows: totalRows,
-    perPage: perPage,
-    firstPage: firstPage,
-    nextPage: nextPage,
-    previousPage: previousPage,
-    lastPage: lastPage,
-    strategy: strategy,
-  };
+  values.total_rows = values.total_rows ?? (await findAll(values, options))[0]?.total_rows ?? 0;
+  return pagination.get(values);
 }
 
 async function create(postedContent, options = {}) {
@@ -289,21 +260,20 @@ async function create(postedContent, options = {}) {
 
   checkRootContentTitle(validContent);
 
-  const parentContent = validContent.parent_id
-    ? await checkIfParentIdExists(validContent, {
-        transaction: options.transaction,
-      })
-    : null;
-
-  injectIdAndPath(validContent, parentContent);
-
   populatePublishedAtValue(null, validContent);
 
   const newContent = await runInsertQuery(validContent, {
     transaction: options.transaction,
   });
 
+  throwIfSpecifiedParentDoesNotExist(postedContent, newContent);
+
   await creditOrDebitTabCoins(null, newContent, {
+    eventId: options.eventId,
+    transaction: options.transaction,
+  });
+
+  await updateTabCashBalance(null, newContent, {
     eventId: options.eventId,
     transaction: options.transaction,
   });
@@ -326,10 +296,22 @@ async function create(postedContent, options = {}) {
     const query = {
       text: `
       WITH
+        parent AS (
+          SELECT
+            owner_id,
+            CASE 
+              WHEN id IS NULL THEN ARRAY[]::uuid[]
+              ELSE ARRAY_APPEND(path, id)
+            END AS child_path
+          FROM (SELECT 1) AS dummy
+          LEFT JOIN contents
+          ON id = $2
+        ),
         inserted_content as (
           INSERT INTO
-            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, path)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            contents (id, parent_id, owner_id, slug, title, body, status, source_url, published_at, type, path)
+            SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, parent.child_path
+            FROM parent
             RETURNING *
         )
       SELECT
@@ -340,17 +322,21 @@ async function create(postedContent, options = {}) {
         inserted_content.title,
         inserted_content.body,
         inserted_content.status,
+        inserted_content.type,
         inserted_content.source_url,
         inserted_content.created_at,
         inserted_content.updated_at,
         inserted_content.published_at,
         inserted_content.deleted_at,
         inserted_content.path,
-        users.username as owner_username
+        users.username as owner_username,
+        parent.owner_id as parent_owner_id
       FROM
         inserted_content
       INNER JOIN
         users ON inserted_content.owner_id = users.id
+      LEFT JOIN
+        parent ON true
       ;`,
       values: [
         content.id,
@@ -362,7 +348,7 @@ async function create(postedContent, options = {}) {
         content.status,
         content.source_url,
         content.published_at,
-        content.path,
+        content.type,
       ],
     };
 
@@ -375,42 +361,30 @@ async function create(postedContent, options = {}) {
   }
 }
 
-function injectIdAndPath(validContent, parentContent) {
-  validContent.id = uuidV4();
-
-  if (parentContent) {
-    validContent.path = [...parentContent.path, parentContent.id];
-  }
-
-  if (!parentContent) {
-    validContent.path = [];
-  }
-}
-
 function populateSlug(postedContent) {
   if (!postedContent.slug) {
     postedContent.slug = getSlug(postedContent.title) || uuidV4();
   }
 }
 
+slug.extend({
+  '%': ' por cento',
+  '>': '-',
+  '<': '-',
+  '@': '-',
+  '.': '-',
+  ',': '-',
+  '&': ' e ',
+  _: '-',
+  '/': '-',
+});
+
 function getSlug(title) {
   if (!title) {
     return;
   }
 
-  slug.extend({
-    '%': ' por cento',
-    '>': '-',
-    '<': '-',
-    '@': '-',
-    '.': '-',
-    ',': '-',
-    '&': ' e ',
-    _: '-',
-    '/': '-',
-  });
-
-  const generatedSlug = slug(title, {
+  const generatedSlug = slug(title.substring(0, 160), {
     trim: true,
   });
 
@@ -421,35 +395,26 @@ function populateStatus(postedContent) {
   postedContent.status = postedContent.status || 'draft';
 }
 
-async function checkIfParentIdExists(content, options) {
-  const existingContent = await findOne(
-    {
-      where: {
-        id: content.parent_id,
-      },
-    },
-    options,
-  );
+function throwIfSpecifiedParentDoesNotExist(postedContent, newContent) {
+  const existingParentId = newContent.path.at(-1);
 
-  if (!existingContent) {
+  if (postedContent.parent_id && postedContent.parent_id !== existingParentId) {
     throw new ValidationError({
-      message: `Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.`,
-      action: `Utilize um "parent_id" que aponte para um conteúdo que existe.`,
+      message: `Você está tentando criar um comentário em um conteúdo que não existe.`,
+      action: `Utilize um "parent_id" que aponte para um conteúdo existente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
       statusCode: 400,
       key: 'parent_id',
     });
   }
-
-  return existingContent;
 }
 
 function parseQueryErrorToCustomError(error) {
   if (error.databaseErrorCode === database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
     return new ValidationError({
       message: `O conteúdo enviado parece ser duplicado.`,
-      action: `Utilize um "title" ou "slug" diferente.`,
+      action: `Utilize um "title" ou "slug" com começo diferente.`,
       stack: new Error().stack,
       errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
       statusCode: 400,
@@ -462,21 +427,23 @@ function parseQueryErrorToCustomError(error) {
 
 function validateCreateSchema(content) {
   const cleanValues = validator(content, {
+    id: 'required',
     parent_id: 'optional',
     owner_id: 'required',
     slug: 'required',
     title: 'optional',
     body: 'required',
     status: 'required',
+    content_type: 'optional',
     source_url: 'optional',
   });
 
-  if (cleanValues.status === 'deleted') {
+  if (cleanValues.status === 'deleted' || cleanValues.status === 'firewall') {
     throw new ValidationError({
-      message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
+      message: `Não é possível criar um novo conteúdo diretamente com status "${cleanValues.status}".`,
       key: 'status',
       type: 'any.only',
-      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
     });
   }
 
@@ -517,16 +484,21 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   let userEarnings = 0;
 
   // We should not credit or debit if the content has never been published before
-  // and is being directly deleted, example: "draft" -> "deleted".
-  if (oldContent && !oldContent.published_at && newContent.status === 'deleted') {
+  // and is not published now, example: "draft" -> "deleted"
+  // or if it was deleted and is catch by firewall: "deleted" -> "firewall".
+  if (
+    oldContent &&
+    ((!oldContent.published_at && newContent.status !== 'published') ||
+      ['deleted', 'firewall'].includes(oldContent.status))
+  ) {
     return;
   }
 
-  // We should debit if the content was once "published", but now is being "deleted".
+  // We should debit if the content was once "published", but now it is not.
   // 1) If content `tabcoins` is positive, we need to debit all tabcoins earning by the user.
   // 2) If content `tabcoins` is negative, we should debit the original tabcoin gained from the
   // creation of the content represented by `initialTabcoins`.
-  if (oldContent && oldContent.published_at && newContent.status === 'deleted') {
+  if (oldContent?.published_at && newContent.status !== 'published') {
     let amountToDebit;
 
     const userEarningsByContent = await prestige.getByContentId(oldContent.id, { transaction: options.transaction });
@@ -574,23 +546,30 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
       });
     }
 
-    if (newContent.parent_id) {
-      const parentContent = await findOne(
-        {
-          where: {
-            id: newContent.parent_id,
-          },
-        },
-        options,
-      );
-
-      // We should not credit if the parent content is from the same user.
-      if (parentContent.owner_id === newContent.owner_id) return;
+    // We should not credit TabCoins to the user if the "type" is not "content".
+    if (newContent.type !== 'content') {
+      userEarnings = 0;
     }
 
     // We should not credit if the content has little or no value.
-    // Expected 5 or more words with 5 or more characters.
     if (newContent.body.split(/[a-z]{5,}/i, 6).length < 6) return;
+
+    if (newContent.parent_id) {
+      let parentOwnerId = newContent.parent_owner_id;
+
+      if (parentOwnerId === undefined) {
+        const queryParent = {
+          text: `SELECT owner_id FROM contents WHERE id = $1;`,
+          values: [newContent.parent_id],
+        };
+        const parentQueryResult = await database.query(queryParent, options);
+        const parentContent = parentQueryResult.rows[0];
+        parentOwnerId = parentContent.owner_id;
+      }
+
+      // We should not credit if the parent content is from the same user.
+      if (parentOwnerId === newContent.owner_id) return;
+    }
   }
 
   if (userEarnings > 0) {
@@ -614,8 +593,8 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
         balanceType: 'content:tabcoin:initial',
         recipientId: newContent.id,
         amount: contentEarnings,
-        originatorType: options.eventId ? 'event' : 'content',
-        originatorId: options.eventId ? options.eventId : newContent.id,
+        originatorType: 'user',
+        originatorId: newContent.owner_id,
       },
       {
         transaction: options.transaction,
@@ -624,30 +603,71 @@ async function creditOrDebitTabCoins(oldContent, newContent, options = {}) {
   }
 }
 
+async function updateTabCashBalance(oldContent, newContent, options = {}) {
+  if (newContent.type === 'content') {
+    return;
+  }
+
+  const initialTabCash = 100;
+
+  const userBalance = await balance.create(
+    {
+      balanceType: 'user:tabcash',
+      recipientId: newContent.owner_id,
+      amount: -initialTabCash,
+      originatorType: options.eventId ? 'event' : 'content',
+      originatorId: options.eventId ? options.eventId : newContent.id,
+    },
+    {
+      transaction: options.transaction,
+      withBalance: true,
+    },
+  );
+
+  if (userBalance.total < 0) {
+    throw new UnprocessableEntityError({
+      message: `Não foi possível criar a publicação.`,
+      action: `Você precisa de pelo menos ${Math.abs(initialTabCash)} TabCash para realizar esta ação.`,
+      errorLocationCode: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
+    });
+  }
+
+  const contentBalance = await balance.create(
+    {
+      balanceType: 'ad:budget',
+      recipientId: newContent.id,
+      amount: initialTabCash,
+      originatorType: 'user',
+      originatorId: newContent.owner_id,
+    },
+    {
+      transaction: options.transaction,
+      withBalance: true,
+    },
+  );
+
+  newContent.tabcash = contentBalance.total;
+}
+
 async function update(contentId, postedContent, options = {}) {
   const validPostedContent = validateUpdateSchema(postedContent);
 
-  const oldContent = await findOne(
-    {
-      where: {
-        id: contentId,
+  const oldContent =
+    options.oldContent ??
+    (await findOne(
+      {
+        where: {
+          id: contentId,
+        },
       },
-    },
-    options,
-  );
+      options,
+    ));
 
   const newContent = { ...oldContent, ...validPostedContent };
 
   throwIfContentIsAlreadyDeleted(oldContent);
   throwIfContentPublishedIsChangedToDraft(oldContent, newContent);
   checkRootContentTitle(newContent);
-  checkForParentIdRecursion(newContent);
-
-  if (newContent.parent_id) {
-    await checkIfParentIdExists(newContent, {
-      transaction: options.transaction,
-    });
-  }
 
   populatePublishedAtValue(oldContent, newContent);
   populateDeletedAtValue(newContent);
@@ -701,6 +721,7 @@ async function update(contentId, postedContent, options = {}) {
         updated_content.title,
         updated_content.body,
         updated_content.status,
+        updated_content.type,
         updated_content.source_url,
         updated_content.created_at,
         updated_content.updated_at,
@@ -733,6 +754,89 @@ async function update(contentId, postedContent, options = {}) {
   }
 }
 
+async function confirmFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = 'deleted',
+          deleted_at = CASE
+            WHEN deleted_at IS NULL THEN (now() at time zone 'utc')
+            ELSE deleted_at
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *)
+      
+      SELECT
+        updated_contents.*,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        users.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[updated_contents.id]
+           AND children.status = 'published'
+        ) as children_deep_count
+      FROM
+        updated_contents
+      INNER JOIN
+        users ON updated_contents.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
+async function undoFirewallStatus(contentIds, options) {
+  const query = {
+    text: `
+      WITH updated_contents AS (
+        UPDATE contents SET
+          status = CASE
+            WHEN deleted_at IS NULL THEN 'published'
+            ELSE 'deleted'
+          END
+        WHERE
+          id = ANY ($1)
+        RETURNING
+          *
+      )
+  
+      SELECT
+        updated_contents.*,
+        tabcoins_count.total_balance as tabcoins,
+        tabcoins_count.total_credit as tabcoins_credit,
+        tabcoins_count.total_debit as tabcoins_debit,
+        users.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          LEFT JOIN updated_contents as uc ON children.id = uc.id
+          WHERE children.path @> ARRAY[updated_contents.id]
+           AND COALESCE(uc.status, children.status) = 'published'
+        ) as children_deep_count
+      FROM
+        updated_contents
+      INNER JOIN
+        users ON updated_contents.owner_id = users.id
+      LEFT JOIN LATERAL
+        get_content_balance_credit_debit(updated_contents.id) tabcoins_count ON true
+      ;`,
+    values: [contentIds],
+  };
+
+  const results = await database.query(query, options);
+  return results.rows;
+}
+
 function validateUpdateSchema(content) {
   const cleanValues = validator(content, {
     slug: 'optional',
@@ -742,20 +846,16 @@ function validateUpdateSchema(content) {
     source_url: 'optional',
   });
 
-  return cleanValues;
-}
-
-function checkForParentIdRecursion(content) {
-  if (content.parent_id === content.id) {
+  if (cleanValues.status === 'firewall') {
     throw new ValidationError({
-      message: `"parent_id" não deve apontar para o próprio conteúdo.`,
-      action: `Utilize um "parent_id" diferente do "id" do mesmo conteúdo.`,
-      stack: new Error().stack,
-      errorLocationCode: 'MODEL:CONTENT:CHECK_FOR_PARENT_ID_RECURSION:RECURSION_FOUND',
-      statusCode: 400,
-      key: 'parent_id',
+      message: 'Não é possível atualizar um conteúdo para o status "firewall".',
+      key: 'status',
+      type: 'any.only',
+      errorLocationCode: 'MODEL:CONTENT:VALIDATE_UPDATE_SCHEMA:INVALID_STATUS',
     });
   }
+
+  return cleanValues;
 }
 
 function populateDeletedAtValue(contentObject) {
@@ -869,7 +969,7 @@ async function findTree(options = {}) {
   }
 
   function validateWhereSchema(where) {
-    let options = {};
+    const options = {};
 
     if (where.parent_id) {
       options.parent_id = 'required';
@@ -973,4 +1073,7 @@ export default Object.freeze({
   findWithStrategy,
   create,
   update,
+  confirmFirewallStatus,
+  undoFirewallStatus,
+  creditOrDebitTabCoins,
 });

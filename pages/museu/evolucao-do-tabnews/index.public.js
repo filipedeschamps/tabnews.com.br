@@ -245,7 +245,7 @@ export default function Page() {
             <Link href="https://github.com/rafatcb">Rafael Tavares</Link>
           </Box>
         </Box>
-        <Viewer areLinksTrusted value={body} />
+        <Viewer areLinksTrusted value={body} clobberPrefix="" />
       </Box>
     </DefaultLayout>
   );

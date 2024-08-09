@@ -1,9 +1,9 @@
-import fetch from 'cross-fetch';
-import readline from 'node:readline';
 import { version as uuidVersion } from 'uuid';
 
 import database from 'infra/database';
+import { defaultTabCashForAdCreation, maxSlugLength, maxTitleLength, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -14,58 +14,42 @@ beforeAll(async () => {
 describe('POST /api/v1/contents', () => {
   describe('Anonymous user', () => {
     test('Content with minimum valid data', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: 'Anônimo tentando postar',
-          body: 'Não deveria conseguir.',
-        }),
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Anônimo tentando postar',
+        body: 'Não deveria conseguir.',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:content".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "create:content".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
   describe('User without "create:content:text_root" feature', () => {
     test('"root" content with valid data', async () => {
-      const userWithoutFeature = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithoutFeature);
-      await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['create:content:text_root']);
-      const sessionObject = await orchestrator.createSession(userWithoutFeature);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser({ without: ['create:content:text_root'] });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Usuário válido, tentando postar na raiz do site.',
-          body: 'Não deveria conseguir, pois não possui a feature "create:content:text_root".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Usuário válido, tentando postar na raiz do site.',
+        body: 'Não deveria conseguir, pois não possui a feature "create:content:text_root".',
       });
-      const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Você não possui permissão para criar conteúdos na raiz do site.');
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_root".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para criar conteúdos na raiz do site.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_root".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       );
     });
@@ -73,44 +57,32 @@ describe('POST /api/v1/contents', () => {
 
   describe('User without "create:content:text_child" feature', () => {
     test('"child" content with valid data', async () => {
-      const defaultUser = await orchestrator.createUser();
-      const userWithoutFeature = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithoutFeature);
-      await orchestrator.removeFeaturesFromUser(userWithoutFeature, ['create:content:text_child']);
-      const sessionObject = await orchestrator.createSession(userWithoutFeature);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Usuário válido, tentando postar uma resposta.',
-          body: 'Não deveria conseguir, pois não possui a feature "create:content:text_child".',
-          parent_id: rootContent.id,
-          status: 'published',
-        }),
+      await contentsRequestBuilder.buildUser({ without: ['create:content:text_child'] });
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Usuário válido, tentando postar uma resposta.',
+        body: 'Não deveria conseguir, pois não possui a feature "create:content:text_child".',
+        parent_id: rootContent.id,
+        status: 'published',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(403);
-      expect(responseBody.status_code).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual(
-        'Você não possui permissão para criar conteúdos dentro de outros conteúdos.',
-      );
-      expect(responseBody.action).toEqual('Verifique se você possui a feature "create:content:text_child".');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual(
+      expect(response.status).toBe(403);
+      expect(responseBody.status_code).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Você não possui permissão para criar conteúdos dentro de outros conteúdos.');
+      expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_child".');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe(
         'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_CHILD:FEATURE_NOT_FOUND',
       );
     });
@@ -118,76 +90,56 @@ describe('POST /api/v1/contents', () => {
 
   describe('Default user', () => {
     test('Content without POST Body and "Content-Type"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+      contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-      });
+      const { response, responseBody } = await contentsRequestBuilder.post();
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with POST Body containing an invalid JSON string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder();
+      await contentsRequestBuilder.buildUser();
+      contentsRequestBuilder.buildHeaders({ 'Content-Type': undefined });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: 'Texto corrido no lugar de um JSON',
-      });
+      const { response, responseBody } = await contentsRequestBuilder.post(
+        '/api/v1/contents',
+        'Texto corrido no lugar de um JSON',
+      );
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Body enviado deve ser do tipo Object.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "owner_id" pointing to another user', async () => {
-      const firstUser = await orchestrator.createUser();
-      await orchestrator.activateUser(firstUser);
-      const firstUserSessionObject = await orchestrator.createSession(firstUser);
-      const secondUser = await orchestrator.createUser();
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const firstUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${firstUserSessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Tentando criar conteúdo em nome de outro usuário',
-          body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
-          owner_id: secondUser.id,
-        }),
+      const secondUser = await orchestrator.createUser();
+      await orchestrator.activateUser(secondUser);
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Tentando criar conteúdo em nome de outro usuário',
+        body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
+        owner_id: secondUser.id,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -197,6 +149,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Tentando criar conteúdo em nome de outro usuário',
         body: 'Campo "owner_id" da request deveria ser ignorado e pego através da sessão.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -208,82 +161,55 @@ describe('POST /api/v1/contents', () => {
         owner_username: firstUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "body" not declared', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Não deveria conseguir, falta o "body".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Não deveria conseguir, falta o "body".',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: '',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing empty Markdown', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: `![](https://image-url.com/image.png)
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: `![](https://image-url.com/image.png)
           <div>\u00a0</div>
           <b>\u2800</b>
           <>\u200e</>
@@ -339,42 +265,29 @@ describe('POST /api/v1/contents', () => {
           </code></a></div></other>
           <code><a><div><other>
           `,
-        }),
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('Markdown deve conter algum texto');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('Markdown deve conter algum texto.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "title", "body" and "source_url" containing \\u0000 null characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '\u0000Começando com caractere proibido no Postgres',
-          body: 'Terminando com caractere proibido no Postgres\u0000',
-          source_url: 'https://teste-\u0000caractere.invalido/\u0000',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '\u0000Começando com caractere proibido no Postgres',
+        body: 'Terminando com caractere proibido no Postgres\u0000',
+        source_url: 'https://teste-\u0000caractere.invalido/\u0000',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -384,6 +297,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Começando com caractere proibido no Postgres',
         body: 'Terminando com caractere proibido no Postgres',
         status: 'draft',
+        type: 'content',
         source_url: 'https://teste-caractere.invalido/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -395,118 +309,78 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" and "body" containing invalid characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '\u200eTítulo começando e terminando com caracteres inválidos.\u2800',
-          body: '\u200fTexto começando e terminando com caracteres inválidos.\u200e',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '\u200eTítulo começando e terminando com caracteres inválidos.\u2800',
+        body: '\u200fTexto começando e terminando com caracteres inválidos.\u200e',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing more than 20.000 characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: 'A'.repeat(20001),
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: 'A'.repeat(20001),
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve conter no máximo 20000 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve conter no máximo 20000 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" containing untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: ' Espaço no início e no fim ',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: ' Espaço no início e no fim ',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" deve começar com caracteres visíveis.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "body" ending with untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: 'Espaço só no fim ',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: 'Espaço só no fim ',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -516,6 +390,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Título normal',
         body: 'Espaço só no fim',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -527,61 +402,41 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "body" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título normal',
-          body: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: null,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"body" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"body" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" containing a custom valid value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: 'nodejs',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'nodejs',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -591,6 +446,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -602,71 +458,58 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" containing a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: '',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
-    test('Content with "slug" containing more than 226 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+    test(`Content with "slug" containing more than ${maxSlugLength} bytes`, async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+          1 + maxSlugLength,
+          's',
+        ),
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'this-slug-must-be-changed-to-226-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: `this-slug-must-be-changed-from-${1 + maxSlugLength}-to-${maxSlugLength}-bytes`.padEnd(
+          maxSlugLength,
+          's',
+        ),
         title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -678,168 +521,124 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "slug" containing special characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: 'slug-não-pode-ter-caracteres-especiais',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'slug-não-pode-ter-caracteres-especiais',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" está no formato errado.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" está no formato errado.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Mini curso de Node.js',
-          body: 'Instale o Node.js',
-          slug: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: null,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"slug" possui o valor inválido "null".');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"slug" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "slug" containing the same value of another content (same user, both "published" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      await contentsRequestBuilder.post({
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
         slug: 'conteudo-existente',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Conteúdo existente',
-          body: 'Outro body',
-          slug: 'conteudo-existente',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        slug: 'conteudo-existente',
+        status: 'published',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
         error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "draft" and the other "published" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      await contentsRequestBuilder.post({
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
         slug: 'conteudo-existente',
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Conteúdo existente',
-          body: 'Outro body',
-          slug: 'conteudo-existente',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        slug: 'conteudo-existente',
+        status: 'published',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O conteúdo enviado parece ser duplicado.',
-        action: 'Utilize um "title" ou "slug" diferente.',
+        action: 'Utilize um "title" ou "slug" com começo diferente.',
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
         error_location_code: 'MODEL:CONTENT:CHECK_FOR_CONTENT_UNIQUENESS:ALREADY_EXISTS',
         key: 'slug',
       });
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content with "slug" containing the same value of another content (same user, one with "published" and the other "deleted" status)', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const firstContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: firstContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo existente',
         body: 'Conteúdo existente',
         slug: 'conteudo-existente',
@@ -850,138 +649,61 @@ describe('POST /api/v1/contents', () => {
         status: 'deleted',
       });
 
-      const secondContent = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Conteúdo existente',
-          body: 'Outro body',
-          slug: 'conteudo-existente',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Conteúdo existente',
+        body: 'Outro body',
+        slug: 'conteudo-existente',
+        status: 'published',
       });
 
-      const secondContentBody = await secondContent.json();
+      expect(response.status).toBe(201);
 
-      expect(secondContent.status).toEqual(201);
-
-      expect(secondContentBody).toStrictEqual({
-        id: secondContentBody.id,
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
         slug: 'conteudo-existente',
         title: 'Conteúdo existente',
         body: 'Outro body',
         status: 'published',
+        type: 'content',
         tabcoins: 0,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
         source_url: null,
-        created_at: secondContentBody.created_at,
-        updated_at: secondContentBody.updated_at,
-        published_at: secondContentBody.published_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: responseBody.published_at,
         deleted_at: null,
         owner_username: defaultUser.username,
       });
 
-      expect(Date.parse(secondContentBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(secondContentBody.published_at)).not.toEqual(NaN);
-      expect(Date.parse(secondContentBody.updated_at)).not.toEqual(NaN);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
-    test('Content with "title" containing a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+    test('Content with "slug" with trailing hyphen', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '',
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Mini curso de Node.js',
+        body: 'Instale o Node.js',
+        slug: 'slug-with-trailing-hyphen---',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "title" containing more than 255 characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title:
-            'Este título possui 256 caracteressssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-          body: 'Qualquer coisa.',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" deve conter no máximo 255 caracteres.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
-    });
-
-    test('Content with "title" containing 255 characters but more than 255 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title:
-            'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-          body: 'Instale o Node.js',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: 'este-titulo-possui-255-caracteres-ocupando-256-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-ocupando-menos-de-256-bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-        title:
-          'Este título possui 255 caracteres ocupando 256 bytes e deve com 100% de certeza gerar um slug ocupando menos de 256 bytesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
+        slug: 'slug-with-trailing-hyphen',
+        title: 'Mini curso de Node.js',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -993,31 +715,106 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+    });
+
+    test('Content with "title" containing a blank String', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '',
+        body: 'Qualquer coisa.',
+      });
+
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test(`Content with "title" containing more than ${maxTitleLength} characters`, async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: `Este título possui ${1 + maxTitleLength} caracteres`.padEnd(1 + maxTitleLength, 's'),
+        body: 'Qualquer coisa.',
+      });
+
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
+    test(`Content with "title" containing ${maxTitleLength} characters but more than ${maxTitleLength} bytes`, async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title:
+          `Este título possui ${maxTitleLength} caracteres ocupando ${1 + maxTitleLength} bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
+            maxTitleLength,
+            's',
+          ),
+        body: 'Instale o Node.js',
+      });
+
+      expect(response.status).toBe(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: `este-titulo-possui-${maxTitleLength}-caracteres-ocupando-${1 + maxTitleLength}-bytes-e-deve-com-100-por-cento-de-certeza-gerar-um-slug-limitado-a-${maxSlugLength}-bytes`.padEnd(
+          maxSlugLength,
+          's',
+        ),
+        title:
+          `Este título possui ${maxTitleLength} caracteres ocupando ${1 + maxTitleLength} bytes e deve com 100% de certeza gerar um slug limitado a ${maxSlugLength} bytes`.padEnd(
+            maxTitleLength,
+            's',
+          ),
+        body: 'Instale o Node.js',
+        status: 'draft',
+        type: 'content',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing Braille Pattern Blank Unicode Character', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '\u2800 Braille Pattern Blank Unicode Character \u2800',
-          body: 'Instale o Node.js',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '\u2800 Braille Pattern Blank Unicode Character \u2800',
+        body: 'Instale o Node.js',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1027,6 +824,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Braille Pattern Blank Unicode Character',
         body: 'Instale o Node.js',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1038,40 +836,31 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
-    test('Content with "title" containing special characters occupying more than 255 bytes', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+    test(`Content with "title" containing special characters occupying more than ${maxTitleLength} bytes`, async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: '♥'.repeat(255),
-          body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '♥'.repeat(maxTitleLength),
+        body: `The title is ${maxTitleLength} characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
         owner_id: defaultUser.id,
         parent_id: null,
-        slug: '4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4pml4p',
-        title: '♥'.repeat(255),
-        body: 'The title is 255 characters but 765 bytes and the slug should only be 255 bytes',
+        slug: ''.padEnd(maxSlugLength, '4pml'),
+        title: '♥'.repeat(maxTitleLength),
+        body: `The title is ${maxTitleLength} characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1083,31 +872,21 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing untrimmed values', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: ' Título válido, mas com espaços em branco no início e no fim ',
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: ' Título válido, mas com espaços em branco no início e no fim ',
+        body: 'Qualquer coisa.',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1117,6 +896,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Título válido, mas com espaços em branco no início e no fim',
         body: 'Qualquer coisa.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1128,31 +908,21 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "title" containing unescaped characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
-          body: 'Qualquer coisa.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
+        body: 'Qualquer coisa.',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1162,6 +932,7 @@ describe('POST /api/v1/contents', () => {
         title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'`,
         body: 'Qualquer coisa.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1173,32 +944,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "status" set to "draft"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria criar um conteúdo com status "draft".',
-          body: 'Qualquer coisa.',
-          status: 'draft',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria criar um conteúdo com status "draft".',
+        body: 'Qualquer coisa.',
+        status: 'draft',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1208,6 +969,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Deveria criar um conteúdo com status "draft".',
         body: 'Qualquer coisa.',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1219,32 +981,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "status" set to "published"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria criar um conteúdo com status "published".',
-          body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria criar um conteúdo com status "published".',
+        body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
+        status: 'published',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1254,6 +1006,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Deveria criar um conteúdo com status "published".',
         body: 'E isso vai fazer ter um "published_at" preenchido automaticamente.',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1265,33 +1018,23 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
     });
 
     test('Content with "status" set to "deleted"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar a criação de um conteúdo direto em "deleted".',
-          body: 'Não faz sentido criar conteúdos deletados.',
-          status: 'deleted',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar a criação de um conteúdo direto em "deleted".',
+        body: 'Não faz sentido criar conteúdos deletados.',
+        status: 'deleted',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
@@ -1299,129 +1042,113 @@ describe('POST /api/v1/contents', () => {
         status_code: 400,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:STATUS_DELETED',
+        error_location_code: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
+        key: 'status',
+        type: 'any.only',
+      });
+    });
+
+    test('Content with "status" set to "firewall"', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Title.',
+        body: 'Body',
+        status: 'firewall',
+      });
+
+      expect(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Não é possível criar um novo conteúdo diretamente com status "firewall".',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:CONTENT:VALIDATE_CREATE_SCHEMA:INVALID_STATUS',
         key: 'status',
         type: 'any.only',
       });
     });
 
     test('Content with "status" set to "non_existent_status"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar.',
-          body: 'Qualquer coisa.',
-          status: 'inexisting_status',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar.',
+        body: 'Qualquer coisa.',
+        status: 'inexisting_status',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "status" set to Null', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar.',
-          body: 'Qualquer coisa.',
-          status: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar.',
+        body: 'Qualquer coisa.',
+        status: null,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "status" set a blank String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Deveria negar.',
-          body: 'Qualquer coisa.',
-          status: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Deveria negar.',
+        body: 'Qualquer coisa.',
+        status: '',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        '"status" deve possuir um dos seguintes valores: "draft", "published" ou "deleted".',
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
+        '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a valid HTTP URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'TabNews',
-          body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
-          source_url: 'http://www.tabnews.com.br/',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'TabNews',
+        body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
+        source_url: 'http://www.tabnews.com.br/',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1431,6 +1158,7 @@ describe('POST /api/v1/contents', () => {
         title: 'TabNews',
         body: 'Somos pessoas brutalmente exatas e empáticas, simultaneamente.',
         status: 'draft',
+        type: 'content',
         source_url: 'http://www.tabnews.com.br/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1442,32 +1170,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a valid HTTPS URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'TabNews: Onde Tudo Começou',
-          body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
-          source_url: 'https://www.tabnews.com.br/museu',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'TabNews: Onde Tudo Começou',
+        body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
+        source_url: 'https://www.tabnews.com.br/museu',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1477,6 +1195,7 @@ describe('POST /api/v1/contents', () => {
         title: 'TabNews: Onde Tudo Começou',
         body: 'Aqui você vai encontrar POCs que foram criadas pela turma no início do projeto.',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/museu',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1488,32 +1207,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a valid long TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Um baita de um Top-Level Domain',
-          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
-          source_url: 'http://nic.xn--vermgensberatung-pwb/',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Um baita de um Top-Level Domain',
+        body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+        source_url: 'http://nic.xn--vermgensberatung-pwb/',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1523,6 +1232,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Um baita de um Top-Level Domain',
         body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
         status: 'draft',
+        type: 'content',
         source_url: 'http://nic.xn--vermgensberatung-pwb/',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1534,32 +1244,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a valid short URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'URL bem curta',
-          body: 'Por exemplo o encurtador do Telegram',
-          source_url: 'https://t.me',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'URL bem curta',
+        body: 'Por exemplo o encurtador do Telegram',
+        source_url: 'https://t.me',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1569,6 +1269,7 @@ describe('POST /api/v1/contents', () => {
         title: 'URL bem curta',
         body: 'Por exemplo o encurtador do Telegram',
         status: 'draft',
+        type: 'content',
         source_url: 'https://t.me',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1580,192 +1281,132 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing a invalid short TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Um Top-Level Domain menor que o permitido',
-          body: 'TLDs precisam ter pelo menos dois caracteres',
-          source_url: 'https://invalidtl.d',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Um Top-Level Domain menor que o permitido',
+        body: 'TLDs precisam ter pelo menos dois caracteres',
+        source_url: 'https://invalidtl.d',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a invalid long TLD', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Um Top-Level Domain maior que o permitido',
-          body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
-          source_url: 'http://tl.dcomvinteecincocaracteres',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Um Top-Level Domain maior que o permitido',
+        body: 'O maior TLD listado em http://data.iana.org/TLD/tlds-alpha-by-domain.txt possuía 24 caracteres',
+        source_url: 'http://tl.dcomvinteecincocaracteres',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a not accepted Protocol', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'ftp://www.tabnews.com.br',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'ftp://www.tabnews.com.br',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" not containing a protocol', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'www.tabnews.com.br',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'www.tabnews.com.br',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing an incomplete URL', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'https://lol.',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'https://lol.',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
       );
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing query parameters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1775,6 +1416,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
+        type: 'content',
         source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1786,32 +1428,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing fragment component', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1821,6 +1453,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
+        type: 'content',
         source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1832,62 +1465,42 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('Content with "source_url" containing an empty String', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: '',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"source_url" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"source_url" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "source_url" containing a Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Titulo',
-          body: 'Corpo',
-          source_url: null,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Titulo',
+        body: 'Corpo',
+        source_url: null,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1897,6 +1510,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Titulo',
         body: 'Corpo',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1908,32 +1522,22 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('"root" content with minimum valid data', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title:
-            'Deveria conseguir! E o campo "slug" é opcional & 95,5% dos usuários não usam :) [áéíóú?@#$*<>|+-=.,;:_] <- (caracteres especiais)',
-          body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title:
+          'Deveria conseguir! E o campo "slug" é opcional & 95,5% dos usuários não usam :) [áéíóú?@#$*<>|+-=.,;:_] <- (caracteres especiais)',
+        body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1944,6 +1548,7 @@ describe('POST /api/v1/contents', () => {
           'Deveria conseguir! E o campo "slug" é opcional & 95,5% dos usuários não usam :) [áéíóú?@#$*<>|+-=.,;:_] <- (caracteres especiais)',
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -1955,38 +1560,28 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const contentInDatabase = await database.query({
         text: 'SELECT * FROM contents WHERE id = $1',
         values: [responseBody.id],
       });
 
-      expect(contentInDatabase.rows[0].path).toEqual([]);
+      expect(contentInDatabase.rows[0].path).toStrictEqual([]);
     });
 
     test('"root" content with "title" containing custom slug special characters', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
-          body: 'Body',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
+        body: 'Body',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1996,6 +1591,7 @@ describe('POST /api/v1/contents', () => {
         title: 'under_score 5% é >= 1 e <= 10 email@dominio.com #item1,item2 a&b | a & b/mil',
         body: 'Body',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2007,94 +1603,64 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test('"root" content with "title" not declared', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, falta o "title".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, falta o "title".',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
     });
 
     test('"root" content with "title" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: null,
-          body: 'Não deveria conseguir, falta o "title".',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: null,
+        body: 'Não deveria conseguir, falta o "title".',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"title" é um campo obrigatório.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"title" é um campo obrigatório.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CHECK_ROOT_CONTENT_TITLE:MISSING_TITLE');
     });
 
     test('"child" content with minimum valid data', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
-          parent_id: rootContent.id,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
+        parent_id: rootContent.id,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2104,6 +1670,7 @@ describe('POST /api/v1/contents', () => {
         title: null,
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
         status: 'draft',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2115,47 +1682,37 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.slug)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.slug)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const contentInDatabase = await database.query({
         text: 'SELECT * FROM contents WHERE id = $1',
         values: [responseBody.id],
       });
 
-      expect(contentInDatabase.rows[0].path).toEqual([rootContent.id]);
+      expect(contentInDatabase.rows[0].path).toStrictEqual([rootContent.id]);
     });
 
     test('"child" content with "title" containing Null value', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const defaultUser = await contentsRequestBuilder.buildUser();
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: null,
-          body: 'Deveria criar um slug com UUID V4',
-          parent_id: rootContent.id,
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: null,
+        body: 'Deveria criar um slug com UUID V4',
+        parent_id: rootContent.id,
+        status: 'published',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2165,6 +1722,7 @@ describe('POST /api/v1/contents', () => {
         title: null,
         body: 'Deveria criar um slug com UUID V4',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2176,41 +1734,31 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.slug)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.slug)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
     });
 
     test('"child" content with "title"', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
 
-      const rootContent = await orchestrator.createContent({
-        owner_id: defaultUser.id,
+      const { responseBody: rootContent } = await contentsRequestBuilder.post({
         title: 'Conteúdo raiz',
+        body: 'Body',
         status: 'published',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          title: 'Título em um child content! O que vai acontecer?',
-          body: 'Deveria criar um slug baseado no "title"',
-          parent_id: rootContent.id,
-          status: 'published',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'Título em um child content! O que vai acontecer?',
+        body: 'Deveria criar um slug baseado no "title"',
+        parent_id: rootContent.id,
+        status: 'published',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(201);
+      expect(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2220,6 +1768,7 @@ describe('POST /api/v1/contents', () => {
         title: 'Título em um child content! O que vai acontecer?',
         body: 'Deveria criar um slug baseado no "title"',
         status: 'published',
+        type: 'content',
         source_url: null,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -2231,222 +1780,157 @@ describe('POST /api/v1/contents', () => {
         owner_username: defaultUser.username,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
-      expect(Date.parse(responseBody.published_at)).not.toEqual(NaN);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.published_at)).not.toBeNaN();
     });
 
     test('"child" content with "parent_id" containing a Number', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
-          parent_id: 123456,
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+        parent_id: 123456,
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" deve ser do tipo String.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"parent_id" deve ser do tipo String.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('"child" content with "parent_id" containing a blank string', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
-          parent_id: '',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+        parent_id: '',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" não pode estar em branco.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"parent_id" não pode estar em branco.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('"child" content with "parent_id" containing a malformatted UUIDV4', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
-          parent_id: 'isso não é um UUID válido',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+        parent_id: 'isso não é um UUID válido',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual('"parent_id" deve possuir um token UUID na versão 4.');
-      expect(responseBody.action).toEqual('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:VALIDATOR:FINAL_SCHEMA');
+      expect(response.status).toBe(400);
+      expect(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"parent_id" deve possuir um token UUID na versão 4.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('"child" content with "parent_id" that does not exists', async () => {
-      const defaultUser = await orchestrator.createUser();
-      await orchestrator.activateUser(defaultUser);
-      const sessionObject = await orchestrator.createSession(defaultUser);
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${sessionObject.token}`,
-        },
-        body: JSON.stringify({
-          body: 'Não deveria conseguir, pois o "parent_id" aqui embaixo não existe.',
-          parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
-        }),
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        body: 'Não deveria conseguir, pois o "parent_id" aqui embaixo não existe.',
+        parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
       });
 
-      const responseBody = await response.json();
-
-      expect(response.status).toEqual(400);
-      expect(responseBody.status_code).toEqual(400);
-      expect(responseBody.name).toEqual('ValidationError');
-      expect(responseBody.message).toEqual(
-        'Você está tentando criar ou atualizar um sub-conteúdo para um conteúdo que não existe.',
-      );
-      expect(responseBody.action).toEqual('Utilize um "parent_id" que aponte para um conteúdo que existe.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND');
+      expect(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'Você está tentando criar um comentário em um conteúdo que não existe.',
+        action: 'Utilize um "parent_id" que aponte para um conteúdo existente.',
+        error_location_code: 'MODEL:CONTENT:CHECK_IF_PARENT_ID_EXISTS:NOT_FOUND',
+        key: 'parent_id',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     describe('Notifications', () => {
       test('Create "root" content', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Usuário não deveria receber email de notificação',
-            body: 'Ele não deveria ser notificado sobre suas próprias criações',
-            status: 'published',
-          }),
+        const { response } = await contentsRequestBuilder.post({
+          title: 'Usuário não deveria receber email de notificação',
+          body: 'Ele não deveria ser notificado sobre suas próprias criações',
+          status: 'published',
         });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
         expect(response.status).toBe(201);
-        expect(getLastEmail).toBe(null);
+        expect(getLastEmail).toBeNull();
       });
 
       test('My "root" content replied by myself', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Novamente, não deveria receber notificação',
-            body: 'Continua não sendo notificado sobre suas próprias criações',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Novamente, não deveria receber notificação',
+          body: 'Continua não sendo notificado sobre suas próprias criações',
+          parent_id: rootContent.id,
+          status: 'published',
         });
-
-        const responseBody = await response.json();
 
         const getLastEmail = await orchestrator.getLastEmail();
 
         expect(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
-        expect(getLastEmail).toBe(null);
+        expect(getLastEmail).toBeNull();
       });
 
       test('My "root" content with short "title" replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Título curto do conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2471,32 +1955,22 @@ describe('POST /api/v1/contents', () => {
       test('My "root" content with long "title" replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Título longo do conteúdo raiz, deveria cortar o título para caber título no email',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` deve receber notificação avisando que eu respondi o conteúdo dele.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2522,39 +1996,30 @@ describe('POST /api/v1/contents', () => {
       test('My "child" content replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Testando resposta ao conteúdo child',
+          body: 'Body.',
           status: 'published',
         });
 
-        const childContentFromSecondUser = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: childContentFromSecondUser } = await contentsRequestBuilder.post({
           parent_id: rootContent.id,
           body: 'Este conteúdo será respondido pelo "firstUser" no passo seguinte.',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
-            parent_id: childContentFromSecondUser.id,
-            status: 'published',
-          }),
-        });
+        await contentsRequestBuilder.setUser(firstUser);
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
+          parent_id: childContentFromSecondUser.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2578,20 +2043,18 @@ describe('POST /api/v1/contents', () => {
       test('My "child" content replied by other user, but "root" with "deleted" status', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Testando resposta ao conteúdo child',
+          body: 'Body',
           status: 'published',
         });
 
-        const childContentFromSecondUser = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: childContentFromSecondUser } = await contentsRequestBuilder.post({
           parent_id: rootContent.id,
           body: 'Este conteúdo será respondido pelo "firstUser" no passo seguinte.',
           status: 'published',
@@ -2601,20 +2064,13 @@ describe('POST /api/v1/contents', () => {
           status: 'deleted',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
-            parent_id: childContentFromSecondUser.id,
-            status: 'published',
-          }),
-        });
+        await contentsRequestBuilder.setUser(firstUser);
 
-        const responseBody = await response.json();
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Este conteúdo deverá disparar uma notificação ao "secondUser',
+          parent_id: childContentFromSecondUser.id,
+          status: 'published',
+        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2641,106 +2097,65 @@ describe('POST /api/v1/contents', () => {
       test('My "root" content replied by other user (with "notifications" disabled)', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const firstUserSessionObject = await orchestrator.createSession(firstUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const userRequestBuilder = new RequestBuilder('/api/v1/user');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+        const firstUser = await contentsRequestBuilder.buildUser();
+        await userRequestBuilder.setUser(firstUser);
+        await usersRequestBuilder.setUser(firstUser);
 
         // 1) CHECK IF BY DEFAULT FIRST USER HAS `notifications` ENABLED
-        const userGetResponseCheck1 = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-        });
+        const { responseBody: userGetResponseCheck1Body } = await userRequestBuilder.get();
 
-        const userGetResponseCheck1Body = await userGetResponseCheck1.json();
         expect(userGetResponseCheck1Body.notifications).toBe(true);
 
         // 2) DISABLE NOTIFICATIONS FOR FIRST USER
-        const userPatchResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            notifications: false,
-          }),
+        const { response: userPatchResponse1 } = await usersRequestBuilder.patch(`/${firstUser.username}`, {
+          notifications: false,
         });
 
         expect(userPatchResponse1.status).toBe(200);
 
-        const userGetResponseCheck2 = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-        });
+        const { responseBody: userGetResponseCheck2Body } = await userRequestBuilder.get();
 
-        const userGetResponseCheck2Body = await userGetResponseCheck2.json();
         expect(userGetResponseCheck2Body.notifications).toBe(false);
 
         // 3) CREATE A CONTENT WITH FIRST USER
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Testando sistema de notificação',
+          body: 'Body',
           status: 'published',
         });
 
         // 4) REPLY TO CONTENT WITH SECOND USER
-        const contentResponse1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Autor do `parent_id` NÃO deve receber notificação avisando que eu respondi o conteúdo dele.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const { response: contentResponse1 } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` NÃO deve receber notificação avisando que eu respondi o conteúdo dele.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
         expect(contentResponse1.status).toBe(201);
 
         // 5) CHECK IF FIRST USER RECEIVED ANY EMAIL
         const getLastEmail1 = await orchestrator.getLastEmail();
-        expect(getLastEmail1).toBe(null);
+        expect(getLastEmail1).toBeNull();
 
         // 6) ENABLE NOTIFICATIONS FOR FIRST USER
-        await fetch(`${orchestrator.webserverUrl}/api/v1/users/${firstUser.username}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${firstUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            notifications: true,
-          }),
+        const { response: userPatchResponse2 } = await usersRequestBuilder.patch(`/${firstUser.username}`, {
+          notifications: true,
         });
 
-        expect(userPatchResponse1.status).toBe(200);
+        expect(userPatchResponse2.status).toBe(200);
 
         // 7) REPLY AGAIN TO CONTENT WITH SECOND USER
-        const contentResponse2 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Agora sim autor do `parent_id` deveria receber notificação.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        const contentResponse2Body = await contentResponse2.json();
+        const { response: contentResponse2, responseBody: contentResponse2Body } = await contentsRequestBuilder.post({
+          body: 'Agora sim autor do `parent_id` deveria receber notificação.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
 
         expect(contentResponse2.status).toBe(201);
 
@@ -2768,54 +2183,31 @@ describe('POST /api/v1/contents', () => {
       test('Reply with body containing 20k characters', async () => {
         await orchestrator.deleteAllEmails();
 
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(firstUser);
-        await orchestrator.activateUser(secondUser);
-        const secondUserSessionObject = await orchestrator.createSession(secondUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const firstUser = await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Título do conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json, application/x-ndjson',
-            cookie: `session_id=${secondUserSessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'.repeat(
-              200,
-            ),
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        contentsRequestBuilder.buildHeaders({
+          Accept: 'application/json, application/x-ndjson',
+        });
+        const secondUser = await contentsRequestBuilder.buildUser();
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: '100 characters repeated in 200 linessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\n'.repeat(
+            200,
+          ),
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
         expect(response.ok).toBe(true);
         expect(response.status).toBe(201);
         expect(response.headers.get('content-Type')).toBe('application/x-ndjson');
-
-        const rl = readline.createInterface({
-          input: response.body,
-          crlfDelay: Infinity,
-        });
-
-        const streamData = [];
-        let responseBody;
-
-        await new Promise((resolve) => {
-          rl.on('line', (line) => {
-            streamData.push(JSON.parse(line));
-          }).on('close', () => {
-            responseBody = streamData[0];
-            resolve();
-          });
-        });
 
         const getLastEmail = await orchestrator.getLastEmail();
 
@@ -2844,315 +2236,202 @@ describe('POST /api/v1/contents', () => {
 
     describe('TabCoins', () => {
       test('"root" content with "draft" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant text needs to contain a good amount of words.',
-          }),
+        const { responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
         });
 
-        const contentResponseBody = await contentResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"root" content with "published" status', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
         await orchestrator.createPrestige(defaultUser.id);
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant text needs to contain a good amount of words.',
-            status: 'published',
-          }),
-        });
-
-        const contentResponseBody = await contentResponse.json();
-
-        expect(contentResponseBody.tabcoins).toEqual(1);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
-      });
-
-      test('"child" content with "draft" status', async () => {
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
-
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
-          title: 'Root',
-          body: 'Root - Body with relevant text needs to contain a good amount of words.',
+        const { responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
           status: 'published',
         });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Child - Body with relevant text needs to contain a good amount of words.',
-            parent_id: rootContent.id,
-            status: 'draft',
-          }),
+        expect(responseBody.tabcoins).toBe(1);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
+
+      test('"child" content with "draft" status', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Root',
+          body: relevantBody,
+          status: 'published',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        const secondUser = await contentsRequestBuilder.buildUser();
 
-        expect(contentResponseBody.tabcoins).toEqual(0);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        const { responseBody } = await contentsRequestBuilder.post({
+          body: relevantBody,
+          parent_id: rootContent.id,
+          status: 'draft',
         });
 
-        const userResponseBody = await userResponse.json();
+        expect(responseBody.tabcoins).toBe(0);
 
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('"child" content with "published" status (same user)', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
         await orchestrator.createPrestige(defaultUser.id);
 
         // User will receive tabcoins for publishing a root content.
-        const rootContent = await orchestrator.createContent({
-          owner_id: defaultUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Root',
-          body: 'Root - Body with relevant text needs to contain a good amount of words.',
+          body: relevantBody,
           status: 'published',
         });
 
         // But user will not receive additional tabcoins for
         // publishing a child content to itself.
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Child - Body with relevant text needs to contain a good amount of words.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
-
-        const contentResponseBody = await contentResponse.json();
-
-        expect(contentResponseBody.tabcoins).toEqual(0);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
-      });
-
-      test('"child" content with "published" status (different user)', async () => {
-        const firstUser = await orchestrator.createUser();
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(secondUser);
-        await orchestrator.createPrestige(secondUser.id);
-
-        const rootContent = await orchestrator.createContent({
-          owner_id: firstUser.id,
-          title: 'Root',
-          body: 'Root - Body with relevant text needs to contain a good amount of words.',
+        const { responseBody } = await contentsRequestBuilder.post({
+          body: relevantBody,
+          parent_id: rootContent.id,
           status: 'published',
         });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Child - Body with relevant text needs to contain a good amount of words.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        expect(responseBody.tabcoins).toBe(0);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
+
+      test('"child" content with "published" status (different user)', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Root',
+          body: relevantBody,
+          status: 'published',
         });
 
-        const contentResponseBody = await contentResponse.json();
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id);
 
-        expect(contentResponseBody.tabcoins).toEqual(1);
-
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${secondUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        const { responseBody } = await contentsRequestBuilder.post({
+          body: relevantBody,
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const userResponseBody = await userResponse.json();
+        expect(responseBody.tabcoins).toBe(1);
 
-        expect(userResponseBody.tabcoins).toEqual(2);
-        expect(userResponseBody.tabcash).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(2);
+        expect(userResponseBody.tabcash).toBe(0);
       });
     });
 
     describe('Prestige', () => {
       test('should not be able to create "root" content with negative prestige by more than threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -1, rootPrestigeDenominator: 2 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant text needs to contain a good amount of words.',
-            status: 'published',
-          }),
-        });
-
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(403);
-        expect(responseBody.status_code).toEqual(403);
-        expect(responseBody.name).toEqual('ForbiddenError');
-        expect(responseBody.message).toEqual(
-          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
-        );
-        expect(responseBody.action).toEqual(
-          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
-        );
-        expect(uuidVersion(responseBody.error_id)).toEqual(4);
-        expect(uuidVersion(responseBody.request_id)).toEqual(4);
-        expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
-        );
-      });
-
-      test('should not be able to create "child" content with negative prestige by more than threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -5, childPrestigeDenominator: 1 });
-
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
-          title: 'Conteúdo raiz',
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Não deveria conseguir por possuir comentários mal avaliados.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
-        });
-
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(403);
-        expect(responseBody.status_code).toEqual(403);
-        expect(responseBody.name).toEqual('ForbiddenError');
-        expect(responseBody.message).toEqual(
+        expect(response.status).toBe(403);
+        expect(responseBody.status_code).toBe(403);
+        expect(responseBody.name).toBe('ForbiddenError');
+        expect(responseBody.message).toBe(
           'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
-        expect(responseBody.action).toEqual(
+        expect(responseBody.action).toBe(
           'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
-        expect(uuidVersion(responseBody.error_id)).toEqual(4);
-        expect(uuidVersion(responseBody.request_id)).toEqual(4);
-        expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+        expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS');
+      });
+
+      test('should not be able to create "child" content with negative prestige by more than threshold', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Conteúdo raiz',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: -5, childPrestigeDenominator: 1 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Não deveria conseguir por possuir comentários mal avaliados.',
+          parent_id: rootContent.id,
+          status: 'published',
+        });
+
+        expect(response.status).toBe(403);
+        expect(responseBody.status_code).toBe(403);
+        expect(responseBody.name).toBe('ForbiddenError');
+        expect(responseBody.message).toBe(
+          'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
+        expect(responseBody.action).toBe(
+          'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
+        );
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+        expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS');
       });
 
       test('Should be able to create "root" content with negative prestige at the threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -9, rootPrestigeDenominator: 20 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant texts needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3160,8 +2439,9 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3173,62 +2453,47 @@ describe('POST /api/v1/contents', () => {
           owner_username: defaultUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should be able to create "child" content with negative prestige at the threshold', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -6, childPrestigeDenominator: 6 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: -6, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
           body: 'Deveria conseguir mesmo com alguns comentários mal avaliados.',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3237,48 +2502,32 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should not be able to earn tabcoins if it has less than threshold prestige in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 1, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant texts needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3286,8 +2535,9 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3299,62 +2549,47 @@ describe('POST /api/v1/contents', () => {
           owner_username: defaultUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should not be able to earn tabcoins if it has less than threshold prestige in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: -1 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: -1 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
           body: 'Deve conseguir publicar, mas não deve ganhar TabCoins sem prestígio suficiente.',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3363,48 +2598,32 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should be able to earn tabcoins if it has minimum prestige in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with relevant texts needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3412,8 +2631,9 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Body with relevant texts needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3425,62 +2645,47 @@ describe('POST /api/v1/contents', () => {
           owner_username: defaultUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(1);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(1);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should be able to earn tabcoins if it has minimum prestige in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: relevantBody,
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
-          body: 'Deve conseguir publicar e ganhar TabCoins com esse texto.',
+          body: relevantBody,
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3489,87 +2694,178 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(1);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
+
+      test('Should be able to publish even with a negative ad balance', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
         });
 
-        const userResponseBody = await userResponse.json();
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
 
-        expect(userResponseBody.tabcoins).toEqual(1);
-        expect(userResponseBody.tabcash).toEqual(0);
+        const adContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Ad Title',
+          status: 'published',
+          body: relevantBody,
+          type: 'ad',
+        });
+
+        await orchestrator.createRate(adContent, -999);
+
+        vi.useRealTimers();
+
+        const rootContent = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(rootContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+        expect(userResponseBody.tabcoins).toBe(-999);
+        expect(userResponseBody.tabcash).toBe(0);
+
+        const otherUser = await orchestrator.createUser();
+        const secondRootContent = await orchestrator.createContent({
+          owner_id: otherUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await contentsRequestBuilder.post({
+          parent_id: secondRootContent.id,
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(childContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody2 } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody2.tabcoins).toBe(-999);
+        expect(userResponseBody2.tabcash).toBe(0);
+      });
+
+      test('Should not earn TabCoins even with a positive ad balance', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        vi.useFakeTimers({
+          now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: defaultUser.id,
+          title: 'Ad Title',
+          status: 'published',
+          body: relevantBody,
+          type: 'ad',
+        });
+
+        await orchestrator.createRate(adContent, 999);
+
+        vi.useRealTimers();
+
+        const rootContent = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(rootContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(999);
+        expect(userResponseBody.tabcash).toBe(0);
+
+        const otherUser = await orchestrator.createUser();
+        const secondRootContent = await orchestrator.createContent({
+          owner_id: otherUser.id,
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
+        });
+
+        const childContent = await contentsRequestBuilder.post({
+          parent_id: secondRootContent.id,
+          body: relevantBody,
+          status: 'published',
+        });
+        expect.soft(childContent.response.status).toBe(201);
+
+        const { responseBody: userResponseBody2 } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody2.tabcoins).toBe(999);
+        expect(userResponseBody2.tabcash).toBe(0);
       });
     });
 
     describe('No minimum amount of relevant words', () => {
       test('should not be able to create "root" content without prestige', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: -6, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(403);
-        expect(responseBody.status_code).toEqual(403);
-        expect(responseBody.name).toEqual('ForbiddenError');
-        expect(responseBody.message).toEqual(
+        expect(response.status).toBe(403);
+        expect(responseBody.status_code).toBe(403);
+        expect(responseBody.name).toBe('ForbiddenError');
+        expect(responseBody.message).toBe(
           'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
         );
-        expect(responseBody.action).toEqual(
+        expect(responseBody.action).toBe(
           'Exclua seus conteúdos mais recentes que estiverem classificados como não relevantes.',
         );
-        expect(uuidVersion(responseBody.error_id)).toEqual(4);
-        expect(uuidVersion(responseBody.request_id)).toEqual(4);
-        expect(responseBody.error_location_code).toEqual(
-          'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS',
-        );
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+        expect(responseBody.error_location_code).toBe('MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS');
       });
 
       test('Should not be able to earn tabcoins in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id);
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Body with no minimum amount of relevant words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: 'Body with no minimum amount of relevant words',
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3579,6 +2875,7 @@ describe('POST /api/v1/contents', () => {
           title: 'Title',
           body: 'Body with no minimum amount of relevant words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3590,62 +2887,47 @@ describe('POST /api/v1/contents', () => {
           owner_username: defaultUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should not be able to earn tabcoins in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Body with no minimum amount of relevant words',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id);
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Body with no minimum amount of relevant words',
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
-
-        expect(childResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
-          owner_id: defaultUser.id,
+          owner_id: secondUser.id,
           parent_id: rootContent.id,
           slug: responseBody.slug,
           title: null,
           body: 'Body with no minimum amount of relevant words',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3654,50 +2936,34 @@ describe('POST /api/v1/contents', () => {
           tabcoins: 0,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
-          owner_username: defaultUser.username,
+          owner_username: secondUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(0);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
       });
     });
 
     describe('With minimal amount of relevant words', () => {
       test('Should be able to earn tabcoins in "root" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
         await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
 
-        const contentResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            title: 'Title',
-            body: 'Relevant text needs to contain a good amount of words',
-            status: 'published',
-          }),
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
         });
 
-        const responseBody = await contentResponse.json();
-
-        expect(contentResponse.status).toEqual(201);
+        expect(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3705,8 +2971,9 @@ describe('POST /api/v1/contents', () => {
           parent_id: null,
           slug: 'title',
           title: 'Title',
-          body: 'Relevant text needs to contain a good amount of words',
+          body: relevantBody,
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
@@ -3718,88 +2985,287 @@ describe('POST /api/v1/contents', () => {
           owner_username: defaultUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
 
-        const userResponseBody = await userResponse.json();
-
-        expect(userResponseBody.tabcoins).toEqual(1);
-        expect(userResponseBody.tabcash).toEqual(0);
+        expect(userResponseBody.tabcoins).toBe(1);
+        expect(userResponseBody.tabcash).toBe(0);
       });
 
       test('Should be able to earn tabcoins in "child" content', async () => {
-        const defaultUser = await orchestrator.createUser();
-        await orchestrator.activateUser(defaultUser);
-        const secondUser = await orchestrator.createUser();
-        await orchestrator.activateUser(secondUser);
-        const sessionObject = await orchestrator.createSession(defaultUser);
-        await orchestrator.createPrestige(defaultUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        await contentsRequestBuilder.buildUser();
 
-        const rootContent = await orchestrator.createContent({
-          owner_id: secondUser.id,
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
           title: 'Conteúdo raiz',
+          body: 'Body',
           status: 'published',
         });
 
-        const childResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json',
-            cookie: `session_id=${sessionObject.token}`,
-          },
-          body: JSON.stringify({
-            body: 'Relevant text needs to contain a good amount of words',
-            parent_id: rootContent.id,
-            status: 'published',
-          }),
+        const secondUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(secondUser.id, { childPrestigeNumerator: 0, childPrestigeDenominator: 6 });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: relevantBody,
+          parent_id: rootContent.id,
+          status: 'published',
         });
 
-        const responseBody = await childResponse.json();
+        expect(response.status).toBe(201);
 
-        expect(childResponse.status).toEqual(201);
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: secondUser.id,
+          parent_id: rootContent.id,
+          slug: responseBody.slug,
+          title: null,
+          body: relevantBody,
+          status: 'published',
+          type: 'content',
+          source_url: null,
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 1,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          owner_username: secondUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+        expect(userResponseBody.tabcoins).toBe(1);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
+    });
+
+    describe('With "type: ad"', () => {
+      test('Should be able to create "ad" type content', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          source_url: 'https://www.tabnews.com.br',
+        });
+
+        expect.soft(response.status).toBe(201);
+
+        expect(responseBody).toStrictEqual({
+          id: responseBody.id,
+          owner_id: defaultUser.id,
+          parent_id: null,
+          slug: 'ad-title',
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          source_url: 'https://www.tabnews.com.br',
+          created_at: responseBody.created_at,
+          updated_at: responseBody.updated_at,
+          published_at: responseBody.published_at,
+          deleted_at: null,
+          tabcoins: 0,
+          tabcoins_credit: 0,
+          tabcoins_debit: 0,
+          tabcash: defaultTabCashForAdCreation,
+          owner_username: defaultUser.username,
+        });
+
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
+
+      test(`Should debit ${defaultTabCashForAdCreation} TabCash`, async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: 1_000 + defaultTabCashForAdCreation,
+        });
+
+        const { response: contentResponse, responseBody: contentResponseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect.soft(contentResponse.status).toBe(201);
+        expect(contentResponseBody.tabcash).toBe(defaultTabCashForAdCreation);
+        expect(userResponseBody.tabcash).toBe(1_000);
+      });
+
+      test(`Should not be able to create without enough TabCash`, async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation - 1,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+        });
+
+        expect.soft(response.status).toBe(422);
+
+        expect(responseBody).toStrictEqual({
+          name: 'UnprocessableEntityError',
+          message: 'Não foi possível criar a publicação.',
+          action: `Você precisa de pelo menos ${defaultTabCashForAdCreation} TabCash para realizar esta ação.`,
+          status_code: 422,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:CONTENT:UPDATE_TABCASH:NOT_ENOUGH',
+        });
+
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect(userResponseBody.tabcash).toBe(defaultTabCashForAdCreation - 1);
+      });
+
+      test('Should not be able to create with "parent_id"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Root title',
+          body: 'Root body',
+          status: 'published',
+        });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'ad',
+          parent_id: rootContent.id,
+        });
+
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
           owner_id: defaultUser.id,
           parent_id: rootContent.id,
-          slug: responseBody.slug,
-          title: null,
-          body: 'Relevant text needs to contain a good amount of words',
+          slug: 'ad-title',
+          title: 'Ad title',
+          body: 'Ad body',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: responseBody.created_at,
           updated_at: responseBody.updated_at,
           published_at: responseBody.published_at,
           deleted_at: null,
-          tabcoins: 1,
+          tabcoins: 0,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
           owner_username: defaultUser.username,
         });
 
-        expect(uuidVersion(responseBody.id)).toEqual(4);
-        expect(Date.parse(responseBody.created_at)).not.toEqual(NaN);
-        expect(Date.parse(responseBody.updated_at)).not.toEqual(NaN);
+        expect(uuidVersion(responseBody.id)).toBe(4);
+        expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      });
 
-        const userResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      test('Should not credit TabCoins to the user', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+        await orchestrator.createPrestige(defaultUser.id, { rootPrestigeNumerator: 2, rootPrestigeDenominator: 10 });
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
         });
 
-        const userResponseBody = await userResponse.json();
+        const { response: contentResponse, responseBody: contentResponseBody } = await contentsRequestBuilder.post({
+          title: 'Title',
+          body: relevantBody,
+          status: 'published',
+          type: 'ad',
+        });
 
-        expect(userResponseBody.tabcoins).toEqual(1);
-        expect(userResponseBody.tabcash).toEqual(0);
+        const { responseBody: userResponseBody } = await usersRequestBuilder.get(`/${defaultUser.username}`);
+
+        expect.soft(contentResponse.status).toBe(201);
+        expect(contentResponseBody.tabcoins).toBe(1);
+        expect(contentResponseBody.type).toBe('ad');
+        expect(userResponseBody.tabcoins).toBe(0);
+        expect(userResponseBody.tabcash).toBe(0);
+      });
+    });
+
+    describe('With invalid "type"', () => {
+      test('Should not be able to POST with invalid "type"', async () => {
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        const defaultUser = await contentsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: defaultUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          title: 'Ad title',
+          body: 'Ad body',
+          status: 'published',
+          type: 'invalid_type',
+        });
+
+        expect.soft(response.status).toBe(400);
+
+        expect(responseBody).toStrictEqual({
+          name: 'ValidationError',
+          message: '"type" deve possuir um dos seguintes valores: "content", "ad".',
+          action: 'Ajuste os dados enviados e tente novamente.',
+          status_code: 400,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+          key: 'type',
+          type: 'any.only',
+        });
       });
     });
   });

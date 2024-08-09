@@ -93,7 +93,7 @@ async function patchHandler(request, response) {
     where: {
       owner_username: request.query.username,
       slug: request.query.slug,
-      $or: [{ status: 'draft' }, { status: 'published' }],
+      status: ['draft', 'published'],
     },
   });
 
@@ -115,7 +115,7 @@ async function patchHandler(request, response) {
     });
   }
 
-  if (!unfilteredBodyValues.parent_id) {
+  if (!contentToBeUpdated.parent_id) {
     if (!authorization.can(userTryingToPatch, 'create:content:text_root')) {
       throw new ForbiddenError({
         message: 'Você não possui permissão para editar conteúdos na raiz do site.',
@@ -147,9 +147,12 @@ async function patchHandler(request, response) {
 
     const currentEvent = await event.create(
       {
-        type: filteredBodyValues.parent_id ? 'update:content:text_child' : 'update:content:text_root',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        type: contentToBeUpdated.parent_id ? 'update:content:text_child' : 'update:content:text_root',
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
+        metadata: {
+          id: contentToBeUpdated.id,
+        },
       },
       {
         transaction: transaction,
@@ -157,21 +160,10 @@ async function patchHandler(request, response) {
     );
 
     const updatedContent = await content.update(contentToBeUpdated.id, filteredBodyValues, {
+      oldContent: contentToBeUpdated,
       eventId: currentEvent.id,
       transaction: transaction,
     });
-
-    await event.updateMetadata(
-      currentEvent.id,
-      {
-        metadata: {
-          id: updatedContent.id,
-        },
-      },
-      {
-        transaction: transaction,
-      },
-    );
 
     await transaction.query('COMMIT');
     await transaction.release();

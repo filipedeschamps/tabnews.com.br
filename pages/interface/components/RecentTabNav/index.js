@@ -19,6 +19,13 @@ export default function RecentTabNav() {
       </TabNavLink>
       <TabNavLink
         href={{
+          pathname: '/recentes/classificados/[page]',
+          query: { page: 1 },
+        }}>
+        Classificados
+      </TabNavLink>
+      <TabNavLink
+        href={{
           pathname: '/recentes/todos/[page]',
           query: { page: 1 },
         }}>

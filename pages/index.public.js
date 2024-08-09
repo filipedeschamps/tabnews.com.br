@@ -2,16 +2,18 @@ import { getStaticPropsRevalidate } from 'next-swr';
 
 import { ContentList, DefaultLayout } from '@/TabNewsUI';
 import { FaTree } from '@/TabNewsUI/icons';
+import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default function Home({ contentListFound, pagination }) {
+export default function Home({ adFound, contentListFound, pagination }) {
   return (
     <>
       <DefaultLayout>
         <ContentList
+          ad={adFound}
           contentList={contentListFound}
           pagination={pagination}
           paginationBasePath="/pagina"
@@ -48,8 +50,12 @@ export const getStaticProps = getStaticPropsRevalidate(async () => {
 
   const secureContentValues = authorization.filterOutput(userTryingToGet, 'read:content:list', contentListFound);
 
+  const adsFound = await ad.getRandom(1);
+  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
+
   return {
     props: {
+      adFound: secureAdValues[0] ?? null,
       contentListFound: secureContentValues,
       pagination: results.pagination,
     },

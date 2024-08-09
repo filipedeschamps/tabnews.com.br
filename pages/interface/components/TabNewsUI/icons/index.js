@@ -15,6 +15,7 @@ export {
   GearIcon,
   HomeIcon,
   KebabHorizontalIcon,
+  LinkExternalIcon,
   LinkIcon,
   ListUnorderedIcon,
   MoonIcon,

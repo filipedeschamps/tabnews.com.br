@@ -59,7 +59,12 @@ async function getHandler(request, response) {
     }
   }
 
-  controller.injectPaginationHeaders(results.pagination, `/api/v1/contents/${request.query.username}`, response);
+  controller.injectPaginationHeaders(
+    results.pagination,
+    `/api/v1/contents/${request.query.username}`,
+    request,
+    response,
+  );
 
   return response.status(200).json(secureOutputValues);
 }

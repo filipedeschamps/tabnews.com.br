@@ -1,6 +1,6 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -15,14 +15,14 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/ThisUserDoesNotExists/slug`);
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O "username" informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "username" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND');
     });
 
     test('Content with "username" existent, but "slug" non-existent', async () => {
@@ -34,14 +34,14 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('Content "root" with "status" set to "draft"', async () => {
@@ -60,14 +60,14 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('Content "root" with "status" set to "published"', async () => {
@@ -87,7 +87,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUserContent.id,
@@ -97,6 +97,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         title: 'Conteúdo publicamente disponível',
         body: 'Conteúdo relevante deveria estar disponível para todos.',
         status: 'published',
+        type: 'content',
         tabcoins: 1,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -109,8 +110,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         children_deep_count: 0,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.owner_id)).toBe(4);
     });
 
     test('Content "root" with "status" set to "deleted"', async () => {
@@ -131,7 +132,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -144,8 +145,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content "root" with with "children"', async () => {
@@ -155,7 +156,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: defaultUser.id,
         title: 'Conteúdo root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -194,7 +195,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -202,8 +203,9 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         parent_id: null,
         slug: responseBody.slug,
         title: 'Conteúdo root',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
+        type: 'content',
         tabcoins: 1,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -216,8 +218,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         children_deep_count: 3,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.owner_id)).toBe(4);
     });
 
     test('Content "child" with "status" set to "draft"', async () => {
@@ -243,14 +245,14 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('Content "child" with "status" set to "published"', async () => {
@@ -276,7 +278,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -286,6 +288,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         title: null,
         body: 'Conteúdo child',
         status: 'published',
+        type: 'content',
         tabcoins: 0,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -346,7 +349,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -356,6 +359,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         title: null,
         body: 'Conteúdo child',
         status: 'published',
+        type: 'content',
         tabcoins: 0,
         tabcoins_credit: 0,
         tabcoins_debit: 0,
@@ -368,9 +372,9 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         children_deep_count: 2,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody.parent_id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.owner_id)).toBe(4);
+      expect(uuidVersion(responseBody.parent_id)).toBe(4);
     });
 
     test('Content "child" with "status" set to "deleted"', async () => {
@@ -409,8 +413,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('Content "root" with TabCoins credits and debits', async () => {
@@ -432,7 +436,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUserContent.id,
@@ -442,6 +446,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         title: 'Conteúdo com TabCoins',
         body: 'Conteúdo que foi avaliado positiva e negativamente.',
         status: 'published',
+        type: 'content',
         tabcoins: 2,
         tabcoins_credit: 3,
         tabcoins_debit: -1,
@@ -454,8 +459,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
         children_deep_count: 0,
       });
 
-      expect(uuidVersion(responseBody.id)).toEqual(4);
-      expect(uuidVersion(responseBody.owner_id)).toEqual(4);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(uuidVersion(responseBody.owner_id)).toBe(4);
     });
   });
 });

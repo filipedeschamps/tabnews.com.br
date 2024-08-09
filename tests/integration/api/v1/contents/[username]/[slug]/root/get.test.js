@@ -1,6 +1,6 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
+import { relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -24,7 +24,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -37,8 +37,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "root" content with "deleted" status', async () => {
@@ -56,7 +56,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -69,8 +69,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "root" content with "published" status', async () => {
@@ -86,7 +86,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -100,8 +100,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'parent_id',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "child" content 1 level deep with "draft" status', async () => {
@@ -128,7 +128,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -141,8 +141,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "child" content 1 level deep with "deleted" status', async () => {
@@ -173,7 +173,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
+      expect(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -186,8 +186,8 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         key: 'slug',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('From "child" content 1 level deep with "published" status', async () => {
@@ -197,7 +197,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -214,7 +214,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -222,9 +222,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         children_deep_count: 1,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -244,7 +245,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -277,7 +278,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -285,9 +286,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         children_deep_count: 3,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -307,7 +309,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -345,7 +347,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -353,9 +355,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         children_deep_count: 2,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -413,7 +416,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -423,6 +426,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         title: '[Não disponível]',
         body: '[Não disponível]',
         status: 'draft',
+        type: 'content',
         source_url: null,
         published_at: null,
         created_at: rootContent.created_at.toISOString(),
@@ -443,7 +447,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Root - Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
         source_url: 'https://www.tabnews.com.br/',
       });
@@ -482,7 +486,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -492,6 +496,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         title: '[Não disponível]',
         body: '[Não disponível]',
         status: 'deleted',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
@@ -512,7 +517,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       const rootContent = await orchestrator.createContent({
         owner_id: firstUser.id,
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         status: 'published',
       });
 
@@ -540,7 +545,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -548,9 +553,10 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
         owner_id: firstUser.id,
         slug: 'root-content-title',
         title: 'Root content title',
-        body: 'Body with relevant texts needs to contain a good amount of words',
+        body: relevantBody,
         children_deep_count: 2,
         status: 'published',
+        type: 'content',
         source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),

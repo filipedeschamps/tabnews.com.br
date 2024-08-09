@@ -1,16 +1,17 @@
-import fetch from 'cross-fetch';
 import parseLinkHeader from 'parse-link-header';
 import { version as uuidVersion } from 'uuid';
 
+import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
-  await orchestrator.dropAllTables();
-  await orchestrator.runPendingMigrations();
 });
 
 describe('GET /api/v1/contents', () => {
+  const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+
   describe('Anonymous user (dropAllTables beforeEach)', () => {
     beforeEach(async () => {
       await orchestrator.dropAllTables();
@@ -18,13 +19,15 @@ describe('GET /api/v1/contents', () => {
     });
 
     test('With CORS and Security Headers enabled', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
+      const { response } = await contentsRequestBuilder.get();
 
-      // https://github.com/facebook/jest/issues/8475#issuecomment-537830532
-      // to avoid "Received: serializes to the same string" error.
-      const responseHeaders = JSON.parse(JSON.stringify(response.headers.raw()));
+      const responseHeaders = {};
 
-      expect(responseHeaders).toEqual({
+      response.headers.forEach((value, key) => {
+        responseHeaders[key] = [value];
+      });
+
+      const expectedHeaders = {
         'x-dns-prefetch-control': ['on'],
         'strict-transport-security': ['max-age=63072000; includeSubDomains; preload'],
         'x-xss-protection': ['1; mode=block'],
@@ -39,35 +42,41 @@ describe('GET /api/v1/contents', () => {
         'access-control-allow-headers': [
           'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
         ],
-        link: ['<http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="first"'],
+        link: [
+          `<${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="first", <${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="last"`,
+        ],
         'x-pagination-total-rows': ['0'],
         'content-type': ['application/json; charset=utf-8'],
         etag: responseHeaders.etag,
         'content-length': ['2'],
         vary: ['Accept-Encoding'],
         date: responseHeaders.date,
-        connection: [expect.stringMatching(/close|keep-alive/)],
-        'keep-alive': expect.objectContaining([]),
-      });
+        connection: [expect.stringMatching(/^close$|^keep-alive$/)],
+      };
+
+      const expectedHeadersAlternative = {
+        ...expectedHeaders,
+        'keep-alive': [expect.stringMatching(/^timeout=/)],
+      };
+
+      expect([expectedHeaders, expectedHeadersAlternative]).toContainEqual(responseHeaders);
     });
 
     test('With no content', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody).toEqual([]);
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual([]);
     });
 
     test('With invalid strategy', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=invalid`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=invalid`);
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"strategy" deve possuir um dos seguintes valores: "new", "old" ou "relevant".',
+        message: '"strategy" deve possuir um dos seguintes valores: "new", "old", "relevant".',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
@@ -77,8 +86,8 @@ describe('GET /api/v1/contents', () => {
         type: 'any.only',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With 2 "published" entries and strategy "new"', async () => {
@@ -127,10 +136,9 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=new`);
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -140,6 +148,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
           updated_at: secondRootContent.updated_at.toISOString(),
@@ -158,6 +167,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
           updated_at: firstRootContent.updated_at.toISOString(),
@@ -171,11 +181,11 @@ describe('GET /api/v1/contents', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[0].published_at > responseBody[1].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
     });
 
     test('With 2 "published" entries and strategy "old"', async () => {
@@ -224,10 +234,9 @@ describe('GET /api/v1/contents', () => {
         status: 'draft',
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=old`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=old`);
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -237,6 +246,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
           updated_at: firstRootContent.updated_at.toISOString(),
@@ -255,6 +265,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
           updated_at: secondRootContent.updated_at.toISOString(),
@@ -268,11 +279,11 @@ describe('GET /api/v1/contents', () => {
         },
       ]);
 
-      expect(uuidVersion(responseBody[0].id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].id)).toEqual(4);
-      expect(uuidVersion(responseBody[0].owner_id)).toEqual(4);
-      expect(uuidVersion(responseBody[1].owner_id)).toEqual(4);
-      expect(responseBody[1].published_at > responseBody[0].published_at).toEqual(true);
+      expect(uuidVersion(responseBody[0].id)).toBe(4);
+      expect(uuidVersion(responseBody[1].id)).toBe(4);
+      expect(uuidVersion(responseBody[0].owner_id)).toBe(4);
+      expect(uuidVersion(responseBody[1].owner_id)).toBe(4);
+      expect(responseBody[1].published_at > responseBody[0].published_at).toBe(true);
     });
 
     test('With 3 children 3 level deep and default strategy', async () => {
@@ -314,10 +325,9 @@ describe('GET /api/v1/contents', () => {
       });
       await orchestrator.updateContent(level4ContentDeleted.id, { status: 'deleted' });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get();
 
-      expect(response.status).toEqual(200);
+      expect(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -327,6 +337,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'conteudo-raiz',
           title: 'Conteúdo raiz',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: rootContent.created_at.toISOString(),
           updated_at: rootContent.updated_at.toISOString(),
@@ -353,42 +364,40 @@ describe('GET /api/v1/contents', () => {
           status: 'published',
         });
       }
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=new`);
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('60');
+      expect(response.status).toBe(200);
+      expect(responseTotalRowsHeader).toBe('60');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '30',
           rel: 'first',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=1&per_page=30`,
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=2&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=2&per_page=30`,
         },
       });
 
-      expect(responseBody.length).toEqual(30);
-      expect(responseBody[0].title).toEqual('Conteúdo #60');
-      expect(responseBody[29].title).toEqual('Conteúdo #31');
+      expect(responseBody.length).toBe(30);
+      expect(responseBody[0].title).toBe('Conteúdo #60');
+      expect(responseBody[29].title).toBe('Conteúdo #31');
     });
 
     test('With 60 entries, default "page", "per_page" and strategy "relevant" (default)', async () => {
@@ -399,9 +408,8 @@ describe('GET /api/v1/contents', () => {
       const numberOfContents = 60;
       const contentList = [];
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -412,7 +420,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -422,14 +430,13 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[0].id, // Conteúdo #1
         amount: 10, // -> with recent comment, but same user
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9), // 9 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -440,7 +447,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createContent({
         owner_id: secondUser.id,
@@ -450,14 +457,13 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[1].id, // Conteúdo #2
         amount: 10, // -> score = 33, more than 7 days ago, but with recent comment
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8), // 8 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -468,7 +474,7 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createContent({
         owner_id: secondUser.id,
@@ -478,14 +484,13 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[2].id, // Conteúdo #3
         amount: 9, // -> score = 30, more than 7 days ago, but with recent comment
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -496,17 +501,16 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[3].id, // Conteúdo #4
         amount: 9, // -> score = 30, but more than 7 days ago
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -517,17 +521,16 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[4].id, // Conteúdo #5
         amount: 8, // -> score = 27 and 3 days ago -> group_6
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 35), // 35 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -538,17 +541,16 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[5].id, // Conteúdo #6
         amount: 3, // score = 12 and less than 36 hours -> group_4
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 37), // 37 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -559,17 +561,16 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[6].id, // Conteúdo #7
         amount: 4, // score = 15 and more than 37 hours -> group_5
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 36), // 36 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -580,17 +581,16 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[7].id, // Conteúdo #8
         amount: 4, // score = 15 and more than 36 hours -> group_5
       });
 
-      jest.useFakeTimers({
+      vi.useFakeTimers({
         now: new Date(Date.now() - 1000 * 60 * 60 * 24), // 24 hours ago
-        advanceTimers: true,
       });
 
       contentList.push(
@@ -601,10 +601,10 @@ describe('GET /api/v1/contents', () => {
         }),
       );
 
-      jest.useRealTimers();
+      vi.useRealTimers();
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[8].id, // Conteúdo #9
         amount: 2, // score = 9 and more than 24 hours -> group_5
       });
@@ -701,138 +701,137 @@ describe('GET /api/v1/contents', () => {
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[30].id, // Conteúdo #31
         amount: 5, // score = 18 -> group_1
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:credit',
         recipientId: contentList[35].id, // Conteúdo #36
         amount: 2, // score = 9 -> group_2
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:debit',
         recipientId: contentList[49].id, // Conteúdo #50
         amount: -2,
       });
 
       await orchestrator.createBalance({
-        balanceType: 'content:tabcoin',
+        balanceType: 'content:tabcoin:debit',
         recipientId: contentList[50].id, // Conteúdo #51
         amount: -3,
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get();
 
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toEqual(200);
-      expect(responseTotalRowsHeader).toEqual('56');
+      expect(response.status).toBe(200);
+      expect(responseTotalRowsHeader).toBe('56');
       expect(responseLinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '30',
           rel: 'first',
           strategy: 'relevant',
-          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30`,
         },
         next: {
           page: '2',
           per_page: '30',
           rel: 'next',
           strategy: 'relevant',
-          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=2&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=2&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'relevant',
-          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=2&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=2&per_page=30`,
         },
       });
 
-      expect(responseBody.length).toEqual(30);
+      expect(responseBody.length).toBe(30);
 
       // group_1 -> score > 16 and less than 36 hours ago
-      expect(responseBody[0].title).toEqual('Conteúdo #31');
+      expect(responseBody[0].title).toBe('Conteúdo #31');
 
       // group_2 -> score > 8 and less than 24 hours ago
-      expect(responseBody[1].title).toEqual('Conteúdo #36');
+      expect(responseBody[1].title).toBe('Conteúdo #36');
 
       // group_3 -> max one new content by user with less than 12 hours
-      expect(responseBody[2].title).toEqual('Conteúdo #60');
-      expect(responseBody[3].title).toEqual('Conteúdo #59');
-      expect(responseBody[4].title).toEqual('Conteúdo #58');
+      expect(responseBody[2].title).toBe('Conteúdo #60');
+      expect(responseBody[3].title).toBe('Conteúdo #59');
+      expect(responseBody[4].title).toBe('Conteúdo #58');
 
       // group_4 -> score > 11 and less than 36 hours ago
-      expect(responseBody[5].title).toEqual('Conteúdo #6');
+      expect(responseBody[5].title).toBe('Conteúdo #6');
 
       // group_5 -> score > 8 and less than 3 days ago
-      expect(responseBody[6].title).toEqual('Conteúdo #8');
-      expect(responseBody[7].title).toEqual('Conteúdo #7');
-      expect(responseBody[8].title).toEqual('Conteúdo #9');
+      expect(responseBody[6].title).toBe('Conteúdo #8');
+      expect(responseBody[7].title).toBe('Conteúdo #7');
+      expect(responseBody[8].title).toBe('Conteúdo #9');
 
       // group_6 -> tabcoins > 0 and less than 7 days ago
       // or commented less than 24 hours
-      expect(responseBody[9].title).toEqual('Conteúdo #2');
-      expect(responseBody[10].title).toEqual('Conteúdo #3');
-      expect(responseBody[11].title).toEqual('Conteúdo #5');
-      expect(responseBody[12].title).toEqual('Conteúdo #48');
-      expect(responseBody[13].title).toEqual('Conteúdo #45');
-      expect(responseBody[14].title).toEqual('Conteúdo #53');
-      expect(responseBody[15].title).toEqual('Conteúdo #52');
-      expect(responseBody[16].title).toEqual('Conteúdo #57');
-      expect(responseBody[19].title).toEqual('Conteúdo #54');
-      expect(responseBody[20].title).toEqual('Conteúdo #49');
-      expect(responseBody[21].title).toEqual('Conteúdo #47');
-      expect(responseBody[22].title).toEqual('Conteúdo #46');
-      expect(responseBody[23].title).toEqual('Conteúdo #44');
-      expect(responseBody[29].title).toEqual('Conteúdo #38');
+      expect(responseBody[9].title).toBe('Conteúdo #2');
+      expect(responseBody[10].title).toBe('Conteúdo #3');
+      expect(responseBody[11].title).toBe('Conteúdo #5');
+      expect(responseBody[12].title).toBe('Conteúdo #48');
+      expect(responseBody[13].title).toBe('Conteúdo #45');
+      expect(responseBody[14].title).toBe('Conteúdo #53');
+      expect(responseBody[15].title).toBe('Conteúdo #52');
+      expect(responseBody[16].title).toBe('Conteúdo #57');
+      expect(responseBody[19].title).toBe('Conteúdo #54');
+      expect(responseBody[20].title).toBe('Conteúdo #49');
+      expect(responseBody[21].title).toBe('Conteúdo #47');
+      expect(responseBody[22].title).toBe('Conteúdo #46');
+      expect(responseBody[23].title).toBe('Conteúdo #44');
+      expect(responseBody[29].title).toBe('Conteúdo #38');
 
-      const page2Response = await fetch(responseLinkHeader.next.url);
-      const page2ResponseBody = await page2Response.json();
+      const page2RequestBuilder = new RequestBuilder(responseLinkHeader.next.url);
+      const { response: page2Response, responseBody: page2ResponseBody } = await page2RequestBuilder.get();
 
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2Response.status).toEqual(200);
-      expect(page2ResponseTotalRowsHeader).toEqual('56');
+      expect(page2Response.status).toBe(200);
+      expect(page2ResponseTotalRowsHeader).toBe('56');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '30',
           rel: 'first',
           strategy: 'relevant',
-          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30`,
         },
         prev: {
           page: '1',
           per_page: '30',
           rel: 'prev',
           strategy: 'relevant',
-          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=1&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30`,
         },
         last: {
           page: '2',
           per_page: '30',
           rel: 'last',
           strategy: 'relevant',
-          url: 'http://localhost:3000/api/v1/contents?strategy=relevant&page=2&per_page=30',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=2&per_page=30`,
         },
       });
 
-      expect(page2ResponseBody.length).toEqual(26);
-      expect(page2ResponseBody[0].title).toEqual('Conteúdo #37');
-      expect(page2ResponseBody[1].title).toEqual('Conteúdo #35');
-      expect(page2ResponseBody[2].title).toEqual('Conteúdo #34');
-      expect(page2ResponseBody[3].title).toEqual('Conteúdo #33');
-      expect(page2ResponseBody[24].title).toEqual('Conteúdo #11');
-      expect(page2ResponseBody[25].title).toEqual('Conteúdo #10');
+      expect(page2ResponseBody.length).toBe(26);
+      expect(page2ResponseBody[0].title).toBe('Conteúdo #37');
+      expect(page2ResponseBody[1].title).toBe('Conteúdo #35');
+      expect(page2ResponseBody[2].title).toBe('Conteúdo #34');
+      expect(page2ResponseBody[3].title).toBe('Conteúdo #33');
+      expect(page2ResponseBody[24].title).toBe('Conteúdo #11');
+      expect(page2ResponseBody[25].title).toBe('Conteúdo #10');
     });
 
     test('With 9 entries, custom "page", "per_page" and strategy "new" (navigating using Link Header)', async () => {
@@ -848,144 +847,145 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page1 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1&per_page=3&strategy=new`);
-      const page1Body = await page1.json();
+      const { response: page1, responseBody: page1Body } = await contentsRequestBuilder.get(
+        `?page=1&per_page=3&strategy=new`,
+      );
 
       const page1LinkHeader = parseLinkHeader(page1.headers.get('Link'));
       const page1TotalRowsHeader = page1.headers.get('X-Pagination-Total-Rows');
 
-      expect(page1.status).toEqual(200);
-      expect(page1TotalRowsHeader).toEqual('9');
+      expect(page1.status).toBe(200);
+      expect(page1TotalRowsHeader).toBe('9');
       expect(page1LinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '3',
           rel: 'first',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=1&per_page=3`,
         },
         next: {
           page: '2',
           per_page: '3',
           rel: 'next',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=2&per_page=3`,
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=3&per_page=3`,
         },
       });
 
-      expect(page1Body.length).toEqual(3);
-      expect(page1Body[0].title).toEqual('Conteúdo #9');
-      expect(page1Body[1].title).toEqual('Conteúdo #8');
-      expect(page1Body[2].title).toEqual('Conteúdo #7');
+      expect(page1Body.length).toBe(3);
+      expect(page1Body[0].title).toBe('Conteúdo #9');
+      expect(page1Body[1].title).toBe('Conteúdo #8');
+      expect(page1Body[2].title).toBe('Conteúdo #7');
 
-      const page2 = await fetch(page1LinkHeader.next.url);
-      const page2Body = await page2.json();
+      const page2RequestBuilder = new RequestBuilder(page1LinkHeader.next.url);
+      const { response: page2, responseBody: page2Body } = await page2RequestBuilder.get();
 
       const page2LinkHeader = parseLinkHeader(page2.headers.get('Link'));
       const page2TotalRowsHeader = page2.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2.status).toEqual(200);
-      expect(page2TotalRowsHeader).toEqual('9');
+      expect(page2.status).toBe(200);
+      expect(page2TotalRowsHeader).toBe('9');
       expect(page2LinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '3',
           rel: 'first',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=1&per_page=3`,
         },
         prev: {
           page: '1',
           per_page: '3',
           rel: 'prev',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=1&per_page=3`,
         },
         next: {
           page: '3',
           per_page: '3',
           rel: 'next',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=3&per_page=3`,
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=3&per_page=3`,
         },
       });
 
-      expect(page2Body.length).toEqual(3);
-      expect(page2Body[0].title).toEqual('Conteúdo #6');
-      expect(page2Body[1].title).toEqual('Conteúdo #5');
-      expect(page2Body[2].title).toEqual('Conteúdo #4');
+      expect(page2Body.length).toBe(3);
+      expect(page2Body[0].title).toBe('Conteúdo #6');
+      expect(page2Body[1].title).toBe('Conteúdo #5');
+      expect(page2Body[2].title).toBe('Conteúdo #4');
 
-      const page3 = await fetch(page2LinkHeader.next.url);
-      const page3Body = await page3.json();
+      const page3RequestBuilder = new RequestBuilder(page2LinkHeader.next.url);
+      const { response: page3, responseBody: page3Body } = await page3RequestBuilder.get();
 
       const page3LinkHeader = parseLinkHeader(page3.headers.get('Link'));
       const page3TotalRowsHeader = page3.headers.get('X-Pagination-Total-Rows');
 
-      expect(page3.status).toEqual(200);
-      expect(page3TotalRowsHeader).toEqual('9');
+      expect(page3.status).toBe(200);
+      expect(page3TotalRowsHeader).toBe('9');
       expect(page3LinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '3',
           rel: 'first',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=1&per_page=3`,
         },
         prev: {
           page: '2',
           per_page: '3',
           rel: 'prev',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=2&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=2&per_page=3`,
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=3&per_page=3`,
         },
       });
 
-      expect(page3Body.length).toEqual(3);
-      expect(page3Body[0].title).toEqual('Conteúdo #3');
-      expect(page3Body[1].title).toEqual('Conteúdo #2');
-      expect(page3Body[2].title).toEqual('Conteúdo #1');
+      expect(page3Body.length).toBe(3);
+      expect(page3Body[0].title).toBe('Conteúdo #3');
+      expect(page3Body[1].title).toBe('Conteúdo #2');
+      expect(page3Body[2].title).toBe('Conteúdo #1');
 
       // FIRST AND LAST PAGE USING "PAGE 1" LINK HEADER
-      const firstPage = await fetch(page1LinkHeader.first.url);
-      const firstPageBody = await firstPage.json();
+      const firstPageRequestBuilder = new RequestBuilder(page1LinkHeader.first.url);
+      const { response: firstPage, responseBody: firstPageBody } = await firstPageRequestBuilder.get();
       const firstPageLinkHeader = parseLinkHeader(firstPage.headers.get('Link'));
       const firstPageTotalRowsHeader = firstPage.headers.get('X-Pagination-Total-Rows');
 
-      expect(firstPage.status).toEqual(200);
-      expect(firstPageTotalRowsHeader).toEqual(page1TotalRowsHeader);
+      expect(firstPage.status).toBe(200);
+      expect(firstPageTotalRowsHeader).toBe(page1TotalRowsHeader);
       expect(firstPageLinkHeader).toStrictEqual(page1LinkHeader);
-      expect(firstPageBody).toEqual(page1Body);
+      expect(firstPageBody).toStrictEqual(page1Body);
 
-      const lastPage = await fetch(page1LinkHeader.last.url);
-      const lastPageBody = await lastPage.json();
+      const lastPageRequestBuilder = new RequestBuilder(page1LinkHeader.last.url);
+      const { response: lastPage, responseBody: lastPageBody } = await lastPageRequestBuilder.get();
       const lastPageLinkHeader = parseLinkHeader(lastPage.headers.get('Link'));
       const lastPageTotalRowsHeader = lastPage.headers.get('X-Pagination-Total-Rows');
 
-      expect(lastPage.status).toEqual(200);
-      expect(lastPageTotalRowsHeader).toEqual(page3TotalRowsHeader);
+      expect(lastPage.status).toBe(200);
+      expect(lastPageTotalRowsHeader).toBe(page3TotalRowsHeader);
       expect(lastPageLinkHeader).toStrictEqual(page3LinkHeader);
-      expect(lastPageBody).toEqual(page3Body);
+      expect(lastPageBody).toStrictEqual(page3Body);
     });
 
     test('With 9 entries but "page" out of bounds and strategy "new"', async () => {
@@ -1001,46 +1001,46 @@ describe('GET /api/v1/contents', () => {
         });
       }
 
-      const page4 = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=4&per_page=3`);
-      const page4Body = await page4.json();
+      const { response: page4, responseBody: page4Body } = await contentsRequestBuilder.get(
+        '?strategy=new&page=4&per_page=3',
+      );
 
       const page4LinkHeader = parseLinkHeader(page4.headers.get('Link'));
       const page4TotalRowsHeader = page4.headers.get('X-Pagination-Total-Rows');
 
-      expect(page4.status).toEqual(200);
-      expect(page4TotalRowsHeader).toEqual('9');
+      expect(page4.status).toBe(200);
+      expect(page4TotalRowsHeader).toBe('9');
       expect(page4LinkHeader).toStrictEqual({
         first: {
           page: '1',
           per_page: '3',
           rel: 'first',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=1&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=1&per_page=3`,
         },
         prev: {
           page: '3',
           per_page: '3',
           rel: 'prev',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=3&per_page=3`,
         },
         last: {
           page: '3',
           per_page: '3',
           rel: 'last',
           strategy: 'new',
-          url: 'http://localhost:3000/api/v1/contents?strategy=new&page=3&per_page=3',
+          url: `${orchestrator.webserverUrl}/api/v1/contents?strategy=new&page=3&per_page=3`,
         },
       });
 
-      expect(page4Body.length).toEqual(0);
+      expect(page4Body.length).toBe(0);
     });
 
     test('With "page" with a String', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=CINCO`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=CINCO');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1054,15 +1054,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.base',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "page" with an invalid minimum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=0`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=0');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1076,15 +1075,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.min',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "page" with an invalid maximum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=9007199254740991`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=9007199254740991');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1098,19 +1096,18 @@ describe('GET /api/v1/contents', () => {
         type: 'number.max',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "page" with an unsafe Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=9007199254740992`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=9007199254740992');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"page" deve possuir um valor máximo de 9007199254740990.',
+        message: `"page" deve possuir um valor entre 1 e 9007199254740990.`,
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
@@ -1120,15 +1117,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.unsafe',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "page" with a Float Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=1.5`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?page=1.5');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1142,15 +1138,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.integer',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "per_page" with a String', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=SEIS`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=SEIS');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1164,15 +1159,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.base',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "per_page" with an invalid minimum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=0`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=0');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1186,15 +1180,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.min',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "per_page" with an invalid maximum Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=9007199254740991`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=9007199254740991');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1208,19 +1201,18 @@ describe('GET /api/v1/contents', () => {
         type: 'number.max',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "per_page" with an unsafe Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=9007199254740992`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=9007199254740992');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
-        message: '"per_page" deve possuir um valor máximo de 100.',
+        message: '"per_page" deve possuir um valor entre 1 e 100.',
         action: 'Ajuste os dados enviados e tente novamente.',
         status_code: 400,
         error_id: responseBody.error_id,
@@ -1230,15 +1222,14 @@ describe('GET /api/v1/contents', () => {
         type: 'number.unsafe',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
     test('With "per_page" with a Float Number', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?per_page=1.5`);
-      const responseBody = await response.json();
+      const { response, responseBody } = await contentsRequestBuilder.get('?per_page=1.5');
 
-      expect(response.status).toEqual(400);
+      expect(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1252,8 +1243,8 @@ describe('GET /api/v1/contents', () => {
         type: 'number.integer',
       });
 
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
   });
 
@@ -1270,10 +1261,11 @@ describe('GET /api/v1/contents', () => {
         await orchestrator.dropAllTables();
         await orchestrator.runPendingMigrations();
 
-        const createUser = async () => orchestrator.createUser();
-        const createContent = async (user, options) => orchestrator.createContent({ owner_id: user.id, ...options });
+        const createUser = async () => await orchestrator.createUser();
+        const createContent = async (user, options) =>
+          await orchestrator.createContent({ owner_id: user.id, ...options });
         const createComment = async (user, parent, body) =>
-          createContent(user, { body, status: 'published', parent_id: parent.id });
+          await createContent(user, { body, status: 'published', parent_id: parent.id });
 
         const [firstUser, secondUser, thirdUser] = await Promise.all(Array.from({ length: 3 }, () => createUser()));
 
@@ -1291,6 +1283,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'primeiro-conteudo-criado',
           title: 'Primeiro conteúdo criado',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: firstRootContent.created_at.toISOString(),
           updated_at: firstRootContent.updated_at.toISOString(),
@@ -1317,6 +1310,7 @@ describe('GET /api/v1/contents', () => {
           slug: 'segundo-conteudo-criado',
           title: 'Segundo conteúdo criado',
           status: 'published',
+          type: 'content',
           source_url: null,
           created_at: secondRootContent.created_at.toISOString(),
           updated_at: secondRootContent.updated_at.toISOString(),
@@ -1342,6 +1336,7 @@ describe('GET /api/v1/contents', () => {
             title: null,
             body: comment.body,
             status: 'published',
+            type: 'content',
             source_url: null,
             created_at: comment.created_at.toISOString(),
             updated_at: comment.updated_at.toISOString(),
@@ -1371,16 +1366,19 @@ describe('GET /api/v1/contents', () => {
         {
           content: 'relevant root',
           params: [],
+          responseLinkParams: ['strategy=relevant'],
           getExpected: () => rootSortedByTabCoins,
         },
         {
           content: 'relevant root',
           params: ['with_children=false'],
+          responseLinkParams: ['strategy=relevant', 'with_children=false'],
           getExpected: () => rootSortedByTabCoins,
         },
         {
           content: 'relevant root and children',
           params: ['with_children=true'],
+          responseLinkParams: ['strategy=relevant', 'with_children=true'],
           getExpected: () => [
             rootSortedByTabCoins[0],
             childSortedByTabCoins[0],
@@ -1391,42 +1389,90 @@ describe('GET /api/v1/contents', () => {
         {
           content: 'new root',
           params: ['with_children=false', 'with_root=true', 'strategy=new'],
-          getExpected: () => rootSortedByNew,
-        },
-        {
-          content: 'new root',
-          params: ['with_children=false', 'with_root=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=true', 'with_children=false'],
           getExpected: () => rootSortedByNew,
         },
         {
           content: 'new children',
           params: ['with_children=true', 'with_root=false', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=false', 'with_children=true'],
           getExpected: () => childSortedByNew,
         },
         {
           content: 'new root and children',
           params: ['with_children=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_children=true'],
           getExpected: () => [...childSortedByNew, ...rootSortedByNew],
         },
         {
           content: 'new root and children',
           params: ['with_children=true', 'with_root=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=true', 'with_children=true'],
           getExpected: () => [...childSortedByNew, ...rootSortedByNew],
         },
         {
           content: 'new root',
           params: ['with_root=true', 'strategy=new'],
+          responseLinkParams: ['strategy=new', 'with_root=true'],
           getExpected: () => rootSortedByNew,
         },
-      ])('get $content with params: $params', async ({ params, getExpected }) => {
-        const url = `${orchestrator.webserverUrl}/api/v1/contents?${params.join('&')}`;
+      ])('get $content with params: $params', async ({ params, responseLinkParams, getExpected }) => {
+        const { response, responseBody } = await contentsRequestBuilder.get(`?${params.join('&')}`);
 
-        const response = await fetch(url);
-        const responseBody = await response.json();
-
-        expect(response.status).toEqual(200);
+        expect(response.status).toBe(200);
         expect(responseBody).toStrictEqual(getExpected());
+
+        const linkParamsString = responseLinkParams.join('&');
+        const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
+
+        expect(responseLinkHeader.first.url).toBe(
+          `${orchestrator.webserverUrl}/api/v1/contents?${linkParamsString}&page=1&per_page=30`,
+        );
+        expect(responseLinkHeader.last.url).toBe(
+          `${orchestrator.webserverUrl}/api/v1/contents?${linkParamsString}&page=1&per_page=30`,
+        );
       });
+    });
+
+    describe('Should not return "ad" regardless of strategy', () => {
+      beforeAll(async () => {
+        await orchestrator.dropAllTables();
+        await orchestrator.runPendingMigrations();
+
+        const firstUser = await orchestrator.createUser();
+        const secondUser = await orchestrator.createUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcash',
+          recipientId: firstUser.id,
+          amount: defaultTabCashForAdCreation,
+        });
+
+        const adContent = await orchestrator.createContent({
+          owner_id: firstUser.id,
+          title: 'Ad Title',
+          body: relevantBody,
+          status: 'published',
+          type: 'ad',
+        });
+
+        await orchestrator.createContent({
+          parent_id: adContent.id,
+          owner_id: secondUser.id,
+          body: relevantBody,
+          status: 'published',
+        });
+      });
+
+      test.each(['', '?strategy=relevant', '?strategy=new', '?strategy=old'])(
+        'get contents with params: %s',
+        async (params) => {
+          const { response, responseBody } = await contentsRequestBuilder.get(params);
+
+          expect(response.status).toBe(200);
+          expect(responseBody).toStrictEqual([]);
+        },
+      );
     });
   });
 });

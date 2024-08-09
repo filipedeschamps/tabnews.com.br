@@ -1,11 +1,18 @@
-import { Box, EmptyState, Link, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
-import { ChevronLeftIcon, ChevronRightIcon, CommentIcon } from '@/TabNewsUI/icons';
+import {
+  AdBanner,
+  Box,
+  EmptyState,
+  Link,
+  Pagination,
+  PastTime,
+  TabCoinBalanceTooltip,
+  Text,
+  Tooltip,
+} from '@/TabNewsUI';
+import { CommentIcon } from '@/TabNewsUI/icons';
 
-export default function ContentList({ contentList: list, pagination, paginationBasePath, emptyStateProps }) {
+export default function ContentList({ ad, contentList: list, pagination, paginationBasePath, emptyStateProps }) {
   const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
-
-  const previousPageUrl = `${paginationBasePath}/${pagination.previousPage}`;
-  const nextPageUrl = `${paginationBasePath}/${pagination.nextPage}`;
 
   return (
     <>
@@ -21,49 +28,21 @@ export default function ContentList({ contentList: list, pagination, paginationB
           }}
           key={`content-list-${listNumberStart}`}
           start={listNumberStart}>
+          {ad && (
+            <Box as="li" sx={{ display: 'block', gridColumnStart: 2, '::marker': 'none' }}>
+              <AdBanner ad={ad} />
+            </Box>
+          )}
+
           <RenderItems />
+
           <EndOfRelevant />
         </Box>
       ) : (
         <RenderEmptyMessage {...emptyStateProps} />
       )}
 
-      {list.length > 0 ? (
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'center',
-            whiteSpace: 'nowrap',
-            gap: 4,
-            m: 4,
-            mb: 2,
-          }}>
-          {pagination.previousPage ? (
-            <Link href={previousPageUrl} scroll={false}>
-              <ChevronLeftIcon size={16} />
-              Anterior
-            </Link>
-          ) : (
-            <Text color="fg.muted">
-              <ChevronLeftIcon size={16} />
-              Anterior
-            </Text>
-          )}
-
-          {pagination.nextPage ? (
-            <Link href={nextPageUrl}>
-              Próximo
-              <ChevronRightIcon size={16} />
-            </Link>
-          ) : (
-            <Text color="fg.muted">
-              Próximo
-              <ChevronRightIcon size={16} />
-            </Text>
-          )}
-        </Box>
-      ) : null}
+      {list.length > 0 ? <Pagination {...pagination} basePath={paginationBasePath} /> : null}
     </>
   );
 
@@ -129,25 +108,27 @@ export default function ContentList({ contentList: list, pagination, paginationB
                 whiteSpace: 'nowrap',
                 color: 'neutral.emphasis',
               }}>
-              <TabCoinBalanceTooltip
-                direction="ne"
-                credit={contentObject.tabcoins_credit}
-                debit={contentObject.tabcoins_debit}>
-                <TabCoinsText count={contentObject.tabcoins} />
-              </TabCoinBalanceTooltip>
+              {contentObject.type === 'ad' ? (
+                <Text sx={{ color: 'success.fg' }}>Patrocinado</Text>
+              ) : (
+                <TabCoinBalanceTooltip
+                  direction="ne"
+                  credit={contentObject.tabcoins_credit}
+                  debit={contentObject.tabcoins_debit}>
+                  <TabCoinsText count={contentObject.tabcoins} />
+                </TabCoinBalanceTooltip>
+              )}
               {' · '}
               <Text>
                 <ChildrenDeepCountText count={contentObject.children_deep_count} />
               </Text>
               {' · '}
               <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
-                <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  <Text as="address" sx={{ fontStyle: 'normal' }}>
-                    <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
-                      {contentObject.owner_username}
-                    </Link>
-                  </Text>
-                </Box>
+                <Text as="address" sx={{ fontStyle: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
+                    {contentObject.owner_username}
+                  </Link>
+                </Text>
               </Tooltip>
               {' · '}
               <Text>

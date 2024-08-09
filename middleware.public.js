@@ -4,6 +4,7 @@ import snakeize from 'snakeize';
 import { UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';
 import rateLimit from 'infra/rate-limit.js';
+import underMaintenance from 'infra/under-maintenance';
 import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
 
@@ -28,6 +29,17 @@ export async function middleware(request) {
 
     return new NextResponse(JSON.stringify(publicErrorObject), {
       status: 401,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+  }
+
+  const isUnderMaintenance = underMaintenance.check(request);
+
+  if (isUnderMaintenance) {
+    return new NextResponse(isUnderMaintenance.body, {
+      status: isUnderMaintenance.status,
       headers: {
         'content-type': 'application/json',
       },

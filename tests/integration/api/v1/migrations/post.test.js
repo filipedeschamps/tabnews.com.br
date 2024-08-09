@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
@@ -21,22 +20,22 @@ describe('POST /api/v1/migrations', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:migration".');
-      expect(responseBody.status_code).toEqual(403);
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "create:migration".');
+      expect(responseBody.status_code).toBe(403);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
   describe('User with default features', () => {
     test('Running pending migrations', async () => {
-      let defaultUser = await orchestrator.createUser();
+      const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
-      let defaultUserSession = await orchestrator.createSession(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
         method: 'POST',
@@ -48,24 +47,24 @@ describe('POST /api/v1/migrations', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(403);
-      expect(responseBody.name).toEqual('ForbiddenError');
-      expect(responseBody.message).toEqual('Usuário não pode executar esta operação.');
-      expect(responseBody.action).toEqual('Verifique se este usuário possui a feature "create:migration".');
-      expect(responseBody.status_code).toEqual(403);
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
+      expect(response.status).toBe(403);
+      expect(responseBody.name).toBe('ForbiddenError');
+      expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
+      expect(responseBody.action).toBe('Verifique se este usuário possui a feature "create:migration".');
+      expect(responseBody.status_code).toBe(403);
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
     });
   });
 
   describe('User with "create:migration" feature', () => {
     test('Running pending migrations', async () => {
-      let privilegedUser = await orchestrator.createUser();
+      const privilegedUser = await orchestrator.createUser();
       await orchestrator.activateUser(privilegedUser);
       await orchestrator.addFeaturesToUser(privilegedUser, ['create:migration']);
 
-      let privilegedUserSession = await orchestrator.createSession(privilegedUser);
+      const privilegedUserSession = await orchestrator.createSession(privilegedUser);
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/migrations`, {
         method: 'POST',
@@ -77,8 +76,8 @@ describe('POST /api/v1/migrations', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(Array.isArray(responseBody)).toEqual(true);
+      expect(response.status).toBe(200);
+      expect(Array.isArray(responseBody)).toBe(true);
     });
   });
 });

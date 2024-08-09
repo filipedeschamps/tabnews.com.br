@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker';
 import retry from 'async-retry';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
+import setCookieParser from 'set-cookie-parser';
 
 import database from 'infra/database.js';
 import migrator from 'infra/migrator.js';
@@ -109,21 +110,67 @@ async function getLastEmail() {
 
   const lastEmailItem = emailList.pop();
 
-  const emailTextResponse = await fetch(`${emailServiceUrl}/messages/${lastEmailItem.id}.plain`);
-  const emailText = await emailTextResponse.text();
-  lastEmailItem.text = emailText;
-
-  const emailHtmlResponse = await fetch(`${emailServiceUrl}/messages/${lastEmailItem.id}.html`);
-  const emailHtml = await emailHtmlResponse.text();
-  lastEmailItem.html = emailHtml;
+  await setEmailTextHtml(lastEmailItem);
 
   return lastEmailItem;
 }
 
+async function getEmails() {
+  const emailListResponse = await fetch(`${emailServiceUrl}/messages`);
+  const emailList = await emailListResponse.json();
+
+  const parsedEmails = [];
+
+  for (const email of emailList) {
+    parsedEmails.push(setEmailTextHtml(email));
+  }
+
+  const promises = await Promise.allSettled(parsedEmails);
+  return promises.map((p) => p.value);
+}
+
+async function setEmailTextHtml(email) {
+  const emailTextResponse = await fetch(`${emailServiceUrl}/messages/${email.id}.plain`);
+  const emailText = await emailTextResponse.text();
+  email.text = emailText;
+
+  const emailHtmlResponse = await fetch(`${emailServiceUrl}/messages/${email.id}.html`);
+  const emailHtml = await emailHtmlResponse.text();
+  email.html = emailHtml;
+
+  return email;
+}
+
+const usedFakeUsernames = new Set();
+const usedFakeEmails = new Set();
+
 async function createUser(userObject) {
+  let username = userObject?.username;
+  let email = userObject?.email;
+
+  while (!username) {
+    username = faker.internet.userName().replace(/[_.-]/g, '').substring(0, 30);
+
+    if (usedFakeUsernames.has(username)) {
+      username = undefined;
+    } else {
+      usedFakeUsernames.add(username);
+    }
+  }
+
+  while (!email) {
+    email = faker.internet.email();
+
+    if (usedFakeEmails.has(email)) {
+      email = undefined;
+    } else {
+      usedFakeEmails.add(email);
+    }
+  }
+
   return await user.create({
-    username: userObject?.username || faker.internet.userName().replace('_', '').replace('.', '').replace('-', ''),
-    email: userObject?.email || faker.internet.email(),
+    username,
+    email,
     password: userObject?.password || 'password',
     description: userObject?.description || '',
   });
@@ -150,31 +197,32 @@ async function findSessionByToken(token) {
 }
 
 async function createContent(contentObject) {
+  const contentId = contentObject?.id || randomUUID();
+
   const currentEvent = await event.create({
     type: contentObject?.parent_id ? 'create:content:text_child' : 'create:content:text_root',
-    originatorUserId: contentObject?.owner_id,
+    originator_user_id: contentObject?.owner_id,
+    metadata: {
+      id: contentId,
+    },
   });
 
   const createdContent = await content.create(
     {
+      id: contentId,
       parent_id: contentObject?.parent_id || undefined,
       owner_id: contentObject?.owner_id || undefined,
       title: contentObject?.title || undefined,
       slug: contentObject?.slug || undefined,
       body: contentObject?.body || faker.lorem.paragraphs(5),
       status: contentObject?.status || 'draft',
+      type: contentObject?.type || 'content',
       source_url: contentObject?.source_url || undefined,
     },
     {
       eventId: currentEvent.id,
     },
   );
-
-  await event.updateMetadata(currentEvent.id, {
-    metadata: {
-      id: createdContent.id,
-    },
-  });
 
   return createdContent;
 }
@@ -203,7 +251,7 @@ async function createBalance(balanceObject) {
 
 async function createRate(contentObject, amount, fromUserId) {
   const tabCoinsRequiredAmount = 2;
-  const originatorIp = faker.internet.ip();
+  const originator_ip = faker.internet.ip();
   const transactionType = amount < 0 ? 'debit' : 'credit';
 
   if (!fromUserId) {
@@ -221,8 +269,8 @@ async function createRate(contentObject, amount, fromUserId) {
   for (let i = 0; i < Math.abs(amount); i++) {
     const currentEvent = await event.create({
       type: 'update:content:tabcoins',
-      originatorUserId: fromUserId,
-      originatorIp,
+      originator_user_id: fromUserId,
+      originator_ip,
       metadata: {
         transaction_type: transactionType,
         from_user_id: fromUserId,
@@ -248,6 +296,25 @@ async function createRate(contentObject, amount, fromUserId) {
 
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
+}
+
+async function updateEmailConfirmationToken(tokenId, tokenBody) {
+  const query = {
+    text: `
+      UPDATE
+        email_confirmation_tokens
+      SET
+        expires_at = $2
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [tokenId, tokenBody.expires_at],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
 }
 
 async function createFirewallTestFunctions() {
@@ -282,9 +349,8 @@ async function createPrestige(
   const rootContents = [];
   const childContents = [];
 
-  jest.useFakeTimers({
+  vi.useFakeTimers({
     now: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-    advanceTimers: true,
   });
 
   for (let i = 0; i < rootPrestigeDenominator; i++) {
@@ -296,6 +362,8 @@ async function createPrestige(
         status: 'published',
       }),
     );
+
+    vi.advanceTimersByTime(10);
   }
 
   let parentId = rootContents[0]?.id;
@@ -322,7 +390,7 @@ async function createPrestige(
     );
   }
 
-  jest.useRealTimers();
+  vi.useRealTimers();
 
   if (rootContents.length) {
     await createBalance({
@@ -366,27 +434,52 @@ async function updateRewardedAt(userId, rewardedAt) {
   return await database.query(query);
 }
 
+async function getLastEvent() {
+  const results = await database.query('SELECT * FROM events ORDER BY created_at DESC LIMIT 1;');
+  return results.rows[0];
+}
+
+async function updateEventCreatedAt(id, createdAt) {
+  const query = {
+    text: 'UPDATE events SET created_at = $1 WHERE id = $2;',
+    values: [createdAt, id],
+  };
+  const results = await database.query(query);
+  return results.rows[0];
+}
+
+function parseSetCookies(response) {
+  const setCookieHeaderValues = response.headers.get('set-cookie');
+  const parsedCookies = setCookieParser.parse(setCookieHeaderValues, { map: true });
+  return parsedCookies;
+}
+
 const orchestrator = {
-  waitForAllServices,
-  dropAllTables,
-  runPendingMigrations,
-  webserverUrl,
-  deleteAllEmails,
-  getLastEmail,
-  createUser,
   activateUser,
-  createSession,
-  findSessionByToken,
   addFeaturesToUser,
-  removeFeaturesFromUser,
-  createContent,
-  updateContent,
-  createRecoveryToken,
-  createFirewallTestFunctions,
   createBalance,
+  createContent,
+  createFirewallTestFunctions,
   createPrestige,
   createRate,
+  createRecoveryToken,
+  createSession,
+  createUser,
+  deleteAllEmails,
+  dropAllTables,
+  findSessionByToken,
+  getEmails,
+  getLastEmail,
+  getLastEvent,
+  parseSetCookies,
+  removeFeaturesFromUser,
+  runPendingMigrations,
+  updateContent,
+  updateEmailConfirmationToken,
+  updateEventCreatedAt,
   updateRewardedAt,
+  waitForAllServices,
+  webserverUrl,
 };
 
 export default orchestrator;

@@ -74,6 +74,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
         parent_id: null,
         owner_id: secureUserFound.id,
         status: 'published',
+        type: 'content',
       },
       attributes: {
         exclude: ['body'],

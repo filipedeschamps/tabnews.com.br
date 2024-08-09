@@ -1,9 +1,10 @@
+import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
-import { v4 as uuidV4 } from 'uuid';
 
 import {
   ForbiddenError,
   InternalServerError,
+  MethodNotAllowedError,
   NotFoundError,
   TooManyRequestsError,
   UnauthorizedError,
@@ -28,8 +29,16 @@ async function injectRequestMetadata(request, response, next) {
 }
 
 async function onNoMatchHandler(request, response) {
+  if (request.method === 'OPTIONS') {
+    return response.status(200).end();
+  }
+
   injectRequestMetadata(request);
-  const publicErrorObject = new NotFoundError({ requestId: request.context?.requestId || uuidV4() });
+  const publicErrorObject = new MethodNotAllowedError({
+    message: `Método "${request.method}" não permitido para "${request.url}".`,
+    action: 'Utilize um método HTTP válido para este recurso.',
+    requestId: request.context?.requestId || uuidV4(),
+  });
 
   const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
   logger.info(snakeize(privateErrorObject));
@@ -40,6 +49,7 @@ async function onNoMatchHandler(request, response) {
 function onErrorHandler(error, request, response) {
   if (
     error instanceof ValidationError ||
+    error instanceof MethodNotAllowedError ||
     error instanceof NotFoundError ||
     error instanceof ForbiddenError ||
     error instanceof UnprocessableEntityError ||
@@ -97,15 +107,12 @@ function errorResponse(response, statusCode, publicErrorObject) {
 }
 
 function logRequest(request, response, next) {
-  const { method, url, headers, query, body, context } = request;
+  const { headers, body, context } = request;
 
   const log = {
-    method,
-    url,
-    headers,
-    query,
-    context,
-    body,
+    headers: clearHeaders(headers),
+    body: clearBody(body),
+    context: clearContext(context),
   };
 
   logger.info(log);
@@ -113,24 +120,82 @@ function logRequest(request, response, next) {
   next();
 }
 
-function injectPaginationHeaders(pagination, endpoint, response) {
+const headersToRedact = ['authorization', 'cookie'];
+const headerToOmit = ['access-control-allow-headers', 'forwarded', 'x-vercel-proxy-signature', 'x-vercel-sc-headers'];
+
+function clearHeaders(headers) {
+  const cleanHeaders = { ...headers };
+
+  headersToRedact.forEach((header) => {
+    if (cleanHeaders[header]) {
+      cleanHeaders[header] = '**';
+    }
+  });
+
+  headerToOmit.forEach((header) => {
+    delete cleanHeaders[header];
+  });
+
+  return [cleanHeaders];
+}
+
+const bodyToRedact = ['email', 'password'];
+
+function clearBody(requestBody) {
+  const cleanBody = { ...requestBody };
+
+  if (typeof cleanBody.body === 'string') {
+    cleanBody.body = cleanBody.body.substring(0, 300);
+  }
+
+  bodyToRedact.forEach((key) => {
+    if (cleanBody[key]) {
+      cleanBody[key] = '**';
+    }
+  });
+
+  return [cleanBody];
+}
+
+function clearContext(context) {
+  const cleanContext = { ...context };
+
+  if (cleanContext.user) {
+    cleanContext.user = {
+      id: context.user.id,
+      username: context.user.username,
+    };
+  }
+
+  return cleanContext;
+}
+
+function injectPaginationHeaders(pagination, endpoint, request, response) {
   const links = [];
-  const baseUrl = `${webserver.host}${endpoint}?strategy=${pagination.strategy}`;
+  const baseUrl = `${webserver.host}${endpoint}`;
 
-  if (pagination.firstPage) {
-    links.push(`<${baseUrl}&page=${pagination.firstPage}&per_page=${pagination.perPage}>; rel="first"`);
-  }
+  const searchParams = new URLSearchParams();
 
-  if (pagination.previousPage) {
-    links.push(`<${baseUrl}&page=${pagination.previousPage}&per_page=${pagination.perPage}>; rel="prev"`);
-  }
+  const acceptedParams = ['strategy', 'with_root', 'with_children', 'page', 'per_page'];
 
-  if (pagination.nextPage) {
-    links.push(`<${baseUrl}&page=${pagination.nextPage}&per_page=${pagination.perPage}>; rel="next"`);
-  }
+  acceptedParams.forEach((param) => {
+    if (request?.query?.[param] !== undefined) {
+      searchParams.set(param, request.query[param]);
+    }
+  });
 
-  if (pagination.lastPage) {
-    links.push(`<${baseUrl}&page=${pagination.lastPage}&per_page=${pagination.perPage}>; rel="last"`);
+  const pages = [
+    { page: pagination.firstPage, rel: 'first' },
+    { page: pagination.previousPage, rel: 'prev' },
+    { page: pagination.nextPage, rel: 'next' },
+    { page: pagination.lastPage, rel: 'last' },
+  ];
+
+  for (const { page, rel } of pages) {
+    if (page) {
+      searchParams.set('page', page);
+      links.push(`<${baseUrl}?${searchParams.toString()}>; rel="${rel}"`);
+    }
   }
 
   const linkHeaderString = links.join(', ');

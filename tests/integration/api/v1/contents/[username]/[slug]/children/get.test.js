@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import { version as uuidVersion } from 'uuid';
 
 import orchestrator from 'tests/orchestrator.js';
@@ -24,14 +23,14 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('From "root" content with "deleted" status', async () => {
@@ -49,14 +48,14 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(404);
-      expect(responseBody.status_code).toEqual(404);
-      expect(responseBody.name).toEqual('NotFoundError');
-      expect(responseBody.message).toEqual('O conteúdo informado não foi encontrado no sistema.');
-      expect(responseBody.action).toEqual('Verifique se o "slug" está digitado corretamente.');
-      expect(uuidVersion(responseBody.error_id)).toEqual(4);
-      expect(uuidVersion(responseBody.request_id)).toEqual(4);
-      expect(responseBody.error_location_code).toEqual('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
+      expect(response.status).toBe(404);
+      expect(responseBody.status_code).toBe(404);
+      expect(responseBody.name).toBe('NotFoundError');
+      expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
+      expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND');
     });
 
     test('From "root" content with "published" status with no children', async () => {
@@ -72,8 +71,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody).toEqual([]);
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual([]);
     });
 
     test('From "root" content with "published" status with 6 "published" and 1 "draft" children', async () => {
@@ -141,8 +140,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+      expect(response.status).toBe(200);
+      expect(responseBody.length).toBe(2);
       expect(responseBody).toStrictEqual([
         {
           id: childBranchBLevel1.id,
@@ -155,6 +154,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           tabcoins_credit: 0,
           tabcoins_debit: 0,
           status: childBranchBLevel1.status,
+          type: 'content',
           source_url: childBranchBLevel1.source_url,
           created_at: childBranchBLevel1.created_at.toISOString(),
           updated_at: childBranchBLevel1.updated_at.toISOString(),
@@ -173,6 +173,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               tabcoins_credit: 0,
               tabcoins_debit: 0,
               status: childBranchBLevel2Content1.status,
+              type: 'content',
               source_url: childBranchBLevel2Content1.source_url,
               created_at: childBranchBLevel2Content1.created_at.toISOString(),
               updated_at: childBranchBLevel2Content1.updated_at.toISOString(),
@@ -193,6 +194,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               tabcoins_credit: 0,
               tabcoins_debit: 0,
               status: childBranchBLevel2Content2.status,
+              type: 'content',
               source_url: childBranchBLevel2Content2.source_url,
               created_at: childBranchBLevel2Content2.created_at.toISOString(),
               updated_at: childBranchBLevel2Content2.updated_at.toISOString(),
@@ -213,6 +215,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           title: childBranchALevel1.title,
           body: childBranchALevel1.body,
           status: childBranchALevel1.status,
+          type: 'content',
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
@@ -231,6 +234,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               title: childBranchALevel2.title,
               body: childBranchALevel2.body,
               status: childBranchALevel2.status,
+              type: 'content',
               tabcoins: 1,
               tabcoins_credit: 0,
               tabcoins_debit: 0,
@@ -252,6 +256,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
                   tabcoins_credit: 0,
                   tabcoins_debit: 0,
                   status: childBranchALevel3.status,
+                  type: 'content',
                   source_url: childBranchALevel3.source_url,
                   created_at: childBranchALevel3.created_at.toISOString(),
                   updated_at: childBranchALevel3.updated_at.toISOString(),
@@ -336,8 +341,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+      expect(response.status).toBe(200);
+      expect(responseBody.length).toBe(2);
       expect(responseBody).toStrictEqual([
         {
           id: childBranchBLevel2Content2.id,
@@ -347,6 +352,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           title: childBranchBLevel2Content2.title,
           body: childBranchBLevel2Content2.body,
           status: childBranchBLevel2Content2.status,
+          type: 'content',
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
@@ -367,6 +373,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           title: childBranchBLevel2Content1.title,
           body: childBranchBLevel2Content1.body,
           status: childBranchBLevel2Content1.status,
+          type: 'content',
           tabcoins: 0,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
@@ -423,8 +430,8 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toEqual(200);
-      expect(responseBody.length).toEqual(2);
+      expect(response.status).toBe(200);
+      expect(responseBody.length).toBe(2);
       expect(responseBody).toStrictEqual([
         {
           id: childBranchBLevel1.id,
@@ -437,6 +444,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           tabcoins_credit: 2,
           tabcoins_debit: -1,
           status: childBranchBLevel1.status,
+          type: 'content',
           source_url: childBranchBLevel1.source_url,
           created_at: childBranchBLevel1.created_at.toISOString(),
           updated_at: childBranchBLevel1.updated_at.toISOString(),
@@ -454,6 +462,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           title: childBranchALevel1.title,
           body: childBranchALevel1.body,
           status: childBranchALevel1.status,
+          type: 'content',
           tabcoins: 1,
           tabcoins_credit: 0,
           tabcoins_debit: 0,
@@ -472,6 +481,7 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
               title: childBranchALevel2.title,
               body: childBranchALevel2.body,
               status: childBranchALevel2.status,
+              type: 'content',
               tabcoins: 5,
               tabcoins_credit: 4,
               tabcoins_debit: 0,

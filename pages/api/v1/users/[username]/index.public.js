@@ -1,6 +1,6 @@
 import nextConnect from 'next-connect';
 
-import { ForbiddenError, UnprocessableEntityError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -78,7 +78,8 @@ function patchValidationHandler(request, response, next) {
 async function patchHandler(request, response) {
   const userTryingToPatch = request.context.user;
   const targetUsername = request.query.username;
-  const targetUser = await user.findOneByUsername(targetUsername);
+  const targetUser =
+    targetUsername === userTryingToPatch.username ? userTryingToPatch : await user.findOneByUsername(targetUsername);
   const insecureInputValues = request.body;
 
   let updateAnotherUser = false;
@@ -109,27 +110,20 @@ async function patchHandler(request, response) {
 
   const transaction = await database.transaction();
 
+  let updatedUser;
+
   try {
     await transaction.query('BEGIN');
 
-    const currentEvent = await event.create(
-      {
-        type: 'update:user',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
-      },
-      {
-        transaction: transaction,
-      },
-    );
-
-    const updatedUser = await user.update(targetUsername, secureInputValues, {
+    updatedUser = await user.update(targetUser, secureInputValues, {
       transaction: transaction,
     });
 
-    await event.updateMetadata(
-      currentEvent.id,
+    await event.create(
       {
+        type: 'update:user',
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: getEventMetadata(targetUser, updatedUser),
       },
       {
@@ -139,19 +133,27 @@ async function patchHandler(request, response) {
 
     await transaction.query('COMMIT');
     await transaction.release();
-
-    const secureOutputValues = authorization.filterOutput(
-      userTryingToPatch,
-      updateAnotherUser ? 'read:user' : 'read:user:self',
-      updatedUser,
-    );
-
-    return response.status(200).json(secureOutputValues);
   } catch (error) {
     await transaction.query('ROLLBACK');
     await transaction.release();
-    throw error;
+
+    if (error instanceof ValidationError && error.key === 'email') {
+      updatedUser = {
+        ...targetUser,
+        updated_at: new Date(),
+      };
+    } else {
+      throw error;
+    }
   }
+
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToPatch,
+    updateAnotherUser ? 'read:user' : 'read:user:self',
+    updatedUser,
+  );
+
+  return response.status(200).json(secureOutputValues);
 
   function getEventMetadata(originalUser, updatedUser) {
     const metadata = {
@@ -163,6 +165,13 @@ async function patchHandler(request, response) {
     for (const field of updatableFields) {
       if (originalUser[field] !== updatedUser[field]) {
         metadata.updatedFields.push(field);
+
+        if (field === 'username') {
+          metadata.username = {
+            old: originalUser.username,
+            new: updatedUser.username,
+          };
+        }
       }
     }
 
@@ -210,8 +219,8 @@ async function deleteHandler(request, response) {
     const currentEvent = await event.create(
       {
         type: 'ban:user',
-        originatorUserId: request.context.user.id,
-        originatorIp: request.context.clientIp,
+        originator_user_id: request.context.user.id,
+        originator_ip: request.context.clientIp,
         metadata: {
           ban_type: secureInputValues.ban_type,
           user_id: targetUser.id,

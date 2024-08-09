@@ -33,11 +33,17 @@ async function nuke(userId, options = {}) {
     const userEvents = await getAllRatingEventsFromUser(userId, options);
 
     for (const userEvent of userEvents) {
-      const eventBalanceOperations = await getRatingBalanceOperationsFromEvent(userEvent.id, options);
+      const eventBalanceOperations = await balance.findAllByOriginatorId(userEvent.id, options);
 
       for (const eventBalanceOperation of eventBalanceOperations) {
-        await balance.undo(eventBalanceOperation.id, options);
+        await balance.undo(eventBalanceOperation, options);
       }
+    }
+
+    const userBalanceOperations = await balance.findAllByOriginatorId(userId, options);
+
+    for (const userBalanceOperation of userBalanceOperations) {
+      await balance.undo(userBalanceOperation, options);
     }
 
     async function getAllRatingEventsFromUser(userId, options = {}) {
@@ -55,26 +61,6 @@ async function nuke(userId, options = {}) {
             created_at ASC
         ;`,
         values: [userId],
-      };
-
-      const results = await database.query(query, options);
-
-      return results.rows;
-    }
-
-    async function getRatingBalanceOperationsFromEvent(eventId, options = {}) {
-      const query = {
-        text: `
-          SELECT
-            *
-          FROM
-            balance_operations
-          WHERE
-            originator_id = $1
-          ORDER BY
-            created_at ASC
-        ;`,
-        values: [eventId],
       };
 
       const results = await database.query(query, options);

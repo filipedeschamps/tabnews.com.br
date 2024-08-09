@@ -8,6 +8,7 @@ import {
   BranchName,
   Button,
   ButtonWithLoader,
+  Checkbox,
   Editor,
   Flash,
   FormControl,
@@ -25,7 +26,7 @@ import {
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
-import { isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
+import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
@@ -109,13 +110,13 @@ function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
 
           <ActionMenu.Overlay>
             <ActionList>
-              <ActionList.Item onClick={() => onComponentModeChange('edit')}>
+              <ActionList.Item onSelect={() => onComponentModeChange('edit')}>
                 <ActionList.LeadingVisual>
                   <PencilIcon />
                 </ActionList.LeadingVisual>
                 Editar
               </ActionList.Item>
-              <ActionList.Item variant="danger" onClick={onDelete}>
+              <ActionList.Item variant="danger" onSelect={onDelete}>
                 <ActionList.LeadingVisual>
                   <TrashIcon />
                 </ActionList.LeadingVisual>
@@ -162,17 +163,8 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
 
     if (response.status === 200) {
       setComponentMode('deleted');
-      return;
-    }
-
-    if ([400, 401, 403].includes(response.status)) {
-      setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
-      return;
-    }
-
-    if (response.status >= 500) {
-      setGlobalErrorMessage(`${responseBody.message} Informe ao suporte este valor: ${responseBody.error_id}`);
-      return;
+    } else {
+      setGlobalErrorMessage({ error: responseBody });
     }
   };
 
@@ -181,6 +173,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   return (
     <Box
       as="article"
+      id={`${contentObject.owner_username}-${contentObject.slug}`}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -194,11 +187,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
         wordBreak: 'break-word',
       }}>
       <Box>
-        {globalErrorMessage && (
-          <Flash variant="danger" sx={{ mb: 4 }}>
-            {globalErrorMessage}
-          </Flash>
-        )}
+        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Box
@@ -217,6 +206,11 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
               {isPageRootOwner && (
                 <Tooltip aria-label="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
                   <Label>Autor</Label>
+                </Tooltip>
+              )}
+              {contentObject.type === 'ad' && (
+                <Tooltip aria-label="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                  <Label variant="success">Patrocinado</Label>
                 </Tooltip>
               )}
             </LabelGroup>
@@ -245,7 +239,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
         )}
       </Box>
       <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} />
+        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
       </Box>
       {contentObject.source_url && (
         <Box>
@@ -273,6 +267,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     title: contentObject?.title || '',
     body: contentObject?.body || '',
     source_url: contentObject?.source_url || '',
+    isSponsoredContent: contentObject?.type === 'ad',
   });
   const [titlePlaceholder, setTitlePlaceholder] = useState('');
 
@@ -346,6 +341,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         : `/api/v1/contents`;
       const requestBody = {
         status: 'published',
+        type: newData.isSponsoredContent ? 'ad' : 'content',
       };
 
       if (title || contentObject?.title) {
@@ -374,7 +370,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
       })
         .then(processResponse)
         .catch(() => {
-          setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
+          setGlobalErrorMessage({
+            error: { message: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.' },
+          });
           setIsPosting(false);
         });
 
@@ -402,7 +400,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         if (response.status === 201) {
           return (responseBody) => {
             if (responseBody.message) {
-              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+              setGlobalErrorMessage({ error: responseBody });
               console.error(responseBody);
               return;
             }
@@ -423,14 +421,14 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             setErrorObject(responseBody);
 
             if (responseBody.key === 'slug') {
-              setGlobalErrorMessage(`${responseBody.message} ${responseBody.action}`);
+              setGlobalErrorMessage({ error: responseBody, omitErrorId: true });
             }
           };
         }
 
         if (response.status >= 401) {
           return (responseBody) => {
-            setGlobalErrorMessage(`${responseBody.message} ${responseBody.action} ${responseBody.error_id}`);
+            setGlobalErrorMessage({ error: responseBody });
           };
         }
       }
@@ -442,7 +440,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     (event) => {
       setErrorObject(undefined);
       setNewData((oldData) => {
-        const newData = { ...oldData, [event.target?.name || 'body']: event.target?.value ?? event };
+        const value = event.target?.name === 'isSponsoredContent' ? event.target.checked : event.target?.value ?? event;
+        const newData = { ...oldData, [event.target?.name || 'body']: value };
         localStorage.setItem(localStorageKey, JSON.stringify(newData));
         return newData;
       });
@@ -492,7 +491,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     <Box sx={{ mb: 4, width: '100%' }}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }} noValidate>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+          {globalErrorMessage && <ErrorMessage {...globalErrorMessage} />}
 
           {!contentObject?.parent_id && (
             <FormControl id="title" required>
@@ -528,6 +527,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               onChange={handleChange}
               onKeyDown={onKeyDown}
               compact={!!contentObject?.parent_id}
+              clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
 
             {errorObject?.key === 'body' && (
@@ -556,6 +556,19 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               {errorObject?.key === 'source_url' && (
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
+            </FormControl>
+          )}
+
+          {!contentObject?.id && !contentObject?.parent_id && (
+            <FormControl>
+              <Checkbox name="isSponsoredContent" onChange={handleChange} checked={newData.isSponsoredContent} />
+              <FormControl.Label>
+                Criar como publicação patrocinada. <Link href="/faq#publicacao-patrocinada">Saiba mais.</Link>
+              </FormControl.Label>
+
+              <FormControl.Caption>
+                Serão consumidos 100 TabCash para criar a publicação patrocinada.
+              </FormControl.Caption>
             </FormControl>
           )}
 
@@ -651,6 +664,24 @@ function DeletedMode({ viewFrame }) {
         Conteúdo apagado com sucesso.
       </Box>
     </Box>
+  );
+}
+
+function ErrorMessage({ error, omitErrorId, ...props }) {
+  const isErrorWithReadMore =
+    error.error_location_code === 'MODEL:CONTENT:CREDIT_OR_DEBIT_TABCOINS:NEGATIVE_USER_EARNINGS';
+
+  return (
+    <Flash variant="danger" {...props}>
+      {createErrorMessage(error, { omitErrorId: omitErrorId || isErrorWithReadMore })}
+
+      {isErrorWithReadMore && (
+        <Text sx={{ display: 'block', mt: 1 }}>
+          Para mais informações, leia:{' '}
+          <Link href="/faq#erro-nova-publicacao">Não consigo criar novas publicações. O que fazer?</Link>
+        </Text>
+      )}
+    </Flash>
   );
 }
 

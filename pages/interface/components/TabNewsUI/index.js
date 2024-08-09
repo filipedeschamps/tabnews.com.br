@@ -1,3 +1,4 @@
+export { default as AdBanner } from '@/AdBanner';
 export { default as ButtonWithLoader } from '@/ButtonWithLoader';
 export { default as Confetti } from '@/Confetti';
 export { default as Content } from '@/Content';
@@ -12,6 +13,7 @@ export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
 export { default as PasswordInput } from '@/PasswordInput';
 export { default as PastTime } from '@/PastTime';
+export { default as Pagination } from '@/Pagination';
 export { default as NextNProgress } from '@/Progressbar';
 export { default as ReadTime } from '@/ReadTime';
 export { default as RecentTabNav } from '@/RecentTabNav';

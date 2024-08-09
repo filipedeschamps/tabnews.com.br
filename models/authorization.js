@@ -1,47 +1,6 @@
 import { ForbiddenError, ValidationError } from 'errors';
+import availableFeatures from 'models/user-features';
 import validator from 'models/validator.js';
-
-const availableFeatures = new Set([
-  // USER
-  'create:user',
-  'read:user',
-  'read:user:self',
-  'update:user',
-
-  // MIGRATION
-  'read:migration',
-  'create:migration',
-
-  // ACTIVATION_TOKEN
-  'read:activation_token',
-
-  // RECOVERY_TOKEN
-  'read:recovery_token',
-
-  // EMAIL_CONFIRMATION_TOKEN
-  'read:email_confirmation_token',
-
-  // SESSION
-  'create:session',
-  'read:session',
-
-  // CONTENT
-  'read:content',
-  'update:content',
-  'create:content',
-  'create:content:text_root',
-  'create:content:text_child',
-  'read:content:list',
-  'read:content:tabcoins',
-
-  // MODERATION
-  'read:user:list',
-  'read:votes:others',
-  'update:content:others',
-  'update:user:others',
-  'ban:user',
-  'create:recovery_token:username',
-]);
 
 function can(user, feature, resource) {
   validateUser(user);
@@ -118,6 +77,7 @@ function filterInput(user, feature, input, target) {
       title: input.title,
       body: input.body,
       status: input.status,
+      type: input.type,
       source_url: input.source_url,
     };
   }
@@ -246,6 +206,13 @@ function filterOutput(user, feature, output) {
     });
   }
 
+  if (feature === 'read:firewall' && can(user, feature)) {
+    filteredOutputValues = validator(output, {
+      firewall_event: 'required',
+    });
+    filteredOutputValues.events.forEach((event) => delete event.originator_ip);
+  }
+
   if (feature === 'read:content:tabcoins') {
     filteredOutputValues = validator(output, {
       tabcoins: 'required',
@@ -263,12 +230,20 @@ function filterOutput(user, feature, output) {
   }
 
   if (feature === 'read:recovery_token') {
-    filteredOutputValues = validator(output, {
-      used: 'required',
-      expires_at: 'required',
-      created_at: 'required',
-      updated_at: 'required',
-    });
+    filteredOutputValues = validator(
+      {
+        used: output.used,
+        expires_at: output.expires_at,
+        created_at: output.created_at,
+        updated_at: output.updated_at,
+      },
+      {
+        used: 'required',
+        expires_at: 'required',
+        created_at: 'required',
+        updated_at: 'required',
+      },
+    );
   }
 
   if (feature === 'read:email_confirmation_token') {
@@ -279,6 +254,17 @@ function filterOutput(user, feature, output) {
       created_at: 'required',
       updated_at: 'required',
     });
+  }
+
+  if (feature === 'read:ad:list') {
+    filteredOutputValues = validator(
+      {
+        ad_list: output,
+      },
+      {
+        ad_list: 'required',
+      },
+    ).ad_list;
   }
 
   // Force the clean up of "undefined" values
