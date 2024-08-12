@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
-import { config } from 'dotenv';
+import { config, populate } from 'dotenv';
 
 config({ path: './.env' });
-config({ path: './.env.test' });
+populate(process.env, { NODE_ENV: 'test' });
 
 const PORT = process.env.PORT || 3000;
 const baseURL = `http://localhost:${PORT}`;
