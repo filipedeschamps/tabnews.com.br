@@ -54,11 +54,7 @@ export default function HeaderComponent() {
       <SearchBoxOverlay />
       <Box as="nav" sx={{ display: 'flex', flex: 1, margin: 0, padding: 0 }}>
         <PrimerHeader.Item sx={{ mr: 0 }}>
-          <HeaderLink
-            href="/"
-            aria-label="Página inicial Relevantes"
-            aria-current={asPath === '/' ? 'page' : false}
-            data-test-id="relevants">
+          <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
             <CgTab size={32} />
 
             <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
@@ -70,9 +66,9 @@ export default function HeaderComponent() {
         <PrimerHeader.Item full sx={{ mr: 0 }}>
           <HeaderLink
             href="/recentes/pagina/1"
+            aria-label="Recentes"
             aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
-            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}
-            data-test-id="recents">
+            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
             Recentes
           </HeaderLink>
         </PrimerHeader.Item>

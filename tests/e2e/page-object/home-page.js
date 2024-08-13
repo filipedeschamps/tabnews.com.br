@@ -5,7 +5,7 @@ exports.HomePage = class HomePage {
   constructor(page) {
     this.page = page;
 
-    this.recentTab = this.page.locator('a[data-test-id=recents]');
+    this.recentTab = this.page.getByLabel('Recentes');
 
     this.buttonLogin = this.page.locator('a[data-test-id=login]');
     this.buttonRegister = this.page.locator('a[data-test-id=register]');
