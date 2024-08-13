@@ -192,11 +192,7 @@ function SignUpForm() {
         />
 
         <FormControl>
-          <Checkbox
-            checked={isTermsAccepted}
-            onChange={() => setIsTermsAccepted(!isTermsAccepted)}
-            data-test-id="terms-accepted"
-          />
+          <Checkbox checked={isTermsAccepted} onChange={() => setIsTermsAccepted(!isTermsAccepted)} />
           <FormControl.Label>
             Li e estou de acordo com os
             <Link href="/termos-de-uso"> Termos de Uso.</Link>

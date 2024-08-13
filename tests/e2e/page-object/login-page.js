@@ -37,6 +37,6 @@ exports.LoginPage = class LoginPage {
   }
 
   async getGlobalErrorMessage() {
-    return await this.page.locator('div[data-test-id=global-error-message]').textContent();
+    return await this.page.getByLabel('Mensagem de erro').textContent();
   }
 };

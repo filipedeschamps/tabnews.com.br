@@ -90,12 +90,12 @@ export default function HeaderComponent() {
           {!isScreenSmall && (
             <>
               <PrimerHeader.Item sx={{ ml: 2 }}>
-                <HeaderLink href={loginUrl} data-test-id="login">
+                <HeaderLink href={loginUrl} aria-label="Login">
                   Login
                 </HeaderLink>
               </PrimerHeader.Item>
               <PrimerHeader.Item sx={{ mr: 1 }}>
-                <HeaderLink href="/cadastro" data-test-id="register">
+                <HeaderLink href="/cadastro" aria-label="Cadastrar">
                   Cadastrar
                 </HeaderLink>
               </PrimerHeader.Item>
@@ -115,7 +115,7 @@ export default function HeaderComponent() {
           {!isScreenSmall && (
             <PrimerHeader.Item sx={{ m: 2 }}>
               <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
-                <HeaderLink href="/publicar" data-test-id="publish">
+                <HeaderLink href="/publicar" aria-label="Publicar">
                   <PlusIcon />
                 </HeaderLink>
               </Tooltip>

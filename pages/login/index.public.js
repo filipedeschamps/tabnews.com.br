@@ -89,7 +89,7 @@ function LoginForm() {
       <form style={{ width: '100%' }} onSubmit={handleSubmit}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {globalErrorMessage && (
-            <Flash variant="danger" data-test-id="global-error-message">
+            <Flash variant="danger" aria-label="Mensagem de erro">
               {globalErrorMessage}
             </Flash>
           )}
