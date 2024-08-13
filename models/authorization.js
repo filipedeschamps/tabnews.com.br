@@ -79,6 +79,7 @@ function filterInput(user, feature, input, target) {
       status: input.status,
       type: input.type,
       source_url: input.source_url,
+      future_published_time: input.future_published_time,
     };
   }
 
@@ -90,6 +91,7 @@ function filterInput(user, feature, input, target) {
       body: input.body,
       status: input.status,
       source_url: input.source_url,
+      future_published_time: input.future_published_time,
     };
   }
 

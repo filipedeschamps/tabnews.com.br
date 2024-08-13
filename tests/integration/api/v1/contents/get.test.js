@@ -18,6 +18,24 @@ describe('GET /api/v1/contents', () => {
       await orchestrator.runPendingMigrations();
     });
 
+    test('With future post created should get empty list', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Conteúdo futuro',
+        body: 'Este conteúdo não deverá aparecer na lista retornada pelo /contents, porque ele possui uma data de publicação futura.',
+        type: 'content',
+        status: 'published',
+        future_published_time: '2030-01-01T00:00:00.00Z',
+      });
+
+      const { response, responseBody } = await contentsRequestBuilder.get('?strategy=new');
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual([]);
+    });
+
     test('With CORS and Security Headers enabled', async () => {
       const { response } = await contentsRequestBuilder.get();
 

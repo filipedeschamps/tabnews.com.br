@@ -131,7 +131,8 @@ async function findAll(values = {}, options = {}) {
       INNER JOIN
         users ON contents.owner_id = users.id
       LEFT JOIN LATERAL get_content_balance_credit_debit(contents.id) tabcoins_count ON true
-    `;
+      WHERE contents.published_at <= NOW()
+      `;
   }
 
   function buildWhereClause(columns) {
@@ -299,7 +300,7 @@ async function create(postedContent, options = {}) {
         parent AS (
           SELECT
             owner_id,
-            CASE 
+            CASE
               WHEN id IS NULL THEN ARRAY[]::uuid[]
               ELSE ARRAY_APPEND(path, id)
             END AS child_path
@@ -436,6 +437,7 @@ function validateCreateSchema(content) {
     status: 'required',
     content_type: 'optional',
     source_url: 'optional',
+    future_published_time: 'optional',
   });
 
   if (cleanValues.status === 'deleted' || cleanValues.status === 'firewall') {
@@ -463,6 +465,24 @@ function checkRootContentTitle(content) {
 }
 
 function populatePublishedAtValue(oldContent, newContent) {
+  if (!oldContent && newContent?.future_published_time) {
+    const futurePublishedTime = new Date(newContent.future_published_time);
+    futurePublishedTime.setHours(futurePublishedTime.getHours() + 3);
+    const dateNow = new Date();
+    if (futurePublishedTime.getTime() <= dateNow.getTime()) {
+      throw new ValidationError({
+        message: `A data de publicação futura não pode ser menor que a data atual.`,
+        stack: new Error().stack,
+        errorLocationCode: 'MODEL:CONTENT:POPULATE_PUBLISHED_AT_VALUE:FUTURE_PUBLISHED_TIME',
+        statusCode: 400,
+        key: 'future_published_time',
+      });
+    }
+
+    newContent.published_at = futurePublishedTime;
+    return;
+  }
+
   if (oldContent && oldContent.published_at) {
     newContent.published_at = oldContent.published_at;
     return;
@@ -768,7 +788,7 @@ async function confirmFirewallStatus(contentIds, options) {
           id = ANY ($1)
         RETURNING
           *)
-      
+
       SELECT
         updated_contents.*,
         tabcoins_count.total_balance as tabcoins,
@@ -809,7 +829,7 @@ async function undoFirewallStatus(contentIds, options) {
         RETURNING
           *
       )
-  
+
       SELECT
         updated_contents.*,
         tabcoins_count.total_balance as tabcoins,

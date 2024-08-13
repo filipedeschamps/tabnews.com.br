@@ -56,6 +56,7 @@ async function getHandler(request, response) {
       status: 'published',
       type: 'content',
       $not_null: request.query.with_root === false ? ['parent_id'] : undefined,
+      published_at: new Date(),
     },
     attributes: {
       exclude: request.query.with_children ? undefined : ['body'],
@@ -92,6 +93,7 @@ function postValidationHandler(request, response, next) {
     status: 'optional',
     content_type: 'optional',
     source_url: 'optional',
+    future_published_time: 'optional',
   });
 
   request.body = cleanValues;
@@ -121,7 +123,6 @@ async function postHandler(request, response) {
         errorLocationCode: 'CONTROLLER:CONTENT:POST_HANDLER:CREATE:CONTENT:TEXT_ROOT:FEATURE_NOT_FOUND',
       });
     }
-
     secureInputValues = authorization.filterInput(userTryingToCreate, 'create:content:text_root', insecureInputValues);
   } else {
     if (!authorization.can(userTryingToCreate, 'create:content:text_child')) {

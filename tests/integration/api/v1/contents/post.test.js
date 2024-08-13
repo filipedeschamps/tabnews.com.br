@@ -106,6 +106,36 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Should be able to create a content to future data of publish', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: 'Teste',
+        type: 'content',
+        status: 'published',
+        future_published_time: '2024-10-08T16:15:00Z',
+      });
+
+      expect(response.status).toBe(201);
+    });
+
+    test('Should not be able to create a content to future data of publish with a old data', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response } = await contentsRequestBuilder.post({
+        title: 'Título normal',
+        body: 'Teste',
+        type: 'content',
+        status: 'published',
+        future_published_time: '2022-10-08T16:15:00Z',
+      });
+
+      expect(response.status).toBe(400);
+    });
+
     test('Content with POST Body containing an invalid JSON string', async () => {
       const contentsRequestBuilder = new RequestBuilder();
       await contentsRequestBuilder.buildUser();

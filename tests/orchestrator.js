@@ -218,6 +218,7 @@ async function createContent(contentObject) {
       status: contentObject?.status || 'draft',
       type: contentObject?.type || 'content',
       source_url: contentObject?.source_url || undefined,
+      future_published_time: contentObject?.future_published_time || undefined,
     },
     {
       eventId: currentEvent.id,

@@ -347,6 +347,16 @@ const schemas = {
     });
   },
 
+  future_published_time: function () {
+    return Joi.object({
+      future_published_time: Joi.date().when('$required.future_published_time', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(null),
+      }),
+    });
+  },
+
   used: function () {
     return Joi.object({
       used: Joi.boolean().when('$required.used', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
@@ -537,6 +547,7 @@ const schemas = {
       'tabcoins_credit',
       'tabcoins_debit',
       'tabcash',
+      'future_published_time',
     ]) {
       const keyValidationFunction = schemas[key];
       contentSchema = contentSchema.concat(keyValidationFunction());
