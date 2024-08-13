@@ -34,8 +34,11 @@ import validator from 'models/validator.js';
 import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function Page({ userFound: userFoundFallback }) {
-  const { data: userFound, mutate: userFoundMutate } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
-    fallbackData: userFoundFallback,
+  const {
+    data: { body: userFound },
+    mutate: userFoundMutate,
+  } = useSWR(`/api/v1/users/${userFoundFallback.username}`, {
+    fallbackData: { body: userFoundFallback },
     revalidateOnMount: false,
   });
 
@@ -85,7 +88,7 @@ export default function Page({ userFound: userFoundFallback }) {
     const responseBody = await response.json();
 
     if (response.status === 200) {
-      userFoundMutate(responseBody, { revalidate: false });
+      userFoundMutate({ body: responseBody }, { revalidate: false });
       return;
     }
 
@@ -103,7 +106,7 @@ export default function Page({ userFound: userFoundFallback }) {
 
   function handleEditSuccess(newUser) {
     setIsEditingDescription(false);
-    userFoundMutate(newUser, { revalidate: false });
+    userFoundMutate({ body: newUser }, { revalidate: false });
   }
 
   function OptionsMenu() {

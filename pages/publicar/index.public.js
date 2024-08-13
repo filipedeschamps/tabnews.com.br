@@ -8,7 +8,9 @@ import { useUser } from 'pages/interface';
 export default function Post() {
   const router = useRouter();
   const { user, isLoading } = useUser();
-  const { data: contents } = useSWR(user ? `/api/v1/contents/${user.username}?strategy=new&per_page=1` : null, {
+  const {
+    data: { body: contents },
+  } = useSWR(user ? `/api/v1/contents/${user.username}?strategy=new&per_page=1` : null, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
