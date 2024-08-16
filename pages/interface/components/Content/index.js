@@ -440,7 +440,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     (event) => {
       setErrorObject(undefined);
       setNewData((oldData) => {
-        const value = event.target?.name === 'isSponsoredContent' ? event.target.checked : event.target?.value ?? event;
+        const value =
+          event.target?.name === 'isSponsoredContent' ? event.target.checked : (event.target?.value ?? event);
         const newData = { ...oldData, [event.target?.name || 'body']: value };
         localStorage.setItem(localStorageKey, JSON.stringify(newData));
         return newData;
