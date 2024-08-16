@@ -9,7 +9,7 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
-  async redirects() {
+  redirects() {
     return [
       {
         source: '/rss',
@@ -48,7 +48,7 @@ module.exports = {
       },
     ];
   },
-  async rewrites() {
+  rewrites() {
     return [
       {
         source: '/recentes/rss',
@@ -56,7 +56,7 @@ module.exports = {
       },
     ];
   },
-  async headers() {
+  headers() {
     // Security Headers based on: https://nextjs.org/docs/advanced-features/security-headers
     // TODO: implement "Content-Security-Policy" section
     const securityHeaders = [

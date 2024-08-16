@@ -79,7 +79,7 @@ async function checkDatabaseDependency() {
   return result;
 }
 
-async function checkWebserverDependency() {
+function checkWebserverDependency() {
   return {
     status: 'healthy',
     provider: process.env.VERCEL ? 'vercel' : 'local',

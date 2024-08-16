@@ -16,7 +16,7 @@ import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
 import session from 'models/session.js';
 
-async function injectRequestMetadata(request, response, next) {
+function injectRequestMetadata(request, response, next) {
   request.context = {
     ...request.context,
     requestId: uuidV4(),
@@ -28,7 +28,7 @@ async function injectRequestMetadata(request, response, next) {
   }
 }
 
-async function onNoMatchHandler(request, response) {
+function onNoMatchHandler(request, response) {
   if (request.method === 'OPTIONS') {
     return response.status(200).end();
   }

@@ -29,7 +29,6 @@
         "plugin:vitest-globals/recommended"
       ],
       "rules": {
-        "require-await": "error",
         "vitest/no-conditional-in-test": "error",
         "vitest/no-disabled-tests": "warn",
         "vitest/no-focused-tests": "error",
@@ -43,6 +42,7 @@
     }
   ],
   "rules": {
+    "require-await": "warn",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
     "import/no-useless-path-segments": [

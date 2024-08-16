@@ -65,7 +65,7 @@ async function createUserRuleSideEffect(context) {
   await sendUserNotification(results.rows, createdEvent);
 }
 
-async function sendUserNotification(userRows, event) {
+function sendUserNotification(userRows, event) {
   const notifications = [];
 
   for (const user of userRows) {
@@ -179,7 +179,7 @@ async function undoContentsTabcoins(contentRows, createdEvent) {
   }
 }
 
-async function sendContentTextNotification(contentRows, event) {
+function sendContentTextNotification(contentRows, event) {
   const usersToNotify = {};
 
   for (const content of contentRows) {

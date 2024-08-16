@@ -33,7 +33,7 @@ export default function ChildContent({ contentListFound, pagination, username })
   );
 }
 
-export async function getStaticPaths() {
+export function getStaticPaths() {
   return {
     paths: [],
     fallback: 'blocking',
