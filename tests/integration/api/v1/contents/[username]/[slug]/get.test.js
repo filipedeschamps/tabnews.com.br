@@ -15,8 +15,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/ThisUserDoesNotExists/slug`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
@@ -34,8 +34,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
@@ -60,8 +60,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
@@ -87,7 +87,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUserContent.id,
@@ -132,7 +132,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -195,7 +195,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
@@ -245,8 +245,8 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
@@ -278,7 +278,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -349,7 +349,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -436,7 +436,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUserContent.id,

@@ -11,12 +11,12 @@ describe('GET /recentes/rss', () => {
   describe('Anonymous user', () => {
     test('With `/rss` alias`', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/rss`);
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
     });
 
     test('With `/rss.xml` alias`', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/rss.xml`);
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
     });
 
     test('With 0 contents', async () => {
@@ -25,7 +25,7 @@ describe('GET /recentes/rss', () => {
 
       const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0">
@@ -68,7 +68,7 @@ describe('GET /recentes/rss', () => {
 
       const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0">
@@ -121,7 +121,7 @@ describe('GET /recentes/rss', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/rss`);
       const responseBody = await response.text();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
     <channel>

@@ -16,8 +16,8 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/ThisUserDoesNotExists`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
@@ -40,7 +40,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual([]);
     });
 
@@ -66,7 +66,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual([]);
     });
 
@@ -106,7 +106,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual([
         {
           id: childContent.id,
@@ -166,7 +166,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual([
         {
           id: childContent.id,
@@ -234,7 +234,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -348,7 +348,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -444,7 +444,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents/${firstUser.username}?strategy=new`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -560,7 +560,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseTotalRowsHeader).toBe('60');
       expect(responseLinkHeader).toStrictEqual({
         first: {
@@ -601,7 +601,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2Response.status).toBe(200);
+      expect.soft(page2Response.status).toBe(200);
       expect(page2ResponseTotalRowsHeader).toBe('60');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
@@ -702,7 +702,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseTotalRowsHeader).toBe('60');
       expect(responseLinkHeader).toStrictEqual({
         first: {
@@ -745,7 +745,7 @@ describe('GET /api/v1/contents/[username]', () => {
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2Response.status).toBe(200);
+      expect.soft(page2Response.status).toBe(200);
       expect(page2ResponseTotalRowsHeader).toBe('60');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
@@ -824,7 +824,7 @@ describe('GET /api/v1/contents/[username]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -938,7 +938,7 @@ describe('GET /api/v1/contents/[username]', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {

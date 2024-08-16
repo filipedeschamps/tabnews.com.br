@@ -34,7 +34,7 @@ describe('PATCH /api/v1/recovery', () => {
       const updatedTokenInDatabase = await recovery.findOneTokenById(recoveryToken.id);
       const updatedUserInDatabase = await user.findOneById(defaultUser.id);
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         used: true,
@@ -73,11 +73,11 @@ describe('PATCH /api/v1/recovery', () => {
         },
       });
 
-      expect(validSession1Response.status).toBe(200);
+      expect.soft(validSession1Response.status).toBe(200);
       const validSession1ResponseBody = await validSession1Response.json();
       expect(validSession1ResponseBody.id).toBe(defaultUser.id);
 
-      expect(validSession2Response.status).toBe(200);
+      expect.soft(validSession2Response.status).toBe(200);
       const validSession2ResponseBody = await validSession2Response.json();
       expect(validSession2ResponseBody.id).toBe(defaultUser.id);
 
@@ -96,7 +96,7 @@ describe('PATCH /api/v1/recovery', () => {
         }),
       });
 
-      expect(recoveryResponse.status).toBe(200);
+      expect.soft(recoveryResponse.status).toBe(200);
 
       // Third: test if both sessions are invalid
       const invalidSession1Response = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
@@ -113,8 +113,8 @@ describe('PATCH /api/v1/recovery', () => {
         },
       });
 
-      expect(invalidSession1Response.status).toBe(401);
-      expect(invalidSession2Response.status).toBe(401);
+      expect.soft(invalidSession1Response.status).toBe(401);
+      expect.soft(invalidSession2Response.status).toBe(401);
     });
 
     test('With valid information, but used token', async () => {
@@ -138,7 +138,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -176,7 +176,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -208,7 +208,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -239,7 +239,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -271,7 +271,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -300,7 +300,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -332,7 +332,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -359,7 +359,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -389,7 +389,7 @@ describe('PATCH /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',

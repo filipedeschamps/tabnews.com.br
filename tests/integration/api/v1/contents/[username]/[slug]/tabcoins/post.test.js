@@ -29,7 +29,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         transaction_type: 'credit',
       });
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -60,7 +60,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const { response, responseBody } = await tabcoinsRequestBuilder.post({});
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -93,7 +93,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         transaction_type: 'credit',
       });
 
-      expect(response.status).toBe(422);
+      expect.soft(response.status).toBe(422);
 
       expect(responseBody).toStrictEqual({
         name: 'UnprocessableEntityError',
@@ -131,7 +131,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           transaction_type: 'credit',
         });
 
-      expect(postTabCoinsResponse.status).toBe(201);
+      expect.soft(postTabCoinsResponse.status).toBe(201);
 
       expect(postTabCoinsResponseBody).toStrictEqual({
         tabcoins: 2,
@@ -176,7 +176,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           transaction_type: 'debit',
         });
 
-      expect(postTabCoinsResponse.status).toBe(201);
+      expect.soft(postTabCoinsResponse.status).toBe(201);
 
       expect(postTabCoinsResponseBody).toStrictEqual({
         tabcoins: 0,
@@ -221,21 +221,21 @@ describe('POST /api/v1/contents/tabcoins', () => {
         transaction_type: 'credit',
       });
 
-      expect(postTabCoinsResponse1.status).toBe(201);
+      expect.soft(postTabCoinsResponse1.status).toBe(201);
 
       // ROUND 2 OF CREDIT
       const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
         transaction_type: 'credit',
       });
 
-      expect(postTabCoinsResponse2.status).toBe(201);
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
 
       // ROUND 3 OF CREDIT
       const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
         transaction_type: 'credit',
       });
 
-      expect(postTabCoinsResponse3.status).toBe(201);
+      expect.soft(postTabCoinsResponse3.status).toBe(201);
 
       // ROUND 4 OF CREDIT
       const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
@@ -243,7 +243,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           transaction_type: 'credit',
         });
 
-      expect(postTabCoinsResponse4.status).toBe(400);
+      expect.soft(postTabCoinsResponse4.status).toBe(400);
       expect(postTabCoinsResponse4Body).toStrictEqual({
         name: 'ValidationError',
         message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
@@ -290,21 +290,21 @@ describe('POST /api/v1/contents/tabcoins', () => {
         transaction_type: 'debit',
       });
 
-      expect(postTabCoinsResponse1.status).toBe(201);
+      expect.soft(postTabCoinsResponse1.status).toBe(201);
 
       // ROUND 2 OF DEBIT
       const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
         transaction_type: 'debit',
       });
 
-      expect(postTabCoinsResponse2.status).toBe(201);
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
 
       // ROUND 3 OF DEBIT
       const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
         transaction_type: 'debit',
       });
 
-      expect(postTabCoinsResponse3.status).toBe(201);
+      expect.soft(postTabCoinsResponse3.status).toBe(201);
 
       // ROUND 4 OF DEBIT
       const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
@@ -312,7 +312,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           transaction_type: 'debit',
         });
 
-      expect(postTabCoinsResponse4.status).toBe(400);
+      expect.soft(postTabCoinsResponse4.status).toBe(400);
       expect(postTabCoinsResponse4Body).toStrictEqual({
         name: 'ValidationError',
         message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
@@ -360,7 +360,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           transaction_type: 'debit',
         });
 
-      expect(postTabCoinsResponse1.status).toBe(201);
+      expect.soft(postTabCoinsResponse1.status).toBe(201);
 
       expect(postTabCoinsResponse1Body).toStrictEqual({
         tabcoins: 0,
@@ -385,7 +385,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
           transaction_type: 'debit',
         });
 
-      expect(postTabCoinsResponse2.status).toBe(201);
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
 
       expect(postTabCoinsResponse2Body).toStrictEqual({
         tabcoins: -1,
@@ -451,7 +451,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       postTabCoinsResponsesStatus.splice(successPostIndex1, 1);
       postTabCoinsResponsesBody.splice(successPostIndex1, 1);
 
-      postTabCoinsResponsesStatus.forEach((status) => expect(status).toBe(422));
+      postTabCoinsResponsesStatus.forEach((status) => expect.soft(status).toBe(422));
 
       expect(postTabCoinsResponsesBody).toContainEqual({
         name: 'UnprocessableEntityError',
@@ -534,7 +534,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
         postTabCoinsResponsesBody.splice(idx, 1);
       });
 
-      postTabCoinsResponsesStatus.forEach((status) => expect(status).toBe(422));
+      postTabCoinsResponsesStatus.forEach((status) => expect.soft(status).toBe(422));
 
       postTabCoinsResponsesBody.forEach((responseBody) =>
         expect(responseBody).toStrictEqual({

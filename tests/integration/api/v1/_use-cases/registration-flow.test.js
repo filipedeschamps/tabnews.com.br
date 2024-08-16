@@ -34,7 +34,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     postUserResponseBody = await postUserResponse.json();
 
-    expect(postUserResponse.status).toBe(201);
+    expect.soft(postUserResponse.status).toBe(201);
     expect(uuidVersion(postUserResponseBody.id)).toBe(4);
     expect(postUserResponseBody.username).toBe('RegularRegistrationFlow');
     expect(postUserResponseBody.features).toStrictEqual(['read:activation_token']);
@@ -80,7 +80,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
     });
     const activationApiResponseBody = await activationApiResponse.json();
 
-    expect(activationApiResponse.status).toBe(200);
+    expect.soft(activationApiResponse.status).toBe(200);
     expect(uuidVersion(activationApiResponseBody.id)).toBe(4);
     expect(activationApiResponseBody.id).toBe(tokenObjectInDatabase.id);
     expect(activationApiResponseBody.used).toBe(true);
@@ -116,7 +116,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     postSessionResponseBody = await postSessionResponse.json();
 
-    expect(postSessionResponse.status).toBe(201);
+    expect.soft(postSessionResponse.status).toBe(201);
     expect(postSessionResponseBody.token.length).toBe(96);
     expect(uuidVersion(postSessionResponseBody.id)).toBe(4);
     expect(Date.parse(postSessionResponseBody.expires_at)).not.toBeNaN();
@@ -144,7 +144,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
 
     const getUserResponseBody = await getUserResponse.json();
 
-    expect(getUserResponse.status).toBe(200);
+    expect.soft(getUserResponse.status).toBe(200);
     expect(getUserResponseBody).toStrictEqual({
       id: postUserResponseBody.id,
       username: postUserResponseBody.username,

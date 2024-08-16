@@ -17,8 +17,8 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:session".');
@@ -40,8 +40,8 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"session_id" deve possuir 96 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -64,8 +64,8 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"session_id" deve possuir 96 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -88,8 +88,8 @@ describe('GET /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"session_id" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -110,7 +110,7 @@ describe('GET /api/v1/user', () => {
 
       const { response, responseBody } = await userRequestBuilder.get();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -137,8 +137,8 @@ describe('GET /api/v1/user', () => {
 
       const { response, responseBody } = await userRequestBuilder.get();
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para executar esta ação.');
       expect(responseBody.action).toBe(
@@ -166,8 +166,8 @@ describe('GET /api/v1/user', () => {
 
       const { response, responseBody } = await userRequestBuilder.get();
 
-      expect(response.status).toBe(401);
-      expect(responseBody.status_code).toBe(401);
+      expect.soft(response.status).toBe(401);
+      expect.soft(responseBody.status_code).toBe(401);
       expect(responseBody.name).toBe('UnauthorizedError');
       expect(responseBody.message).toBe('Usuário não possui sessão ativa.');
       expect(responseBody.action).toBe('Verifique se este usuário está logado.');
@@ -201,7 +201,7 @@ describe('GET /api/v1/user', () => {
 
         const { response, responseBody } = await userRequestBuilder.get();
 
-        expect(response.status).toBe(200);
+        expect.soft(response.status).toBe(200);
         expect(responseBody).toStrictEqual({
           id: defaultUser.id,
           username: defaultUser.username,
@@ -246,7 +246,7 @@ describe('GET /api/v1/user', () => {
 
         const { response, responseBody } = await userRequestBuilder.get();
 
-        expect(response.status).toBe(200);
+        expect.soft(response.status).toBe(200);
         expect(responseBody).toStrictEqual({
           id: defaultUser.id,
           username: defaultUser.username,
@@ -290,7 +290,7 @@ describe('GET /api/v1/user', () => {
 
         const { response, responseBody } = await userRequestBuilder.get();
 
-        expect(response.status).toBe(200);
+        expect.soft(response.status).toBe(200);
         expect(responseBody).toStrictEqual({
           id: defaultUser.id,
           username: defaultUser.username,
@@ -322,7 +322,7 @@ describe('GET /api/v1/user', () => {
 
         const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
-        expect(preRewardUserResponse.status).toBe(200);
+        expect.soft(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
         expect(preRewardUser.tabcash).toBe(0);
         expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -334,14 +334,14 @@ describe('GET /api/v1/user', () => {
 
         const { response: rewardUserResponse, responseBody: rewardUser } = await userRequestBuilder.get();
 
-        expect(rewardUserResponse.status).toBe(200);
+        expect.soft(rewardUserResponse.status).toBe(200);
         expect(rewardUser.tabcoins).toBe(defaultTestRewardValue);
         expect(rewardUser.tabcash).toBe(0);
         expect(rewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
 
         const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
-        expect(postRewardUserResponse.status).toBe(200);
+        expect.soft(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -354,7 +354,7 @@ describe('GET /api/v1/user', () => {
 
         const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
-        expect(preRewardUserResponse.status).toBe(200);
+        expect.soft(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
         expect(preRewardUser.tabcash).toBe(0);
         expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -367,7 +367,7 @@ describe('GET /api/v1/user', () => {
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         const tabcoins = simultaneousResults.map((result) => {
-          expect(result.response.status).toBe(200);
+          expect.soft(result.response.status).toBe(200);
           return result.responseBody.tabcoins;
         });
 
@@ -375,7 +375,7 @@ describe('GET /api/v1/user', () => {
 
         const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
-        expect(postRewardUserResponse.status).toBe(200);
+        expect.soft(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -387,7 +387,7 @@ describe('GET /api/v1/user', () => {
 
         const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
-        expect(preRewardUserResponse.status).toBe(200);
+        expect.soft(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
         expect(preRewardUser.tabcash).toBe(0);
         expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -400,13 +400,13 @@ describe('GET /api/v1/user', () => {
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         simultaneousResults.forEach((result) => {
-          expect(result.response.status).toBe(200);
+          expect.soft(result.response.status).toBe(200);
           expect(result.responseBody.tabcoins).toBe(0);
         });
 
         const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
-        expect(postRewardUserResponse.status).toBe(200);
+        expect.soft(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(0);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -419,7 +419,7 @@ describe('GET /api/v1/user', () => {
 
         const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
-        expect(preRewardUserResponse.status).toBe(200);
+        expect.soft(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(0);
         expect(preRewardUser.tabcash).toBe(0);
         expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -432,13 +432,13 @@ describe('GET /api/v1/user', () => {
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         simultaneousResults.forEach((result) => {
-          expect(result.response.status).toBe(200);
+          expect.soft(result.response.status).toBe(200);
           expect(result.responseBody.tabcoins).toBe(0);
         });
 
         const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
-        expect(postRewardUserResponse.status).toBe(200);
+        expect.soft(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(0);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -457,7 +457,7 @@ describe('GET /api/v1/user', () => {
 
         const { response: preRewardUserResponse, responseBody: preRewardUser } = await userRequestBuilder.get();
 
-        expect(preRewardUserResponse.status).toBe(200);
+        expect.soft(preRewardUserResponse.status).toBe(200);
         expect(preRewardUser.tabcoins).toBe(1000);
         expect(preRewardUser.tabcash).toBe(0);
         expect(preRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -470,13 +470,13 @@ describe('GET /api/v1/user', () => {
         const simultaneousResults = await Promise.all([userRequestBuilder.get(), userRequestBuilder.get()]);
 
         simultaneousResults.forEach((result) => {
-          expect(result.response.status).toBe(200);
+          expect.soft(result.response.status).toBe(200);
           expect(result.responseBody.tabcoins).toBe(1000);
         });
 
         const { response: postRewardUserResponse, responseBody: postRewardUser } = await userRequestBuilder.get();
 
-        expect(postRewardUserResponse.status).toBe(200);
+        expect.soft(postRewardUserResponse.status).toBe(200);
         expect(postRewardUser.tabcoins).toBe(1000);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
@@ -512,7 +512,7 @@ describe('GET /api/v1/user', () => {
 
         const preRewardUser = await userRequestBuilder.get();
 
-        expect(preRewardUser.response.status).toBe(200);
+        expect.soft(preRewardUser.response.status).toBe(200);
         expect(preRewardUser.responseBody.tabcoins).toBe(-999);
         expect(preRewardUser.responseBody.tabcash).toBe(0);
 
@@ -523,7 +523,7 @@ describe('GET /api/v1/user', () => {
 
         const rewardedUser = await userRequestBuilder.get();
 
-        expect(rewardedUser.response.status).toBe(200);
+        expect.soft(rewardedUser.response.status).toBe(200);
         expect(rewardedUser.responseBody.tabcoins).toBe(defaultTestRewardValue - 999);
         expect(rewardedUser.responseBody.tabcash).toBe(0);
       });
@@ -558,7 +558,7 @@ describe('GET /api/v1/user', () => {
 
         const preRewardUser = await userRequestBuilder.get();
 
-        expect(preRewardUser.response.status).toBe(200);
+        expect.soft(preRewardUser.response.status).toBe(200);
         expect(preRewardUser.responseBody.tabcoins).toBe(999);
         expect(preRewardUser.responseBody.tabcash).toBe(0);
 
@@ -569,7 +569,7 @@ describe('GET /api/v1/user', () => {
 
         const notRewardedUser = await userRequestBuilder.get();
 
-        expect(notRewardedUser.response.status).toBe(200);
+        expect.soft(notRewardedUser.response.status).toBe(200);
         expect(notRewardedUser.responseBody.tabcoins).toBe(999);
         expect(notRewardedUser.responseBody.tabcash).toBe(0);
       });

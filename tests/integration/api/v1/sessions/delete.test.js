@@ -17,7 +17,7 @@ describe('DELETE /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -43,7 +43,7 @@ describe('DELETE /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -76,7 +76,7 @@ describe('DELETE /api/v1/sessions', () => {
         },
       });
 
-      expect(validSessionResponse.status).toBe(200);
+      expect.soft(validSessionResponse.status).toBe(200);
       const validSessionResponseBody = await validSessionResponse.json();
       expect(validSessionResponseBody.id).toBe(defaultUser.id);
 
@@ -90,7 +90,7 @@ describe('DELETE /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: sessionObject.id,
@@ -132,7 +132,7 @@ describe('DELETE /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',

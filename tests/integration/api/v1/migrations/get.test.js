@@ -15,11 +15,11 @@ describe('GET /api/v1/migrations', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:migration".');
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
@@ -42,11 +42,11 @@ describe('GET /api/v1/migrations', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:migration".');
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
@@ -75,7 +75,7 @@ describe('GET /api/v1/migrations', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Array.isArray(responseBody)).toBe(true);
     });
 
@@ -97,7 +97,7 @@ describe('GET /api/v1/migrations', () => {
         expect(responseBody.name).toBe('ForbiddenError');
         expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
         expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:migration".');
-        expect(responseBody.status_code).toBe(403);
+        expect.soft(responseBody.status_code).toBe(403);
         expect(uuidVersion(responseBody.error_id)).toBe(4);
         expect(uuidVersion(responseBody.request_id)).toBe(4);
         expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');

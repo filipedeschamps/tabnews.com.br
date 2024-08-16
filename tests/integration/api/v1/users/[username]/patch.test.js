@@ -30,11 +30,11 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:user".');
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('MODEL:AUTHORIZATION:CAN_REQUEST:FEATURE_NOT_FOUND');
@@ -62,11 +62,11 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para atualizar outro usuário.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "update:user:others".');
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('CONTROLLER:USERS:USERNAME:PATCH:USER_CANT_UPDATE_OTHER_USER');
@@ -97,8 +97,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(401);
-      expect(responseBody.status_code).toBe(401);
+      expect.soft(response.status).toBe(401);
+      expect.soft(responseBody.status_code).toBe(401);
       expect(responseBody.name).toBe('UnauthorizedError');
       expect(responseBody.message).toBe('Usuário não possui sessão ativa.');
       expect(responseBody.action).toBe('Verifique se este usuário está logado.');
@@ -135,7 +135,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
@@ -180,7 +180,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
@@ -223,7 +223,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
@@ -264,8 +264,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -297,8 +297,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -327,8 +327,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -357,8 +357,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -387,8 +387,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -417,8 +417,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -447,8 +447,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve conter no mínimo 3 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -477,8 +477,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve conter no máximo 30 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -507,8 +507,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Este nome de usuário não está disponível para uso.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -532,8 +532,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -558,8 +558,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -586,8 +586,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -799,7 +799,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         email: defaultUser.email,
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -836,7 +836,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         }),
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       const userInDatabase = await user.findOneById(defaultUser.id);
       expect(userInDatabase.notifications).toBe(false);
@@ -860,7 +860,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -901,8 +901,8 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"description" deve conter no máximo 5000 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -930,8 +930,8 @@ describe('PATCH /api/v1/users/[username]', () => {
       });
 
       const responseBody = await response.json();
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"description" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -960,7 +960,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         description: 'new description',
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -1037,7 +1037,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           }),
         });
 
-        expect(response.status).toBe(400);
+        expect.soft(response.status).toBe(400);
 
         const defaultUserInDatabase = await user.findOneById(defaultUser.id);
         const passwordsMatch = await password.compare('thisPasswordWillNotChange', defaultUserInDatabase.password);
@@ -1075,8 +1075,8 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1115,7 +1115,7 @@ describe('PATCH /api/v1/users/[username]', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: secondUser.id,
         username: secondUser.username,

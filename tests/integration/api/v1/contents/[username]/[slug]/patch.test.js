@@ -20,8 +20,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Não deveria conseguir.',
       });
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
@@ -41,8 +41,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Não deveria conseguir, pois não possui a feature "update:content".',
       });
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
@@ -76,8 +76,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "update:content".');
@@ -106,8 +106,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para editar conteúdos na raiz do site.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_root".');
@@ -142,7 +142,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -189,7 +189,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'http://www.tabnews.com.br/' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -242,8 +242,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para editar conteúdos dentro de outros conteúdos.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_child".');
@@ -263,8 +263,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(`/${defaultUser.username}/slug`);
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -283,8 +283,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         'Texto corrido no lugar de um JSON',
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -299,8 +299,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(`/${defaultUser.username}/slug`, {});
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -315,8 +315,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.patch(`/invalid-username/slug`, {});
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -334,8 +334,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         {},
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" está no formato errado.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -353,8 +353,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         body: 'Não deveria conseguir',
       });
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O "username" informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "username" está digitado corretamente.');
@@ -381,8 +381,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O conteúdo informado não foi encontrado no sistema.');
       expect(responseBody.action).toBe('Verifique se o "slug" está digitado corretamente.');
@@ -410,8 +410,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para atualizar o conteúdo de outro usuário.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "update:content:others".');
@@ -443,7 +443,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: firstUserContent.id,
@@ -487,7 +487,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'Body novo' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -533,7 +533,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'New body' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -576,8 +576,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: '' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -604,8 +604,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Markdown deve conter algum texto.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -634,7 +634,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -679,8 +679,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -704,8 +704,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'A'.repeat(20001) },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve conter no máximo 20000 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -729,8 +729,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: ' Espaço no início e no fim ' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -754,7 +754,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: 'Espaço só no fim ' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -797,8 +797,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { body: null },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -823,7 +823,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'slug-novo' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -877,7 +877,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'primeiro-conteudo' },
       );
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -919,7 +919,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'primeiro-conteudo' },
       );
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -964,7 +964,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'primeiro-conteudo' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1006,8 +1006,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: '' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1036,7 +1036,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1082,8 +1082,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: 'slug-não-pode-ter-caracteres-especiais' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" está no formato errado.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1107,8 +1107,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { slug: null },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1134,7 +1134,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1177,7 +1177,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: 'Título novo' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1220,8 +1220,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: '' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"title" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1249,7 +1249,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: 'Título novo' },
       );
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -1282,8 +1282,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1307,8 +1307,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: null },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"title" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1339,7 +1339,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: null },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: childContent.id,
@@ -1382,7 +1382,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: ' Título válido, mas com espaços em branco no início e no fim ' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1425,7 +1425,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: `Tab & News | Conteúdos com \n valor <strong>concreto</strong> e "massa"> participe! '\\o/'` },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1468,7 +1468,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'draft' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1512,7 +1512,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'published' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1557,7 +1557,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'draft' },
       );
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1589,7 +1589,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'deleted' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1639,7 +1639,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
       const { response: republishedResponse, responseBody: republishedResponseBody } =
         await contentsRequestBuilder.patch(`/${defaultUser.username}/${originalContent.slug}`, { status: 'published' });
 
-      expect(republishedResponse.status).toBe(404);
+      expect.soft(republishedResponse.status).toBe(404);
       expect(republishedResponseBody).toStrictEqual({
         name: 'NotFoundError',
         message: 'O conteúdo informado não foi encontrado no sistema.',
@@ -1669,8 +1669,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'non_existent_status' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
@@ -1696,7 +1696,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: 'firewall' },
       );
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         status_code: 400,
         name: 'ValidationError',
@@ -1727,8 +1727,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: null },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
@@ -1754,8 +1754,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { status: '' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
@@ -1781,7 +1781,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'http://www.tabnews.com.br/' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1824,7 +1824,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://www.tabnews.com.br/museu' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1867,7 +1867,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://nic.xn--vermgensberatung-pwb/' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1910,7 +1910,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://t.me' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1953,8 +1953,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'http://invalidtl.d' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -1980,8 +1980,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://tl.dcomvinteecincocaracteres' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -2007,8 +2007,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'ftp://www.tabnews.com.br' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -2034,8 +2034,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'www.tabnews.com.br' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -2061,8 +2061,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://lol.' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -2088,7 +2088,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2132,7 +2132,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: 'https://www.tabnews.com.br/#:~:text=TabNews,-Status' },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2176,8 +2176,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: '' },
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"source_url" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -2202,7 +2202,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { source_url: null },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2251,10 +2251,10 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { parent_id: rootContent.id },
       );
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Objeto enviado deve ter no mínimo uma chave.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -2294,7 +2294,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -2339,8 +2339,8 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         { title: 'Tentando atualizar o conteúdo.' },
       );
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para atualizar o conteúdo de outro usuário.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "update:content:others".');
@@ -3190,7 +3190,7 @@ describe('PATCH /api/v1/contents/[username]/[slug]', () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual({
         id: secondUserContent.id,

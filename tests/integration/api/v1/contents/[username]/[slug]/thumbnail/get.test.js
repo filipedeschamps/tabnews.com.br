@@ -25,7 +25,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -58,7 +58,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       );
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -114,7 +114,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
@@ -157,7 +157,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
@@ -214,7 +214,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
@@ -263,7 +263,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
@@ -313,7 +313,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
@@ -369,7 +369,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
 
@@ -425,7 +425,7 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
         ),
       );
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
   });

@@ -20,7 +20,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -49,7 +49,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -78,7 +78,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -107,7 +107,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -136,7 +136,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -171,7 +171,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      expect(updateUserResponse.status).toBe(200);
+      expect.soft(updateUserResponse.status).toBe(200);
 
       // Attention: it should not update the email in the database
       // before the user clicks on the confirmation link sent to the new email.
@@ -211,7 +211,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const emailConfirmationResponseBody = await emailConfirmationResponse.json();
 
-      expect(emailConfirmationResponse.status).toBe(200);
+      expect.soft(emailConfirmationResponse.status).toBe(200);
 
       expect(emailConfirmationResponseBody).toStrictEqual({
         id: emailConfirmationResponseBody.id,
@@ -247,7 +247,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         }),
       });
 
-      expect(firstTryResponse.status).toBe(200);
+      expect.soft(firstTryResponse.status).toBe(200);
 
       const userInDatabase = await user.findOneById(defaultUser.id);
       expect(userInDatabase.email).toBe('not.idempotent@patch.com');
@@ -265,7 +265,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const secondTryResponseBody = await secondTryResponse.json();
 
-      expect(secondTryResponse.status).toBe(404);
+      expect.soft(secondTryResponse.status).toBe(404);
 
       expect(secondTryResponseBody).toStrictEqual({
         name: 'NotFoundError',
@@ -353,7 +353,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -397,7 +397,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',

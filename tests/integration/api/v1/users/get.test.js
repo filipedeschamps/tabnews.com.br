@@ -31,7 +31,7 @@ describe('GET /api/v1/users', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -60,7 +60,7 @@ describe('GET /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -87,7 +87,7 @@ describe('GET /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: '"per_page" deve possuir um valor máximo de 100.',
@@ -108,7 +108,7 @@ describe('GET /api/v1/users', () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=first`);
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -139,7 +139,7 @@ describe('GET /api/v1/users', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseTotalRowsHeader).toBe('2');
       expect(responseLinkHeader).toStrictEqual({
         first: {
@@ -220,7 +220,7 @@ describe('GET /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -267,7 +267,7 @@ describe('GET /api/v1/users', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseTotalRowsHeader).toBe('2');
       expect(responseLinkHeader).toStrictEqual({
         first: {
@@ -373,7 +373,7 @@ describe('GET /api/v1/users', () => {
         const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
         const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-        expect(response.status).toBe(200);
+        expect.soft(response.status).toBe(200);
         expect(responseTotalRowsHeader).toBe('60');
         expect(responseLinkHeader).toStrictEqual({
           first: {
@@ -410,7 +410,7 @@ describe('GET /api/v1/users', () => {
         const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
         const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-        expect(page2Response.status).toBe(200);
+        expect.soft(page2Response.status).toBe(200);
         expect(page2ResponseTotalRowsHeader).toBe('60');
         expect(page2ResponseLinkHeader).toStrictEqual({
           first: {
@@ -463,7 +463,7 @@ describe('GET /api/v1/users', () => {
 
         const responseBody = await response.json();
 
-        expect(response.status).toBe(200);
+        expect.soft(response.status).toBe(200);
         expect(responseBody).toStrictEqual(getExpected());
       });
     });

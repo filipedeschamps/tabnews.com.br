@@ -26,7 +26,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
 
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
@@ -56,7 +56,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -92,7 +92,7 @@ describe('POST /api/v1/recovery', () => {
 
       const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         used: false,
@@ -162,7 +162,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -194,7 +194,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -219,7 +219,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -249,7 +249,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -292,7 +292,7 @@ describe('POST /api/v1/recovery', () => {
 
       const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         used: false,
@@ -334,7 +334,7 @@ describe('POST /api/v1/recovery', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',

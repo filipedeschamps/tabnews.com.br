@@ -241,7 +241,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         password: 'password',
       });
 
-      expect(user3Response.status).toBe(429);
+      expect.soft(user3Response.status).toBe(429);
 
       // Check firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -259,7 +259,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         action: 'confirm',
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       // Review firewall again
       const { response: responseAgain, responseBody: responseAgainBody } = await reviewFirewallRequestBuilder.post({
@@ -308,8 +308,8 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
       });
       const firewallEvent2 = await orchestrator.getLastEvent();
 
-      expect(user3Response.status).toBe(429);
-      expect(user4Response.status).toBe(429);
+      expect.soft(user3Response.status).toBe(429);
+      expect.soft(user4Response.status).toBe(429);
 
       // Check firewall side-effect
       expect(firewallEvent1.type).toBe('firewall:block_users');
@@ -325,7 +325,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         action: 'confirm',
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       // Review related event
       const { response: responseAgain, responseBody: responseAgainBody } = await reviewEventRequestBuilder.post(
@@ -387,7 +387,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           password: 'password',
         });
 
-        expect(user3Response.status).toBe(429);
+        expect.soft(user3Response.status).toBe(429);
 
         // Check firewall side-effect
         const firewallEvent = await orchestrator.getLastEvent();
@@ -475,7 +475,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           password: 'password',
         });
 
-        expect(user3Response.status).toBe(429);
+        expect.soft(user3Response.status).toBe(429);
 
         // Check firewall side-effect
         const firewallEvent = await orchestrator.getLastEvent();
@@ -517,7 +517,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
         const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -614,7 +614,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         await contentsRequestBuilder.setUser(user1);
         const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -697,7 +697,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         await contentsRequestBuilder.setUser(user1);
         const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -768,9 +768,9 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         const { response: responseContent5 } = await createContentViaApi(contentsRequestBuilder);
         const firewallEvent3 = await orchestrator.getLastEvent();
 
-        expect(responseContent3.status).toBe(429);
-        expect(responseContent4.status).toBe(429);
-        expect(responseContent5.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
+        expect.soft(responseContent4.status).toBe(429);
+        expect.soft(responseContent5.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -896,7 +896,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           parent_id: rootContent.id,
         });
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -996,7 +996,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           parent_id: rootContent.id,
         });
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -1079,7 +1079,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           parent_id: rootContent.id,
         });
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -1179,7 +1179,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           password: 'password',
         });
 
-        expect(user3Response.status).toBe(429);
+        expect.soft(user3Response.status).toBe(429);
 
         // Check firewall side-effect
         const firewallEvent = await orchestrator.getLastEvent();
@@ -1275,7 +1275,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
         await contentsRequestBuilder.setUser(user1);
         const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -1383,7 +1383,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
 
         const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });
@@ -1493,7 +1493,7 @@ describe('POST /api/v1/moderations/review_firewall/[id]', () => {
           parent_id: rootContent.id,
         });
 
-        expect(responseContent3.status).toBe(429);
+        expect.soft(responseContent3.status).toBe(429);
 
         // Check firewall side-effect
         const content1AfterSideEffect = await content.findOne({ where: { id: content1.id } });

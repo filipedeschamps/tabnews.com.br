@@ -65,14 +65,14 @@ describe('GET /api/v1/contents', () => {
     test('With no content', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual([]);
     });
 
     test('With invalid strategy', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=invalid`);
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -138,7 +138,7 @@ describe('GET /api/v1/contents', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=new`);
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -236,7 +236,7 @@ describe('GET /api/v1/contents', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.get(`?strategy=old`);
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -327,7 +327,7 @@ describe('GET /api/v1/contents', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.get();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
         {
@@ -369,7 +369,7 @@ describe('GET /api/v1/contents', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseTotalRowsHeader).toBe('60');
       expect(responseLinkHeader).toStrictEqual({
         first: {
@@ -729,7 +729,7 @@ describe('GET /api/v1/contents', () => {
       const responseLinkHeader = parseLinkHeader(response.headers.get('Link'));
       const responseTotalRowsHeader = response.headers.get('X-Pagination-Total-Rows');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseTotalRowsHeader).toBe('56');
       expect(responseLinkHeader).toStrictEqual({
         first: {
@@ -799,7 +799,7 @@ describe('GET /api/v1/contents', () => {
       const page2ResponseLinkHeader = parseLinkHeader(page2Response.headers.get('Link'));
       const page2ResponseTotalRowsHeader = page2Response.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2Response.status).toBe(200);
+      expect.soft(page2Response.status).toBe(200);
       expect(page2ResponseTotalRowsHeader).toBe('56');
       expect(page2ResponseLinkHeader).toStrictEqual({
         first: {
@@ -854,7 +854,7 @@ describe('GET /api/v1/contents', () => {
       const page1LinkHeader = parseLinkHeader(page1.headers.get('Link'));
       const page1TotalRowsHeader = page1.headers.get('X-Pagination-Total-Rows');
 
-      expect(page1.status).toBe(200);
+      expect.soft(page1.status).toBe(200);
       expect(page1TotalRowsHeader).toBe('9');
       expect(page1LinkHeader).toStrictEqual({
         first: {
@@ -891,7 +891,7 @@ describe('GET /api/v1/contents', () => {
       const page2LinkHeader = parseLinkHeader(page2.headers.get('Link'));
       const page2TotalRowsHeader = page2.headers.get('X-Pagination-Total-Rows');
 
-      expect(page2.status).toBe(200);
+      expect.soft(page2.status).toBe(200);
       expect(page2TotalRowsHeader).toBe('9');
       expect(page2LinkHeader).toStrictEqual({
         first: {
@@ -935,7 +935,7 @@ describe('GET /api/v1/contents', () => {
       const page3LinkHeader = parseLinkHeader(page3.headers.get('Link'));
       const page3TotalRowsHeader = page3.headers.get('X-Pagination-Total-Rows');
 
-      expect(page3.status).toBe(200);
+      expect.soft(page3.status).toBe(200);
       expect(page3TotalRowsHeader).toBe('9');
       expect(page3LinkHeader).toStrictEqual({
         first: {
@@ -972,7 +972,7 @@ describe('GET /api/v1/contents', () => {
       const firstPageLinkHeader = parseLinkHeader(firstPage.headers.get('Link'));
       const firstPageTotalRowsHeader = firstPage.headers.get('X-Pagination-Total-Rows');
 
-      expect(firstPage.status).toBe(200);
+      expect.soft(firstPage.status).toBe(200);
       expect(firstPageTotalRowsHeader).toBe(page1TotalRowsHeader);
       expect(firstPageLinkHeader).toStrictEqual(page1LinkHeader);
       expect(firstPageBody).toStrictEqual(page1Body);
@@ -982,7 +982,7 @@ describe('GET /api/v1/contents', () => {
       const lastPageLinkHeader = parseLinkHeader(lastPage.headers.get('Link'));
       const lastPageTotalRowsHeader = lastPage.headers.get('X-Pagination-Total-Rows');
 
-      expect(lastPage.status).toBe(200);
+      expect.soft(lastPage.status).toBe(200);
       expect(lastPageTotalRowsHeader).toBe(page3TotalRowsHeader);
       expect(lastPageLinkHeader).toStrictEqual(page3LinkHeader);
       expect(lastPageBody).toStrictEqual(page3Body);
@@ -1008,7 +1008,7 @@ describe('GET /api/v1/contents', () => {
       const page4LinkHeader = parseLinkHeader(page4.headers.get('Link'));
       const page4TotalRowsHeader = page4.headers.get('X-Pagination-Total-Rows');
 
-      expect(page4.status).toBe(200);
+      expect.soft(page4.status).toBe(200);
       expect(page4TotalRowsHeader).toBe('9');
       expect(page4LinkHeader).toStrictEqual({
         first: {
@@ -1040,7 +1040,7 @@ describe('GET /api/v1/contents', () => {
     test('With "page" with a String', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?page=CINCO');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1061,7 +1061,7 @@ describe('GET /api/v1/contents', () => {
     test('With "page" with an invalid minimum Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?page=0');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1082,7 +1082,7 @@ describe('GET /api/v1/contents', () => {
     test('With "page" with an invalid maximum Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?page=9007199254740991');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1103,7 +1103,7 @@ describe('GET /api/v1/contents', () => {
     test('With "page" with an unsafe Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?page=9007199254740992');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1124,7 +1124,7 @@ describe('GET /api/v1/contents', () => {
     test('With "page" with a Float Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?page=1.5');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1145,7 +1145,7 @@ describe('GET /api/v1/contents', () => {
     test('With "per_page" with a String', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?per_page=SEIS');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1166,7 +1166,7 @@ describe('GET /api/v1/contents', () => {
     test('With "per_page" with an invalid minimum Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?per_page=0');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1187,7 +1187,7 @@ describe('GET /api/v1/contents', () => {
     test('With "per_page" with an invalid maximum Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?per_page=9007199254740991');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1208,7 +1208,7 @@ describe('GET /api/v1/contents', () => {
     test('With "per_page" with an unsafe Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?per_page=9007199254740992');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1229,7 +1229,7 @@ describe('GET /api/v1/contents', () => {
     test('With "per_page" with a Float Number', async () => {
       const { response, responseBody } = await contentsRequestBuilder.get('?per_page=1.5');
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -1419,7 +1419,7 @@ describe('GET /api/v1/contents', () => {
       ])('get $content with params: $params', async ({ params, responseLinkParams, getExpected }) => {
         const { response, responseBody } = await contentsRequestBuilder.get(`?${params.join('&')}`);
 
-        expect(response.status).toBe(200);
+        expect.soft(response.status).toBe(200);
         expect(responseBody).toStrictEqual(getExpected());
 
         const linkParamsString = responseLinkParams.join('&');
@@ -1469,7 +1469,7 @@ describe('GET /api/v1/contents', () => {
         async (params) => {
           const { response, responseBody } = await contentsRequestBuilder.get(params);
 
-          expect(response.status).toBe(200);
+          expect.soft(response.status).toBe(200);
           expect(responseBody).toStrictEqual([]);
         },
       );

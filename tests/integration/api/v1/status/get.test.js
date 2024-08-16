@@ -11,7 +11,7 @@ describe('GET /status', () => {
       const serverStatusResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/status`);
       const serverStatusBody = await serverStatusResponse.json();
 
-      expect(serverStatusResponse.status).toBe(200);
+      expect.soft(serverStatusResponse.status).toBe(200);
       expect(serverStatusBody.updated_at).toBeDefined();
       expect(serverStatusBody.dependencies.database.status).toBe('healthy');
       expect(serverStatusBody.dependencies.database.opened_connections).toBeGreaterThan(0);

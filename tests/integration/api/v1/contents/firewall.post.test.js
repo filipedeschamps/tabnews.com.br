@@ -106,8 +106,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const { response: response1, responseBody: response1Body } = await createContentViaApi(contentsRequestBuilder);
         const { response: response2, responseBody: response2Body } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         const content2BeforeFirewall = await orchestrator.updateContent(response2Body.id, {
           status: 'deleted',
@@ -117,7 +117,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           title: 'Título 3',
         });
 
-        expect(response3.status).toBe(429);
+        expect.soft(response3.status).toBe(429);
 
         expect(response3Body).toStrictEqual({
           name: 'TooManyRequestsError',
@@ -181,8 +181,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const { response: response1, responseBody: response1Body } = await createContentViaApi(contentsRequestBuilder);
         const { response: response2, responseBody: response2Body } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 10);
         const content1BeforeFirewall = await orchestrator.updateContent(response1Body.id, { status: 'deleted' });
@@ -258,8 +258,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const user2 = await contentsRequestBuilder.buildUser();
         const { response: response2, responseBody: response2Body } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 4);
         await orchestrator.createRate(response2Body, 2);
@@ -274,7 +274,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           title: 'Título 3',
         });
 
-        expect(response3.status).toBe(429);
+        expect.soft(response3.status).toBe(429);
 
         expect(response3Body).toStrictEqual({
           name: 'TooManyRequestsError',
@@ -349,15 +349,15 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const { response: response1, responseBody: response1Body } = await createContentViaApi(contentsRequestBuilder);
         const { response: response2, responseBody: response2Body } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         await orchestrator.updateContent(response1Body.id, { status: 'deleted' });
         await orchestrator.updateContent(response2Body.id, { status: 'deleted' });
 
         const { response: request3, responseBody: response3Body } = await createContentViaApi(contentsRequestBuilder);
 
-        expect(request3.status).toBe(429);
+        expect.soft(request3.status).toBe(429);
 
         expect(response3Body).toStrictEqual({
           name: 'TooManyRequestsError',
@@ -495,8 +495,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           parent_id: rootContentBody.id,
         });
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         const content2BeforeFirewall = await orchestrator.updateContent(response2Body.id, {
           status: 'deleted',
@@ -507,7 +507,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           title: 'Título 3',
         });
 
-        expect(response3.status).toBe(429);
+        expect.soft(response3.status).toBe(429);
 
         expect(response3Body).toStrictEqual({
           name: 'TooManyRequestsError',
@@ -577,8 +577,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           parent_id: rootContentBody.id,
         });
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 2);
         const content1BeforeFirewall = await orchestrator.updateContent(response1Body.id, {
@@ -661,8 +661,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           parent_id: rootContentBody.id,
         });
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 1);
         await orchestrator.createRate(response1Body, -5);
@@ -734,8 +734,8 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
           parent_id: rootContentBody.id,
         });
 
-        expect(response1.status).toBe(201);
-        expect(response2.status).toBe(201);
+        expect.soft(response1.status).toBe(201);
+        expect.soft(response2.status).toBe(201);
 
         await orchestrator.createRate(response1Body, 2);
         await orchestrator.createRate(response2Body, 1);
