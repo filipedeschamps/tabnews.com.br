@@ -1,6 +1,8 @@
 // Original code from: https://github.com/stiang/remove-markdown
 // With a fix by @aprendendofelipe https://github.com/stiang/remove-markdown/pull/57
 
+import logger from 'infra/logger';
+
 export default function removeMarkdown(md, options = {}) {
   options.oneLine = Object.hasOwn(options, 'oneLine') ? options.oneLine : true;
   options.listUnicodeChar = Object.hasOwn(options, 'listUnicodeChar') ? options.listUnicodeChar : false;
@@ -104,7 +106,7 @@ export default function removeMarkdown(md, options = {}) {
       );
     }
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return md;
   }
   return output;

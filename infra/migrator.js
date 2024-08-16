@@ -7,7 +7,7 @@ import logger from 'infra/logger.js';
 const defaultConfigurations = {
   dir: join(resolve('.'), 'infra', 'migrations'),
   direction: 'up',
-  migrationsTable: 'migrations',
+  migrationsTable: 'pgmigrations',
   verbose: true,
   log: (log) => {
     logger.info({
@@ -24,7 +24,6 @@ async function listPendingMigrations() {
       ...defaultConfigurations,
       dbClient: databaseClient,
       dryRun: true,
-      migrationsTable: 'pgmigrations',
     });
 
     return pendingMigrations;
@@ -41,7 +40,6 @@ async function runPendingMigrations() {
       ...defaultConfigurations,
       dbClient: databaseClient,
       dryRun: false,
-      migrationsTable: 'pgmigrations',
     });
 
     return migratedMigrations;

@@ -1,7 +1,10 @@
 import { render } from '@testing-library/react';
 
-import webserver from 'infra/webserver';
 import Pagination from 'pages/interface/components/Pagination';
+
+const webserver = {
+  host: `http://localhost:3000`,
+};
 
 describe('Pagination', () => {
   it('should not render links if there is no previous or next page', () => {

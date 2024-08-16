@@ -34,7 +34,7 @@ export default function PastTime({ date, formatText, ...props }) {
   }
 
   return (
-    <Tooltip aria-label={tooltipLabel} suppressHydrationWarning {...props}>
+    <Tooltip text={tooltipLabel} suppressHydrationWarning {...props}>
       <time dateTime={date} style={{ whiteSpace: 'nowrap' }} suppressHydrationWarning>
         {getText(date)}
       </time>

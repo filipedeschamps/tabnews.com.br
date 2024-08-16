@@ -1,9 +1,14 @@
+/* eslint-disable no-console */
 const fs = require('node:fs');
 const { join, resolve } = require('node:path');
 const { Client } = require('pg');
 
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 5000,
   idleTimeoutMillis: 30000,
   allowExitOnIdle: false,

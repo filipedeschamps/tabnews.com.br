@@ -123,10 +123,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
               </Link>
             )}
             {parentContent.status !== 'published' && (
-              <Tooltip
-                aria-label={`Este conteúdo está atualmente com status "${parentContent.status}"`}
-                direction="s"
-                noDelay={true}>
+              <Tooltip text={`Este conteúdo está atualmente com status "${parentContent.status}"`} direction="s">
                 <strong>{parentContent.title}</strong>
               </Tooltip>
             )}
@@ -155,10 +152,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
               </Link>
             )}
             {parentContent.status !== 'published' && (
-              <Tooltip
-                aria-label={`Este conteúdo está atualmente com status "${parentContent.status}"`}
-                direction="s"
-                noDelay={true}>
+              <Tooltip text={`Este conteúdo está atualmente com status "${parentContent.status}"`} direction="s">
                 <strong>{parentContent.body}</strong>{' '}
               </Tooltip>
             )}
@@ -169,10 +163,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
               </Link>
             )}
             {rootContent.status !== 'published' && (
-              <Tooltip
-                aria-label={`Este conteúdo está atualmente com status "${rootContent.status}"`}
-                direction="s"
-                noDelay={true}>
+              <Tooltip text={`Este conteúdo está atualmente com status "${rootContent.status}"`} direction="s">
                 <strong>{rootContent.title}</strong>{' '}
               </Tooltip>
             )}
@@ -213,7 +204,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
               <TabCoinButtons content={child} />
               <Tooltip
                 direction="ne"
-                aria-label={`Ocultar resposta${plural}`}
+                text={`Ocultar resposta${plural}`}
                 role="button"
                 onClick={() => handleCollapse(id)}
                 sx={{

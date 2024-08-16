@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { faker } from '@faker-js/faker';
+import tn from '@tabnews/config';
 import retry from 'async-retry';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
@@ -33,8 +34,13 @@ async function waitForAllServices() {
   async function waitForWebServer() {
     return await retry(
       async (bail, tries) => {
+        if (tries === 25) {
+          tn.servers.up();
+        }
         if (tries >= 25) {
-          console.log(`> Trying to connect to Webserver #${tries}. Are you running the server with "npm run dev"?`);
+          console.log(
+            `> Trying to connect to Webserver #${tries}. Are you running the server with "npm run test:services"?`,
+          );
         }
         await fetch(`${webserverUrl}/api/v1/status`);
       },
@@ -48,21 +54,7 @@ async function waitForAllServices() {
   }
 
   async function waitForDatabase() {
-    return await retry(
-      async (bail, tries) => {
-        if (tries >= 25) {
-          console.log(`> Trying to connect to Database #${tries}. Are you running the Postgres container?`);
-        }
-        const connection = await database.getNewClient();
-        await connection.end();
-      },
-      {
-        retries: 50,
-        minTimeout: 10,
-        maxTimeout: 1000,
-        factor: 1.1,
-      },
-    );
+    return await tn.db.isAcceptingConnections();
   }
 
   async function waitForEmailService() {
