@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const retry = require('async-retry');
 const { exec } = require('node:child_process');
 

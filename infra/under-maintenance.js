@@ -1,12 +1,14 @@
 import webserver from 'infra/webserver';
 
+import logger from './logger';
+
 let underMaintenance;
 
 try {
   underMaintenance = JSON.parse(process.env.UNDER_MAINTENANCE || '{}');
 } catch (error) {
   if (webserver.isBuildTime) {
-    console.error('Error parsing UNDER_MAINTENANCE', { error });
+    logger.error('Error parsing UNDER_MAINTENANCE', { error });
   }
   underMaintenance = {};
 }

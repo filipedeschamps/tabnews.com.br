@@ -40,12 +40,6 @@
       "env": {
         "vitest-globals/env": true
       }
-    },
-    {
-      "files": ["infra/scripts/**"],
-      "rules": {
-        "no-console": "off"
-      }
     }
   ],
   "rules": {
