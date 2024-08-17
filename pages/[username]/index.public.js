@@ -385,13 +385,17 @@ function DescriptionForm({
           Descrição
         </FormControl.Label>
         <Editor
-          isValid={errorObject?.key === 'body'}
+          isValid={errorObject?.key === 'description'}
           value={description}
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
           compact
           clobberPrefix={`${user.username}-content-`}
         />
+
+        {errorObject?.key === 'description' && (
+          <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+        )}
       </FormControl>
 
       {globalMessageObject?.position === 'description' && (
