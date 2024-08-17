@@ -42,6 +42,18 @@ export default function Page({ userFound: userFoundFallback }) {
     revalidateOnMount: false,
   });
 
+  function onUpdate(updatedUser) {
+    userFoundMutate({ body: updatedUser }, { revalidate: false });
+  }
+
+  return (
+    <DefaultLayout metadata={{ title: `${userFound.username}` }}>
+      <UserProfile key={userFound.id} userFound={userFound} onUpdate={onUpdate} />
+    </DefaultLayout>
+  );
+}
+
+function UserProfile({ userFound, onUpdate }) {
   const { user } = useUser();
   const confirm = useConfirm();
   const [globalMessageObject, setGlobalMessageObject] = useState(null);
@@ -88,7 +100,7 @@ export default function Page({ userFound: userFoundFallback }) {
     const responseBody = await response.json();
 
     if (response.status === 200) {
-      userFoundMutate({ body: responseBody }, { revalidate: false });
+      onUpdate(responseBody);
       return;
     }
 
@@ -106,7 +118,7 @@ export default function Page({ userFound: userFoundFallback }) {
 
   function handleEditSuccess(newUser) {
     setIsEditingDescription(false);
-    userFoundMutate({ body: newUser }, { revalidate: false });
+    onUpdate(newUser);
   }
 
   function OptionsMenu() {
@@ -161,7 +173,7 @@ export default function Page({ userFound: userFoundFallback }) {
   }
 
   return (
-    <DefaultLayout metadata={{ title: `${userFound.username}` }}>
+    <>
       {globalMessageObject?.position === 'main' && (
         <Flash variant={globalMessageObject.type} sx={{ width: '100%', mb: 4 }}>
           {globalMessageObject.text}
@@ -249,7 +261,7 @@ export default function Page({ userFound: userFoundFallback }) {
           {globalMessageObject.text}
         </Flash>
       )}
-    </DefaultLayout>
+    </>
   );
 }
 
@@ -490,7 +502,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   return {
     props: {
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
-      key: secureUserFound.id,
     },
 
     revalidate: 10,
