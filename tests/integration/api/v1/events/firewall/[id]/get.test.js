@@ -170,7 +170,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         password: 'password',
       });
 
-      expect(user3Response.status).toBe(429);
+      expect.soft(user3Response.status).toBe(429);
 
       // Get firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -222,7 +222,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         password: 'password',
       });
 
-      expect(user3Response.status).toBe(429);
+      expect.soft(user3Response.status).toBe(429);
 
       const firstFirewallEvent = await orchestrator.getLastEvent();
 
@@ -232,7 +232,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         password: 'password',
       });
 
-      expect(user4Response.status).toBe(429);
+      expect.soft(user4Response.status).toBe(429);
 
       const secondFirewallEvent = await orchestrator.getLastEvent();
 
@@ -305,7 +305,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         password: 'password',
       });
 
-      expect(user3Response.status).toBe(429);
+      expect.soft(user3Response.status).toBe(429);
 
       // Check firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -319,7 +319,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       );
       await reviewFirewallRequestBuilder.setUser(firewallUser);
       const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
-      expect(reviewResponse.status).toBe(200);
+      expect.soft(reviewResponse.status).toBe(200);
 
       // Get reviewed firewall event
       const reviewEvent = await orchestrator.getLastEvent();
@@ -371,7 +371,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
       const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-      expect(responseContent3.status).toBe(429);
+      expect.soft(responseContent3.status).toBe(429);
 
       // Get firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -517,7 +517,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-      expect(responseContent3.status).toBe(429);
+      expect.soft(responseContent3.status).toBe(429);
 
       // Get firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -572,7 +572,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       const { responseBody: content2 } = await createContentViaApi(contentsRequestBuilder);
       const { response: responseContent3 } = await createContentViaApi(contentsRequestBuilder);
 
-      expect(responseContent3.status).toBe(429);
+      expect.soft(responseContent3.status).toBe(429);
 
       // Check firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -587,7 +587,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       await reviewFirewallRequestBuilder.setUser(firewallUser);
       const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
 
-      expect(reviewResponse.status).toBe(200);
+      expect.soft(reviewResponse.status).toBe(200);
 
       // Get reviewed firewall event
       const reviewEvent = await orchestrator.getLastEvent();
@@ -653,7 +653,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         parent_id: rootContent.id,
       });
 
-      expect(responseContent3.status).toBe(429);
+      expect.soft(responseContent3.status).toBe(429);
 
       // Get firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -718,7 +718,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         parent_id: rootContent.id,
       });
 
-      expect(responseContent3.status).toBe(429);
+      expect.soft(responseContent3.status).toBe(429);
 
       // Check firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();
@@ -733,7 +733,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
       await reviewFirewallRequestBuilder.setUser(firewallUser);
       const { response: reviewResponse } = await reviewFirewallRequestBuilder.post({ action: action });
 
-      expect(reviewResponse.status).toBe(200);
+      expect.soft(reviewResponse.status).toBe(200);
 
       // Get reviewed firewall event
       const reviewEvent = await orchestrator.getLastEvent();
@@ -806,7 +806,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         parent_id: rootContent.id,
       });
 
-      expect(responseContent3.status).toBe(429);
+      expect.soft(responseContent3.status).toBe(429);
 
       // Get firewall side-effect
       const firewallEvent = await orchestrator.getLastEvent();

@@ -26,7 +26,7 @@ describe('POST /api/v1/users', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -68,7 +68,7 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -104,7 +104,7 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -158,8 +158,8 @@ describe('POST /api/v1/users', () => {
 
       const secondResponseBody = await secondResponse.json();
 
-      expect(secondResponse.status).toBe(400);
-      expect(secondResponseBody.status_code).toBe(400);
+      expect.soft(secondResponse.status).toBe(400);
+      expect.soft(secondResponseBody.status_code).toBe(400);
       expect(secondResponseBody.name).toBe('ValidationError');
       expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
       expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -197,8 +197,8 @@ describe('POST /api/v1/users', () => {
 
       const secondResponseBody = await secondResponse.json();
 
-      expect(secondResponse.status).toBe(400);
-      expect(secondResponseBody.status_code).toBe(400);
+      expect.soft(secondResponse.status).toBe(400);
+      expect.soft(secondResponseBody.status_code).toBe(400);
       expect(secondResponseBody.name).toBe('ValidationError');
       expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
       expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -222,8 +222,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -248,8 +248,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -274,8 +274,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -300,8 +300,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -326,8 +326,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve conter apenas caracteres alfanuméricos.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -352,8 +352,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"username" deve conter no máximo 30 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -378,8 +378,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Este nome de usuário não está disponível para uso.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -507,8 +507,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"email" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -533,8 +533,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"email" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -559,8 +559,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"email" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -585,8 +585,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"email" deve conter um email válido.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -610,8 +610,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"password" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -636,8 +636,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"password" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -662,8 +662,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"password" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -688,8 +688,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"password" deve conter no mínimo 8 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -714,8 +714,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"password" deve conter no máximo 72 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -732,8 +732,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -751,8 +751,8 @@ describe('POST /api/v1/users', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');

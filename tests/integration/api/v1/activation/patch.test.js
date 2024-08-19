@@ -18,8 +18,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -43,8 +43,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"token_id" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -68,8 +68,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"token_id" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -93,8 +93,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"token_id" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -118,8 +118,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"token_id" deve possuir um token UUID na versão 4.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -154,7 +154,7 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(responseBody.used).toBe(true);
       expect(Date.parse(activationToken.expires_at)).not.toBeNaN();
@@ -193,7 +193,7 @@ describe('PATCH /api/v1/activation', () => {
 
       const secondTryRespondeBody = await secondTryResponde.json();
 
-      expect(secondTryResponde.status).toBe(200);
+      expect.soft(secondTryResponde.status).toBe(200);
       expect(uuidVersion(secondTryRespondeBody.id)).toBe(4);
       expect(secondTryRespondeBody.used).toBe(true);
       expect(Date.parse(activationToken.expires_at)).not.toBeNaN();
@@ -201,7 +201,7 @@ describe('PATCH /api/v1/activation', () => {
       expect(Date.parse(activationToken.updated_at)).not.toBeNaN();
       expect(secondTryRespondeBody.updated_at > secondTryRespondeBody.created_at).toBe(true);
 
-      expect(firstTryResponde.status).toBe(secondTryResponde.status);
+      expect.soft(firstTryResponde.status).toBe(secondTryResponde.status);
       expect(firstTryRespondeBody).toStrictEqual(secondTryRespondeBody);
     });
 
@@ -225,8 +225,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(404);
-      expect(responseBody.status_code).toBe(404);
+      expect.soft(response.status).toBe(404);
+      expect.soft(responseBody.status_code).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
       expect(responseBody.message).toBe('O token de ativação utilizado não foi encontrado no sistema ou expirou.');
       expect(responseBody.action).toBe('Faça login novamente para receber um novo token por email.');
@@ -256,8 +256,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não pode mais ler tokens de ativação.');
       expect(responseBody.action).toBe(
@@ -288,8 +288,8 @@ describe('PATCH /api/v1/activation', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "read:activation_token".');

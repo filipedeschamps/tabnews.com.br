@@ -14,7 +14,7 @@ describe('Under maintenance route', () => {
       });
       const responseBody = await response.json();
 
-      expect(response.status).toBe(503);
+      expect.soft(response.status).toBe(503);
       expect(responseBody.message).toBe('Funcionalidade em manutenção.');
       expect(responseBody.action).toBe('Tente novamente mais tarde.');
       expect(responseBody.error_location_code).toBe('INFRA:UNDER_MAINTENANCE:CHECK:IS_UNDER_MAINTENANCE');
@@ -25,7 +25,7 @@ describe('Under maintenance route', () => {
         method: 'POST',
       });
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
       expect(response.statusText).toBe('Not Found');
       expect(response.ok).toBe(false);
     });
@@ -35,7 +35,7 @@ describe('Under maintenance route', () => {
         method: 'GET',
       });
 
-      expect(response.status).toBe(404);
+      expect.soft(response.status).toBe(404);
       expect(response.statusText).toBe('Not Found');
       expect(response.ok).toBe(false);
     });

@@ -56,7 +56,7 @@ describe('GET /api/v1/sponsored-beta', () => {
 
       const { response, responseBody } = await adsRequestBuilder.get();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual([]);
     });
 

@@ -21,8 +21,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Não deveria conseguir.',
       });
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Usuário não pode executar esta operação.');
       expect(responseBody.action).toBe('Verifique se este usuário possui a feature "create:content".');
@@ -42,8 +42,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Não deveria conseguir, pois não possui a feature "create:content:text_root".',
       });
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para criar conteúdos na raiz do site.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_root".');
@@ -75,8 +75,8 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(403);
-      expect(responseBody.status_code).toBe(403);
+      expect.soft(response.status).toBe(403);
+      expect.soft(responseBody.status_code).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
       expect(responseBody.message).toBe('Você não possui permissão para criar conteúdos dentro de outros conteúdos.');
       expect(responseBody.action).toBe('Verifique se você possui a feature "create:content:text_child".');
@@ -96,8 +96,8 @@ describe('POST /api/v1/contents', () => {
 
       const { response, responseBody } = await contentsRequestBuilder.post();
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -116,8 +116,8 @@ describe('POST /api/v1/contents', () => {
         'Texto corrido no lugar de um JSON',
       );
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -139,7 +139,7 @@ describe('POST /api/v1/contents', () => {
         owner_id: secondUser.id,
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -174,8 +174,8 @@ describe('POST /api/v1/contents', () => {
         title: 'Não deveria conseguir, falta o "body".',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -193,8 +193,8 @@ describe('POST /api/v1/contents', () => {
         body: '',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -267,8 +267,8 @@ describe('POST /api/v1/contents', () => {
           `,
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('Markdown deve conter algum texto.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -287,7 +287,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'https://teste-\u0000caractere.invalido/\u0000',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -323,8 +323,8 @@ describe('POST /api/v1/contents', () => {
         body: '\u200fTexto começando e terminando com caracteres inválidos.\u200e',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -342,8 +342,8 @@ describe('POST /api/v1/contents', () => {
         body: 'A'.repeat(20001),
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve conter no máximo 20000 caracteres.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -361,8 +361,8 @@ describe('POST /api/v1/contents', () => {
         body: ' Espaço no início e no fim ',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve começar com caracteres visíveis.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -380,7 +380,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Espaço só no fim ',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -416,8 +416,8 @@ describe('POST /api/v1/contents', () => {
         body: null,
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"body" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -436,7 +436,7 @@ describe('POST /api/v1/contents', () => {
         slug: 'nodejs',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -473,8 +473,8 @@ describe('POST /api/v1/contents', () => {
         slug: '',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -496,7 +496,7 @@ describe('POST /api/v1/contents', () => {
         ),
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -536,8 +536,8 @@ describe('POST /api/v1/contents', () => {
         slug: 'slug-não-pode-ter-caracteres-especiais',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" está no formato errado.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -556,8 +556,8 @@ describe('POST /api/v1/contents', () => {
         slug: null,
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"slug" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -584,7 +584,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -618,7 +618,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
 
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
@@ -656,7 +656,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -693,7 +693,7 @@ describe('POST /api/v1/contents', () => {
         slug: 'slug-with-trailing-hyphen---',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -729,8 +729,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"title" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -748,8 +748,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(`"title" deve conter no máximo ${maxTitleLength} caracteres.`);
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -771,7 +771,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Instale o Node.js',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -814,7 +814,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Instale o Node.js',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -850,7 +850,7 @@ describe('POST /api/v1/contents', () => {
         body: `The title is ${maxTitleLength} characters but 765 bytes and the slug should only be ${maxSlugLength} bytes`,
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -886,7 +886,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -922,7 +922,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Qualquer coisa.',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -959,7 +959,7 @@ describe('POST /api/v1/contents', () => {
         status: 'draft',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -996,7 +996,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1034,7 +1034,7 @@ describe('POST /api/v1/contents', () => {
         status: 'deleted',
       });
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'Não é possível criar um novo conteúdo diretamente com status "deleted".',
@@ -1058,7 +1058,7 @@ describe('POST /api/v1/contents', () => {
         status: 'firewall',
       });
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'Não é possível criar um novo conteúdo diretamente com status "firewall".',
@@ -1082,8 +1082,8 @@ describe('POST /api/v1/contents', () => {
         status: 'inexisting_status',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
@@ -1104,8 +1104,8 @@ describe('POST /api/v1/contents', () => {
         status: null,
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
@@ -1126,8 +1126,8 @@ describe('POST /api/v1/contents', () => {
         status: '',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"status" deve possuir um dos seguintes valores: "draft", "published", "deleted", "firewall".',
@@ -1148,7 +1148,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'http://www.tabnews.com.br/',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1185,7 +1185,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'https://www.tabnews.com.br/museu',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1222,7 +1222,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'http://nic.xn--vermgensberatung-pwb/',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1259,7 +1259,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'https://t.me',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1296,8 +1296,8 @@ describe('POST /api/v1/contents', () => {
         source_url: 'https://invalidtl.d',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -1318,8 +1318,8 @@ describe('POST /api/v1/contents', () => {
         source_url: 'http://tl.dcomvinteecincocaracteres',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -1340,8 +1340,8 @@ describe('POST /api/v1/contents', () => {
         source_url: 'ftp://www.tabnews.com.br',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -1362,8 +1362,8 @@ describe('POST /api/v1/contents', () => {
         source_url: 'www.tabnews.com.br',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -1384,8 +1384,8 @@ describe('POST /api/v1/contents', () => {
         source_url: 'https://lol.',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe(
         '"source_url" deve possuir uma URL válida e utilizando os protocolos HTTP ou HTTPS.',
@@ -1406,7 +1406,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'https://www.tabnews.com.br/api/v1/contents?strategy=old',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1443,7 +1443,7 @@ describe('POST /api/v1/contents', () => {
         source_url: 'http://www.tabnews.com.br/#:~:text=TabNews,-Status',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1480,8 +1480,8 @@ describe('POST /api/v1/contents', () => {
         source_url: '',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"source_url" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1500,7 +1500,7 @@ describe('POST /api/v1/contents', () => {
         source_url: null,
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1537,7 +1537,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Deveria conseguir, pois atualmente todos os usuários recebem todas as features relacionadas a "content".',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1581,7 +1581,7 @@ describe('POST /api/v1/contents', () => {
         body: 'Body',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1616,8 +1616,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Não deveria conseguir, falta o "title".',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"title" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1635,8 +1635,8 @@ describe('POST /api/v1/contents', () => {
         body: 'Não deveria conseguir, falta o "title".',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"title" é um campo obrigatório.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1660,7 +1660,7 @@ describe('POST /api/v1/contents', () => {
         parent_id: rootContent.id,
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1712,7 +1712,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1758,7 +1758,7 @@ describe('POST /api/v1/contents', () => {
         status: 'published',
       });
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
 
       expect(responseBody).toStrictEqual({
         id: responseBody.id,
@@ -1795,8 +1795,8 @@ describe('POST /api/v1/contents', () => {
         parent_id: 123456,
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"parent_id" deve ser do tipo String.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1814,8 +1814,8 @@ describe('POST /api/v1/contents', () => {
         parent_id: '',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"parent_id" não pode estar em branco.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1833,8 +1833,8 @@ describe('POST /api/v1/contents', () => {
         parent_id: 'isso não é um UUID válido',
       });
 
-      expect(response.status).toBe(400);
-      expect(responseBody.status_code).toBe(400);
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
       expect(responseBody.name).toBe('ValidationError');
       expect(responseBody.message).toBe('"parent_id" deve possuir um token UUID na versão 4.');
       expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
@@ -1852,7 +1852,7 @@ describe('POST /api/v1/contents', () => {
         parent_id: 'fe2e20f5-9296-45ea-9a0f-401866819b9e',
       });
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         status_code: 400,
         name: 'ValidationError',
@@ -1882,7 +1882,7 @@ describe('POST /api/v1/contents', () => {
 
         const getLastEmail = await orchestrator.getLastEmail();
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(getLastEmail).toBeNull();
       });
 
@@ -1907,7 +1907,7 @@ describe('POST /api/v1/contents', () => {
 
         const getLastEmail = await orchestrator.getLastEmail();
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail).toBeNull();
       });
@@ -1936,7 +1936,7 @@ describe('POST /api/v1/contents', () => {
 
         const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${secondUser.username}" comentou em "Título curto do conteúdo raiz"`);
@@ -1976,7 +1976,7 @@ describe('POST /api/v1/contents', () => {
 
         const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(
@@ -2025,7 +2025,7 @@ describe('POST /api/v1/contents', () => {
 
         const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "Testando resposta ao conteúdo child"`);
@@ -2076,7 +2076,7 @@ describe('POST /api/v1/contents', () => {
 
         const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(childContentFromSecondUser.id);
         expect(getLastEmail.recipients[0].includes(secondUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(`"${firstUser.username}" comentou em "[Não disponível]"`);
@@ -2115,7 +2115,7 @@ describe('POST /api/v1/contents', () => {
           notifications: false,
         });
 
-        expect(userPatchResponse1.status).toBe(200);
+        expect.soft(userPatchResponse1.status).toBe(200);
 
         const { responseBody: userGetResponseCheck2Body } = await userRequestBuilder.get();
 
@@ -2135,7 +2135,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(contentResponse1.status).toBe(201);
+        expect.soft(contentResponse1.status).toBe(201);
 
         // 5) CHECK IF FIRST USER RECEIVED ANY EMAIL
         const getLastEmail1 = await orchestrator.getLastEmail();
@@ -2146,7 +2146,7 @@ describe('POST /api/v1/contents', () => {
           notifications: true,
         });
 
-        expect(userPatchResponse2.status).toBe(200);
+        expect.soft(userPatchResponse2.status).toBe(200);
 
         // 7) REPLY AGAIN TO CONTENT WITH SECOND USER
         const secondUser = await contentsRequestBuilder.buildUser();
@@ -2157,7 +2157,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(contentResponse2.status).toBe(201);
+        expect.soft(contentResponse2.status).toBe(201);
 
         // 8) CHECK IF FIRST USER RECEIVED ANY EMAIL
         const getLastEmail2 = await orchestrator.getLastEmail();
@@ -2206,7 +2206,7 @@ describe('POST /api/v1/contents', () => {
         });
 
         expect(response.ok).toBe(true);
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
         expect(response.headers.get('content-Type')).toBe('application/x-ndjson');
 
         const getLastEmail = await orchestrator.getLastEmail();
@@ -2372,8 +2372,8 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(403);
-        expect(responseBody.status_code).toBe(403);
+        expect.soft(response.status).toBe(403);
+        expect.soft(responseBody.status_code).toBe(403);
         expect(responseBody.name).toBe('ForbiddenError');
         expect(responseBody.message).toBe(
           'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
@@ -2405,8 +2405,8 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(403);
-        expect(responseBody.status_code).toBe(403);
+        expect.soft(response.status).toBe(403);
+        expect.soft(responseBody.status_code).toBe(403);
         expect(responseBody.name).toBe('ForbiddenError');
         expect(responseBody.message).toBe(
           'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
@@ -2431,7 +2431,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2483,7 +2483,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2527,7 +2527,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2579,7 +2579,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2623,7 +2623,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2675,7 +2675,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2839,8 +2839,8 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(403);
-        expect(responseBody.status_code).toBe(403);
+        expect.soft(response.status).toBe(403);
+        expect.soft(responseBody.status_code).toBe(403);
         expect(responseBody.name).toBe('ForbiddenError');
         expect(responseBody.message).toBe(
           'Não é possível publicar porque há outras publicações mal avaliadas que ainda não foram excluídas.',
@@ -2865,7 +2865,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2917,7 +2917,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -2963,7 +2963,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,
@@ -3015,7 +3015,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        expect(response.status).toBe(201);
+        expect.soft(response.status).toBe(201);
 
         expect(responseBody).toStrictEqual({
           id: responseBody.id,

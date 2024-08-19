@@ -1,6 +1,6 @@
 import { randomUUID as uuidV4 } from 'node:crypto';
 
-import database, { mockQuery, mockRelease } from 'infra/database';
+import database from 'infra/database';
 import balance from 'models/balance';
 import content from 'models/content';
 import event from 'models/event';
@@ -11,21 +11,24 @@ import user from 'models/user';
 const tabcoinsBase = 20;
 const contentAgeBase = 1000 * 60 * 60 * 24 * 7; // one week in milliseconds
 
+const mocks = vi.hoisted(() => {
+  return {
+    query: vi.fn(),
+    release: vi.fn(),
+  };
+});
+
 vi.mock('infra/database', () => {
-  const mockQuery = vi.fn();
-  const mockRelease = vi.fn();
   return {
     default: {
       transaction: vi.fn().mockResolvedValue({
-        query: mockQuery,
-        release: mockRelease,
+        query: mocks.query,
+        release: mocks.release,
       }),
       errorCodes: {
         SERIALIZATION_FAILURE: '40001',
       },
     },
-    mockQuery,
-    mockRelease,
   };
 });
 
@@ -186,8 +189,8 @@ describe('reward model', () => {
 
     const result = await reward(request);
 
-    expect(mockQuery).toHaveBeenCalledWith('ROLLBACK');
-    expect(mockRelease).toHaveBeenCalled();
+    expect(mocks.query).toHaveBeenCalledWith('ROLLBACK');
+    expect(mocks.release).toHaveBeenCalled();
     expect(result).toBe(0);
   });
 
@@ -228,9 +231,9 @@ describe('reward model', () => {
     expect(result).toBeGreaterThan(0);
 
     expect(database.transaction).toHaveBeenCalled();
-    expect(mockQuery).toHaveBeenCalledWith('BEGIN');
-    expect(mockQuery).toHaveBeenCalledWith('COMMIT');
-    expect(mockRelease).toHaveBeenCalled();
+    expect(mocks.query).toHaveBeenCalledWith('BEGIN');
+    expect(mocks.query).toHaveBeenCalledWith('COMMIT');
+    expect(mocks.release).toHaveBeenCalled();
     expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
 
     expect(balance.create).toHaveBeenCalledWith(

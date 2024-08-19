@@ -15,7 +15,7 @@ describe('GET /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(405);
+      expect.soft(response.status).toBe(405);
 
       expect(responseBody).toStrictEqual({
         name: 'MethodNotAllowedError',

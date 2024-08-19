@@ -11,7 +11,7 @@ describe('OPTIONS /api/v1/contents', () => {
         method: 'options',
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(response.headers.get('access-control-allow-methods')).toBe('GET,OPTIONS,PATCH,DELETE,POST,PUT');
       expect(response.headers.get('access-control-allow-origin')).toBe('*');
       expect(response.headers.get('access-control-allow-credentials')).toBe('true');

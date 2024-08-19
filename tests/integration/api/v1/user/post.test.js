@@ -17,7 +17,7 @@ describe('POST /api/v1/user', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(405);
+      expect.soft(response.status).toBe(405);
 
       expect(responseBody).toStrictEqual({
         name: 'MethodNotAllowedError',
