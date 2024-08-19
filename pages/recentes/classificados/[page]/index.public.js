@@ -78,7 +78,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   };
 });
 
-export async function getStaticPaths() {
+export function getStaticPaths() {
   return {
     paths: [{ params: { page: '1' } }, { params: { page: '2' } }, { params: { page: '3' } }],
     fallback: 'blocking',

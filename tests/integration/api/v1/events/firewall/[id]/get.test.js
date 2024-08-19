@@ -986,7 +986,7 @@ function mapContentData(content) {
     deleted_at:
       typeof content.deleted_at?.toISOString === 'function'
         ? content.deleted_at.toISOString()
-        : content.deleted_at ?? null,
+        : (content.deleted_at ?? null),
     id: content.id,
     owner_id: content.owner_id,
     owner_username: content.owner_username,

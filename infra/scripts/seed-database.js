@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const fs = require('node:fs');
 const { join, resolve } = require('node:path');
 const { Client } = require('pg');

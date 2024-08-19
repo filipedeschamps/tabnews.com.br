@@ -99,7 +99,7 @@ function postValidationHandler(request, response, next) {
   next();
 }
 
-async function firewallValidationHandler(request, response, next) {
+function firewallValidationHandler(request, response, next) {
   if (!request.body.parent_id) {
     return firewall.canRequest('create:content:text_root')(request, response, next);
   }

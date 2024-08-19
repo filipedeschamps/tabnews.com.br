@@ -18,7 +18,7 @@ export default function Home({ adFound, contentListFound, pagination }) {
   );
 }
 
-export async function getStaticPaths() {
+export function getStaticPaths() {
   return {
     paths: [{ params: { page: '2' } }, { params: { page: '3' } }],
     fallback: 'blocking',
