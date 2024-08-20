@@ -10,8 +10,10 @@ import { useUser } from 'pages/interface';
 export default function Page({ usersCreated, rootContentPublished, childContentPublished, votesGraph, votesTaken }) {
   const { user } = useUser();
 
-  const { data: votes } = useSWR(user?.features?.includes('update:content:others') ? '/api/v1/status/votes' : null, {
-    fallbackData: { votesGraph },
+  const {
+    data: { body: votes },
+  } = useSWR(user?.features?.includes('update:content:others') ? '/api/v1/status/votes' : null, {
+    fallbackData: { body: { votesGraph } },
     refreshInterval: 60_000,
     shouldRetryOnError: false,
     dedupingInterval: 30_000,
@@ -20,7 +22,10 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
 
   const votesAmount = votes.votesGraph.edges.reduce((acc, curr) => acc + (curr.value || 0), 0);
 
-  const { data: statusObject, isLoading: statusObjectIsLoading } = useSWR('/api/v1/status', {
+  const {
+    data: { body: statusObject },
+    isLoading: statusObjectIsLoading,
+  } = useSWR('/api/v1/status', {
     refreshInterval: 1000 * 10,
   });
 

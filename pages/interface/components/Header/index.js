@@ -49,6 +49,8 @@ export default function HeaderComponent() {
     ml: 3,
   };
 
+  const canListUsers = user?.features.includes('read:user:list');
+
   return (
     <PrimerHeader as="header" id="header" sx={{ minWidth: 'max-content', px: [2, null, null, 3] }}>
       <SearchBoxOverlay />
@@ -164,6 +166,17 @@ export default function HeaderComponent() {
                     </NavList.LeadingVisual>
                     <Truncate>{user.username}</Truncate>
                   </NavItem>
+
+                  {canListUsers && (
+                    <NavList.Group>
+                      <NavItem href="/moderacao/usuarios/1">
+                        <NavList.LeadingVisual>
+                          <ListUnorderedIcon />
+                        </NavList.LeadingVisual>
+                        Usuários
+                      </NavItem>
+                    </NavList.Group>
+                  )}
 
                   <NavList.Group>
                     <NavItem href="/publicar">

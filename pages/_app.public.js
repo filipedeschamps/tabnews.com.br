@@ -14,8 +14,10 @@ async function SWRFetcher(resource, init) {
 
   const responseBody = await response.json();
 
-  return responseBody;
+  return { body: responseBody, headers: response.headers };
 }
+
+const fallbackData = { body: null, headers: {} };
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -23,7 +25,7 @@ function MyApp({ Component, pageProps }) {
       <Turnstile />
       <UserProvider>
         <DefaultHead />
-        <SWRConfig value={{ fetcher: SWRFetcher }}>
+        <SWRConfig value={{ fetcher: SWRFetcher, fallbackData }}>
           <RevalidateProvider swr={{ swrPath: '/api/v1/swr', ...pageProps.swr }}>
             <Component {...pageProps} />
           </RevalidateProvider>
