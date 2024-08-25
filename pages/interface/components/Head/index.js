@@ -59,7 +59,11 @@ export function DefaultHead() {
 }
 
 export default function Head({ metadata, children }) {
-  const { type, title, description, image, url, noIndex, author, published_time, modified_time, canonical } =
+  function stringifyJsonLd(jsonLd) {
+    return typeof jsonLd === 'string' ? jsonLd : JSON.stringify(jsonLd);
+  }
+
+  const { type, title, description, image, url, noIndex, author, published_time, modified_time, canonical, jsonLd } =
     metadata || {};
 
   const canonicalUrl = canonical?.startsWith('http') ? canonical : `${webserverHost}${canonical}`;
@@ -113,6 +117,14 @@ export default function Head({ metadata, children }) {
       {published_time && <meta property="article:published_time" content={published_time} />}
 
       {modified_time && <meta property="article:modified_time" content={modified_time} />}
+
+      {Array.isArray(jsonLd)
+        ? jsonLd.map((data) => (
+            <script key={data['@type']} type="application/ld+json">
+              {stringifyJsonLd(data)}
+            </script>
+          ))
+        : jsonLd && <script type="application/ld+json">{stringifyJsonLd(jsonLd)}</script>}
 
       {children}
     </NextHead>

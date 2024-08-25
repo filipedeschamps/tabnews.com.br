@@ -5,13 +5,27 @@ import webserver from 'infra/webserver';
 import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default function Home({ adFound, contentListFound, pagination }) {
+  let breadcrumbItems;
+
+  if (pagination.currentPage > 1) {
+    breadcrumbItems = [
+      { name: 'Relevantes', url: webserver.host },
+      { name: `Página ${pagination.currentPage}`, url: `${webserver.host}/pagina/${pagination.currentPage}` },
+    ];
+  }
+
   return (
     <>
-      <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Relevantes` }}>
+      <DefaultLayout
+        metadata={{
+          title: `Página ${pagination.currentPage} · Relevantes`,
+          jsonLd: breadcrumbItems ? jsonLd.getBreadcrumb(breadcrumbItems) : undefined,
+        }}>
         <ContentList ad={adFound} contentList={contentListFound} pagination={pagination} paginationBasePath="/pagina" />
       </DefaultLayout>
     </>

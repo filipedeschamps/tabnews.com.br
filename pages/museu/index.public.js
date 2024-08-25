@@ -1,11 +1,16 @@
 import { Box, DefaultLayout, PrimerLink, Text } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
+import jsonLd from 'models/json-ld';
 
 export default function Page() {
+  const breadcrumbItems = [{ name: 'Museu', url: `${webserver.host}/museu` }];
+
   return (
     <DefaultLayout
       metadata={{
         title: 'Museu',
         description: 'Esta página é humilde, porém traz coisas muito importantes da história do TabNews.',
+        jsonLd: jsonLd.getBreadcrumb(breadcrumbItems),
       }}>
       <Box>
         <Text as="h1">Museu TabNews</Text>

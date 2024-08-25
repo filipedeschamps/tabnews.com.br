@@ -4,15 +4,29 @@ import { ContentList, DefaultLayout, RecentTabNav } from '@/TabNewsUI';
 import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default function ContentsPage({ contentListFound, pagination }) {
+  const breadcrumbItems = [
+    { name: 'Recentes', url: `${webserver.host}/recentes/pagina/1` },
+    { name: 'Classificados', url: `${webserver.host}/recentes/classificados/1` },
+  ];
+
+  if (pagination.currentPage > 1) {
+    breadcrumbItems.push({
+      name: `Página ${pagination.currentPage}`,
+      url: `${webserver.host}/recentes/classificados/${pagination.currentPage}`,
+    });
+  }
+
   return (
     <DefaultLayout
       metadata={{
         title: `Página ${pagination.currentPage} · Classificados Recentes`,
         description: 'Classificados do TabNews ordenados pelos mais recentes.',
+        jsonLd: jsonLd.getBreadcrumb(breadcrumbItems),
       }}>
       <RecentTabNav />
       <ContentList

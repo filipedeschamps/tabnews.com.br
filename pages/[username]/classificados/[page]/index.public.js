@@ -4,8 +4,10 @@ import { getStaticPropsRevalidate } from 'next-swr';
 import { ContentList, DefaultLayout, UserHeader } from '@/TabNewsUI';
 import { FaUser } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
+import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { useUser } from 'pages/interface';
@@ -14,9 +16,24 @@ export default function RootContent({ contentListFound, pagination, username }) 
   const { push } = useRouter();
   const { user, isLoading } = useUser();
   const isAuthenticatedUser = user && user.username === username;
+  const breadcrumbItems = [
+    { name: username, url: `${webserver.host}/${username}` },
+    { name: 'Classificados', url: `${webserver.host}/${username}/classificados/1` },
+  ];
+
+  if (pagination.currentPage > 1) {
+    breadcrumbItems.push({
+      name: `Página ${pagination.currentPage}`,
+      url: `${webserver.host}/${username}/classificados/${pagination.currentPage}`,
+    });
+  }
 
   return (
-    <DefaultLayout metadata={{ title: `Classificados · Página ${pagination.currentPage} · ${username}` }}>
+    <DefaultLayout
+      metadata={{
+        title: `Classificados · Página ${pagination.currentPage} · ${username}`,
+        jsonLd: jsonLd.getBreadcrumb(breadcrumbItems),
+      }}>
       <UserHeader username={username} adContentCount={pagination.totalRows} />
 
       <ContentList

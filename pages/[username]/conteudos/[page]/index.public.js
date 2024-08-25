@@ -4,29 +4,47 @@ import { getStaticPropsRevalidate } from 'next-swr';
 import { ContentList, DefaultLayout, UserHeader } from '@/TabNewsUI';
 import { FaUser } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
+import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { useUser } from 'pages/interface';
 
-export default function RootContent({ contentListFound, pagination, username }) {
+export default function RootContent({ contentListFound, pagination, userFound }) {
   const { push } = useRouter();
   const { user, isLoading } = useUser();
-  const isAuthenticatedUser = user && user.username === username;
+  const isAuthenticatedUser = user && user.username === userFound.username;
+
+  const breadcrumbItems = [
+    { name: userFound.username, url: `${webserver.host}/${userFound.username}` },
+    { name: 'Publicações', url: `${webserver.host}/${userFound.username}/conteudos/1` },
+  ];
+
+  if (pagination.currentPage > 1) {
+    breadcrumbItems.push({
+      name: `Página ${pagination.currentPage}`,
+      url: `${webserver.host}/${userFound.username}/conteudos/${pagination.currentPage}`,
+    });
+  }
 
   return (
-    <DefaultLayout metadata={{ title: `Publicações · Página ${pagination.currentPage} · ${username}` }}>
-      <UserHeader username={username} rootContentCount={pagination.totalRows} />
+    <DefaultLayout
+      metadata={{
+        title: `Publicações · Página ${pagination.currentPage} · ${userFound.username}`,
+        jsonLd: [jsonLd.getBreadcrumb(breadcrumbItems), jsonLd.getProfile(userFound)],
+      }}>
+      <UserHeader username={userFound.username} rootContentCount={pagination.totalRows} />
 
       <ContentList
         contentList={contentListFound}
         pagination={pagination}
-        paginationBasePath={`/${username}/conteudos`}
+        paginationBasePath={`/${userFound.username}/conteudos`}
         emptyStateProps={{
           isLoading: isLoading,
           title: 'Nenhuma publicação encontrada',
-          description: `${isAuthenticatedUser ? 'Você' : username} ainda não fez nenhuma publicação.`,
+          description: `${isAuthenticatedUser ? 'Você' : userFound.username} ainda não fez nenhuma publicação.`,
           icon: FaUser,
           action: isAuthenticatedUser && {
             text: 'Publicar conteúdo',
@@ -114,6 +132,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       contentListFound: secureContentListFound,
       pagination: results.pagination,
       username: secureUserFound.username,
+      userFound: secureUserFound,
     },
 
     revalidate: 10,

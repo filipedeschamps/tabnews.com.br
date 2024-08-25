@@ -4,7 +4,9 @@ import useSWR from 'swr';
 import { BarChart } from '@/Charts';
 import Graph from '@/Graph';
 import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
 import analytics from 'models/analytics.js';
+import jsonLd from 'models/json-ld';
 import { useUser } from 'pages/interface';
 
 export default function Page({ usersCreated, rootContentPublished, childContentPublished, votesGraph, votesTaken }) {
@@ -29,8 +31,10 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
     refreshInterval: 1000 * 10,
   });
 
+  const breadcrumbItems = [{ name: 'Status', url: `${webserver.host}/status` }];
+
   return (
-    <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site' }}>
+    <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site', jsonLd: jsonLd.getBreadcrumb(breadcrumbItems) }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 

@@ -8,6 +8,7 @@ import webserver from 'infra/webserver.js';
 import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import { useCollapse } from 'pages/interface';
@@ -378,6 +379,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     canonical: secureContentFound.parent_id
       ? undefined
       : `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
+    jsonLd: jsonLd.getPosting(secureContentFound),
   };
 
   let secureRootContentFound = null;

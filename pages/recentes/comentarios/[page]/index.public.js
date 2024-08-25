@@ -5,16 +5,30 @@ import webserver from 'infra/webserver';
 import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default function CommentsPage({ adFound, contentListFound, pagination }) {
+  const breadcrumbItems = [
+    { name: 'Recentes', url: `${webserver.host}/recentes/pagina/1` },
+    { name: 'Comentários', url: `${webserver.host}/recentes/comentarios/1` },
+  ];
+
+  if (pagination.currentPage > 1) {
+    breadcrumbItems.push({
+      name: `Página ${pagination.currentPage}`,
+      url: `${webserver.host}/recentes/comentarios/${pagination.currentPage}`,
+    });
+  }
+
   return (
     <DefaultLayout
       metadata={{
         title: `Página ${pagination.currentPage} · Comentários Recentes`,
         description: 'Comentários no TabNews ordenados pelos mais recentes.',
+        jsonLd: jsonLd.getBreadcrumb(breadcrumbItems),
       }}>
       <RecentTabNav />
       <ContentList

@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import useSWR from 'swr';
 
 import { Box, Content, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
+import jsonLd from 'models/json-ld';
 import { useUser } from 'pages/interface';
 
 export default function Post() {
@@ -21,8 +23,10 @@ export default function Post() {
     }
   }, [user, router, isLoading]);
 
+  const breadcrumbItems = [{ name: 'Publicar', url: `${webserver.host}/publicar` }];
+
   return (
-    <DefaultLayout metadata={{ title: 'Publicar novo conteúdo' }}>
+    <DefaultLayout metadata={{ title: 'Publicar novo conteúdo', jsonLd: jsonLd.getBreadcrumb(breadcrumbItems) }}>
       {contents?.length === 0 && (
         <Box sx={{ width: '100%', mb: 3 }}>
           <Flash variant="warning">

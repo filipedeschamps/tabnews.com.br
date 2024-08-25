@@ -1,6 +1,10 @@
 import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
+import jsonLd from 'models/json-ld';
 
 export default function Page() {
+  const breadcrumbItems = [{ name: 'FAQ', url: `${webserver.host}/faq` }];
+
   const faqContent = [
     {
       id: 'tabnews',
@@ -152,7 +156,7 @@ Após o fechamento da falha, o TabNews se compromete em criar um Postmortem púb
   const content = `${tableOfContents}\n\n${faqMarkdown}`;
 
   return (
-    <DefaultLayout metadata={{ title: 'FAQ - Perguntas frequentes' }}>
+    <DefaultLayout metadata={{ title: 'FAQ - Perguntas frequentes', jsonLd: jsonLd.getBreadcrumb(breadcrumbItems) }}>
       <Box sx={{ width: '100%' }}>
         <Heading as="h1">FAQ - Perguntas Frequentes</Heading>
         <Viewer areLinksTrusted value={content} clobberPrefix="" />

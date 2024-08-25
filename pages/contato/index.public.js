@@ -1,6 +1,10 @@
 import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
+import jsonLd from 'models/json-ld';
 
 export default function Page() {
+  const breadcrumbItems = [{ name: 'Contato', url: `${webserver.host}/contato` }];
+
   const body = `Leia com atenção qual a melhor forma de entrar em contato:
 
   ## Anúncios, Publicidade e Patrocínio
@@ -26,7 +30,7 @@ export default function Page() {
   `;
 
   return (
-    <DefaultLayout metadata={{ title: 'Contato' }}>
+    <DefaultLayout metadata={{ title: 'Contato', jsonLd: jsonLd.getBreadcrumb(breadcrumbItems) }}>
       <Box>
         <Heading as="h1">Contato</Heading>
         <Viewer value={body} clobberPrefix="" />

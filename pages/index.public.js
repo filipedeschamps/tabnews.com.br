@@ -5,13 +5,14 @@ import { FaTree } from '@/TabNewsUI/icons';
 import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default function Home({ adFound, contentListFound, pagination }) {
   return (
     <>
-      <DefaultLayout>
+      <DefaultLayout metadata={{ jsonLd: jsonLd.getOrganization() }}>
         <ContentList
           ad={adFound}
           contentList={contentListFound}

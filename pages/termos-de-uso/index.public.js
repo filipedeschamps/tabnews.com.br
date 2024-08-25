@@ -1,6 +1,10 @@
 import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
+import webserver from 'infra/webserver';
+import jsonLd from 'models/json-ld';
 
 export default function Page() {
+  const breadcrumbItems = [{ name: 'Termos de Uso', url: `${webserver.host}/termos-de-uso` }];
+
   const body = `Ao utilizar o TabNews você está de acordo com os seguintes termos:
 
   ## TabNews
@@ -43,7 +47,7 @@ export default function Page() {
   `;
 
   return (
-    <DefaultLayout metadata={{ title: 'Termos de Uso' }}>
+    <DefaultLayout metadata={{ title: 'Termos de Uso', jsonLd: jsonLd.getBreadcrumb(breadcrumbItems) }}>
       <Box>
         <Heading as="h1">Termos de Uso</Heading>
         <Viewer areLinksTrusted value={body} clobberPrefix="" />

@@ -27,8 +27,10 @@ import {
 } from '@/TabNewsUI';
 import { CircleSlashIcon, GearIcon, KebabHorizontalIcon } from '@/TabNewsUI/icons';
 import { NotFoundError } from 'errors';
+import webserver from 'infra/webserver';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import jsonLd from 'models/json-ld';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { createErrorMessage, useUser } from 'pages/interface';
@@ -47,7 +49,14 @@ export default function Page({ userFound: userFoundFallback }) {
   }
 
   return (
-    <DefaultLayout metadata={{ title: `${userFound.username}` }}>
+    <DefaultLayout
+      metadata={{
+        title: `${userFound.username}`,
+        jsonLd: [
+          jsonLd.getBreadcrumb([{ name: userFound.username, url: `${webserver.host}/${userFound.username}` }]),
+          jsonLd.getProfile(userFound),
+        ],
+      }}>
       <UserProfile key={userFound.id} userFound={userFound} onUpdate={onUpdate} />
     </DefaultLayout>
   );
