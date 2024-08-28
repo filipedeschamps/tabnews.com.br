@@ -1,20 +1,31 @@
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 import { AdBanner, Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
 import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
 import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
-import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 import { useCollapse } from 'pages/interface';
 
-export default function Post({ adFound, contentFound, rootContentFound, parentContentFound, contentMetadata }) {
+export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  const {
+    data: { body: adsFound },
+    isLoading: isLoadingAd,
+  } = useSWR(
+    `/api/v1/sponsored-beta?per_page=1&ignore_id=${contentFound.id}&owner_id=${contentFound.owner_id}&flexible=${contentFound.type === 'content'}`,
+    {
+      fallbackData: { body: [], headers: {} },
+      revalidateOnFocus: false,
+    },
+  );
 
   useEffect(() => {
     setChildrenToShow(Math.ceil(window.innerHeight / 10));
@@ -83,7 +94,7 @@ export default function Post({ adFound, contentFound, rootContentFound, parentCo
             />
           </Box>
 
-          {adFound && <AdBanner ad={adFound} sx={{ ml: 5, pl: 1 }} />}
+          <AdBanner ad={adsFound[0]} isLoading={isLoadingAd} sx={{ ml: 5, pl: 1 }} />
 
           <RenderChildrenTree
             key={contentFound.id}
@@ -418,16 +429,8 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
   }
 
-  const adsFound = await ad.getRandom(1, {
-    ignoreId: secureContentFound.id,
-    ownerId: secureContentFound.owner_id,
-    tryOtherOwners: secureContentFound.type === 'content',
-  });
-  const secureAdValues = authorization.filterOutput(userTryingToGet, 'read:ad:list', adsFound);
-
   return {
     props: {
-      adFound: secureAdValues[0] ?? null,
       contentFound: JSON.parse(JSON.stringify(secureContentFound)),
       rootContentFound: JSON.parse(JSON.stringify(secureRootContentFound)),
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),

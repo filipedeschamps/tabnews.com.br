@@ -1,23 +1,32 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-import { Box, Link, Text, Tooltip } from '@/TabNewsUI';
+import { Box, Link, SkeletonLoader, Text, Tooltip } from '@/TabNewsUI';
 import { LinkExternalIcon } from '@/TabNewsUI/icons';
 import { getDomain, isExternalLink, isTrustedDomain } from 'pages/interface';
 
-export default function AdBanner({ ad: newAd, ...props }) {
+export default function AdBanner({ ad: newAd, isLoading, ...props }) {
   const [ad, setAd] = useState(newAd);
   const router = useRouter();
+
+  useEffect(() => {
+    if (newAd && !ad) {
+      setAd(newAd);
+    }
+  }, [router.asPath, newAd, ad]);
+
+  if (isLoading || (newAd && !ad)) {
+    return <AdBannerLoading />;
+  }
+
+  if (!ad) {
+    return null;
+  }
 
   const link = ad.source_url || `/${ad.owner_username}/${ad.slug}`;
   const isAdToExternalLink = isExternalLink(link);
   const domain = isAdToExternalLink ? `(${getDomain(link)})` : '';
   const title = ad.title.length > 70 ? ad.title.substring(0, 67).trim().concat('...') : ad.title;
-
-  useEffect(() => {
-    setAd(newAd);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.asPath]);
 
   return (
     <Box {...props} as="aside" sx={{ display: 'grid', ...props.sx }}>
@@ -57,5 +66,21 @@ export default function AdBanner({ ad: newAd, ...props }) {
         </Tooltip>
       </Text>
     </Box>
+  );
+}
+
+function AdBannerLoading() {
+  const spaceBetweenRows = 8;
+  const titleHeight = 16;
+  const titleY = 2;
+
+  return (
+    <SkeletonLoader
+      title="Carregando publicação patrocinada..."
+      style={{ height: '2.3rem', width: '100%' }}
+      uniqueKey="ad-loading">
+      <rect x="28" y={titleY} rx="5" ry="5" width="600" height={titleHeight} />
+      <rect x="28" y={titleY + spaceBetweenRows + titleHeight} rx="5" ry="5" width="180" height="12" />
+    </SkeletonLoader>
   );
 }
