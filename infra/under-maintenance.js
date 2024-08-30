@@ -1,6 +1,5 @@
+import logger from 'infra/logger';
 import webserver from 'infra/webserver';
-
-import logger from './logger';
 
 let underMaintenance;
 
