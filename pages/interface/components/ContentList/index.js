@@ -123,7 +123,7 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
                 <ChildrenDeepCountText count={contentObject.children_deep_count} />
               </Text>
               {' · '}
-              <Tooltip aria-label={`Autor: ${contentObject.owner_username}`}>
+              <Tooltip text={`Autor: ${contentObject.owner_username}`}>
                 <Text as="address" sx={{ fontStyle: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>
                     {contentObject.owner_username}

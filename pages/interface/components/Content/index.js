@@ -204,12 +204,12 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
             </BranchName>
             <LabelGroup>
               {isPageRootOwner && (
-                <Tooltip aria-label="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                <Tooltip text="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
                   <Label>Autor</Label>
                 </Tooltip>
               )}
               {contentObject.type === 'ad' && (
-                <Tooltip aria-label="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                <Tooltip text="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
                   <Label variant="success">Patrocinado</Label>
                 </Tooltip>
               )}

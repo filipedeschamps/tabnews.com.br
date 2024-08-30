@@ -111,7 +111,7 @@ export default function HeaderComponent() {
         <>
           {!isScreenSmall && (
             <PrimerHeader.Item sx={{ m: 2 }}>
-              <Tooltip aria-label="Publicar novo conteúdo" direction="s" noDelay={true} wrap={true}>
+              <Tooltip text="Publicar novo conteúdo" direction="s">
                 <HeaderLink href="/publicar">
                   <PlusIcon />
                 </HeaderLink>
