@@ -13,6 +13,7 @@ export default function ContentsPage({ contentListFound, pagination }) {
       metadata={{
         title: `Página ${pagination.currentPage} · Classificados Recentes`,
         description: 'Classificados do TabNews ordenados pelos mais recentes.',
+        noIndex: true,
       }}>
       <RecentTabNav />
       <ContentList
