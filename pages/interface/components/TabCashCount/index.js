@@ -28,7 +28,7 @@ export default function TabCashCount({ amount, direction, mode = 'tooltip', sx }
   }
 
   return (
-    <Tooltip aria-label="TabCash" direction={direction ?? 's'} noDelay={true} wrap={true}>
+    <Tooltip text="TabCash" direction={direction ?? 's'}>
       {content}
     </Tooltip>
   );

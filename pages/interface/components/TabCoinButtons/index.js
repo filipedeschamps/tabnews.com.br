@@ -95,7 +95,7 @@ export default function TabCoinButtons({ content }) {
         flexDirection: 'column',
         alignItems: 'center',
       }}>
-      <Tooltip aria-label="Achei relevante" direction="ne">
+      <Tooltip text="Achei relevante" direction="ne">
         <IconButton
           variant="invisible"
           aria-label="Creditar TabCoin"
@@ -122,7 +122,7 @@ export default function TabCoinButtons({ content }) {
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
         {contentObject.tabcoins}
       </TabCoinBalanceTooltip>
-      <Tooltip aria-label="Não achei relevante" direction="ne">
+      <Tooltip text="Não achei relevante" direction="ne">
         <IconButton
           variant="invisible"
           aria-label="Debitar TabCoin"

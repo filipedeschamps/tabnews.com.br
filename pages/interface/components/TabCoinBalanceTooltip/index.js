@@ -14,7 +14,7 @@ export default function TabCoinBalanceTooltip({ children, credit, debit, ...prop
   }
 
   return (
-    <Tooltip {...props} aria-label={getLabel()}>
+    <Tooltip {...props} text={getLabel()}>
       {children}
     </Tooltip>
   );

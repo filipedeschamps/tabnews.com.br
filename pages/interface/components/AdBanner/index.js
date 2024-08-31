@@ -54,10 +54,7 @@ export default function AdBanner({ ad: newAd, isLoading, ...props }) {
 
       <Text sx={{ whiteSpace: 'nowrap', overflow: 'hidden', fontSize: 0, color: 'neutral.emphasis' }}>
         Contribuindo com{' '}
-        <Tooltip
-          aria-label={`Autor: ${ad.owner_username}`}
-          direction="nw"
-          sx={{ position: 'absolute', display: 'grid' }}>
+        <Tooltip text={`Autor: ${ad.owner_username}`} direction="nw" sx={{ position: 'absolute', display: 'grid' }}>
           <Link
             sx={{ overflow: 'hidden', textOverflow: 'ellipsis', color: 'neutral.emphasis', mr: 2 }}
             href={`/${ad.owner_username}`}>
