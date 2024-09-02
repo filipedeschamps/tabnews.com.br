@@ -380,6 +380,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     canonical: secureContentFound.parent_id
       ? undefined
       : `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
+    noIndex: secureContentFound.type === 'ad',
   };
 
   let secureRootContentFound = null;
