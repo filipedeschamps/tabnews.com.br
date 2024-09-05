@@ -1,0 +1,33 @@
+import otp from 'models/otp';
+
+describe('OTP model', () => {
+  it('should create a TOTP secret of size 32', () => {
+    const secret = otp.createSecret();
+
+    expect(secret).toHaveLength(32);
+  });
+
+  it('should create a TOTP issued by TabNews and with username on label', () => {
+    const username = 'userTOTP';
+    const secret = otp.createSecret();
+    const totp = otp.createTotp(secret, 'userTOTP');
+
+    expect(totp.label).toBe(username);
+    expect(totp.issuer).toBe('TabNews');
+  });
+
+  it('should detect a valid token', () => {
+    const secret = otp.createSecret();
+    const totp = otp.createTotp(secret);
+    const token = totp.generate();
+
+    expect(otp.validateTotp(secret, token)).toBe(true);
+  });
+
+  it('should detect an invalid token', () => {
+    const secret = otp.createSecret();
+    const token = otp.createTotp().generate();
+
+    expect(otp.validateTotp(secret, token)).toBe(false);
+  });
+});

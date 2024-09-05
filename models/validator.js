@@ -189,6 +189,20 @@ const schemas = {
     });
   },
 
+  totp_secret: function () {
+    return Joi.object({
+      totp_secret: Joi.string()
+        .length(32)
+        .when('$required.totp_secret', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
+  totp: function () {
+    return Joi.object({
+      totp: Joi.string().length(6).when('$required.totp', { is: 'required', then: Joi.required() }),
+    });
+  },
+
   token_id: function () {
     return Joi.object({
       token_id: Joi.string()
