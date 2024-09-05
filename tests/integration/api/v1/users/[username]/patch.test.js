@@ -1,6 +1,7 @@
 import { version as uuidVersion } from 'uuid';
 
 import emailConfirmation from 'models/email-confirmation.js';
+import otp from 'models/otp';
 import password from 'models/password.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
@@ -146,6 +147,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -191,6 +193,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -234,6 +237,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -618,6 +622,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         description: defaultUser.description,
         features: defaultUser.features,
         notifications: defaultUser.notifications,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -657,6 +662,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: false,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -761,6 +767,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         email: defaultUser.email,
         features: defaultUser.features,
         notifications: defaultUser.notifications,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -809,6 +816,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -878,6 +886,139 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itself with "totp_secret" and valid "totp"', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: '',
+        email: defaultUser.email,
+        features: [
+          'create:session',
+          'read:session',
+          'create:content',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content',
+          'update:user',
+        ],
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: true,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itself with "totp_secret" and invalid "totp"', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp().generate();
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      expect(response.status).toBe(403);
+      expect(responseBody).toStrictEqual({
+        name: 'ForbiddenError',
+        message: 'O código TOTP informado é inválido.',
+        action: 'Verifique o código TOTP e tente novamente.',
+        status_code: 403,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'CONTROLLER:USERS:USERNAME:PATCH:MFA:TOTP:INVALID_CODE',
+      });
+    });
+
+    test('Patching itself with "totp_secret" and valid "totp" but user already enabled TOTP', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      expect(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Duplo fator de autenticação já habilitado para a conta.',
+        action: 'Verifique se você está realizando a operação correta.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'CONTROLLER:USERS:USERNAME:PATCH:MFA:TOTP:ALREADY_CONFIGURED',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Patching itself with a "description" containing a valid value and totp enabled', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.activateUser(defaultUser);
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'my description',
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: 'my description',
+        email: defaultUser.email,
+        features: [
+          'create:session',
+          'read:session',
+          'create:content',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content',
+          'update:user',
+        ],
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: true,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -969,6 +1110,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         features: defaultUser.features,
         notifications: defaultUser.notifications,
         tabcoins: 200,
+        totp_enabled: false,
         tabcash: 55,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
@@ -998,6 +1140,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: false,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });

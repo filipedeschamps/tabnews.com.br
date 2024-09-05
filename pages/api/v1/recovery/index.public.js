@@ -5,7 +5,9 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
+import otp from 'models/otp';
 import recovery from 'models/recovery.js';
+import user from 'models/user';
 import validator from 'models/validator.js';
 
 export default nextConnect({
@@ -71,6 +73,7 @@ function patchValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     token_id: 'required',
     password: 'required',
+    totp: 'optional',
   });
 
   request.body = cleanValues;
@@ -81,6 +84,26 @@ function patchValidationHandler(request, response, next) {
 async function patchHandler(request, response) {
   const userTryingToRecover = request.context.user;
   const validatedInputValues = request.body;
+
+  const recoveryToken = await recovery.findOneTokenById(validatedInputValues.token_id);
+  const targetUser = await user.findOneById(recoveryToken.user_id);
+
+  if (targetUser.totp_secret) {
+    if (!validatedInputValues.totp) {
+      throw new ForbiddenError({
+        message: 'Duplo fator de autenticação habilitado para a conta.',
+        action: 'Refaça a requisição enviando o código TOTP.',
+        errorLocationCode: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:TOKEN_NOT_SENT',
+      });
+    }
+    if (!otp.validateUserTotp(targetUser.totp_secret, validatedInputValues.totp)) {
+      throw new ForbiddenError({
+        message: 'O código TOTP informado é inválido.',
+        action: 'Verifique o código TOTP e tente novamente.',
+        errorLocationCode: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:INVALID_CODE',
+      });
+    }
+  }
 
   const tokenObject = await recovery.resetUserPassword(validatedInputValues);
 
