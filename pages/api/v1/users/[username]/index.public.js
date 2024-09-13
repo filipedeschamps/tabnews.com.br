@@ -129,10 +129,12 @@ async function patchHandler(request, response) {
       if (!isTokenValid) {
         throw new ForbiddenError({
           message: 'O código TOTP informado é inválido.',
-          action: 'Verifique o código TOTP enviado e tente novamente.',
+          action: 'Verifique o código TOTP e tente novamente.',
           errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:MFA:TOTP:INVALID_CODE',
         });
       }
+
+      secureInputValues.totp_recovery_codes = otp.createRecoveryCodes();
     }
   }
 
@@ -185,6 +187,12 @@ async function patchHandler(request, response) {
     updateAnotherUser ? 'read:user' : 'read:user:self',
     updatedUser,
   );
+
+  if (secureInputValues.totp_recovery_codes) {
+    const recoveryCodesKeys = Object.keys(secureInputValues.totp_recovery_codes);
+
+    secureOutputValues.totp_recovery_codes = recoveryCodesKeys;
+  }
 
   return response.status(200).json(secureOutputValues);
 

@@ -319,6 +319,10 @@ async function update(targetUser, postedUserData, options = {}) {
     encryptTotpSecretInObject(validPostedUserData);
   }
 
+  if (validPostedUserData.totp_recovery_codes) {
+    encryptRecoveryCodesInObject(validPostedUserData);
+  }
+
   const updatedUser = await runUpdateQuery(currentUser, validPostedUserData, {
     transaction: options.transaction,
   });
@@ -371,6 +375,7 @@ function validatePatchSchema(postedUserData) {
     description: 'optional',
     notifications: 'optional',
     totp_secret: 'optional',
+    totp_recovery_codes: 'optional',
   });
 
   return cleanValues;
@@ -442,6 +447,11 @@ async function hashPasswordInObject(userObject) {
 
 function encryptTotpSecretInObject(userObject) {
   userObject.totp_secret = otp.encryptData(userObject.totp_secret);
+  return userObject;
+}
+
+function encryptRecoveryCodesInObject(userObject) {
+  userObject.totp_recovery_codes = otp.encryptData(JSON.stringify(userObject.totp_recovery_codes));
   return userObject;
 }
 

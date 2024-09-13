@@ -45,4 +45,30 @@ describe('OTP model', () => {
 
     expect(decryptedSecret).toStrictEqual(secret);
   });
+
+  it('should create recovery codes', () => {
+    const recoveryCodes = otp.createRecoveryCodes();
+
+    for (const key in recoveryCodes) {
+      expect(key).toHaveLength(10);
+      expect(recoveryCodes[key]).toBeTruthy();
+    }
+
+    expect(Object.keys(recoveryCodes)).toHaveLength(10);
+  });
+
+  it('should encrypt recovery codes into a data of size 416', () => {
+    const recoveryCodes = otp.createRecoveryCodes();
+    const encryptedCodes = otp.encryptData(JSON.stringify(recoveryCodes));
+
+    expect(encryptedCodes).toHaveLength(416);
+  });
+
+  it('should decrypt recovery codes to the same before encryption', () => {
+    const recoveryCodes = otp.createRecoveryCodes();
+    const encryptedCodes = otp.encryptData(JSON.stringify(recoveryCodes));
+    const decryptedCodes = JSON.parse(otp.decryptData(encryptedCodes));
+
+    expect(decryptedCodes).toStrictEqual(recoveryCodes);
+  });
 });

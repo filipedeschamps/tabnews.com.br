@@ -203,6 +203,28 @@ const schemas = {
     });
   },
 
+  totp_recovery_code: function () {
+    return Joi.object({
+      totp_recovery_code: Joi.string().length(10).when('$required.totp_recovery_code', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
+  },
+
+  totp_recovery_codes: function () {
+    return Joi.object({
+      totp_recovery_codes: Joi.object()
+        .pattern(Joi.string().length(10), Joi.boolean())
+        .when('$required.totp_recovery_codes', {
+          is: 'required',
+          then: Joi.required(),
+          otherwise: Joi.optional().allow(null),
+        }),
+    });
+  },
+
   token_id: function () {
     return Joi.object({
       token_id: Joi.string()

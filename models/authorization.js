@@ -33,6 +33,7 @@ function filterInput(user, feature, input, target) {
       email: input.email,
       password: input.password,
       totp: input.totp,
+      totp_recovery_code: input.totp_recovery_code,
     };
   }
 

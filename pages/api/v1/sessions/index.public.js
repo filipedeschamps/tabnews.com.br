@@ -40,6 +40,7 @@ function postValidationHandler(request, response, next) {
     email: 'required',
     password: 'required',
     totp: 'optional',
+    totp_recovery_code: 'optional',
   });
 
   request.body = cleanValues;
@@ -67,10 +68,10 @@ async function postHandler(request, response) {
   }
 
   if (storedUser.totp_secret) {
-    if (!secureInputValues.totp) {
+    if (!secureInputValues.totp && !secureInputValues.totp_recovery_code) {
       throw new ValidationError({
         message: 'O duplo fator de autenticação está habilitado para esta conta.',
-        action: 'Refaça a requisição enviando o código TOTP.',
+        action: 'Refaça a requisição enviando o código TOTP ou um código de recuperação.',
         errorLocationCode: 'CONTROLER:SESSIONS:POST_HANDLER:MFA:TOTP:TOKEN_NOT_SENT',
         key: 'totp',
       });
@@ -84,6 +85,16 @@ async function postHandler(request, response) {
           message: `O código TOTP informado é inválido`,
           action: `Refaça a requisição enviando um código TOTP válido.`,
           errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:MFA:TOTP:INVALID_TOKEN`,
+        });
+      }
+    } else {
+      const validRecoveryCode = await otp.validateAndMarkRecoveryCode(storedUser, secureInputValues.totp_recovery_code);
+
+      if (!validRecoveryCode) {
+        throw new UnauthorizedError({
+          message: `O código de recuperação informado já foi usado ou é inválido.`,
+          action: `Verifique se os dados enviados estão corretos.`,
+          errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:MFA:TOTP:INVALID_RECOVERY_CODE`,
         });
       }
     }

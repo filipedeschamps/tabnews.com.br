@@ -922,6 +922,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         tabcoins: 0,
         tabcash: 0,
         totp_enabled: true,
+        totp_recovery_codes: responseBody.totp_recovery_codes,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
