@@ -2,23 +2,22 @@ class BaseError extends Error {
   constructor({
     name,
     message,
-    stack,
     action,
-    statusCode,
-    errorId,
+    statusCode = 500,
+    errorId = crypto.randomUUID(),
     requestId,
     context,
+    stack,
     errorLocationCode,
     key,
     type,
     databaseErrorCode,
   }) {
-    super();
+    super(message);
     this.name = name;
-    this.message = message;
     this.action = action;
-    this.statusCode = statusCode || 500;
-    this.errorId = errorId || crypto.randomUUID();
+    this.statusCode = statusCode;
+    this.errorId = errorId;
     this.requestId = requestId;
     this.context = context;
     this.stack = stack;
@@ -29,134 +28,73 @@ class BaseError extends Error {
   }
 }
 
-export class InternalServerError extends BaseError {
-  constructor({ message, action, requestId, errorId, statusCode, stack, errorLocationCode }) {
-    super({
-      name: 'InternalServerError',
-      message: message || 'Um erro interno não esperado aconteceu.',
-      action: action || "Informe ao suporte o valor encontrado no campo 'error_id'.",
-      statusCode: statusCode || 500,
-      requestId: requestId,
-      errorId: errorId,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-    });
-  }
-}
+const createErrorConstructor = (name, defaultMessage, defaultAction, statusCode) => {
+  return class extends BaseError {
+    constructor({ message = defaultMessage, action = defaultAction, ...rest }) {
+      super({ name, message, action, statusCode, ...rest });
+    }
+  };
+};
 
-export class NotFoundError extends BaseError {
-  constructor({ message, action, requestId, errorId, stack, errorLocationCode, key }) {
-    super({
-      name: 'NotFoundError',
-      message: message || 'Não foi possível encontrar este recurso no sistema.',
-      action: action || 'Verifique se o caminho (PATH) está correto.',
-      statusCode: 404,
-      requestId: requestId,
-      errorId: errorId,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-      key: key,
-    });
-  }
-}
+export const InternalServerError = createErrorConstructor(
+  'InternalServerError',
+  'Um erro interno não esperado aconteceu.',
+  "Informe ao suporte o valor encontrado no campo 'error_id'.",
+  500,
+);
 
-export class ServiceError extends BaseError {
-  constructor({ message, action, stack, context, statusCode, errorLocationCode, databaseErrorCode }) {
-    super({
-      name: 'ServiceError',
-      message: message || 'Serviço indisponível no momento.',
-      action: action || 'Verifique se o serviço está disponível.',
-      stack: stack,
-      statusCode: statusCode || 503,
-      context: context,
-      errorLocationCode: errorLocationCode,
-      databaseErrorCode: databaseErrorCode,
-    });
-  }
-}
+export const NotFoundError = createErrorConstructor(
+  'NotFoundError',
+  'Não foi possível encontrar este recurso no sistema.',
+  'Verifique se o caminho (PATH) está correto.',
+  404,
+);
 
-export class ValidationError extends BaseError {
-  constructor({ message, action, stack, statusCode, context, errorLocationCode, key, type }) {
-    super({
-      name: 'ValidationError',
-      message: message || 'Um erro de validação ocorreu.',
-      action: action || 'Ajuste os dados enviados e tente novamente.',
-      statusCode: statusCode || 400,
-      stack: stack,
-      context: context,
-      errorLocationCode: errorLocationCode,
-      key: key,
-      type: type,
-    });
-  }
-}
+export const ServiceError = createErrorConstructor(
+  'ServiceError',
+  'Serviço indisponível no momento.',
+  'Verifique se o serviço está disponível.',
+  503,
+);
 
-export class UnauthorizedError extends BaseError {
-  constructor({ message, action, requestId, stack, errorLocationCode }) {
-    super({
-      name: 'UnauthorizedError',
-      message: message || 'Usuário não autenticado.',
-      action: action || 'Verifique se você está autenticado com uma sessão ativa e tente novamente.',
-      requestId: requestId,
-      statusCode: 401,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-    });
-  }
-}
+export const ValidationError = createErrorConstructor(
+  'ValidationError',
+  'Um erro de validação ocorreu.',
+  'Ajuste os dados enviados e tente novamente.',
+  400,
+);
 
-export class ForbiddenError extends BaseError {
-  constructor({ message, action, requestId, stack, errorLocationCode }) {
-    super({
-      name: 'ForbiddenError',
-      message: message || 'Você não possui permissão para executar esta ação.',
-      action: action || 'Verifique se você possui permissão para executar esta ação.',
-      requestId: requestId,
-      statusCode: 403,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-    });
-  }
-}
+export const UnauthorizedError = createErrorConstructor(
+  'UnauthorizedError',
+  'Usuário não autenticado.',
+  'Verifique se você está autenticado com uma sessão ativa e tente novamente.',
+  401,
+);
 
-export class TooManyRequestsError extends BaseError {
-  constructor({ message, action, context, stack, errorLocationCode }) {
-    super({
-      name: 'TooManyRequestsError',
-      message: message || 'Você realizou muitas requisições recentemente.',
-      action: action || 'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
-      statusCode: 429,
-      context: context,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-    });
-  }
-}
+export const ForbiddenError = createErrorConstructor(
+  'ForbiddenError',
+  'Você não possui permissão para executar esta ação.',
+  'Verifique se você possui permissão para executar esta ação.',
+  403,
+);
 
-export class UnprocessableEntityError extends BaseError {
-  constructor({ message, action, stack, errorLocationCode }) {
-    super({
-      name: 'UnprocessableEntityError',
-      message: message || 'Não foi possível realizar esta operação.',
-      action: action || 'Os dados enviados estão corretos, porém não foi possível realizar esta operação.',
-      statusCode: 422,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-    });
-  }
-}
+export const TooManyRequestsError = createErrorConstructor(
+  'TooManyRequestsError',
+  'Você realizou muitas requisições recentemente.',
+  'Tente novamente mais tarde ou contate o suporte caso acredite que isso seja um erro.',
+  429,
+);
 
-export class MethodNotAllowedError extends BaseError {
-  constructor({ message, action, requestId, errorId, stack, errorLocationCode }) {
-    super({
-      name: 'MethodNotAllowedError',
-      message: message || 'Método não permitido para este recurso.',
-      action: action || 'Verifique se o método HTTP utilizado é válido para este recurso.',
-      statusCode: 405,
-      requestId: requestId,
-      errorId: errorId,
-      stack: stack,
-      errorLocationCode: errorLocationCode,
-    });
-  }
-}
+export const UnprocessableEntityError = createErrorConstructor(
+  'UnprocessableEntityError',
+  'Não foi possível realizar esta operação.',
+  'Os dados enviados estão corretos, porém não foi possível realizar esta operação.',
+  422,
+);
+
+export const MethodNotAllowedError = createErrorConstructor(
+  'MethodNotAllowedError',
+  'Método não permitido para este recurso.',
+  'Verifique se o método HTTP utilizado é válido para este recurso.',
+  405,
+);
