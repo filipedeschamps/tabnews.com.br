@@ -11,9 +11,9 @@ export { default as Header } from '@/Header';
 export { HeaderLink, Link, NavItem, default as NextLink, TabNavLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
 export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
+export { default as Pagination } from '@/Pagination';
 export { default as PasswordInput } from '@/PasswordInput';
 export { default as PastTime } from '@/PastTime';
-export { default as Pagination } from '@/Pagination';
 export { default as NextNProgress } from '@/Progressbar';
 export { default as ReadTime } from '@/ReadTime';
 export { default as RecentTabNav } from '@/RecentTabNav';
@@ -33,7 +33,7 @@ export {
   ActionList,
   ActionMenu,
   AnchoredOverlay,
-  BaseStyles,
+  AutoThemeProvider,
   Box,
   BranchName,
   Button,
@@ -47,13 +47,6 @@ export {
   LabelGroup,
   NavList,
   Overlay,
-  Pagehead,
-  Header as PrimerHeader,
-  Link as PrimerLink,
-  TabNav as PrimerTabNav,
-  ThemeProvider as PrimerThemeProvider,
-  Tooltip as PrimerTooltip,
-  SSRProvider,
   SegmentedControl,
   Spinner,
   Text,
@@ -61,4 +54,11 @@ export {
   Truncate,
   useConfirm,
   useTheme,
-} from '@primer/react';
+} from '@tabnews/ui';
+
+export {
+  Header as PrimerHeader,
+  Link as PrimerLink,
+  TabNav as PrimerTabNav,
+  Tooltip as PrimerTooltip,
+} from '@tabnews/ui/primer';
