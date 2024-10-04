@@ -9,6 +9,10 @@ module.exports = {
   compiler: {
     styledComponents: true,
   },
+  i18n: {
+    locales: ['pt-BR'],
+    defaultLocale: 'pt-BR',
+  },
   redirects() {
     return [
       {

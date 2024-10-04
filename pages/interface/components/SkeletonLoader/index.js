@@ -1,5 +1,6 @@
-import { useTheme } from '@primer/react';
 import ContentLoader from 'react-content-loader';
+
+import { useTheme } from '@/TabNewsUI';
 
 /**
  * @param {import('react-content-loader').IContentLoaderProps} props
