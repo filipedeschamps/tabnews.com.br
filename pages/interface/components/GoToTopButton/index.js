@@ -35,7 +35,7 @@ export default function GoToTopButton() {
         size="large"
         sx={{ color: 'fg.subtle', lineHeight: '18px' }}
         onClick={handleScrollToTop}
-        tooltipDirection="n"
+        tooltipDirection="nw"
       />
     )
   );
