@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import otp from 'models/otp.js';
 import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
@@ -120,6 +121,7 @@ describe('GET /api/v1/user', () => {
         features: defaultUser.features,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       });
@@ -129,6 +131,46 @@ describe('GET /api/v1/user', () => {
 
       const sessionObject = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
       expect(sessionObject).toStrictEqual(userRequestBuilder.sessionObject);
+    });
+
+    test('With valid session, necessary features and totp enabled', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const userRequestBuilder = new RequestBuilder('/api/v1/user');
+      await userRequestBuilder.setUser(defaultUser);
+
+      const defaultUserSession = userRequestBuilder.sessionObject;
+
+      const { response, responseBody } = await userRequestBuilder.get();
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: defaultUser.description,
+        email: defaultUser.email,
+        notifications: defaultUser.notifications,
+        features: defaultUser.features,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: true,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      const parsedCookiesFromGet = orchestrator.parseSetCookies(response);
+      expect(parsedCookiesFromGet).toStrictEqual({});
+
+      const sessionObject = await orchestrator.findSessionByToken(defaultUserSession.token);
+      expect(sessionObject).toStrictEqual(defaultUserSession);
     });
 
     test('With valid session, but user lost "read:session" feature', async () => {
@@ -211,6 +253,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -256,6 +299,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -300,6 +344,7 @@ describe('GET /api/v1/user', () => {
           features: defaultUser.features,
           tabcoins: 0,
           tabcash: 0,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
