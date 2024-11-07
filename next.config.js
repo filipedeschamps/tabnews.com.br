@@ -1,4 +1,5 @@
 module.exports = {
+  transpilePackages: ['@tabnews/ui'],
   experimental: {
     scrollRestoration: true,
   },

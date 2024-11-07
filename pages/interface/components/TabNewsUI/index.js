@@ -49,16 +49,13 @@ export {
   Overlay,
   SegmentedControl,
   Spinner,
+  TabNav,
   Text,
   TextInput,
+  TooltipV1,
   Truncate,
   useConfirm,
   useTheme,
 } from '@tabnews/ui';
 
-export {
-  Header as PrimerHeader,
-  Link as PrimerLink,
-  TabNav as PrimerTabNav,
-  Tooltip as PrimerTooltip,
-} from '@tabnews/ui/primer';
+export { Header as PrimerHeader, Link as PrimerLink } from '@tabnews/ui/primer';
