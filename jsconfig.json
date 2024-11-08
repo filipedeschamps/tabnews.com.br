@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "module": "NodeNext",
     "baseUrl": ".",
     "types": ["vitest/globals"],
     "paths": {

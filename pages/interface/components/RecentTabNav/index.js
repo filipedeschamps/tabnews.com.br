@@ -1,8 +1,8 @@
-import { PrimerTabNav, TabNavLink } from '@/TabNewsUI';
+import { TabNav, TabNavLink } from '@/TabNewsUI';
 
 export default function RecentTabNav() {
   return (
-    <PrimerTabNav sx={{ width: '100%', mb: 3 }}>
+    <TabNav sx={{ width: '100%', mb: 3 }}>
       <TabNavLink
         href={{
           pathname: '/recentes/pagina/[page]',
@@ -31,6 +31,6 @@ export default function RecentTabNav() {
         }}>
         Todos
       </TabNavLink>
-    </PrimerTabNav>
+    </TabNav>
   );
 }

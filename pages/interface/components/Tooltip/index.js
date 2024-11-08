@@ -1,4 +1,4 @@
-import { Box, PrimerTooltip } from '@/TabNewsUI';
+import { Box, TooltipV1 } from '@/TabNewsUI';
 
 const gap = '2px';
 
@@ -32,15 +32,15 @@ export default function Tooltip({ children, sx, ...props }) {
     return (
       <Box sx={{ display: 'inline-flex' }}>
         <Box sx={{ ...sxRest, visibility: 'hidden' }}>{children}</Box>
-        <PrimerTooltip sx={{ ...replaceMargin, ...sx }} {...props}>
+        <TooltipV1 sx={{ ...replaceMargin, ...sx }} {...props}>
           {children}
-        </PrimerTooltip>
+        </TooltipV1>
       </Box>
     );
 
   return (
-    <PrimerTooltip sx={{ ...replaceMargin, ...sx }} {...props}>
+    <TooltipV1 sx={{ ...replaceMargin, ...sx }} {...props}>
       {children}
-    </PrimerTooltip>
+    </TooltipV1>
   );
 }

@@ -8,6 +8,7 @@ config();
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
+    server: { deps: { inline: ['@tabnews/ui'] } },
     environmentMatchGlobs: [['**/interface/**/*', 'jsdom']],
     globals: true,
     fileParallelism: false,

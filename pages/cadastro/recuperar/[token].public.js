@@ -1,8 +1,16 @@
+import { passwordConfirmable, passwordConfirmation, useForm } from '@tabnews/forms';
+import { FormField } from '@tabnews/ui';
 import { useRouter } from 'next/router';
-import { useRef, useState } from 'react';
 
-import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, PasswordInput } from '@/TabNewsUI';
+import { ButtonWithLoader, DefaultLayout, Flash, Heading } from '@/TabNewsUI';
 import { createErrorMessage } from 'pages/interface';
+
+const formConfig = {
+  passwordConfirmable,
+  passwordConfirmation,
+  globalMessage: '',
+  loading: false,
+};
 
 export default function RecoverPassword() {
   return (
@@ -19,39 +27,18 @@ export default function RecoverPassword() {
 function RecoverPasswordForm() {
   const router = useRouter();
   const { token } = router.query;
+  const { getFieldProps, handleSubmit, state, updateState } = useForm(formConfig);
+  const globalErrorMessage = state.globalMessage.error;
 
-  const passwordRef = useRef('');
-  const passwordConfirmRef = useRef('');
+  async function onSubmit(data) {
+    updateState({
+      globalMessage: { error: null },
+      loading: { value: true },
+    });
 
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorObject, setErrorObject] = useState(undefined);
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    const password = passwordRef.current.value;
-    const passwordConfirm = passwordConfirmRef.current.value;
-
-    if (!password) {
-      setErrorObject({
-        key: 'empty',
-        message: 'Campo obrigatório',
-      });
-      return;
-    }
-
-    if (password !== passwordConfirm) {
-      setErrorObject({
-        key: 'password_confirm',
-        message: 'As senhas devem ser iguais.',
-      });
-      return;
-    }
+    const password = data.passwordConfirmable;
 
     try {
-      setIsLoading(true);
-
       const response = await fetch(`/api/v1/recovery`, {
         method: 'PATCH',
         headers: {
@@ -63,7 +50,6 @@ function RecoverPasswordForm() {
         }),
       });
 
-      setGlobalErrorMessage(undefined);
       const responseBody = await response.json();
 
       if (response.status === 200) {
@@ -72,56 +58,47 @@ function RecoverPasswordForm() {
       }
 
       if (response.status === 400) {
-        setErrorObject(responseBody);
-        setIsLoading(false);
+        const key = responseBody.key === 'password' ? 'passwordConfirmable' : 'globalMessage';
+
+        updateState({
+          [key]: { error: createErrorMessage(responseBody) },
+          loading: { value: false },
+        });
         return;
       }
 
-      if (response.status >= 401) {
-        setGlobalErrorMessage(createErrorMessage(responseBody));
-        setIsLoading(false);
-        return;
-      }
+      updateState({
+        globalMessage: { error: createErrorMessage(responseBody) },
+        loading: { value: false },
+      });
     } catch (error) {
-      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-      setIsLoading(false);
+      updateState({
+        globalMessage: { error: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.' },
+        loading: { value: false },
+      });
     }
   }
 
   return (
-    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
+    <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
+      <FormField {...getFieldProps('passwordConfirmable')} />
+      <FormField {...getFieldProps('passwordConfirmation')} />
 
-        <PasswordInput
-          inputRef={passwordRef}
-          id="password"
-          name="password"
-          label="Senha"
-          errorObject={errorObject}
-          setErrorObject={setErrorObject}
-        />
-        <PasswordInput
-          inputRef={passwordConfirmRef}
-          id="passwordConfirm"
-          name="passwordConfirm"
-          label="Repita a senha"
-          errorObject={errorObject}
-          setErrorObject={setErrorObject}
-        />
-        <FormControl>
-          <FormControl.Label visuallyHidden>Alterar senha</FormControl.Label>
-          <ButtonWithLoader
-            variant="primary"
-            size="large"
-            type="submit"
-            sx={{ width: '100%' }}
-            aria-label="Alterar senha"
-            isLoading={isLoading}>
-            Alterar senha
-          </ButtonWithLoader>
-        </FormControl>
-      </Box>
+      {globalErrorMessage && (
+        <Flash variant="danger" sx={{ mt: 3 }}>
+          {globalErrorMessage}
+        </Flash>
+      )}
+
+      <ButtonWithLoader
+        variant="primary"
+        size="large"
+        type="submit"
+        sx={{ width: '100%', mt: 3 }}
+        aria-label="Alterar senha"
+        isLoading={state.loading.value}>
+        Alterar senha
+      </ButtonWithLoader>
     </form>
   );
 }

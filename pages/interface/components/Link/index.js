@@ -1,7 +1,7 @@
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 
-import { NavList, PrimerHeader, PrimerLink, PrimerTabNav } from '@/TabNewsUI';
+import { NavList, PrimerHeader, PrimerLink, TabNav } from '@/TabNewsUI';
 
 export default NextLink;
 
@@ -35,8 +35,8 @@ export function TabNavLink({ href, children, ...props }) {
   const router = useRouter();
   const isCurrent = typeof href === 'string' ? router.asPath === href : router.pathname === href.pathname;
   return (
-    <PrimerTabNav.Link as={NextLink} href={href} selected={isCurrent} prefetch={false} {...props}>
+    <TabNav.Link as={NextLink} href={href} selected={isCurrent} prefetch={false} {...props}>
       {children}
-    </PrimerTabNav.Link>
+    </TabNav.Link>
   );
 }
