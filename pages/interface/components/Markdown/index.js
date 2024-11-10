@@ -82,8 +82,19 @@ export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, 
   );
 }
 
+export function CharacterCounter({ text, maxLength = 20000 }) {
+  const characterCount = useMemo(() => text.length, [text]);
+
+  return (
+    <span
+      style={{ display: 'flex', justifyContent: 'flex-end', color: characterCount > maxLength ? 'red' : 'inherit' }}>
+      {characterCount}/{maxLength}
+    </span>
+  );
+}
+
 // Editor is not part of Primer, so error messages and styling need to be created manually
-export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, ...props }) {
+export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, text, ...props }) {
   clobberPrefix = clobberPrefix?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const editorMode = 'split'; // 'tab'
@@ -114,6 +125,7 @@ export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPr
       />
       <EditorStyles compact={compact} mode={editorMode} />
       <EditorColors />
+      <CharacterCounter text={text} maxLength={20000} />
     </Box>
   );
 }

@@ -271,6 +271,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   });
   const [titlePlaceholder, setTitlePlaceholder] = useState('');
 
+  const MAX_CHARACTER_BODY_LIMIT = 20000;
+  const isSubmitDisabled = newData.body.length > MAX_CHARACTER_BODY_LIMIT;
+
   const confirm = useConfirm();
 
   useEffect(() => {
@@ -529,6 +532,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               onKeyDown={onKeyDown}
               compact={!!contentObject?.parent_id}
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
+              text={newData.body}
             />
 
             {errorObject?.key === 'body' && (
@@ -592,6 +596,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <ButtonWithLoader
               variant="primary"
               type="submit"
+              disabled={!!isSubmitDisabled}
               aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
               isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
