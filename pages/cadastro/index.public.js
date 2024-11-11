@@ -1,20 +1,18 @@
+import { email, password, useForm, username } from '@tabnews/forms';
+import { FormField, Text } from '@tabnews/ui';
 import { useRouter } from 'next/router';
-import { useRef, useState } from 'react';
 
-import {
-  Box,
-  Button,
-  ButtonWithLoader,
-  Checkbox,
-  DefaultLayout,
-  Flash,
-  FormControl,
-  Heading,
-  Link,
-  PasswordInput,
-  TextInput,
-} from '@/TabNewsUI';
-import { createErrorMessage, suggestEmail } from 'pages/interface';
+import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
+import { createErrorMessage } from 'pages/interface';
+
+const formConfig = {
+  username,
+  email,
+  password,
+  termsAccepted: { checked: false },
+  globalMessage: '',
+  loading: false,
+};
 
 export default function Register() {
   return (
@@ -30,42 +28,16 @@ export default function Register() {
 
 function SignUpForm() {
   const router = useRouter();
+  const { getFieldProps, handleSubmit, state, updateState } = useForm(formConfig);
+  const globalErrorMessage = state.globalMessage.error;
 
-  const usernameRef = useRef('');
-  const emailRef = useRef('');
-  const passwordRef = useRef('');
+  async function onSubmit(data) {
+    updateState({
+      globalMessage: { error: null },
+      loading: { value: true },
+    });
 
-  const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorObject, setErrorObject] = useState(undefined);
-  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
-
-  function clearErrors() {
-    setErrorObject(undefined);
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    const username = usernameRef.current.value;
-    const email = emailRef.current.value;
-    const password = passwordRef.current.value;
-
-    setIsLoading(true);
-    setErrorObject(undefined);
-
-    const suggestedEmail = suggestEmail(email);
-
-    if (suggestedEmail) {
-      setErrorObject({
-        suggestion: suggestedEmail,
-        key: 'email',
-        type: 'typo',
-      });
-
-      setIsLoading(false);
-      return;
-    }
+    const { username, email, password } = data;
 
     try {
       const response = await fetch(`/api/v1/users`, {
@@ -81,8 +53,6 @@ function SignUpForm() {
         }),
       });
 
-      setGlobalErrorMessage(undefined);
-
       const responseBody = await response.json();
 
       if (response.status === 201) {
@@ -92,127 +62,59 @@ function SignUpForm() {
       }
 
       if (response.status === 400) {
-        setErrorObject(responseBody);
-        setIsLoading(false);
+        const key = ['username', 'email', 'password'].includes(responseBody.key) ? responseBody.key : 'globalMessage';
+
+        updateState({
+          [key]: { error: createErrorMessage(responseBody) },
+          loading: { value: false },
+        });
         return;
       }
 
-      if (response.status >= 403) {
-        setGlobalErrorMessage(createErrorMessage(responseBody));
-        setIsLoading(false);
-        return;
-      }
+      updateState({
+        globalMessage: { error: createErrorMessage(responseBody) },
+        loading: { value: false },
+      });
     } catch (error) {
-      setGlobalErrorMessage('Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.');
-      setIsLoading(false);
+      updateState({
+        globalMessage: { error: 'Não foi possível se conectar ao TabNews. Por favor, verifique sua conexão.' },
+        loading: { value: false },
+      });
     }
   }
 
   return (
-    <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {globalErrorMessage && <Flash variant="danger">{globalErrorMessage}</Flash>}
-
-        <FormControl id="name">
-          <FormControl.Label>Nome de usuário</FormControl.Label>
-          <TextInput
-            ref={usernameRef}
-            onChange={clearErrors}
-            name="name"
-            size="large"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu nome de usuário"
-            contrast
-            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
-          />
-          <FormControl.Caption>Esse nome será exibido publicamente.</FormControl.Caption>
-
-          {errorObject?.key === 'username' && errorObject?.type === 'string.alphanum' && (
-            <FormControl.Validation variant="error">
-              Nome de usuário deve conter apenas letras e números, por exemplo: &quot;nomeSobrenome4&quot;.
-            </FormControl.Validation>
-          )}
-
-          {errorObject?.key === 'username' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-        </FormControl>
-        <FormControl id="email">
-          <FormControl.Label>Email</FormControl.Label>
-          <TextInput
-            ref={emailRef}
-            onChange={clearErrors}
-            name="email"
-            size="large"
-            autoComplete="username"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            block={true}
-            aria-label="Seu email"
-            contrast
-            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
-          />
-          {errorObject?.key === 'email' && errorObject?.message && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
-          {errorObject?.key === 'email' && errorObject?.type === 'typo' && (
-            <FormControl.Validation variant="error">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box>Você quis dizer:</Box>
-                <Box>
-                  <Button
-                    variant="invisible"
-                    size="small"
-                    sx={{ p: 1 }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      clearErrors();
-                      emailRef.current.value = errorObject.suggestion;
-                      passwordRef.current.focus();
-                    }}>
-                    {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
-                  </Button>
-                </Box>
-              </Box>
-            </FormControl.Validation>
-          )}
-        </FormControl>
-
-        <PasswordInput
-          inputRef={passwordRef}
-          id="password"
-          name="password"
-          label="Senha"
-          errorObject={errorObject}
-          setErrorObject={setErrorObject}
-        />
-
-        <FormControl>
-          <Checkbox checked={isTermsAccepted} onChange={() => setIsTermsAccepted(!isTermsAccepted)} />
-          <FormControl.Label>
+    <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
+      <FormField {...getFieldProps('username')} name="name" autoComplete="off" />
+      <FormField {...getFieldProps('email')} autoComplete="username" />
+      <FormField {...getFieldProps('password')} autoComplete="new-password" />
+      <FormField
+        {...getFieldProps('termsAccepted')}
+        sx={{ minHeight: 'auto' }}
+        label={
+          <Text fontSize="1">
             Li e estou de acordo com os
             <Link href="/termos-de-uso"> Termos de Uso.</Link>
-          </FormControl.Label>
-        </FormControl>
+          </Text>
+        }
+      />
 
-        <FormControl>
-          <FormControl.Label visuallyHidden>Criar cadastro</FormControl.Label>
-          <ButtonWithLoader
-            variant="primary"
-            size="large"
-            type="submit"
-            sx={{ width: '100%' }}
-            aria-label="Criar cadastro"
-            disabled={!isTermsAccepted}
-            isLoading={isLoading}>
-            Criar cadastro
-          </ButtonWithLoader>
-        </FormControl>
-      </Box>
+      {globalErrorMessage && (
+        <Flash variant="danger" sx={{ mt: 3 }}>
+          {globalErrorMessage}
+        </Flash>
+      )}
+
+      <ButtonWithLoader
+        variant="primary"
+        size="large"
+        type="submit"
+        sx={{ width: '100%', mt: 3 }}
+        aria-label="Criar cadastro"
+        disabled={!state.termsAccepted.checked}
+        isLoading={state.loading.value}>
+        Criar cadastro
+      </ButtonWithLoader>
     </form>
   );
 }
