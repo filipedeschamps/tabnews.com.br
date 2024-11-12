@@ -1,4 +1,4 @@
-import { Box, CounterLabel, Heading, PrimerTabNav, TabNavLink } from '@/TabNewsUI';
+import { Box, CounterLabel, Heading, TabNav, TabNavLink } from '@/TabNewsUI';
 
 export default function UserHeader({ username, children, rootContentCount, childContentCount, adContentCount }) {
   return (
@@ -10,7 +10,7 @@ export default function UserHeader({ username, children, rootContentCount, child
         {children}
       </Box>
 
-      <PrimerTabNav sx={{ width: '100%', mb: 3 }}>
+      <TabNav sx={{ width: '100%', mb: 3 }}>
         <TabNavLink href={`/${username}`}>Perfil</TabNavLink>
 
         <TabNavLink
@@ -36,7 +36,7 @@ export default function UserHeader({ username, children, rootContentCount, child
           }}>
           Classificados {!!adContentCount && <CounterLabel>{adContentCount}</CounterLabel>}
         </TabNavLink>
-      </PrimerTabNav>
+      </TabNav>
     </>
   );
 }
