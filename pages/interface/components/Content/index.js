@@ -38,6 +38,8 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Como renomear uma branch local no Git?',
 ];
 
+const MAX_BODY_LENGTH = 20000;
+
 export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
@@ -270,9 +272,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     isSponsoredContent: contentObject?.type === 'ad',
   });
   const [titlePlaceholder, setTitlePlaceholder] = useState('');
-
-  const MAX_CHARACTER_BODY_LIMIT = 20000;
-  const isSubmitDisabled = newData.body.length > MAX_CHARACTER_BODY_LIMIT;
 
   const confirm = useConfirm();
 
@@ -532,7 +531,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               onKeyDown={onKeyDown}
               compact={!!contentObject?.parent_id}
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
-              text={newData.body}
+              maxLength={MAX_BODY_LENGTH}
             />
 
             {errorObject?.key === 'body' && (
@@ -596,7 +595,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <ButtonWithLoader
               variant="primary"
               type="submit"
-              disabled={!!isSubmitDisabled}
               aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
               isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
