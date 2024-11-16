@@ -3,7 +3,7 @@ import { RevalidateProvider } from 'next-swr';
 import { SWRConfig } from 'swr';
 
 import { ThemeProvider, Turnstile } from '@/TabNewsUI';
-import { DefaultHead, UserProvider } from 'pages/interface';
+import { DefaultHead, UserProvider, useUmamiTracking } from 'pages/interface';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -20,6 +20,8 @@ async function SWRFetcher(resource, init) {
 const fallbackData = { body: null, headers: {} };
 
 function MyApp({ Component, pageProps }) {
+  useUmamiTracking();
+
   return (
     <ThemeProvider>
       <Turnstile />
