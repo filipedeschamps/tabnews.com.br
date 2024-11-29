@@ -159,7 +159,7 @@ const schemas = {
   description: function () {
     return Joi.object({
       description: Joi.string()
-        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
+        .replace(/[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+$|\u0000/gsu, '')
         .max(5000)
         .allow('')
         .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
@@ -231,7 +231,7 @@ const schemas = {
     return Joi.object({
       title: Joi.string()
         .replace(
-          /^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+|(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gu,
+          /^[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+|[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+$|\u0000/gu,
           '',
         )
         .min(1)
@@ -243,8 +243,8 @@ const schemas = {
   body: function () {
     return Joi.object({
       body: Joi.string()
-        .pattern(/^(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0).*$/su, { invert: true })
-        .replace(/(\s|\p{C}|\u2800|\u034f|\u115f|\u1160|\u17b4|\u17b5|\u3164|\uffa0)+$|\u0000/gsu, '')
+        .pattern(/^[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0].*$/su, { invert: true })
+        .replace(/[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+$|\u0000/gsu, '')
         .min(1)
         .max(20000)
         .custom(withoutMarkdown, 'check if is empty without markdown')
