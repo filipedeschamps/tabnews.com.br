@@ -1,3 +1,4 @@
+export { default as Analytics } from './components/Analytics';
 export { DefaultHead, default as Head } from './components/Head';
 export { default as useCollapse } from './hooks/useCollapse';
 export { default as useMediaQuery } from './hooks/useMediaQuery';
