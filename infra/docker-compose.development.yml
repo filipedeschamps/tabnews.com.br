@@ -9,7 +9,13 @@ services:
       - '${POSTGRES_PORT}:5432'
     volumes:
       - postgres_data:/data/postgres
+      - ./scripts:/docker-entrypoint-initdb.d
     restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
   mailcatcher:
     container_name: mailcatcher
     image: sj26/mailcatcher
@@ -19,5 +25,16 @@ services:
     ports:
       - '${EMAIL_SMTP_PORT}:1025'
       - '${EMAIL_HTTP_PORT}:1080'
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    ports:
+      - '${UMAMI_PORT}:3000'
+    environment:
+      DATABASE_URL: postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres_dev:5432/$UMAMI_DB
+    depends_on:
+      postgres_dev:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
 volumes:
   postgres_data:
