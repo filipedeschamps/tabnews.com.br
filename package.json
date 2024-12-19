@@ -84,7 +84,7 @@
     "start": "next start",
     "start:local": "npm run services:seed && next start && npm run services:stop",
     "email": "email dev --dir models/transactional/emails --port 3001",
-    "services:seed": "kill-port 3000 && npm run services:up && npm run migration:run && npm run migration:seed",
+    "services:seed": "kill-port 3000 && npm run services:up && npm run migration:run && npm run migration:seed && npm run umami:config",
     "services:up": "npm run docker:compose -- up -d",
     "services:stop": "npm run docker:compose -- stop",
     "services:down": "npm run docker:compose -- down",
@@ -104,6 +104,7 @@
     "migration:run": "node -r dotenv-expand/config infra/scripts/wait-for-db-connection-ready.js && node-pg-migrate up --envPath ./.env -m infra/migrations/ 2>migrations.log",
     "migration:dry-run": "node-pg-migrate up --dry-run --envPath ./.env -m infra/migrations",
     "migration:seed": "node -r dotenv-expand/config infra/scripts/seed-database.js",
+    "umami:config": "node -r dotenv-expand/config infra/scripts/config-umami.js",
     "prepare": "husky",
     "pre-commit": "lint-staged"
   },
