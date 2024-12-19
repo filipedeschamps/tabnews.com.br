@@ -10,6 +10,7 @@ import migrator from 'infra/migrator.js';
 import webserver from 'infra/webserver.js';
 import activation from 'models/activation.js';
 import balance from 'models/balance.js';
+import ban from 'models/ban';
 import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
@@ -188,6 +189,10 @@ async function activateUser(userObject) {
   return await activation.activateUserByUserId(userObject.id);
 }
 
+async function nukeUser(userObject) {
+  return await ban.nuke(userObject.id);
+}
+
 async function createSession(userObject) {
   return await session.create(userObject.id);
 }
@@ -296,6 +301,30 @@ async function createRate(contentObject, amount, fromUserId) {
 
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
+}
+
+async function getLastActivateAccountToken() {
+  const results = await database.query('SELECT * FROM activate_account_tokens ORDER BY created_at DESC LIMIT 1;');
+  return results.rows[0];
+}
+
+async function updateActivateAccountToken(tokenId, tokenBody) {
+  const query = {
+    text: `
+      UPDATE
+        activate_account_tokens
+      SET
+        expires_at = $2
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [tokenId, tokenBody.expires_at],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
 }
 
 async function updateEmailConfirmationToken(tokenId, tokenBody) {
@@ -469,11 +498,14 @@ const orchestrator = {
   dropAllTables,
   findSessionByToken,
   getEmails,
+  getLastActivateAccountToken,
   getLastEmail,
   getLastEvent,
+  nukeUser,
   parseSetCookies,
   removeFeaturesFromUser,
   runPendingMigrations,
+  updateActivateAccountToken,
   updateContent,
   updateEmailConfirmationToken,
   updateEventCreatedAt,
