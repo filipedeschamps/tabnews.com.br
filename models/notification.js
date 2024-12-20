@@ -91,10 +91,7 @@ async function sendUserDisabled({ eventId, user }) {
 
   await email.send({
     to: user.email,
-    from: {
-      name: 'TabNews',
-      address: 'contato@tabnews.com.br',
-    },
+    from: 'TabNews <contato@tabnews.com.br>',
     subject: 'Sua conta foi desativada',
     html,
     text,
@@ -116,10 +113,7 @@ async function sendContentDeletedToUser({ contents, eventId, userId }) {
 
   await email.send({
     to: userToNotify.email,
-    from: {
-      name: 'TabNews',
-      address: 'contato@tabnews.com.br',
-    },
+    from: 'TabNews <contato@tabnews.com.br>',
     subject: subject,
     html,
     text,

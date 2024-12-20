@@ -1,5 +1,6 @@
 import retry from 'async-retry';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 import { ServiceError } from 'errors';
 import logger from 'infra/logger.js';
@@ -24,7 +25,25 @@ while (process.env['EMAIL_SMTP_HOST' + configNumber]) {
   configNumber = transporterConfigs.length + 1;
 }
 
-const transporters = transporterConfigs.map((config) => nodemailer.createTransport(config));
+const transporters = transporterConfigs.map((config) => {
+  if (config.auth.user === 'resend') {
+    const resend = new Resend(config.auth.pass);
+
+    return {
+      sendMail: async (mailOptions) => {
+        const { data, error } = await resend.emails.send(mailOptions);
+
+        if (error) {
+          throw error;
+        }
+
+        return data;
+      },
+    };
+  }
+
+  return nodemailer.createTransport(config);
+});
 
 const retries = (RETRIES_PER_EMAIL_SERVICE + 1) * transporters.length - 1;
 
