@@ -38,10 +38,7 @@ async function sendEmailToUser(user, newEmail, tokenId) {
   });
 
   await email.send({
-    from: {
-      name: 'TabNews',
-      address: 'contato@tabnews.com.br',
-    },
+    from: 'TabNews <contato@tabnews.com.br>',
     to: newEmail,
     subject: 'Confirme seu novo email',
     html,

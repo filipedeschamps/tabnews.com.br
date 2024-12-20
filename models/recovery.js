@@ -55,10 +55,7 @@ async function sendEmailToUser(user, tokenId) {
   });
 
   await email.send({
-    from: {
-      name: 'TabNews',
-      address: 'contato@tabnews.com.br',
-    },
+    from: 'TabNews <contato@tabnews.com.br>',
     to: user.email,
     subject: 'Recuperação de Senha',
     html,
