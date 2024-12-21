@@ -12,7 +12,7 @@ import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import 'katex/dist/katex.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Box, EditorColors, EditorStyles, useTheme } from '@/TabNewsUI';
+import { Box, EditorColors, EditorStyles, Text, useTheme } from '@/TabNewsUI';
 
 import { anchorHeadersPlugin } from './plugins/anchor-headers';
 import { copyCodeToClipboardPlugin } from './plugins/copy-code-to-clipboard';
@@ -82,8 +82,23 @@ export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, 
   );
 }
 
+export function CharacterCounter({ text, maxLength }) {
+  const characterCount = useMemo(() => text.length, [text]);
+  return (
+    <Text
+      sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        fontSize: '14px',
+        color: characterCount > maxLength ? 'danger.fg' : undefined,
+      }}>
+      {characterCount}/{maxLength}
+    </Text>
+  );
+}
+
 // Editor is not part of Primer, so error messages and styling need to be created manually
-export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, ...props }) {
+export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, maxLength, value, ...props }) {
   clobberPrefix = clobberPrefix?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const editorMode = 'split'; // 'tab'
@@ -114,6 +129,7 @@ export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPr
       />
       <EditorStyles compact={compact} mode={editorMode} />
       <EditorColors />
+      <CharacterCounter text={value} maxLength={maxLength} />
     </Box>
   );
 }

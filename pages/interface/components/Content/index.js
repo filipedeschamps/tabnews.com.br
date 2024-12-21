@@ -38,6 +38,8 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Como renomear uma branch local no Git?',
 ];
 
+const MAX_BODY_LENGTH = 20000;
+
 export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
@@ -529,6 +531,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               onKeyDown={onKeyDown}
               compact={!!contentObject?.parent_id}
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
+              maxLength={MAX_BODY_LENGTH}
             />
 
             {errorObject?.key === 'body' && (
