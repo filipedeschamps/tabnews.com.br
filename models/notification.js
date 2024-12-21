@@ -52,10 +52,7 @@ async function sendReplyEmailToParentUser(createdContent) {
 
     await email.send({
       to: parentContentUser.email,
-      from: {
-        name: 'TabNews',
-        address: 'contato@tabnews.com.br',
-      },
+      from: 'TabNews <contato@tabnews.com.br>',
       subject: subject,
       html,
       text,
