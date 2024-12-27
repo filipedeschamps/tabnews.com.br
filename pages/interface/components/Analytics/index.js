@@ -8,7 +8,6 @@ export default function Analytics() {
         id="umami-script"
         src="/analytics.js"
         data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-        data-path-matcher="^(/login|/cadastro|/publicar)$"
         data-exclude-search="true"
         strategy="lazyOnload"
       />
