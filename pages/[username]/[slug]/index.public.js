@@ -6,6 +6,7 @@ import { AdBanner, Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinB
 import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
 import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
+import analytics from 'models/analytics';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
@@ -324,6 +325,26 @@ export async function getStaticPaths() {
 }
 
 export const getStaticProps = getStaticPropsRevalidate(async (context) => {
+  const [content, stats = {}] = await Promise.all([
+    getContentData(context),
+    analytics.getStatsByPath(`/${context.params.username}/${context.params.slug}`),
+  ]);
+
+  if (content.notFound) {
+    return content;
+  }
+
+  return {
+    props: {
+      stats,
+      ...content.props,
+    },
+    revalidate: 1,
+    swr: { revalidateOnFocus: false },
+  };
+});
+
+async function getContentData(context) {
   const userTryingToGet = user.createAnonymous();
 
   let contentTreeFound;
@@ -428,7 +449,5 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       parentContentFound: JSON.parse(JSON.stringify(secureParentContentFound)),
       contentMetadata: JSON.parse(JSON.stringify(contentMetadata)),
     },
-    revalidate: 1,
-    swr: { revalidateOnFocus: false },
   };
-});
+}

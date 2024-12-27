@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
 import database from 'infra/database.js';
+import umami from 'models/umami';
 
 async function getChildContentsPublished() {
   const results = await database.query(`
@@ -257,9 +258,14 @@ async function getVotesTaken() {
   });
 }
 
+async function getStatsByPath(path) {
+  return await umami.getStatsByPath(path);
+}
+
 export default Object.freeze({
   getChildContentsPublished,
   getRootContentsPublished,
+  getStatsByPath,
   getUsersCreated,
   getVotesGraph,
   getVotesTaken,
