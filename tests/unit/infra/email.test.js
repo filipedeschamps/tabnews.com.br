@@ -4,6 +4,18 @@ import { ServiceError } from 'errors';
 import logger from 'infra/logger';
 import webserver from 'infra/webserver';
 
+const mocks = vi.hoisted(() => ({
+  resendSendMail: vi.fn(),
+}));
+
+vi.mock('resend', () => ({
+  Resend: vi.fn().mockImplementation(() => ({
+    emails: {
+      send: mocks.resendSendMail,
+    },
+  })),
+}));
+
 vi.mock('nodemailer', () => ({
   default: {
     createTransport: vi.fn(),
@@ -138,6 +150,10 @@ describe('infra/email > send', () => {
       send = await import('infra/email').then((module) => module.default.send);
     });
 
+    afterAll(() => {
+      webserver.isServerlessRuntime = false;
+    });
+
     it('should send an email with the provided options', async () => {
       await expect(send(defaultEmailData)).resolves.not.toThrow();
 
@@ -167,6 +183,146 @@ describe('infra/email > send', () => {
       expect(sendMail).toHaveBeenCalledTimes(2);
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+    });
+  });
+
+  describe('With "Resend" service', () => {
+    beforeEach(() => {
+      mocks.resendSendMail.mockResolvedValue({
+        data: 'Email sent',
+        error: null,
+      });
+    });
+
+    describe('Only "Resend" service', () => {
+      const resendTestEnv = {
+        EMAIL_USER: 'resend',
+        EMAIL_PASSWORD: 're_password_test',
+      };
+
+      beforeEach(async () => {
+        process.env = {
+          ...originalEnv,
+          ...defaultTestEnv,
+          ...resendTestEnv,
+        };
+
+        send = await import('infra/email').then((module) => module.default.send);
+      });
+
+      it('should not initialize as a transporter', () => {
+        expect(nodemailer.createTransport).not.toHaveBeenCalled();
+      });
+
+      it('should send an email with the provided options', async () => {
+        await expect(send(defaultEmailData)).resolves.not.toThrow();
+
+        expect(mocks.resendSendMail).toHaveBeenCalledWith(defaultEmailData);
+      });
+
+      it('should throw an error if sending the email fails all attempts', async () => {
+        mocks.resendSendMail.mockRejectedValue(new Error('Failed to send email'));
+
+        await expect(send(defaultEmailData)).rejects.toThrow('Failed to send email');
+
+        expect(mocks.resendSendMail).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      });
+
+      it('should retry if sending the email fails once', async () => {
+        mocks.resendSendMail.mockRejectedValueOnce(new Error('Failed to send email'));
+
+        await expect(send(defaultEmailData)).resolves.not.toThrow();
+
+        expect(mocks.resendSendMail).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      });
+    });
+
+    describe('With "Resend" and two other services', () => {
+      const resendTestEnv = {
+        EMAIL_USER2: 'resend',
+        EMAIL_PASSWORD2: 're_password_test',
+      };
+
+      const thirdEmailServiceEnv = {
+        EMAIL_SMTP_HOST3: 'host.test3',
+        EMAIL_SMTP_PORT3: 1026,
+        EMAIL_USER3: 'email_user_test3',
+        EMAIL_PASSWORD3: 'email_password_test3',
+      };
+
+      const thirdMailOptions = {
+        auth: {
+          user: thirdEmailServiceEnv.EMAIL_USER3,
+          pass: thirdEmailServiceEnv.EMAIL_PASSWORD3,
+        },
+        secure: false,
+        host: thirdEmailServiceEnv.EMAIL_SMTP_HOST3,
+        port: thirdEmailServiceEnv.EMAIL_SMTP_PORT3,
+      };
+
+      beforeEach(async () => {
+        process.env = {
+          ...originalEnv,
+          ...defaultTestEnv,
+          ...resendTestEnv,
+          ...thirdEmailServiceEnv,
+        };
+
+        send = await import('infra/email').then((module) => module.default.send);
+      });
+
+      it('should initialize the transporters', () => {
+        // Resend service is not initialized as a transporter
+        expect(nodemailer.createTransport).toHaveBeenCalledTimes(2);
+        expect(nodemailer.createTransport).toHaveBeenCalledWith(defaultMailOptions);
+        expect(nodemailer.createTransport).toHaveBeenCalledWith(thirdMailOptions);
+      });
+
+      it('should send an email with the provided options', async () => {
+        await expect(send(defaultEmailData)).resolves.not.toThrow();
+
+        expect(sendMail).toHaveBeenCalledWith(defaultEmailData);
+        expect(mocks.resendSendMail).not.toHaveBeenCalled();
+      });
+
+      it('should throw an error if sending the email fails all attempts', async () => {
+        sendMail.mockRejectedValue(new Error('Failed to send email'));
+        mocks.resendSendMail.mockRejectedValue(new Error('Failed to send email'));
+
+        await expect(send(defaultEmailData)).rejects.toThrow('Failed to send email');
+
+        expect(sendMail).toHaveBeenCalledTimes(4);
+        expect(mocks.resendSendMail).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledTimes(6);
+        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      });
+
+      it('should retry with "Resend" service', async () => {
+        sendMail.mockRejectedValueOnce(new Error('Failed to send email'));
+
+        await expect(send(defaultEmailData)).resolves.not.toThrow();
+
+        expect(sendMail).toHaveBeenCalledOnce();
+        expect(mocks.resendSendMail).toHaveBeenCalledOnce();
+        expect(logger.error).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      });
+
+      it('should retry after "Resend" attempt', async () => {
+        sendMail.mockRejectedValueOnce(new Error('Failed to send email'));
+        mocks.resendSendMail.mockRejectedValueOnce(new Error('Failed to send email'));
+
+        await expect(send(defaultEmailData)).resolves.not.toThrow();
+
+        expect(sendMail).toHaveBeenCalledTimes(2);
+        expect(mocks.resendSendMail).toHaveBeenCalledOnce();
+        expect(logger.error).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      });
     });
   });
 });
