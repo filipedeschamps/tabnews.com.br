@@ -45,6 +45,7 @@ describe('infra/email > send', () => {
     EMAIL_USER: 'email_user_test',
     EMAIL_PASSWORD: 'email_password_test',
     RETRIES_PER_EMAIL_SERVICE: '1',
+    EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS: '40',
   };
 
   const defaultMailOptions = {
@@ -332,6 +333,7 @@ describe('infra/email > send', () => {
       process.env = {
         ...originalEnv,
         ...defaultTestEnv,
+        EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS: '1',
         RETRIES_PER_EMAIL_SERVICE: '2',
       };
 
@@ -346,6 +348,20 @@ describe('infra/email > send', () => {
       expect(sendMail).toHaveBeenCalledTimes(3);
       expect(logger.error).toHaveBeenCalledTimes(3);
       expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+    });
+
+    it('should retry after timeout (`EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS`)', async () => {
+      sendMail.mockImplementationOnce(
+        () => new Promise((resolve) => setTimeout(() => resolve(new Error('Failed to send email')), 1100)),
+      );
+
+      await expect(send(defaultEmailData)).resolves.not.toThrow();
+
+      expect(sendMail).toHaveBeenCalledTimes(2);
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(
+        new ServiceError({ message: 'Timeout: Email sending took longer than 1 second(s)' }),
+      );
     });
   });
 });

@@ -7,6 +7,7 @@ import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
 
 const retriesPerService = parseInt(process.env.RETRIES_PER_EMAIL_SERVICE) || 1;
+const timeoutInSeconds = process.env.EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS || 40;
 
 const transporterConfigs = [];
 let configNumber = '';
@@ -74,7 +75,15 @@ async function send({ from, to, subject, html, text }) {
     const configIndex = (attempt - 1) % transporters.length;
     const transporter = transporters[configIndex];
 
-    await transporter.sendMail(mailOptions);
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`Timeout: Email sending took longer than ${timeoutInSeconds} second(s)`)),
+          timeoutInSeconds * 1000,
+        ),
+      ),
+    ]);
   }
 
   function logError(error, attempt) {
