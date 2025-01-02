@@ -11,7 +11,7 @@ const RETRIES_PER_EMAIL_SERVICE = 1;
 const transporterConfigs = [];
 let configNumber = '';
 
-while (process.env['EMAIL_SMTP_HOST' + configNumber]) {
+while (process.env['EMAIL_USER' + configNumber]) {
   transporterConfigs.push({
     host: process.env['EMAIL_SMTP_HOST' + configNumber],
     port: process.env['EMAIL_SMTP_PORT' + configNumber],
