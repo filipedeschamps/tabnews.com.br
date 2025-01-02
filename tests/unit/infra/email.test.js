@@ -44,6 +44,7 @@ describe('infra/email > send', () => {
     EMAIL_SMTP_PORT: 1025,
     EMAIL_USER: 'email_user_test',
     EMAIL_PASSWORD: 'email_password_test',
+    RETRIES_PER_EMAIL_SERVICE: '1',
   };
 
   const defaultMailOptions = {
@@ -323,6 +324,28 @@ describe('infra/email > send', () => {
         expect(logger.error).toHaveBeenCalledTimes(2);
         expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
       });
+    });
+  });
+
+  describe('Custom retry options', () => {
+    beforeEach(async () => {
+      process.env = {
+        ...originalEnv,
+        ...defaultTestEnv,
+        RETRIES_PER_EMAIL_SERVICE: '2',
+      };
+
+      send = await import('infra/email').then((module) => module.default.send);
+    });
+
+    it('should retry with custom `RETRIES_PER_EMAIL_SERVICE`', async () => {
+      sendMail.mockRejectedValue(new Error('Failed to send email'));
+
+      await expect(send(defaultEmailData)).rejects.toThrow('Failed to send email');
+
+      expect(sendMail).toHaveBeenCalledTimes(3);
+      expect(logger.error).toHaveBeenCalledTimes(3);
+      expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
     });
   });
 });

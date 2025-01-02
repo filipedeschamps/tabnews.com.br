@@ -6,7 +6,7 @@ import { ServiceError } from 'errors';
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
 
-const RETRIES_PER_EMAIL_SERVICE = 1;
+const retriesPerService = parseInt(process.env.RETRIES_PER_EMAIL_SERVICE) || 1;
 
 const transporterConfigs = [];
 let configNumber = '';
@@ -45,7 +45,7 @@ const transporters = transporterConfigs.map((config) => {
   return nodemailer.createTransport(config);
 });
 
-const retries = (RETRIES_PER_EMAIL_SERVICE + 1) * transporters.length - 1;
+const retries = (retriesPerService + 1) * transporters.length - 1;
 
 async function send({ from, to, subject, html, text }) {
   const mailOptions = {
