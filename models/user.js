@@ -234,30 +234,69 @@ async function create(postedUserData) {
 
   validUserData.features = ['read:activation_token'];
 
-  const newUser = await runInsertQuery(validUserData);
-  return newUser;
+  const query = getInsertQuery(validUserData, 'LOWER(username)');
 
-  async function runInsertQuery(validUserData) {
-    const query = {
-      text: `
-        INSERT INTO
-          users (username, email, password, features)
-        VALUES
-          ($1, $2, $3, $4)
-        RETURNING
-          *
-        ;`,
-      values: [validUserData.username, validUserData.email, validUserData.password, validUserData.features],
-    };
+  let results;
+  try {
+    results = await database.query(query);
+  } catch (error) {
+    if (error.databaseErrorCode !== database.errorCodes.UNIQUE_CONSTRAINT_VIOLATION) {
+      throw error;
+    }
 
-    const results = await database.query(query);
-    const newUser = results.rows[0];
-
-    newUser.tabcoins = 0;
-    newUser.tabcash = 0;
-
-    return newUser;
+    const query = getInsertQuery(validUserData, 'email');
+    results = await database.query(query);
   }
+
+  const newUser = results.rows[0];
+
+  newUser.tabcoins = 0;
+  newUser.tabcash = 0;
+
+  return newUser;
+}
+
+function getInsertQuery(validUserData, constraint) {
+  return {
+    text: `
+      INSERT INTO
+        users (username, email, password, features)
+      VALUES
+        ($1, $2, $3, $4)
+      ON CONFLICT (${constraint}) DO
+        UPDATE SET
+          username = $1,
+          email = $2,
+          password = $3,
+          features = $4,
+          created_at = NOW(),
+          updated_at = NOW(),
+          rewarded_at = NOW()
+        WHERE
+        (
+          SELECT
+            COUNT(*)
+          FROM
+            users u
+          LEFT JOIN
+            activate_account_tokens aat ON u.id = aat.user_id
+          WHERE
+            (
+              LOWER(u.username) = LOWER($1) OR
+              LOWER(u.email) = LOWER($2)
+            )
+              AND
+            (
+              COALESCE(aat.used, true) OR
+              aat.expires_at > NOW() OR
+              'nuked' = ANY(u.features)
+            )
+        ) = 0
+      RETURNING
+        *
+      ;`,
+    values: [validUserData.username, validUserData.email, validUserData.password, validUserData.features],
+  };
 }
 
 function createAnonymous() {
@@ -375,29 +414,35 @@ async function validateUniqueUser(userData, options) {
 
   if (userData.username) {
     queryValues.push(userData.username);
-    orConditions.push(`LOWER(username) = LOWER($${queryValues.length})`);
+    orConditions.push(`LOWER(u.username) = LOWER($${queryValues.length})`);
   }
 
   if (userData.email) {
     queryValues.push(userData.email);
-    orConditions.push(`LOWER(email) = LOWER($${queryValues.length})`);
+    orConditions.push(`LOWER(u.email) = LOWER($${queryValues.length})`);
   }
 
   let where = `(${orConditions.join(' OR ')})`;
 
   if (userData.id) {
     queryValues.push(userData.id);
-    where += ` AND id <> $${queryValues.length}`;
+    where += ` AND u.id <> $${queryValues.length}`;
   }
 
   const query = {
     text: `
       SELECT
-        username,
-        email
+        u.username,
+        u.email
       FROM
-        users
+        users u
+      LEFT JOIN activate_account_tokens aat ON user_id = u.id
       WHERE
+        (
+          COALESCE(aat.used, true) OR
+          aat.expires_at > NOW() OR
+          'nuked' = ANY(u.features)
+        ) AND
         ${where}
     `,
     values: queryValues,

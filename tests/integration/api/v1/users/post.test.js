@@ -3,6 +3,7 @@ import { version as uuidVersion } from 'uuid';
 import password from 'models/password.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -11,6 +12,8 @@ beforeAll(async () => {
 });
 
 describe('POST /api/v1/users', () => {
+  const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
   describe('Anonymous user', () => {
     test('With unique and valid data', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
@@ -206,6 +209,43 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
       expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
       expect(secondResponseBody.key).toBe('username');
+    });
+
+    test('With "username" and "email" duplicated', async () => {
+      const { response: firstResponse, responseBody: firstResponseBody } = await usersRequestBuilder.post({
+        username: 'SaMeUsErNaMe',
+        email: 'SaMeEmAiL@example.com',
+        password: 'validpassword',
+      });
+
+      expect.soft(firstResponse.status).toBe(201);
+
+      await orchestrator.nukeUser(firstResponseBody);
+
+      const activateAccountToken = await orchestrator.getLastActivateAccountToken();
+      await orchestrator.updateActivateAccountToken(activateAccountToken.id, {
+        expires_at: new Date(Date.now() - 1000),
+      });
+
+      const { response: secondResponse, responseBody: secondResponseBody } = await usersRequestBuilder.post({
+        username: 'sameUsername',
+        email: 'sameEmail@example.com',
+        password: 'new-password',
+      });
+
+      expect.soft(secondResponse.status).toBe(400);
+      expect(secondResponseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: 'O "username" informado já está sendo usado.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+        key: 'username',
+        error_id: secondResponseBody.error_id,
+        request_id: secondResponseBody.request_id,
+      });
+      expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
     });
 
     test('With "username" missing', async () => {
@@ -761,5 +801,179 @@ describe('POST /api/v1/users', () => {
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('object');
     });
+  });
+
+  test('With a duplicate "username" for a user with expired activation token', async () => {
+    const { response: firstResponse, responseBody: firstResponseBody } = await usersRequestBuilder.post({
+      username: 'ARepeatedUsername',
+      email: 'a-repeated-username-1@gmail.com',
+      password: 'validpassword',
+    });
+
+    expect.soft(firstResponse.status).toBe(201);
+
+    const activateAccountToken = await orchestrator.getLastActivateAccountToken();
+    await orchestrator.updateActivateAccountToken(activateAccountToken.id, {
+      expires_at: new Date(Date.now() - 1000),
+    });
+
+    const { response: secondResponse, responseBody: secondResponseBody } = await usersRequestBuilder.post({
+      username: 'ARepeatedUSERNAME',
+      email: 'a-repeated-username-2@example.com',
+      password: 'new-password',
+    });
+
+    expect.soft(secondResponse.status).toBe(201);
+    expect(secondResponseBody).toStrictEqual({
+      id: firstResponseBody.id,
+      username: 'ARepeatedUSERNAME',
+      description: '',
+      features: ['read:activation_token'],
+      tabcoins: 0,
+      tabcash: 0,
+      created_at: secondResponseBody.created_at,
+      updated_at: secondResponseBody.updated_at,
+    });
+
+    expect(new Date(secondResponseBody.created_at).getTime()).toBeGreaterThan(
+      new Date(firstResponseBody.created_at).getTime(),
+    );
+    expect(new Date(secondResponseBody.updated_at).getTime()).toBeGreaterThan(
+      new Date(firstResponseBody.updated_at).getTime(),
+    );
+
+    const userInDatabase = await user.findOneByUsername('ARepeatedUSERNAME');
+    const passwordsMatch = await password.compare('new-password', userInDatabase.password);
+
+    expect(passwordsMatch).toBe(true);
+    expect(userInDatabase.email).toBe('a-repeated-username-2@example.com');
+  });
+
+  test('With a duplicate "email" for a user with expired activation token', async () => {
+    const { response: firstResponse, responseBody: firstResponseBody } = await usersRequestBuilder.post({
+      username: 'ARepeatedEmail',
+      email: 'a-repeated-email@gmail.com',
+      password: 'validpassword',
+    });
+
+    expect.soft(firstResponse.status).toBe(201);
+
+    const activateAccountToken = await orchestrator.getLastActivateAccountToken();
+    await orchestrator.updateActivateAccountToken(activateAccountToken.id, {
+      expires_at: new Date(Date.now() - 1000),
+    });
+
+    const { response: secondResponse, responseBody: secondResponseBody } = await usersRequestBuilder.post({
+      username: 'ARepeatedEmail2',
+      email: 'A-Repeated-Email@gmail.com',
+      password: 'new-password',
+    });
+
+    expect.soft(secondResponse.status).toBe(201);
+    expect(secondResponseBody).toStrictEqual({
+      id: firstResponseBody.id,
+      username: 'ARepeatedEmail2',
+      description: '',
+      features: ['read:activation_token'],
+      tabcoins: 0,
+      tabcash: 0,
+      created_at: secondResponseBody.created_at,
+      updated_at: secondResponseBody.updated_at,
+    });
+
+    expect(new Date(secondResponseBody.created_at).getTime()).toBeGreaterThan(
+      new Date(firstResponseBody.created_at).getTime(),
+    );
+    expect(new Date(secondResponseBody.updated_at).getTime()).toBeGreaterThan(
+      new Date(firstResponseBody.updated_at).getTime(),
+    );
+
+    const userInDatabase = await user.findOneByUsername('ARepeatedEmail2');
+    const passwordsMatch = await password.compare('new-password', userInDatabase.password);
+
+    expect(passwordsMatch).toBe(true);
+    expect(userInDatabase.email).toBe('a-repeated-email@gmail.com');
+  });
+
+  test('With a duplicate "username" for a nuked user with expired activation token', async () => {
+    const { response: firstResponse, responseBody: firstResponseBody } = await usersRequestBuilder.post({
+      username: 'NukedSameUsername',
+      email: 'nuked-same-username-1@gmail.com',
+      password: 'validpassword',
+    });
+
+    expect.soft(firstResponse.status).toBe(201);
+
+    await orchestrator.nukeUser(firstResponseBody);
+
+    const activateAccountToken = await orchestrator.getLastActivateAccountToken();
+    await orchestrator.updateActivateAccountToken(activateAccountToken.id, {
+      expires_at: new Date(Date.now() - 1000),
+    });
+
+    const { response: secondResponse, responseBody: secondResponseBody } = await usersRequestBuilder.post({
+      username: 'NukedSameUsername',
+      email: 'nuked-same-username-2@example.com',
+      password: 'new-password',
+    });
+
+    expect.soft(secondResponse.status).toBe(400);
+    expect(secondResponseBody).toStrictEqual({
+      status_code: 400,
+      name: 'ValidationError',
+      message: 'O "username" informado já está sendo usado.',
+      action: 'Ajuste os dados enviados e tente novamente.',
+      error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+      key: 'username',
+      error_id: secondResponseBody.error_id,
+      request_id: secondResponseBody.request_id,
+    });
+    expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
+    expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
+  });
+
+  test('With "username" and "email" duplicated from different users, one with expired token and the other nuked', async () => {
+    const { response: firstResponse, responseBody: firstResponseBody } = await usersRequestBuilder.post({
+      username: 'firstUserNuked',
+      email: 'first-user@example.com',
+      password: 'validpassword',
+    });
+
+    expect.soft(firstResponse.status).toBe(201);
+
+    await orchestrator.nukeUser(firstResponseBody);
+
+    const { response: secondResponse } = await usersRequestBuilder.post({
+      username: 'secondUserExpiredToken',
+      email: 'second-user@example.com',
+      password: 'validpassword',
+    });
+
+    expect.soft(secondResponse.status).toBe(201);
+
+    const activateAccountToken = await orchestrator.getLastActivateAccountToken();
+    await orchestrator.updateActivateAccountToken(activateAccountToken.id, {
+      expires_at: new Date(Date.now() - 1000),
+    });
+
+    const { response: thirdResponse, responseBody: thirdResponseBody } = await usersRequestBuilder.post({
+      username: 'firstUserNuked',
+      email: 'second-user@example.com',
+      password: 'new-password',
+    });
+
+    expect.soft(thirdResponse.status).toBe(400);
+    expect(thirdResponseBody).toStrictEqual({
+      status_code: 400,
+      name: 'ValidationError',
+      message: 'O "username" informado já está sendo usado.',
+      action: 'Ajuste os dados enviados e tente novamente.',
+      error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+      key: 'username',
+      error_id: thirdResponseBody.error_id,
+      request_id: thirdResponseBody.request_id,
+    });
+    expect(uuidVersion(thirdResponseBody.error_id)).toBe(4);
+    expect(uuidVersion(thirdResponseBody.request_id)).toBe(4);
   });
 });
