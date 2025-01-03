@@ -8,6 +8,7 @@ import ban from 'models/ban.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import event from 'models/event.js';
+import otp from 'models/otp';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
@@ -68,6 +69,8 @@ function patchValidationHandler(request, response, next) {
     password: 'optional',
     description: 'optional',
     notifications: 'optional',
+    totp: 'optional',
+    totp_secret: 'optional',
   });
 
   request.body = cleanBodyValues;
@@ -102,6 +105,38 @@ async function patchHandler(request, response) {
     insecureInputValues,
     targetUser,
   );
+
+  if (secureInputValues.totp_secret) {
+    const userAlreadyEnabledTotp = targetUser.totp_secret !== null;
+
+    if (userAlreadyEnabledTotp) {
+      throw new ValidationError({
+        message: 'Duplo fator de autenticação já habilitado para a conta.',
+        action: 'Verifique se você está realizando a operação correta.',
+        errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:MFA:TOTP:ALREADY_CONFIGURED',
+      });
+    } else {
+      if (!secureInputValues.totp) {
+        throw new ForbiddenError({
+          message: 'O código TOTP não foi informado.',
+          action: 'Refaça a requisição enviando um código TOTP.',
+          errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:MFA:TOTP:TOKEN_NOT_SENT',
+        });
+      }
+
+      const isTokenValid = otp.validateTotp(secureInputValues.totp_secret, secureInputValues.totp);
+
+      if (!isTokenValid) {
+        throw new ForbiddenError({
+          message: 'O código TOTP informado é inválido.',
+          action: 'Verifique o código TOTP e tente novamente.',
+          errorLocationCode: 'CONTROLLER:USERS:USERNAME:PATCH:MFA:TOTP:INVALID_CODE',
+        });
+      }
+
+      secureInputValues.totp_recovery_codes = otp.createRecoveryCodes();
+    }
+  }
 
   // TEMPORARY BEHAVIOR
   // TODO: only let user update "password"
@@ -153,6 +188,12 @@ async function patchHandler(request, response) {
     updatedUser,
   );
 
+  if (secureInputValues.totp_recovery_codes) {
+    const recoveryCodesKeys = Object.keys(secureInputValues.totp_recovery_codes);
+
+    secureOutputValues.totp_recovery_codes = recoveryCodesKeys;
+  }
+
   return response.status(200).json(secureOutputValues);
 
   function getEventMetadata(originalUser, updatedUser) {
@@ -161,7 +202,7 @@ async function patchHandler(request, response) {
       updatedFields: [],
     };
 
-    const updatableFields = ['description', 'notifications', 'username'];
+    const updatableFields = ['description', 'notifications', 'username', 'totp_secret'];
     for (const field of updatableFields) {
       if (originalUser[field] !== updatedUser[field]) {
         metadata.updatedFields.push(field);

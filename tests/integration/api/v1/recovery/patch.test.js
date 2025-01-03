@@ -1,8 +1,10 @@
 import { version as uuidVersion } from 'uuid';
 
+import otp from 'models/otp';
 import recovery from 'models/recovery.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -212,13 +214,157 @@ describe('PATCH /api/v1/recovery', () => {
 
       expect(responseBody).toStrictEqual({
         name: 'NotFoundError',
-        message: 'O token de recuperação de senha utilizado não foi encontrado no sistema ou expirou.',
-        action: 'Solicite uma nova recuperação de senha.',
+        message: 'O token de recuperação de senha utilizado não foi encontrado no sistema.',
+        action: 'Certifique-se que está sendo enviado o token corretamente.',
         status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
-        key: 'token_id',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('With valid information with TOTP enabled, and sending a valid TOTP token', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.activateUser(defaultUser);
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: recoveryToken.id,
+          password: 'newValidPassword',
+          totp,
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      const updatedTokenInDatabase = await recovery.findOneTokenById(recoveryToken.id);
+      const updatedUserInDatabase = await user.findOneById(defaultUser.id);
+
+      expect.soft(response.status).toBe(200);
+
+      expect(responseBody).toStrictEqual({
+        used: true,
+        expires_at: updatedTokenInDatabase.expires_at.toISOString(),
+        created_at: updatedTokenInDatabase.created_at.toISOString(),
+        updated_at: updatedTokenInDatabase.updated_at.toISOString(),
+      });
+
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+      expect(responseBody.updated_at > recoveryToken.updated_at.toISOString()).toBe(true);
+
+      expect(defaultUser.password).not.toBe(updatedUserInDatabase.password);
+    });
+
+    test('With valid information with TOTP enabled, but sending an invalid TOTP token', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.activateUser(defaultUser);
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: recoveryToken.id,
+          password: 'newValidPassword',
+          totp: otp.createTotp().generate(),
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(responseBody).toStrictEqual({
+        name: 'ForbiddenError',
+        message: 'O código TOTP informado é inválido.',
+        action: 'Verifique o código TOTP e tente novamente.',
+        status_code: 403,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:INVALID_CODE',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('With valid information with TOTP enabled, but not sending TOTP token', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await orchestrator.createUser();
+
+      await orchestrator.activateUser(defaultUser);
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: recoveryToken.id,
+          password: 'newValidPassword',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(responseBody).toStrictEqual({
+        name: 'ForbiddenError',
+        message: 'Duplo fator de autenticação habilitado para a conta.',
+        action: 'Refaça a requisição enviando o código TOTP.',
+        status_code: 403,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:TOKEN_NOT_SENT',
       });
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
