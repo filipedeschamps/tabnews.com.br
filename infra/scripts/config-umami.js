@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const { Client } = require('pg');
 
-const endpoint = process.env.UMAMI_ENDPOINT;
+const endpoint = process.env.NEXT_PUBLIC_UMAMI_ENDPOINT;
 const websiteDomain = `${process.env.NEXT_PUBLIC_WEBSERVER_HOST}:${process.env.NEXT_PUBLIC_WEBSERVER_PORT}`;
 const websiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 const connectionString = `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.UMAMI_DB}`;

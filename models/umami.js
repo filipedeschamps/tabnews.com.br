@@ -4,7 +4,7 @@ import { ServiceError } from 'errors';
 import logger from 'infra/logger';
 
 function createUmamiService() {
-  const apiEndpoint = process.env.UMAMI_API_ENDPOINT || `${process.env.UMAMI_ENDPOINT}/api`;
+  const apiEndpoint = process.env.UMAMI_API_ENDPOINT || `${process.env.NEXT_PUBLIC_UMAMI_ENDPOINT}/api`;
   const websiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
   const username = process.env.UMAMI_API_CLIENT_USERNAME || 'admin';
   const password = process.env.UMAMI_API_CLIENT_PASSWORD || 'umami';
