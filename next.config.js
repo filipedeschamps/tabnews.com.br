@@ -61,7 +61,7 @@ module.exports = {
       },
       {
         source: '/api/v1/analytics',
-        destination: `${process.env.UMAMI_ENDPOINT}/api/send`,
+        destination: `${process.env.NEXT_PUBLIC_UMAMI_ENDPOINT}/api/send`,
       },
     ];
   },
