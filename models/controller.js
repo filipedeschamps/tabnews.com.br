@@ -1,3 +1,4 @@
+import { waitUntil } from '@vercel/functions';
 import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
 
@@ -19,7 +20,7 @@ import session from 'models/session.js';
 function injectRequestMetadata(request, response, next) {
   request.context = {
     ...request.context,
-    requestId: uuidV4(),
+    requestId: request.headers['x-vercel-id'] || uuidV4(),
     clientIp: ip.extractFromRequest(request),
   };
 
@@ -116,6 +117,16 @@ function logRequest(request, response, next) {
   };
 
   logger.info(log);
+
+  let resolve;
+  const flushPromise = new Promise((res) => (resolve = res));
+
+  waitUntil(flushPromise);
+
+  response.on('close', async () => {
+    await logger.flush();
+    resolve();
+  });
 
   next();
 }
