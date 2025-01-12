@@ -8,6 +8,9 @@ vi.mock('infra/logger.js');
 describe('Controller', () => {
   describe('logRequest', () => {
     const next = vi.fn();
+    const response = {
+      on: vi.fn(),
+    };
 
     beforeEach(() => {
       logger.info.mockClear();
@@ -28,7 +31,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [request.headers],
@@ -39,7 +42,7 @@ describe('Controller', () => {
     });
 
     it('should call logger.info only with headers and body in array format', () => {
-      logRequest({}, {}, next);
+      logRequest({}, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [{}],
@@ -57,7 +60,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [{}],
@@ -81,7 +84,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [request.headers],
@@ -112,7 +115,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [
@@ -145,7 +148,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [
@@ -172,7 +175,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [{}],
@@ -201,7 +204,7 @@ describe('Controller', () => {
         },
       };
 
-      logRequest(request, {}, next);
+      logRequest(request, response, next);
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [request.headers],
