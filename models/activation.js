@@ -214,6 +214,5 @@ export default Object.freeze({
   getActivationApiEndpoint,
   getActivationPageEndpoint,
   activateUserUsingTokenId,
-  activateUserByUserId,
   update,
 });
