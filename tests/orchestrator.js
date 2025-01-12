@@ -216,12 +216,15 @@ async function createUser(userObject) {
     }
   }
 
-  return await user.create({
+  const createdUser = await user.create({
     username,
     email,
     password: userObject?.password || 'password',
     description: userObject?.description || '',
   });
+  await activation.create(createdUser);
+
+  return createdUser;
 }
 
 async function addFeaturesToUser(userObject, features) {
@@ -233,7 +236,25 @@ async function removeFeaturesFromUser(userObject, features) {
 }
 
 async function activateUser(userObject) {
-  return await activation.activateUserByUserId(userObject.id);
+  const findTokenQuery = {
+    text: `
+      SELECT
+        id
+      FROM activate_account_tokens
+      WHERE user_id = $1
+        AND used = false
+        AND expires_at >= now()
+      ORDER BY created_at DESC
+      LIMIT 1;
+    `,
+    values: [userObject.id],
+  };
+  const results = await database.query(findTokenQuery);
+  const token = results.rows[0];
+
+  await activation.activateUserUsingTokenId(token.id);
+
+  return await user.findOneById(userObject.id);
 }
 
 async function createSession(userObject) {
