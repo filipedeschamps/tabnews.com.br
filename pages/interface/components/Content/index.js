@@ -523,7 +523,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           <FormControl id="body" required={!contentObject?.parent_id}>
             <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
             <Editor
-              isValid={errorObject?.key === 'body'}
+              isInvalid={errorObject?.key === 'body'}
               value={newData.body}
               onChange={handleChange}
               onKeyDown={onKeyDown}

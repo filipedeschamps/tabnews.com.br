@@ -400,7 +400,7 @@ function DescriptionForm({
           Descrição
         </FormControl.Label>
         <Editor
-          isValid={errorObject?.key === 'description'}
+          isInvalid={errorObject?.key === 'description'}
           value={description}
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
