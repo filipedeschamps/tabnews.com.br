@@ -83,7 +83,7 @@ export default function Viewer({ value: _value, areLinksTrusted, clobberPrefix, 
 }
 
 // Editor is not part of Primer, so error messages and styling need to be created manually
-export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPrefix, ...props }) {
+export function Editor({ isInvalid, onKeyDown, compact, areLinksTrusted, clobberPrefix, ...props }) {
   clobberPrefix = clobberPrefix?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix });
   const editorMode = 'split'; // 'tab'
@@ -103,7 +103,7 @@ export function Editor({ isValid, onKeyDown, compact, areLinksTrusted, clobberPr
   }, []);
 
   return (
-    <Box sx={{ width: '100%' }} ref={editorRef} className={isValid ? 'is-invalid' : ''}>
+    <Box sx={{ width: '100%' }} ref={editorRef} className={isInvalid ? 'is-invalid' : ''}>
       <ByteMdEditor
         plugins={bytemdPluginList}
         mode={editorMode}

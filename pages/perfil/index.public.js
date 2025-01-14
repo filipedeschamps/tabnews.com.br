@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   ButtonWithLoader,
+  CharacterCount,
   Checkbox,
   DefaultLayout,
   Editor,
@@ -28,6 +29,8 @@ export default function EditProfile() {
     </DefaultLayout>
   );
 }
+
+const DESCRIPTION_MAX_LENGTH = 5_000;
 
 function EditProfileForm() {
   const router = useRouter();
@@ -267,14 +270,18 @@ function EditProfileForm() {
               setDescription(value);
             }}
             value={description}
-            isValid={errorObject?.key === 'description'}
+            isInvalid={errorObject?.key === 'description' || description.length > DESCRIPTION_MAX_LENGTH}
             compact={true}
             clobberPrefix={`${user?.username}-content-`}
           />
 
-          {errorObject?.key === 'description' && errorObject.type === 'string.max' && (
-            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-          )}
+          <Box sx={{ display: 'flex', width: '100%' }}>
+            {errorObject?.key === 'description' && errorObject.type === 'string.max' && (
+              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+            )}
+
+            <CharacterCount maxLength={DESCRIPTION_MAX_LENGTH} value={description} />
+          </Box>
         </FormControl>
 
         <FormControl id="notifications" sx={{ gap: 2, alignItems: 'center' }}>
