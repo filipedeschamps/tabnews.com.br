@@ -8,6 +8,7 @@ import {
   BranchName,
   Button,
   ButtonWithLoader,
+  CharacterCount,
   Checkbox,
   Editor,
   Flash,
@@ -37,6 +38,8 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Ferramentas para melhorar sua produtividade',
   'e.g. Como renomear uma branch local no Git?',
 ];
+
+const BODY_MAX_LENGTH = 20_000;
 
 export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
@@ -523,7 +526,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           <FormControl id="body" required={!contentObject?.parent_id}>
             <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
             <Editor
-              isInvalid={errorObject?.key === 'body'}
+              isInvalid={errorObject?.key === 'body' || newData.body.length > BODY_MAX_LENGTH}
               value={newData.body}
               onChange={handleChange}
               onKeyDown={onKeyDown}
@@ -531,9 +534,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
 
-            {errorObject?.key === 'body' && (
-              <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-            )}
+            <Box sx={{ display: 'flex', width: '100%' }}>
+              {errorObject?.key === 'body' && (
+                <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+              )}
+
+              <CharacterCount maxLength={BODY_MAX_LENGTH} value={newData.body} />
+            </Box>
           </FormControl>
 
           {!contentObject?.parent_id && (

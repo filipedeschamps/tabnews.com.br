@@ -8,6 +8,7 @@ import {
   Box,
   Button,
   ButtonWithLoader,
+  CharacterCount,
   DefaultLayout,
   Editor,
   Flash,
@@ -52,6 +53,8 @@ export default function Page({ userFound: userFoundFallback }) {
     </DefaultLayout>
   );
 }
+
+const DESCRIPTION_MAX_LENGTH = 5_000;
 
 function UserProfile({ userFound, onUpdate }) {
   const { user } = useUser();
@@ -400,7 +403,7 @@ function DescriptionForm({
           Descrição
         </FormControl.Label>
         <Editor
-          isInvalid={errorObject?.key === 'description'}
+          isInvalid={errorObject?.key === 'description' || description.length > DESCRIPTION_MAX_LENGTH}
           value={description}
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
@@ -408,9 +411,13 @@ function DescriptionForm({
           clobberPrefix={`${user.username}-content-`}
         />
 
-        {errorObject?.key === 'description' && (
-          <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
-        )}
+        <Box sx={{ display: 'flex', width: '100%' }}>
+          {errorObject?.key === 'description' && (
+            <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
+          )}
+
+          <CharacterCount maxLength={DESCRIPTION_MAX_LENGTH} value={description} />
+        </Box>
       </FormControl>
 
       {globalMessageObject?.position === 'description' && (
