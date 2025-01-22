@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
-import removeMarkdown from 'models/remove-markdown';
+import removeMarkdown, { trimEnd, trimStart } from 'models/remove-markdown';
 import availableFeatures from 'models/user-features';
 
 const MAX_INTEGER = 2147483647;
@@ -159,8 +159,9 @@ const schemas = {
   description: function () {
     return Joi.object({
       description: Joi.string()
-        .replace(/[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+$|\u0000/gsu, '')
         .max(5000)
+        .replace(/\u0000/gu, '')
+        .custom(trimEnd)
         .allow('')
         .when('$required.description', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
@@ -230,12 +231,11 @@ const schemas = {
   title: function () {
     return Joi.object({
       title: Joi.string()
-        .replace(
-          /^[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+|[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+$|\u0000/gu,
-          '',
-        )
         .min(1)
         .max(255)
+        .replace(/\u0000/gu, '')
+        .custom(trimStart)
+        .custom(trimEnd)
         .when('$required.title', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
     });
   },
@@ -244,9 +244,10 @@ const schemas = {
     return Joi.object({
       body: Joi.string()
         .pattern(/^[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0].*$/su, { invert: true })
-        .replace(/[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]+$|\u0000/gsu, '')
         .min(1)
         .max(20000)
+        .replace(/\u0000/gu, '')
+        .custom(trimEnd)
         .custom(withoutMarkdown, 'check if is empty without markdown')
         .when('$required.body', { is: 'required', then: Joi.required(), otherwise: Joi.optional() })
         .messages({

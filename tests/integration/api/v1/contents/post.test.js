@@ -1867,6 +1867,62 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
+    test('Content with "title" containing 100.000 invalid characters', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '!' + '\uffa0'.repeat(100_000) + '\uffa0!',
+        body: 'With invalid title',
+        slug: 'nodejs',
+      });
+
+      expect.soft(response.status).toBe(400);
+
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"title" deve conter no máximo 255 caracteres.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'title',
+        type: 'string.max',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Content with "body" containing 100.000 invalid characters', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: 'With invalid body',
+        body: '!' + '\u034f'.repeat(100_000) + '\u034f!',
+        slug: 'nodejs',
+      });
+
+      expect.soft(response.status).toBe(400);
+
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"body" deve conter no máximo 20000 caracteres.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'body',
+        type: 'string.max',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
     describe('Notifications', () => {
       test('Create "root" content', async () => {
         await orchestrator.deleteAllEmails();

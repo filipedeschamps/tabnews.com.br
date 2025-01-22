@@ -912,6 +912,35 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('Patching itself with a "description" containing 100.000 invalid characters', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+
+        body: JSON.stringify({
+          description: '!' + '\u17b4'.repeat(100_000) + '\u17b4!',
+        }),
+      });
+
+      const responseBody = await response.json();
+      expect.soft(response.status).toBe(400);
+      expect.soft(responseBody.status_code).toBe(400);
+      expect(responseBody.name).toBe('ValidationError');
+      expect(responseBody.message).toBe('"description" deve conter no máximo 5000 caracteres.');
+      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect(responseBody.type).toBe('string.max');
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
+    });
+
     test('Patching itself with a "description" containing value null', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
