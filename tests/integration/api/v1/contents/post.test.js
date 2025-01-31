@@ -1923,6 +1923,42 @@ describe('POST /api/v1/contents', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
+    test('Content containing emojis', async () => {
+      const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+      const defaultUser = await contentsRequestBuilder.buildUser();
+
+      const { response, responseBody } = await contentsRequestBuilder.post({
+        title: '🚀 🎉 🙃',
+        body: '👍 🤔 🤷',
+      });
+
+      expect.soft(response.status).toBe(201);
+
+      expect(responseBody).toStrictEqual({
+        id: responseBody.id,
+        owner_id: defaultUser.id,
+        parent_id: null,
+        slug: '8jagcdwn46jipcfmym',
+        title: '🚀 🎉 🙃',
+        body: '👍 🤔 🤷',
+        status: 'draft',
+        type: 'content',
+        source_url: null,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+        published_at: null,
+        deleted_at: null,
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: 0,
+        owner_username: defaultUser.username,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+    });
+
     describe('Notifications', () => {
       test('Create "root" content', async () => {
         await orchestrator.deleteAllEmails();
