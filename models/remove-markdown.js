@@ -15,16 +15,13 @@ export default function customRemoveMarkdown(md, options = {}) {
       output = output.replace(/\s+/g, ' ');
     }
 
-    if (output.length > options.maxLength) {
-      output = output
-        .substring(0, options.maxLength - 3)
-        .trim()
-        .concat('...');
-    }
-
     if (options.trim) {
       output = trimStart(output);
       output = trimEnd(output);
+    }
+
+    if (output.length > options.maxLength) {
+      output = trimEnd(output.substring(0, options.maxLength - 3)).concat('...');
     }
   } catch (e) {
     if (options.throwError) {
@@ -36,24 +33,22 @@ export default function customRemoveMarkdown(md, options = {}) {
   return output;
 }
 
-const whitespaceAndControlCharRegex = /[\s\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]/u;
+const invisibleCharRegex = '[\\s\\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]';
+const trimStartRegex = new RegExp('^' + invisibleCharRegex, 'u');
+const trimEndRegex = new RegExp(invisibleCharRegex + '$', 'u');
 
 export function trimStart(str) {
-  let i = 0;
-
-  while (i < str.length && whitespaceAndControlCharRegex.test(str[i])) {
-    i++;
+  while (trimStartRegex.test(str)) {
+    str = str.replace(trimStartRegex, '');
   }
 
-  return str.slice(i);
+  return str;
 }
 
 export function trimEnd(str) {
-  let i = str.length - 1;
-
-  while (i >= 0 && whitespaceAndControlCharRegex.test(str[i])) {
-    i--;
+  while (trimEndRegex.test(str)) {
+    str = str.replace(trimEndRegex, '');
   }
 
-  return str.slice(0, i + 1);
+  return str;
 }
