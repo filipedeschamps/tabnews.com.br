@@ -14,7 +14,7 @@ const configurations = {
   port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 2000,
   idleTimeoutMillis: 30000,
-  max: 1,
+  max: 2,
   ssl: {
     rejectUnauthorized: false,
   },
@@ -61,6 +61,28 @@ async function tryToGetNewClientFromPool() {
     minTimeout: 150,
     maxTimeout: 5000,
     factor: 2,
+    onRetry: (error, attempt) => {
+      const pool = cache.pool
+        ? {
+            totalCount: cache.pool.totalCount,
+            idleCount: cache.pool.idleCount,
+            waitingCount: cache.pool.waitingCount,
+          }
+        : null;
+      const errorObject = new ServiceError({
+        message: error.message,
+        stack: error.stack,
+        context: {
+          attempt,
+          databaseCache: {
+            ...cache,
+            pool,
+          },
+        },
+        errorLocationCode: 'INFRA:DATABASE:GET_NEW_CLIENT_FROM_POOL',
+      });
+      logger.error(errorObject);
+    },
   });
 
   return clientFromPool;
@@ -75,7 +97,7 @@ async function tryToGetNewClientFromPool() {
 }
 
 async function checkForTooManyConnections(client) {
-  if (webserver.isBuildTime) return false;
+  if (webserver.isBuildTime || cache.pool?.waitingCount) return false;
 
   const currentTime = new Date().getTime();
   const openedConnectionsMaxAge = 5000;
@@ -169,11 +191,19 @@ function parseQueryErrorAndLog(error, query) {
     expectedErrorsCode.push(UNDEFINED_FUNCTION);
   }
 
+  const pool = cache.pool
+    ? {
+        totalCount: cache.pool.totalCount,
+        idleCount: cache.pool.idleCount,
+        waitingCount: cache.pool.waitingCount,
+      }
+    : null;
+
   const errorToReturn = new ServiceError({
     message: error.message,
     context: {
       query: query.text,
-      databaseCache: { ...cache, pool: !!cache.pool },
+      databaseCache: { ...cache, pool },
     },
     errorLocationCode: 'INFRA:DATABASE:QUERY',
     databaseErrorCode: error.code,
