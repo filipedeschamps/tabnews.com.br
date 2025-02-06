@@ -590,17 +590,11 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
 
-      const postTabCoinsResponsesBodyPromises = postTabCoinsResponses.map((postTabCoinsResponse) =>
-        postTabCoinsResponse.json(),
-      );
+      const postTabCoinsResponsesBody = postTabCoinsResponses.map(({ responseBody }) => responseBody);
 
-      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(
-        (postTabCoinsResponse) => postTabCoinsResponse.status,
-      );
+      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(({ response }) => response.status);
 
-      const postTabCoinsResponsesBody = await Promise.all(postTabCoinsResponsesBodyPromises);
-
-      expect([201, 422]).toBe(expect.arrayContaining(postTabCoinsResponsesStatus));
+      expect([201, 422]).toStrictEqual(expect.arrayContaining(postTabCoinsResponsesStatus));
 
       expect(postTabCoinsResponsesBody).toContainEqual(
         expect.objectContaining({
