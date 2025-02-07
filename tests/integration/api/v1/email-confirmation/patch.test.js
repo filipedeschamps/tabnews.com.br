@@ -315,6 +315,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
         description: firstUser.description,
         features: firstUser.features,
         notifications: firstUser.notifications,
+        totp_enabled: false,
         created_at: firstUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });

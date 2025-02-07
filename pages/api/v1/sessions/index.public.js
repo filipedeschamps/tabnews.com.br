@@ -1,11 +1,12 @@
 import nextConnect from 'next-connect';
 
-import { ForbiddenError, UnauthorizedError } from 'errors';
+import { ForbiddenError, UnauthorizedError, ValidationError } from 'errors';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
+import otp from 'models/otp';
 import session from 'models/session';
 import user from 'models/user';
 import validator from 'models/validator.js';
@@ -38,6 +39,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    totp: 'optional',
   });
 
   request.body = cleanValues;
@@ -48,13 +50,13 @@ function postValidationHandler(request, response, next) {
 async function postHandler(request, response) {
   const userTryingToCreateSession = request.context.user;
   const insecureInputValues = request.body;
-
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
 
   // Compress all mismatch errors (email and password) into one single error.
   let storedUser;
   try {
     storedUser = await user.findOneByEmail(secureInputValues.email);
+
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
   } catch (error) {
     throw new UnauthorizedError({
@@ -62,6 +64,29 @@ async function postHandler(request, response) {
       action: `Verifique se os dados enviados estão corretos.`,
       errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
     });
+  }
+
+  if (storedUser.totp_secret) {
+    if (!secureInputValues.totp) {
+      throw new ValidationError({
+        message: 'O duplo fator de autenticação está habilitado para esta conta.',
+        action: 'Refaça a requisição enviando o código TOTP.',
+        errorLocationCode: 'CONTROLER:SESSIONS:POST_HANDLER:MFA:TOTP:TOKEN_NOT_SENT',
+        key: 'totp',
+      });
+    }
+
+    if (secureInputValues.totp) {
+      const valid = otp.validateUserTotp(storedUser.totp_secret, secureInputValues.totp);
+
+      if (!valid) {
+        throw new UnauthorizedError({
+          message: `O código TOTP informado é inválido`,
+          action: `Refaça a requisição enviando um código TOTP válido.`,
+          errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:MFA:TOTP:INVALID_TOKEN`,
+        });
+      }
+    }
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
@@ -82,7 +107,6 @@ async function postHandler(request, response) {
   }
 
   const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
-
   const secureOutputValues = authorization.filterOutput(storedUser, 'create:session', sessionObject);
 
   return response.status(201).json(secureOutputValues);

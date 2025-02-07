@@ -2,6 +2,7 @@ import { NotFoundError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import emailConfirmation from 'models/email-confirmation.js';
+import otp from 'models/otp.js';
 import pagination from 'models/pagination.js';
 import validator from 'models/validator.js';
 
@@ -313,6 +314,11 @@ async function update(targetUser, postedUserData, options = {}) {
   if ('password' in validPostedUserData) {
     await hashPasswordInObject(validPostedUserData);
   }
+
+  if (validPostedUserData.totp_secret) {
+    encryptTotpSecretInObject(validPostedUserData);
+  }
+
   const updatedUser = await runUpdateQuery(currentUser, validPostedUserData, {
     transaction: options.transaction,
   });
@@ -364,6 +370,7 @@ function validatePatchSchema(postedUserData) {
     password: 'optional',
     description: 'optional',
     notifications: 'optional',
+    totp_secret: 'optional',
   });
 
   return cleanValues;
@@ -430,6 +437,11 @@ async function validateUniqueUser(userData, options) {
 
 async function hashPasswordInObject(userObject) {
   userObject.password = await authentication.hashPassword(userObject.password);
+  return userObject;
+}
+
+function encryptTotpSecretInObject(userObject) {
+  userObject.totp_secret = otp.encryptData(userObject.totp_secret);
   return userObject;
 }
 
