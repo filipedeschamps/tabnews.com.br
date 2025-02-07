@@ -14,7 +14,7 @@ const configurations = {
   port: process.env.POSTGRES_PORT,
   connectionTimeoutMillis: 2000,
   idleTimeoutMillis: 30000,
-  max: 2,
+  max: 3,
   ssl: {
     rejectUnauthorized: false,
   },
