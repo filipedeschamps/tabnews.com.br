@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
@@ -7,15 +7,12 @@ import controller from 'models/controller.js';
 import rss from 'models/rss';
 import user from 'models/user.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .use(cacheControl.swrMaxAge(60))
-  .get(handleRequest);
+  .get(handleRequest)
+  .handler(controller.handlerOptions);
 
 async function handleRequest(request, response) {
   const userTryingToList = user.createAnonymous();

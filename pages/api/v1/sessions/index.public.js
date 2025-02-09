@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import { ForbiddenError, UnauthorizedError } from 'errors';
 import activation from 'models/activation.js';
@@ -10,17 +10,14 @@ import session from 'models/session';
 import user from 'models/user';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
   .delete(authorization.canRequest('read:session'), deleteHandler)
-  .post(postValidationHandler, authorization.canRequest('create:session'), postHandler);
+  .post(postValidationHandler, authorization.canRequest('create:session'), postHandler)
+  .handler(controller.handlerOptions);
 
 async function deleteHandler(request, response) {
   const authenticatedUser = request.context.user;
@@ -42,7 +39,7 @@ function postValidationHandler(request, response, next) {
 
   request.body = cleanValues;
 
-  next();
+  return next();
 }
 
 async function postHandler(request, response) {

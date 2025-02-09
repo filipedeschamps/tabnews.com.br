@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import { NotFoundError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
@@ -11,16 +11,13 @@ import controller from 'models/controller.js';
 import event from 'models/event.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
-  .post(postValidationHandler, authorization.canRequest('update:content'), postHandler);
+  .post(postValidationHandler, authorization.canRequest('update:content'), postHandler)
+  .handler(controller.handlerOptions);
 
 function postValidationHandler(request, response, next) {
   const cleanQueryValues = validator(request.query, {
@@ -36,7 +33,7 @@ function postValidationHandler(request, response, next) {
 
   request.body = cleanBodyValues;
 
-  next();
+  return next();
 }
 
 async function postHandler(request, response) {

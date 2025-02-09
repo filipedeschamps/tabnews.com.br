@@ -1,19 +1,16 @@
 import { formatISO } from 'date-fns';
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import health from 'models/health.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .use(cacheControl.swrMaxAge(5))
-  .get(getHandler);
+  .get(getHandler)
+  .handler(controller.handlerOptions);
 
 async function getHandler(request, response) {
   let statusCode = 200;

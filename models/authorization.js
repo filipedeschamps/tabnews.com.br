@@ -336,7 +336,7 @@ function canRequest(feature) {
       });
     }
 
-    next();
+    return next();
   };
 }
 

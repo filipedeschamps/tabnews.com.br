@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
 
@@ -8,13 +8,12 @@ import controller from 'models/controller.js';
 import ip from 'models/ip.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(logRequest)
   .get(getValidationHandler, getHandler)
-  .post(postValidationHandler, postHandler);
+  .post(postValidationHandler, postHandler)
+  .handler(controller.handlerOptions);
 
 function getValidationHandler(request, response, next) {
   if (request.cookies?.session_id) {
@@ -23,7 +22,7 @@ function getValidationHandler(request, response, next) {
     });
   }
 
-  next();
+  return next();
 }
 
 function logRequest(request, response, next) {
@@ -39,7 +38,7 @@ function logRequest(request, response, next) {
 
   logger.error(snakeize(error));
 
-  next();
+  return next();
 }
 
 function getHandler(request, response) {
@@ -60,7 +59,7 @@ function postValidationHandler(request, response, next) {
     password: 'required',
   });
 
-  next();
+  return next();
 }
 
 async function postHandler(request, response) {

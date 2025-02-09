@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import { ForbiddenError, ValidationError } from 'errors';
 import authentication from 'models/authentication.js';
@@ -8,17 +8,14 @@ import controller from 'models/controller.js';
 import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
   .post(postValidationHandler, postHandler)
-  .patch(patchValidationHandler, patchHandler);
+  .patch(patchValidationHandler, patchHandler)
+  .handler(controller.handlerOptions);
 
 function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
@@ -28,7 +25,7 @@ function postValidationHandler(request, response, next) {
 
   request.body = cleanValues;
 
-  next();
+  return next();
 }
 
 async function postHandler(request, response) {
@@ -75,7 +72,7 @@ function patchValidationHandler(request, response, next) {
 
   request.body = cleanValues;
 
-  next();
+  return next();
 }
 
 async function patchHandler(request, response) {

@@ -22,7 +22,7 @@ function setCacheControl(res, cacheControl) {
 
 function noCache(_, res, next) {
   setCacheControl(res, 'no-cache, no-store, max-age=0, must-revalidate');
-  if (next) next();
+  if (next) return next();
 }
 
 function swrMaxAge(maxAge = 10) {
@@ -30,7 +30,7 @@ function swrMaxAge(maxAge = 10) {
 
   return (_, res, next) => {
     setCacheControl(res, `public, s-maxage=${maxAge.toString()}, stale-while-revalidate`);
-    if (next) next();
+    if (next) return next();
   };
 }
 

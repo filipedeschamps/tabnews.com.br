@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 import { randomUUID as uuidV4 } from 'node:crypto';
 
 import { ValidationError } from 'errors';
@@ -13,22 +13,14 @@ import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
   .get(getValidationHandler, authorization.canRequest('read:user:list'), getHandler)
-  .post(
-    postValidationHandler,
-    authorization.canRequest('create:user'),
-    firewall.canRequest('create:user'),
-    postHandler,
-  );
+  .post(postValidationHandler, authorization.canRequest('create:user'), firewall.canRequest('create:user'), postHandler)
+  .handler(controller.handlerOptions);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -38,7 +30,7 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
-  next();
+  return next();
 }
 
 async function getHandler(request, response) {
@@ -71,7 +63,7 @@ function postValidationHandler(request, response, next) {
 
   request.body = cleanValues;
 
-  next();
+  return next();
 }
 
 async function postHandler(request, response) {
