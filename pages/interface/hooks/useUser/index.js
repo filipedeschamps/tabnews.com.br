@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 const userEndpoint = '/api/v1/user';
@@ -17,7 +16,6 @@ export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(undefined);
-  const router = useRouter();
 
   const fetchUser = useCallback(async () => {
     try {
@@ -73,21 +71,6 @@ export function UserProvider({ children }) {
 
     return () => removeEventListener('focus', onFocus);
   }, [fetchUser, isLoading]);
-
-  useEffect(() => {
-    if (!user?.id || router?.pathname !== '/login') return;
-
-    if (
-      router.query?.redirect?.startsWith('/') &&
-      !router.query?.redirect?.startsWith('//') &&
-      !router.query.redirect.startsWith('/login') &&
-      !router.query.redirect.startsWith('/cadastro')
-    ) {
-      router.replace(router.query.redirect);
-    } else {
-      router.replace('/');
-    }
-  }, [user, router]);
 
   const logout = useCallback(async () => {
     try {
