@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
@@ -7,16 +7,13 @@ import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
-  .patch(patchValidationHandler, authorization.canRequest('read:activation_token'), patchHandler);
+  .patch(patchValidationHandler, authorization.canRequest('read:activation_token'), patchHandler)
+  .handler(controller.handlerOptions);
 
 function patchValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
@@ -24,7 +21,7 @@ function patchValidationHandler(request, response, next) {
   });
 
   request.body = cleanValues;
-  next();
+  return next();
 }
 async function patchHandler(request, response) {
   const userTryingToActivate = request.context.user;

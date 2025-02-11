@@ -25,7 +25,7 @@ function injectRequestMetadata(request, response, next) {
   };
 
   if (next) {
-    next();
+    return next();
   }
 }
 
@@ -128,7 +128,7 @@ function logRequest(request, response, next) {
     resolve();
   });
 
-  next();
+  return next();
 }
 
 const headersToRedact = ['authorization', 'cookie'];
@@ -215,10 +215,14 @@ function injectPaginationHeaders(pagination, endpoint, request, response) {
   response.setHeader('X-Pagination-Total-Rows', pagination.totalRows);
 }
 
+const handlerOptions = {
+  onNoMatch: onNoMatchHandler,
+  onError: onErrorHandler,
+};
+
 export default Object.freeze({
+  handlerOptions,
   injectRequestMetadata,
-  onNoMatchHandler,
-  onErrorHandler,
   logRequest,
   injectPaginationHeaders,
 });

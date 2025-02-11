@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import authentication from 'models/authentication';
 import authorization from 'models/authorization';
@@ -7,15 +7,12 @@ import controller from 'models/controller';
 import firewall from 'models/firewall';
 import validator from 'models/validator';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .use(authentication.injectAnonymousOrUser)
-  .post(cacheControl.noCache, postValidationHandler, authorization.canRequest('review:firewall'), postHandler);
+  .post(cacheControl.noCache, postValidationHandler, authorization.canRequest('review:firewall'), postHandler)
+  .handler(controller.handlerOptions);
 
 function postValidationHandler(request, response, next) {
   const cleanQueryValues = validator(request.query, {
@@ -29,7 +26,7 @@ function postValidationHandler(request, response, next) {
   request.query = cleanQueryValues;
   request.body = cleanBodyValues;
 
-  next();
+  return next();
 }
 
 async function postHandler(request, response) {

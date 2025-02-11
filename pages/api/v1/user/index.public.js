@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -7,16 +7,13 @@ import controller from 'models/controller.js';
 import reward from 'models/reward';
 import session from 'models/session';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(injectUserWithBalance)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
-  .get(authorization.canRequest('read:session'), renewSessionIfNecessary, getHandler);
+  .get(authorization.canRequest('read:session'), renewSessionIfNecessary, getHandler)
+  .handler(controller.handlerOptions);
 
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;

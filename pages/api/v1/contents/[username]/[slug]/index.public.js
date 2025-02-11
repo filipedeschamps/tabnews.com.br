@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import { ForbiddenError, NotFoundError } from 'errors';
 import database from 'infra/database.js';
@@ -11,11 +11,7 @@ import event from 'models/event.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
   .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
@@ -25,7 +21,8 @@ export default nextConnect({
     patchValidationHandler,
     authorization.canRequest('update:content'),
     patchHandler,
-  );
+  )
+  .handler(controller.handlerOptions);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -35,7 +32,7 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
-  next();
+  return next();
 }
 
 async function getHandler(request, response) {
@@ -82,7 +79,7 @@ function patchValidationHandler(request, response, next) {
 
   request.body = cleanBodyValues;
 
-  next();
+  return next();
 }
 
 async function patchHandler(request, response) {

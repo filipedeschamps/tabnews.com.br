@@ -1,4 +1,4 @@
-import nextConnect from 'next-connect';
+import { createRouter } from 'next-connect';
 
 import ad from 'models/advertisement';
 import authorization from 'models/authorization.js';
@@ -7,14 +7,11 @@ import controller from 'models/controller.js';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 
-export default nextConnect({
-  attachParams: true,
-  onNoMatch: controller.onNoMatchHandler,
-  onError: controller.onErrorHandler,
-})
+export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(controller.logRequest)
-  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler);
+  .get(cacheControl.swrMaxAge(10), getValidationHandler, getHandler)
+  .handler(controller.handlerOptions);
 
 function getValidationHandler(request, response, next) {
   const cleanValues = validator(request.query, {
@@ -26,7 +23,7 @@ function getValidationHandler(request, response, next) {
 
   request.query = cleanValues;
 
-  next();
+  return next();
 }
 
 async function getHandler(request, response) {
