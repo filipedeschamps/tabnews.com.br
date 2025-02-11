@@ -1,5 +1,7 @@
 import { email, password, useForm } from '@tabnews/forms';
 import { FormField } from '@tabnews/ui';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 import { Box, ButtonWithLoader, DefaultLayout, Flash, Heading, Link, Text } from '@/TabNewsUI';
 import { createErrorMessage, useUser } from 'pages/interface';
@@ -12,6 +14,24 @@ const formConfig = {
 };
 
 export default function Login() {
+  const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    if (
+      router.query?.redirect?.startsWith('/') &&
+      !router.query?.redirect?.startsWith('//') &&
+      !router.query.redirect.startsWith('/login') &&
+      !router.query.redirect.startsWith('/cadastro')
+    ) {
+      router.replace(router.query.redirect);
+    } else {
+      router.replace('/');
+    }
+  }, [user, router]);
+
   return (
     <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
       <Heading as="h1" sx={{ mb: 3 }}>
