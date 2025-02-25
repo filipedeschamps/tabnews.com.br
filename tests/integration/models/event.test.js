@@ -37,6 +37,34 @@ describe('models/event', () => {
     });
   });
 
+  test('Create "update:user" event for password update', async () => {
+    const defaultUser = await orchestrator.createUser();
+    const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
+
+    const recoveryRequestBuilder = new RequestBuilder('/api/v1/recovery');
+    await recoveryRequestBuilder.patch({
+      token_id: recoveryToken.id,
+      password: 'newPassword',
+    });
+
+    const lastEvent = await orchestrator.getLastEvent();
+
+    expect(lastEvent).toStrictEqual({
+      id: lastEvent.id,
+      type: 'update:user',
+      originator_user_id: null,
+      originator_ip: '127.0.0.1',
+      created_at: lastEvent.created_at,
+      metadata: {
+        id: defaultUser.id,
+        updatedFields: ['password'],
+      },
+    });
+
+    expect(uuidVersion(lastEvent.id)).toBe(4);
+    expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+  });
+
   describe('Default user', () => {
     test('Create "update:user" event', async () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
