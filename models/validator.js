@@ -657,6 +657,17 @@ const schemas = {
           }),
         },
         {
+          is: 'update:user',
+          then: Joi.object({
+            id: Joi.string().required(),
+            updatedFields: Joi.array().items(Joi.string()).required(),
+            username: Joi.object({
+              old: Joi.string().required(),
+              new: Joi.string().required(),
+            }),
+          }),
+        },
+        {
           is: 'create:content:text_root',
           then: Joi.object({
             id: Joi.string().required(),
