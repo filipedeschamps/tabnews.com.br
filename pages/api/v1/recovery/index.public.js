@@ -5,6 +5,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
+import event from 'models/event';
 import recovery from 'models/recovery.js';
 import validator from 'models/validator.js';
 
@@ -80,6 +81,16 @@ async function patchHandler(request, response) {
   const validatedInputValues = request.body;
 
   const tokenObject = await recovery.resetUserPassword(validatedInputValues);
+
+  await event.create({
+    type: 'update:user',
+    originator_user_id: request.context.user.id,
+    originator_ip: request.context.clientIp,
+    metadata: {
+      id: tokenObject.user_id,
+      updatedFields: ['password'],
+    },
+  });
 
   const authorizedValuesToReturn = authorization.filterOutput(userTryingToRecover, 'read:recovery_token', tokenObject);
 
