@@ -109,6 +109,7 @@ export function Editor({ isInvalid, onKeyDown, compact, areLinksTrusted, clobber
         mode={editorMode}
         locale={byteMDLocale}
         sanitize={sanitize({ clobberPrefix })}
+        editorConfig={{ autocapitalize: 'sentences', inputStyle: 'contenteditable', spellcheck: true }}
         remarkRehype={{ clobberPrefix }}
         {...props}
       />
