@@ -100,6 +100,13 @@ export default function Content({ content, isPageRootOwner, mode = 'view', viewF
   }
 }
 
+function normalizeMarkdownLinks(text) {
+  return text.replace(/\[.*?\]\((.*?)\)/g, (match, url) => {
+    const normalizedUrl = url.startsWith('http://') || url.startsWith('https://') ? url : `http://${url}`;
+    return match.replace(url, normalizedUrl);
+  });
+}
+
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   return (
     <Box sx={{ position: 'relative', minWidth: '28px' }}>
@@ -170,7 +177,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
       setGlobalErrorMessage({ error: responseBody });
     }
   };
-
+  contentObject.body = normalizeMarkdownLinks(contentObject.body);
   const isOptionsMenuVisible = user?.id === contentObject.owner_id || user?.features?.includes('update:content:others');
 
   return (
