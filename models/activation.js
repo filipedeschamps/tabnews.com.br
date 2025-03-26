@@ -13,9 +13,9 @@ async function createAndSendActivationEmail(user) {
 
 async function create(user) {
   const query = {
-    text: `INSERT INTO activate_account_tokens (user_id, expires_at)
-           VALUES($1, now() + interval '15 minutes') RETURNING *;`,
-    values: [user.id],
+    text: `INSERT INTO activate_account_tokens (user_id, expires_at, email)
+           VALUES($1, now() + interval '15 minutes', $2) RETURNING *;`,
+    values: [user.id, user.email],
   };
 
   const results = await database.query(query);
