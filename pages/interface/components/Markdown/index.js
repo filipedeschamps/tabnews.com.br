@@ -101,7 +101,10 @@ export function Editor({ isInvalid, onKeyDown, compact, areLinksTrusted, clobber
       ?.querySelector('[bytemd-tippy-path="2"]')
       ?.click();
   }, []);
-
+  const editorConfig = {
+    spellcheck: true, // Habilita o corretor ortográfico
+    inputStyle: 'contenteditable', // Define o inputStyle como 'contenteditable'
+  };
   return (
     <Box sx={{ width: '100%' }} ref={editorRef} className={isInvalid ? 'is-invalid' : ''}>
       <ByteMdEditor
@@ -109,6 +112,7 @@ export function Editor({ isInvalid, onKeyDown, compact, areLinksTrusted, clobber
         mode={editorMode}
         locale={byteMDLocale}
         sanitize={sanitize({ clobberPrefix })}
+        editorConfig={editorConfig} // Passa as configurações do CodeMirror
         remarkRehype={{ clobberPrefix }}
         {...props}
       />
