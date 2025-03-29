@@ -1,6 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
-import otp from 'models/otp.js';
+import otp from 'models/otp';
 import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
