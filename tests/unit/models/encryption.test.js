@@ -14,6 +14,7 @@ describe('Encryption model', () => {
     const encryptedSecret = encryption.encryptData(secret);
     const decryptedSecret = encryption.decryptData(encryptedSecret);
 
-    expect(decryptedSecret).toStrictEqual(secret);
+    expect(encryptedSecret).not.toBe(secret);
+    expect(decryptedSecret).toBe(secret);
   });
 });
