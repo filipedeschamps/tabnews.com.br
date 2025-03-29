@@ -197,9 +197,7 @@ const schemas = {
 
   totp: function () {
     return Joi.object({
-      totp: Joi.string()
-        .length(6)
-        .when('$required.totp', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+      totp: Joi.string().length(6).when('$required.totp', { is: 'required', then: Joi.required() }),
     });
   },
 
