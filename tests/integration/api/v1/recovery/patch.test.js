@@ -318,7 +318,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 403,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:INVALID_CODE',
+        error_location_code: 'CONTROLLER:RECOVERY:PATCH_HANDLER:TOTP_INVALID',
       });
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
@@ -364,7 +364,7 @@ describe('PATCH /api/v1/recovery', () => {
         status_code: 403,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:TOKEN_NOT_SENT',
+        error_location_code: 'CONTROLLER:RECOVERY:PATCH_HANDLER:TOTP_NOT_DEFINED',
       });
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);

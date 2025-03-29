@@ -94,14 +94,14 @@ async function patchHandler(request, response) {
       throw new ForbiddenError({
         message: 'Duplo fator de autenticação habilitado para a conta.',
         action: 'Refaça a requisição enviando o código TOTP.',
-        errorLocationCode: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:TOKEN_NOT_SENT',
+        errorLocationCode: 'CONTROLLER:RECOVERY:PATCH_HANDLER:TOTP_NOT_DEFINED',
       });
     }
     if (!otp.validateTotp(encryption.decryptData(targetUser.totp_secret), validatedInputValues.totp)) {
       throw new ForbiddenError({
         message: 'O código TOTP informado é inválido.',
         action: 'Verifique o código TOTP e tente novamente.',
-        errorLocationCode: 'CONTROLLER:RECOVERY:PATCH_HANDLER:MFA:TOTP:INVALID_CODE',
+        errorLocationCode: 'CONTROLLER:RECOVERY:PATCH_HANDLER:TOTP_INVALID',
       });
     }
   }
