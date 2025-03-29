@@ -981,6 +981,46 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
+    test('Patching itself with null "totp_secret" to disable "totp"', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      const totp_secret = otp.createSecret();
+      const totp = otp.createTotp(totp_secret).generate();
+
+      await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret,
+        totp,
+      });
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        totp_secret: null,
+        totp,
+      });
+
+      expect(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: '',
+        email: defaultUser.email,
+        features: [
+          'create:session',
+          'read:session',
+          'create:content',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content',
+          'update:user',
+        ],
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: false,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
     test('Patching itself with a "description" containing a valid value and totp enabled', async () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const defaultUser = await orchestrator.createUser();
