@@ -1,4 +1,4 @@
-import otp from 'models/otp.js';
+import otp from 'models/otp';
 
 describe('OTP model', () => {
   it('should create a TOTP secret of size 32', () => {
@@ -12,7 +12,7 @@ describe('OTP model', () => {
     const secret = otp.createSecret();
     const totp = otp.createTotp(secret, 'userTOTP');
 
-    expect(totp.label).toStrictEqual(username);
+    expect(totp.label).toBe(username);
     expect(totp.issuer).toBe('TabNews');
   });
 
@@ -21,13 +21,13 @@ describe('OTP model', () => {
     const totp = otp.createTotp(secret);
     const token = totp.generate();
 
-    expect(otp.validateTotp(secret, token)).toBeTruthy();
+    expect(otp.validateTotp(secret, token)).toBe(true);
   });
 
   it('should detect an invalid token', () => {
     const secret = otp.createSecret();
     const token = otp.createTotp().generate();
 
-    expect(otp.validateTotp(secret, token)).toBeFalsy();
+    expect(otp.validateTotp(secret, token)).toBe(false);
   });
 });
