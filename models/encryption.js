@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 const cryptoConfigurations = {
-  algorithm: process.env.TOTP_ENCRYPTION_METHOD,
+  algorithm: 'aes-256-gcm',
   key: crypto.createHash('sha512').update(process.env.TOTP_SECRET_KEY).digest('hex').substring(0, 32),
 };
 
