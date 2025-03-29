@@ -9,7 +9,7 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe('GET /api/v1/mfa/totp/enable', () => {
+describe('GET /api/v1/mfa/totp', () => {
   describe('Anonymous user', () => {
     test('Retrieving the endpoint', async () => {
       const enableRequestBuilder = new RequestBuilder('/api/v1/mfa/totp');
