@@ -93,7 +93,7 @@ export default function useSearchBox() {
 
     const handleClose = () => {
       setIsOpen(false);
-      setTimeout(() => inputRef.current.offsetParent === null && clearGoogleBox(), 800);
+      clearGoogleBox();
     };
 
     if (!isOpen) return null;
