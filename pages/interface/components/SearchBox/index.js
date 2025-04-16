@@ -149,7 +149,7 @@ export default function useSearchBox() {
             background-color: #21262d !important;
           }
           .gsc-input {
-            color-scheme: light;
+            color-scheme: light !important;
           }
           .gssb_c {
             color: #444444;

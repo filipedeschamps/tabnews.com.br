@@ -1,5 +1,5 @@
 module.exports = {
-  transpilePackages: ['@tabnews/ui', '@tabnews/forms'],
+  transpilePackages: ['@primer/react', '@tabnews/ui', '@tabnews/forms'],
   experimental: {
     scrollRestoration: true,
   },
