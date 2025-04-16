@@ -51,7 +51,7 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0",
-    "@faker-js/faker": "8.4.1",
+    "@faker-js/faker": "9.7.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
     "@vitejs/plugin-react": "4.4.0",
