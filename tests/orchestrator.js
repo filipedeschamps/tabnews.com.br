@@ -149,7 +149,7 @@ async function createUser(userObject) {
   let email = userObject?.email;
 
   while (!username) {
-    username = faker.internet.userName().replace(/[_.-]/g, '').substring(0, 30);
+    username = faker.internet.username().replace(/[_.-]/g, '').substring(0, 30);
 
     if (usedFakeUsernames.has(username)) {
       username = undefined;

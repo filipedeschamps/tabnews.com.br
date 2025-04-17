@@ -52,7 +52,7 @@ export default function HeaderComponent() {
   const canListUsers = user?.features.includes('read:user:list');
 
   return (
-    <PrimerHeader as="header" id="header" sx={{ minWidth: 'max-content', px: [2, null, null, 3] }}>
+    <PrimerHeader as="header" id="header" sx={{ minWidth: 'max-content', px: [2, null, null, 3], overflow: 'visible' }}>
       <SearchBoxOverlay />
       <Box as="nav" sx={{ display: 'flex', flex: 1, margin: 0, padding: 0 }}>
         <PrimerHeader.Item sx={{ mr: 0 }}>

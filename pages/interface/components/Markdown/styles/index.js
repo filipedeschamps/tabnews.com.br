@@ -995,7 +995,8 @@ export function ViewerStyles() {
           margin: 0;
           color: ${colors.fg.default};
           background-color: ${colors.canvas.default};
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+          font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
             'Segoe UI Emoji';
           font-size: 16px;
           line-height: 1.5;

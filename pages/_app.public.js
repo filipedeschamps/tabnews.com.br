@@ -1,5 +1,6 @@
 import { RevalidateProvider } from 'next-swr';
 import { SWRConfig } from 'swr';
+import '@tabnews/ui/css';
 
 import { ThemeProvider, Turnstile } from '@/TabNewsUI';
 import { Analytics, DefaultHead, UserProvider } from 'pages/interface';

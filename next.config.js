@@ -1,9 +1,10 @@
 module.exports = {
-  transpilePackages: ['@tabnews/ui', '@tabnews/forms'],
+  transpilePackages: ['@primer/react', '@tabnews/ui', '@tabnews/forms'],
   experimental: {
     scrollRestoration: true,
   },
-  pageExtensions: ['public.js'],
+  // Workaround: https://github.com/vercel/next.js/issues/51478#issuecomment-2095745187
+  pageExtensions: ['public.js', 'workaround.js'],
   eslint: {
     ignoreDuringBuilds: true,
   },
