@@ -74,7 +74,7 @@
     "set-cookie-parser": "2.7.1",
     "uuid": "9.0.1",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "2.1.9"
+    "vitest": "3.1.1"
   },
   "scripts": {
     "dev": "npm run services:seed && npm run next && npm run services:stop",
