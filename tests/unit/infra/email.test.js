@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 
-import { ServiceError } from 'errors';
 import logger from 'infra/logger';
 import webserver from 'infra/webserver';
 
@@ -106,7 +105,7 @@ describe('infra/email > send', () => {
 
       expect(sendMail).toHaveBeenCalledTimes(2);
       expect(logger.error).toHaveBeenCalledTimes(2);
-      expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      expect(logger.error).toHaveBeenCalledWith(getExpectedError());
     });
 
     it('should retry if sending the email fails once', async () => {
@@ -116,7 +115,7 @@ describe('infra/email > send', () => {
 
       expect(sendMail).toHaveBeenCalledTimes(2);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      expect(logger.error).toHaveBeenCalledWith(getExpectedError());
     });
   });
 
@@ -171,7 +170,7 @@ describe('infra/email > send', () => {
       await expect(send(defaultEmailData)).rejects.toThrow('Failed to send email');
       expect(sendMail).toHaveBeenCalledTimes(4);
       expect(logger.error).toHaveBeenCalledTimes(4);
-      expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      expect(logger.error).toHaveBeenCalledWith(getExpectedError());
     });
 
     it('should retry with alternative email service', async () => {
@@ -184,7 +183,7 @@ describe('infra/email > send', () => {
 
       expect(sendMail).toHaveBeenCalledTimes(2);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      expect(logger.error).toHaveBeenCalledWith(getExpectedError());
     });
   });
 
@@ -229,7 +228,7 @@ describe('infra/email > send', () => {
 
         expect(mocks.resendSendMail).toHaveBeenCalledTimes(2);
         expect(logger.error).toHaveBeenCalledTimes(2);
-        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+        expect(logger.error).toHaveBeenCalledWith(getExpectedError());
       });
 
       it('should retry if sending the email fails once', async () => {
@@ -239,7 +238,7 @@ describe('infra/email > send', () => {
 
         expect(mocks.resendSendMail).toHaveBeenCalledTimes(2);
         expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+        expect(logger.error).toHaveBeenCalledWith(getExpectedError());
       });
     });
 
@@ -300,7 +299,7 @@ describe('infra/email > send', () => {
         expect(sendMail).toHaveBeenCalledTimes(4);
         expect(mocks.resendSendMail).toHaveBeenCalledTimes(2);
         expect(logger.error).toHaveBeenCalledTimes(6);
-        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+        expect(logger.error).toHaveBeenCalledWith(getExpectedError());
       });
 
       it('should retry with "Resend" service', async () => {
@@ -311,7 +310,7 @@ describe('infra/email > send', () => {
         expect(sendMail).toHaveBeenCalledOnce();
         expect(mocks.resendSendMail).toHaveBeenCalledOnce();
         expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+        expect(logger.error).toHaveBeenCalledWith(getExpectedError());
       });
 
       it('should retry after "Resend" attempt', async () => {
@@ -323,7 +322,7 @@ describe('infra/email > send', () => {
         expect(sendMail).toHaveBeenCalledTimes(2);
         expect(mocks.resendSendMail).toHaveBeenCalledOnce();
         expect(logger.error).toHaveBeenCalledTimes(2);
-        expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+        expect(logger.error).toHaveBeenCalledWith(getExpectedError());
       });
     });
   });
@@ -347,7 +346,7 @@ describe('infra/email > send', () => {
 
       expect(sendMail).toHaveBeenCalledTimes(3);
       expect(logger.error).toHaveBeenCalledTimes(3);
-      expect(logger.error).toHaveBeenCalledWith(new ServiceError({ message: 'Failed to send email' }));
+      expect(logger.error).toHaveBeenCalledWith(getExpectedError());
     });
 
     it('should retry after timeout (`EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS`)', async () => {
@@ -360,8 +359,16 @@ describe('infra/email > send', () => {
       expect(sendMail).toHaveBeenCalledTimes(2);
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(
-        new ServiceError({ message: 'Timeout: Email sending took longer than 1 second(s)' }),
+        getExpectedError({ message: 'Timeout: Email sending took longer than 1 second(s)' }),
       );
     });
   });
 });
+
+function getExpectedError(props) {
+  return expect.objectContaining({
+    name: 'ServiceError',
+    message: 'Failed to send email',
+    ...props,
+  });
+}
