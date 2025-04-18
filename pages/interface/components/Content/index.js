@@ -508,8 +508,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 name="title"
                 size="large"
                 autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck={false}
+                autoCapitalize="sentences"
+                spellCheck={true}
                 placeholder={titlePlaceholder}
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
