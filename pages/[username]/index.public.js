@@ -221,7 +221,7 @@ function UserProfile({ userFound, onUpdate }) {
             }}>
             <Text sx={{ fontSize: 1, fontWeight: 'bold', mt: 'auto', pb: 1 }}>Descrição</Text>
             {canUpdateDescription && (
-              <Button variant="invisible" onClick={handleEditDescription}>
+              <Button variant="invisible" sx={{ color: 'accent.fg' }} onClick={handleEditDescription}>
                 Editar descrição
               </Button>
             )}

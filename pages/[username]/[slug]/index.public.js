@@ -284,7 +284,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
             </Box>
           </>
         ) : (
-          <Button onClick={() => handleExpand(id)} variant="invisible">
+          <Button onClick={() => handleExpand(id)} variant="invisible" sx={{ color: 'accent.fg' }}>
             <UnfoldIcon /> {`Ver mais ${labelShowMore} resposta${plural}`}
             {labelShowMore != groupedCount && ` (${groupedCount} ocultas)`}
           </Button>
