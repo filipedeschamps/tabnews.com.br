@@ -247,7 +247,7 @@ function EditProfileForm() {
                   <Button
                     variant="invisible"
                     size="small"
-                    sx={{ p: 1 }}
+                    sx={{ color: 'accent.fg', p: 1 }}
                     onClick={(event) => {
                       event.preventDefault();
                       clearMessages();
