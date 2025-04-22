@@ -1,19 +1,13 @@
-import react from '@vitejs/plugin-react';
+import defineConfig from '@tabnews/config/vitest';
 import { config } from 'dotenv';
-import tsconfigPaths from 'vite-tsconfig-paths';
-import { defaultExclude, defineConfig } from 'vitest/config';
+import { defaultExclude } from 'vitest/config';
 
 config();
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
   test: {
     server: { deps: { inline: ['@tabnews/ui'] } },
-    globals: true,
-    fileParallelism: false,
     isolate: false,
-    testTimeout: 60_000,
-    hookTimeout: 30_000,
     setupFiles: ['tests/setup.js'],
     workspace: [
       {
@@ -32,10 +26,5 @@ export default defineConfig({
         },
       },
     ],
-  },
-  esbuild: {
-    loader: 'jsx',
-    include: /.*\.jsx?$/,
-    exclude: [],
   },
 });
