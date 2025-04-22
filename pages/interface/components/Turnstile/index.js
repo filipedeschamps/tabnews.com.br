@@ -50,7 +50,7 @@ export default function Turnstile() {
         window.turnstile.execute(widgetRef.current, turnstileOptions);
       };
 
-      turnstile.queue.length && turnstile.check();
+      if (turnstile.queue.length) turnstile.check();
     };
   }, []);
 
@@ -122,7 +122,7 @@ function replaceOriginalFetch() {
     if (isChallenged(response)) {
       await new Promise((resolve, reject) => {
         turnstile.queue.push({ resolve, reject });
-        turnstile.queue.length === 1 && turnstile.check();
+        if (turnstile.queue.length === 1) turnstile.check();
       })
         .then(() => (response = originalFetch(...args)))
         .catch((error) => {

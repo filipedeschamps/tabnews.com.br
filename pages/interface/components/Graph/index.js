@@ -287,12 +287,12 @@ function getStatusProps(event, network) {
 
       if (isPositive) {
         positives += value;
-        fromUsername && positiveVoteUsersMap.add(fromUsername);
-        toUsername && positiveVoteUsersMap.add(toUsername);
+        if (fromUsername) positiveVoteUsersMap.add(fromUsername);
+        if (toUsername) positiveVoteUsersMap.add(toUsername);
       } else {
         negatives += value;
-        fromUsername && negativeVoteUsersMap.add(fromUsername);
-        toUsername && negativeVoteUsersMap.add(toUsername);
+        if (fromUsername) negativeVoteUsersMap.add(fromUsername);
+        if (toUsername) negativeVoteUsersMap.add(toUsername);
       }
     }
   });

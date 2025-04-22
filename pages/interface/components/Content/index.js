@@ -511,7 +511,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoCapitalize="sentences"
                 spellCheck={true}
                 placeholder={titlePlaceholder}
-                // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 block={true}
                 value={newData.title}
