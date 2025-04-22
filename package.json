@@ -52,29 +52,19 @@
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0",
     "@faker-js/faker": "9.7.0",
+    "@tabnews/config": "0.5.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
-    "@vitejs/plugin-react": "4.4.1",
     "concurrently": "9.1.2",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.5.0",
     "dotenv-expand": "12.0.2",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.4",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-jsx-a11y": "6.9.0",
-    "eslint-plugin-primer-react": "5.4.0",
-    "eslint-plugin-vitest": "0.4.1",
-    "eslint-plugin-vitest-globals": "1.5.0",
     "husky": "9.1.7",
     "kill-port": "1.6.1",
     "lint-staged": "15.5.1",
-    "prettier": "3.5.3",
     "react-email": "4.0.7",
     "set-cookie-parser": "2.7.1",
-    "uuid": "9.0.1",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.1.2"
+    "uuid": "9.0.1"
   },
   "scripts": {
     "dev": "npm run services:seed && npm run next && npm run services:stop",
@@ -95,8 +85,8 @@
     "test": "npm run concurrently -- --hide next -- run",
     "test:watch": "vitest watch",
     "test:watch:services": "npm run concurrently -- -- watch",
-    "lint": "npm run lint:next && npm run lint:prettier",
-    "lint:next": "next lint --max-warnings=0 --dir .",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "lint:eslint": "eslint . --max-warnings 0",
     "lint:prettier": "prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
     "commit": "cz",
@@ -110,7 +100,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
+      "eslint --fix --max-warnings 0",
       "prettier --write"
     ],
     "*.{json,css,scss,md}": [
