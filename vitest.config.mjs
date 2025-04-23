@@ -13,14 +13,21 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          name: 'node',
-          exclude: ['**/interface/**', ...defaultExclude],
+          name: 'integration',
+          include: ['**/integration/**/*.{test,spec}.{js,ts}'],
         },
       },
       {
         extends: true,
         test: {
-          name: 'jsdom',
+          name: 'unit',
+          exclude: ['**/integration/**', '**/interface/**', ...defaultExclude],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'ui',
           environment: 'jsdom',
           include: ['**/interface/**/*.{test,spec}.{js,ts}'],
         },

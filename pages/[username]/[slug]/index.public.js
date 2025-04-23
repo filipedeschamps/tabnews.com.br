@@ -1,3 +1,4 @@
+import { truncate } from '@tabnews/helpers';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -369,7 +370,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   const oneLineBody = removeMarkdown(secureContentFound.body, { maxLength: 190 });
 
   const contentMetadata = {
-    title: `${secureContentFound.title ?? oneLineBody.substring(0, 80)} · ${secureContentFound.owner_username}`,
+    title: `${secureContentFound.title ?? truncate(oneLineBody, 80)} · ${secureContentFound.owner_username}`,
     image: `${webserver.host}/api/v1/contents/${secureContentFound.owner_username}/${secureContentFound.slug}/thumbnail`,
     url: `${webserver.host}/${secureContentFound.owner_username}/${secureContentFound.slug}`,
     description: oneLineBody,

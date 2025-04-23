@@ -1,8 +1,9 @@
+import { trimEnd, trimStart } from '@tabnews/helpers';
 import Joi from 'joi';
 
 import { ValidationError } from 'errors';
 import webserver from 'infra/webserver';
-import removeMarkdown, { trimEnd, trimStart } from 'models/remove-markdown';
+import removeMarkdown from 'models/remove-markdown';
 import availableFeatures from 'models/user-features';
 
 const MAX_INTEGER = 2147483647;
