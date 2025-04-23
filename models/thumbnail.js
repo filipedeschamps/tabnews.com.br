@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import { renderAsync } from '@resvg/resvg-js';
 import fs from 'node:fs';
