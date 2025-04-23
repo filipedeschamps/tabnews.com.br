@@ -1,3 +1,4 @@
+import { truncate } from '@tabnews/helpers';
 import { waitUntil } from '@vercel/functions';
 import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
@@ -156,7 +157,7 @@ function clearBody(requestBody) {
   const cleanBody = { ...requestBody };
 
   if (typeof cleanBody.body === 'string') {
-    cleanBody.body = cleanBody.body.substring(0, 300);
+    cleanBody.body = truncate(cleanBody.body, 300);
   }
 
   bodyToRedact.forEach((key) => {

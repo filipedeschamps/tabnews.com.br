@@ -2072,7 +2072,7 @@ describe('POST /api/v1/contents', () => {
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(getLastEmail.recipients[0].includes(firstUser.email)).toBe(true);
         expect(getLastEmail.subject).toBe(
-          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título ..."`,
+          `"${secondUser.username}" comentou em "Título longo do conteúdo raiz, deveria cortar o título..."`,
         );
         expect(getLastEmail.text).toContain(rootContent.title);
         expect(getLastEmail.html).toContain(rootContent.title);

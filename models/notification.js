@@ -1,3 +1,5 @@
+import { truncate } from '@tabnews/helpers';
+
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
@@ -61,9 +63,7 @@ async function sendReplyEmailToParentUser(createdContent) {
 }
 
 function getReplyEmailSubject({ createdContent, rootContent }) {
-  const sanitizedRootContentTitle =
-    rootContent.title.length > 55 ? `${rootContent.title.substring(0, 55)}...` : rootContent.title;
-
+  const sanitizedRootContentTitle = truncate(rootContent.title, 58);
   return `"${createdContent.owner_username}" comentou em "${sanitizedRootContentTitle}"`;
 }
 

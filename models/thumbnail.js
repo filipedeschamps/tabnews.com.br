@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { renderAsync } from '@resvg/resvg-js';
+import { truncate } from '@tabnews/helpers';
 import fs from 'node:fs';
 import { join, resolve } from 'node:path';
 import satori from 'satori';
@@ -56,11 +57,7 @@ export function parseContent(content, parentContent) {
     title = removeMarkdown(content.body, { maxLength: 120 });
   }
 
-  let parent_title = parentContent?.title?.substring(0, 60);
-
-  if (content.parent_id) {
-    parent_title = (parent_title ?? parentContent.owner_username).substring(0, 60);
-  }
+  const parent_title = truncate(parentContent?.title || parentContent?.owner_username || '', 60);
 
   const date = new Date(content.published_at).toLocaleDateString('pt-BR');
 

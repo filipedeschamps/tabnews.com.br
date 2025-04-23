@@ -1,3 +1,4 @@
+import { truncate } from '@tabnews/helpers';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
@@ -26,7 +27,7 @@ export default function AdBanner({ ad: newAd, isLoading, ...props }) {
   const link = ad.source_url || `/${ad.owner_username}/${ad.slug}`;
   const isAdToExternalLink = isExternalLink(link);
   const domain = isAdToExternalLink ? `(${getDomain(link)})` : '';
-  const title = ad.title.length > 70 ? ad.title.substring(0, 67).trim().concat('...') : ad.title;
+  const title = truncate(ad.title, 70);
 
   return (
     <Box {...props} as="aside" sx={{ display: 'grid', ...props.sx }}>

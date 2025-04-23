@@ -88,7 +88,7 @@ describe('Controller', () => {
 
       expect(logger.info).toHaveBeenCalledWith({
         headers: [request.headers],
-        body: [{ body: 'test'.repeat(75) }],
+        body: [{ body: 'test'.repeat(74) + 't...' }],
         context: request.context,
       });
       expect(next).toHaveBeenCalled();
@@ -158,7 +158,7 @@ describe('Controller', () => {
             'other-header': 'test',
           },
         ],
-        body: [{ body: 'test'.repeat(75), email: '**', password: '**' }],
+        body: [{ body: 'test'.repeat(74) + 't...', email: '**', password: '**' }],
         context: request.context,
       });
       expect(next).toHaveBeenCalled();

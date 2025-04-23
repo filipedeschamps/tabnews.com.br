@@ -1,3 +1,4 @@
+import { truncate } from '@tabnews/helpers';
 import { randomUUID as uuidV4 } from 'node:crypto';
 import slug from 'slug';
 
@@ -384,7 +385,7 @@ function getSlug(title) {
     return;
   }
 
-  const generatedSlug = slug(title.substring(0, 160), {
+  const generatedSlug = slug(truncate(title, 160), {
     trim: true,
   });
 
