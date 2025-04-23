@@ -160,15 +160,15 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             Respondendo a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
-                <strong>{`"${parentContent.body}"`}</strong>{' '}
+                <strong>{`"${parentContent.body}"`}</strong>
               </Link>
             )}
             {parentContent.status !== 'published' && (
               <Tooltip text={`Este conteúdo está atualmente com status "${parentContent.status}"`} direction="s">
-                <strong>{parentContent.body}</strong>{' '}
+                <strong>{parentContent.body}</strong>
               </Tooltip>
             )}
-            dentro da publicação{' '}
+            {' dentro da publicação '}
             {rootContent.status === 'published' && (
               <Link href={`/${rootContent.owner_username}/${rootContent.slug}`}>
                 <strong>{rootContent.title}</strong>
@@ -176,7 +176,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             )}
             {rootContent.status !== 'published' && (
               <Tooltip text={`Este conteúdo está atualmente com status "${rootContent.status}"`} direction="s">
-                <strong>{rootContent.title}</strong>{' '}
+                <strong>{rootContent.title}</strong>
               </Tooltip>
             )}
           </Box>
