@@ -1,3 +1,4 @@
+import { trimEnd, trimStart, truncate } from '@tabnews/helpers';
 import removeMarkdown from 'remove-markdown';
 
 import logger from 'infra/logger';
@@ -21,9 +22,7 @@ export default function customRemoveMarkdown(md, options = {}) {
       output = trimEnd(output);
     }
 
-    if (output.length > options.maxLength) {
-      output = trimEnd(output.substring(0, options.maxLength - 3)).concat('...');
-    }
+    output = truncate(output, options.maxLength);
   } catch (e) {
     if (options.throwError) {
       logger.error(e);
@@ -32,24 +31,4 @@ export default function customRemoveMarkdown(md, options = {}) {
     return md;
   }
   return output;
-}
-
-const invisibleCharRegex = '[\\s\\p{C}\u034f\u17b4\u17b5\u2800\u115f\u1160\u3164\uffa0]';
-const trimStartRegex = new RegExp('^' + invisibleCharRegex, 'u');
-const trimEndRegex = new RegExp(invisibleCharRegex + '$', 'u');
-
-export function trimStart(str) {
-  while (trimStartRegex.test(str)) {
-    str = str.replace(trimStartRegex, '');
-  }
-
-  return str;
-}
-
-export function trimEnd(str) {
-  while (trimEndRegex.test(str)) {
-    str = str.replace(trimEndRegex, '');
-  }
-
-  return str;
 }
