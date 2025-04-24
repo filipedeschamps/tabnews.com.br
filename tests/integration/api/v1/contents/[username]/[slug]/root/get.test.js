@@ -421,22 +421,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
         parent_id: null,
-        owner_id: firstUser.id,
-        slug: 'nao-disponivel',
-        title: '[Não disponível]',
-        body: '[Não disponível]',
         status: 'draft',
         type: 'content',
-        source_url: null,
         published_at: null,
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDrafted.updated_at.toISOString(),
         deleted_at: null,
-        owner_username: firstUser.username,
-        tabcoins: 0,
-        tabcoins_credit: 0,
-        tabcoins_debit: 0,
-        children_deep_count: 0,
       });
     });
 
@@ -491,22 +481,12 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
         parent_id: null,
-        owner_id: firstUser.id,
-        slug: 'nao-disponivel',
-        title: '[Não disponível]',
-        body: '[Não disponível]',
         status: 'deleted',
         type: 'content',
-        source_url: null,
         published_at: rootContent.published_at.toISOString(),
         created_at: rootContent.created_at.toISOString(),
         updated_at: rootContentDeleted.updated_at.toISOString(),
         deleted_at: rootContentDeleted.deleted_at.toISOString(),
-        owner_username: firstUser.username,
-        tabcoins: 1,
-        tabcoins_credit: 0,
-        tabcoins_debit: 0,
-        children_deep_count: 0,
       });
     });
 

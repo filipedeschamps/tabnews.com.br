@@ -136,7 +136,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             )}
             {parentContent.status !== 'published' && (
               <Tooltip text={`Este conteúdo está atualmente com status "${parentContent.status}"`} direction="s">
-                <strong>{parentContent.title}</strong>
+                <strong>[Não disponível]</strong>
               </Tooltip>
             )}
           </Box>
@@ -165,7 +165,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             )}
             {parentContent.status !== 'published' && (
               <Tooltip text={`Este conteúdo está atualmente com status "${parentContent.status}"`} direction="s">
-                <strong>{parentContent.body}</strong>
+                <strong>[Não disponível]</strong>
               </Tooltip>
             )}
             {' dentro da publicação '}
@@ -176,7 +176,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
             )}
             {rootContent.status !== 'published' && (
               <Tooltip text={`Este conteúdo está atualmente com status "${rootContent.status}"`} direction="s">
-                <strong>{rootContent.title}</strong>
+                <strong>[Não disponível]</strong>
               </Tooltip>
             )}
           </Box>
