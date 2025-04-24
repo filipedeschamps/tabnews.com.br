@@ -199,6 +199,12 @@ function filterOutput(user, feature, output) {
       clonedOutput.slug = 'nao-disponivel';
       clonedOutput.source_url = null;
       clonedOutput.children_deep_count = 0;
+
+      delete clonedOutput.owner_id;
+      delete clonedOutput.owner_username;
+      delete clonedOutput.tabcoins;
+      delete clonedOutput.tabcoins_credit;
+      delete clonedOutput.tabcoins_debit;
     }
 
     filteredOutputValues = validator(clonedOutput, {

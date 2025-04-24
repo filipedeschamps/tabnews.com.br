@@ -351,7 +351,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       expect(responseBody).toStrictEqual({
         id: childContentLevel2.id,
         parent_id: childContentLevel1.id,
-        owner_id: firstUser.id,
         slug: 'nao-disponivel',
         title: '[Não disponível]',
         body: '[Não disponível]',
@@ -363,10 +362,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         created_at: childContentLevel2.created_at.toISOString(),
         updated_at: childContentLevel2Drafted.updated_at.toISOString(),
         deleted_at: null,
-        owner_username: firstUser.username,
-        tabcoins: 0,
-        tabcoins_credit: 0,
-        tabcoins_debit: 0,
       });
     });
 
@@ -420,7 +415,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
       expect(responseBody).toStrictEqual({
         id: childContentLevel2.id,
         parent_id: childContentLevel1.id,
-        owner_id: firstUser.id,
         slug: 'nao-disponivel',
         title: '[Não disponível]',
         body: '[Não disponível]',
@@ -432,10 +426,6 @@ describe('GET /api/v1/contents/[username]/[slug]/parent', () => {
         created_at: childContentLevel2.created_at.toISOString(),
         updated_at: childContentLevel2Deleted.updated_at.toISOString(),
         deleted_at: childContentLevel2Deleted.deleted_at.toISOString(),
-        owner_username: firstUser.username,
-        tabcoins: 1,
-        tabcoins_credit: 0,
-        tabcoins_debit: 0,
       });
     });
 
