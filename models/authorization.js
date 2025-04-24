@@ -194,12 +194,11 @@ function filterOutput(user, feature, output) {
   if (feature === 'read:content') {
     const clonedOutput = { ...output };
     if (output.status !== 'published' && user.id !== output.owner_id) {
-      clonedOutput.title = '[Não disponível]';
-      clonedOutput.body = '[Não disponível]';
-      clonedOutput.slug = 'nao-disponivel';
-      clonedOutput.source_url = null;
-      clonedOutput.children_deep_count = 0;
-
+      delete clonedOutput.title;
+      delete clonedOutput.body;
+      delete clonedOutput.slug;
+      delete clonedOutput.source_url;
+      delete clonedOutput.children_deep_count;
       delete clonedOutput.owner_id;
       delete clonedOutput.owner_username;
       delete clonedOutput.tabcoins;

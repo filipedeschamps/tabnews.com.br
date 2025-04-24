@@ -63,16 +63,19 @@ async function sendReplyEmailToParentUser(createdContent) {
 }
 
 function getReplyEmailSubject({ createdContent, rootContent }) {
-  const sanitizedRootContentTitle = truncate(rootContent.title, 58);
+  const sanitizedRootContentTitle =
+    rootContent.status === 'published' ? truncate(rootContent.title, 58) : '[Não disponível]';
   return `"${createdContent.owner_username}" comentou em "${sanitizedRootContentTitle}"`;
 }
 
 function getBodyReplyLine({ createdContent, rootContent }) {
+  const sanitizedRootContentTitle = rootContent.status === 'published' ? rootContent.title : '[Não disponível]';
+
   if (createdContent.parent_id === rootContent.id) {
-    return `"${createdContent.owner_username}" respondeu à sua publicação "${rootContent.title}".`;
+    return `"${createdContent.owner_username}" respondeu à sua publicação "${sanitizedRootContentTitle}".`;
   }
 
-  return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${rootContent.title}".`;
+  return `"${createdContent.owner_username}" respondeu ao seu comentário na publicação "${sanitizedRootContentTitle}".`;
 }
 
 function getContentUrl({ owner_username, slug }) {
