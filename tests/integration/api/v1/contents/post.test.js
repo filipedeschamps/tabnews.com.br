@@ -2085,6 +2085,34 @@ describe('POST /api/v1/contents', () => {
         expect(getLastEmail.html).toContain(childContentUrl);
       });
 
+      test('My "root" content replied by other user, but the reply does not have a "published" status', async () => {
+        await orchestrator.deleteAllEmails();
+
+        const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
+        await contentsRequestBuilder.buildUser();
+
+        const { responseBody: rootContent } = await contentsRequestBuilder.post({
+          title: 'Título do conteúdo raiz',
+          body: 'Body',
+          status: 'published',
+        });
+
+        await contentsRequestBuilder.buildUser();
+
+        const { response, responseBody } = await contentsRequestBuilder.post({
+          body: 'Autor do `parent_id` não deve receber notificação de resposta que não está pública',
+          parent_id: rootContent.id,
+          status: 'draft',
+        });
+        expect.soft(response.status).toBe(201);
+
+        const getLastEmail = await orchestrator.getLastEmail();
+
+        expect(responseBody.parent_id).toBe(rootContent.id);
+        expect(responseBody.owner_id).not.toBe(rootContent.owner_id);
+        expect(getLastEmail).toBeNull();
+      });
+
       test('My "child" content replied by other user', async () => {
         await orchestrator.deleteAllEmails();
 

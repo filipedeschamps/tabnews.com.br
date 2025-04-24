@@ -17,7 +17,7 @@ async function sendReplyEmailToParentUser(createdContent) {
     },
   });
 
-  if (parentContent.owner_id !== secureCreatedContent.owner_id) {
+  if (parentContent.owner_id !== secureCreatedContent.owner_id && secureCreatedContent.status === 'published') {
     const parentContentUser = await user.findOneById(parentContent.owner_id);
 
     if (parentContentUser.notifications === false) {
