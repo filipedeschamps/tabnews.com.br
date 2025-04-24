@@ -412,14 +412,12 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
       where: {
         id: secureContentFound.parent_id,
       },
+      attributes: { exclude: ['body'] },
     });
 
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
 
-    secureRootContentFound = secureParentContentFound;
-
-    delete secureRootContentFound.body;
-    secureParentContentFound.body = removeMarkdown(secureParentContentFound.body, { maxLength: 50 });
+    secureRootContentFound = { id: secureParentContentFound.id };
   }
 
   return {
