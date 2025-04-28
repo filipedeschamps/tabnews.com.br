@@ -1,13 +1,5 @@
 {
   "dependencies": {
-    "@bytemd/plugin-breaks": "1.22.0",
-    "@bytemd/plugin-gemoji": "1.22.0",
-    "@bytemd/plugin-gfm": "1.22.0",
-    "@bytemd/plugin-highlight-ssr": "1.22.0",
-    "@bytemd/plugin-math": "1.22.0",
-    "@bytemd/plugin-mermaid": "1.22.0",
-    "@bytemd/react": "1.22.0",
-    "@primer/octicons-react": "19.15.1",
     "@react-email/components": "0.0.19",
     "@react-email/render": "0.0.15",
     "@resvg/resvg-js": "2.6.2",
@@ -39,8 +31,6 @@
     "react-icons": "5.5.0",
     "react-rewards": "2.1.0",
     "recharts": "2.15.3",
-    "rehype-external-links": "3.0.0",
-    "rehype-slug": "6.0.0",
     "remove-markdown": "0.6.0",
     "resend": "4.3.0",
     "satori": "0.10.13",

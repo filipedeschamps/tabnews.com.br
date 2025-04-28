@@ -11,7 +11,6 @@ export { default as GoToTopButton } from '@/GoToTopButton';
 export { default as Header } from '@/Header';
 export { HeaderLink, Link, NavItem, default as NextLink, TabNavLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
-export { EditorColors, EditorStyles, ViewerStyles } from '@/Markdown/styles';
 export { default as Pagination } from '@/Pagination';
 export { default as PastTime } from '@/PastTime';
 export { default as NextNProgress } from '@/Progressbar';
