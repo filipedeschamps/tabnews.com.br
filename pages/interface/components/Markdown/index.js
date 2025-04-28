@@ -11,9 +11,8 @@ export default function Viewer(props) {
   });
 }
 
-export function Editor({ compact, ...props }) {
+export function Editor(props) {
   return MarkdownEditor({
-    initialHeight: compact ? undefined : 'calc(100vh - 410px)',
     shouldAddNofollow,
     ...props,
   });
