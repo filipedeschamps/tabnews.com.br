@@ -7,7 +7,6 @@ export { default as ContentList } from '@/ContentList';
 export { default as DefaultLayout } from '@/DefaultLayout';
 export { default as EmptyState } from '@/EmptyState';
 export { default as Footer } from '@/Footer';
-export { default as GoToTopButton } from '@/GoToTopButton';
 export { default as Header } from '@/Header';
 export { HeaderLink, Link, NavItem, default as NextLink, TabNavLink } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
