@@ -407,7 +407,6 @@ function DescriptionForm({
           value={description}
           onChange={handleDescriptionChange}
           onKeyDown={handleKeyDown}
-          compact
           clobberPrefix={`${user.username}-content-`}
         />
 

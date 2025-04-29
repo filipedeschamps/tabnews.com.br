@@ -529,7 +529,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               value={newData.body}
               onChange={handleChange}
               onKeyDown={onKeyDown}
-              compact={!!contentObject?.parent_id}
+              initialHeight={!contentObject?.parent_id ? 'calc(100vh - 410px)' : undefined}
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
 

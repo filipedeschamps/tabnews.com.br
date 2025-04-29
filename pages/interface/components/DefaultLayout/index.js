@@ -1,4 +1,6 @@
-import { Box, Footer, GoToTopButton, Header } from '@/TabNewsUI';
+import { GoToTopButton } from '@tabnews/ui';
+
+import { Box, Footer, Header } from '@/TabNewsUI';
 import { Head } from 'pages/interface';
 
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
@@ -26,15 +28,7 @@ export default function DefaultLayout({ children, containerWidth = 'large', meta
           paddingTop: 3,
         }}
       />
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          padding: 3,
-        }}>
-        <GoToTopButton />
-      </Box>
+      <GoToTopButton target="header" />
     </Box>
   );
 }
