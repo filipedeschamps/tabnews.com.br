@@ -28,15 +28,15 @@ async function injectAnonymousOrUser(request, response, next, options = {}) {
     });
     request.cookies.session_id = cleanCookies.session_id;
 
-    await injectAuthenticatedUser(request, options);
+    await injectAuthenticatedUser(request, response, options);
     return next();
   } else {
     injectAnonymousUser(request);
     return next();
   }
 
-  async function injectAuthenticatedUser(request, options = {}) {
-    const sessionObject = await session.findOneValidFromRequest(request);
+  async function injectAuthenticatedUser(request, response, options = {}) {
+    const sessionObject = await session.findOneValidFromRequest(request, response);
     const userObject = await user.findOneById(sessionObject.user_id, options);
 
     if (!authorization.can(userObject, 'read:session')) {
