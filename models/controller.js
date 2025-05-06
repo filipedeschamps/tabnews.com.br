@@ -16,7 +16,6 @@ import {
 import logger from 'infra/logger.js';
 import webserver from 'infra/webserver.js';
 import ip from 'models/ip.js';
-import session from 'models/session.js';
 
 function injectRequestMetadata(request, response, next) {
   request.context = {
@@ -50,6 +49,7 @@ function onNoMatchHandler(request, response) {
 
 function onErrorHandler(error, request, response) {
   if (
+    error instanceof UnauthorizedError ||
     error instanceof ValidationError ||
     error instanceof MethodNotAllowedError ||
     error instanceof NotFoundError ||
@@ -61,17 +61,6 @@ function onErrorHandler(error, request, response) {
 
     const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
     logger.info(snakeize(privateErrorObject));
-
-    return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
-  }
-
-  if (error instanceof UnauthorizedError) {
-    const publicErrorObject = { ...error, requestId: request.context.requestId };
-
-    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
-    logger.info(snakeize(privateErrorObject));
-
-    session.clearSessionIdCookie(response);
 
     return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
   }
