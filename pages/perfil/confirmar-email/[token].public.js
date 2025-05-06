@@ -2,17 +2,17 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
-import { createErrorMessage } from 'pages/interface';
+import { createErrorMessage, useUser } from 'pages/interface';
 
-export default function ActiveUser() {
+export default function ConfirmEmail() {
   const router = useRouter();
   const { token } = router.query;
-
+  const { fetchUser } = useUser();
   const [globalMessage, setGlobalMessage] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEmailConfirmation = async (token) => {
+  const handleEmailConfirmation = async (token, updateUserCache) => {
     try {
       setIsLoading(true);
 
@@ -29,7 +29,7 @@ export default function ActiveUser() {
       if (response.status === 200) {
         setIsSuccess(true);
         setGlobalMessage('Seu email foi alterado com sucesso!');
-
+        updateUserCache();
         return;
       }
 
@@ -55,9 +55,9 @@ export default function ActiveUser() {
 
   useEffect(() => {
     if (token) {
-      handleEmailConfirmation(token);
+      handleEmailConfirmation(token, fetchUser);
     }
-  }, [token]);
+  }, [fetchUser, token]);
 
   return (
     <>
