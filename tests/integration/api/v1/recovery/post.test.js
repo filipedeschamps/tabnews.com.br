@@ -303,12 +303,17 @@ describe('POST /api/v1/recovery', () => {
   });
 
   describe('User with "create:recovery_token:username" feature', () => {
-    test('With "username" valid and "user" found', async () => {
-      const defaultUser = await orchestrator.createUser();
+    let sessionObject;
+
+    beforeAll(async () => {
       const userWithPermission = await orchestrator.createUser();
       await orchestrator.activateUser(userWithPermission);
       await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
-      const sessionObject = await orchestrator.createSession(userWithPermission);
+      sessionObject = await orchestrator.createSession(userWithPermission);
+    });
+
+    test('With "username" valid and "user" found', async () => {
+      const defaultUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
@@ -350,11 +355,6 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "username" valid, but user not found', async () => {
-      const userWithPermission = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithPermission);
-      await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
-      const sessionObject = await orchestrator.createSession(userWithPermission);
-
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
@@ -385,11 +385,6 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "nuked" user, should respond as if username does not exist', async () => {
-      const userWithPermission = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithPermission);
-      await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
-      const sessionObject = await orchestrator.createSession(userWithPermission);
-
       const nukedUser = await orchestrator.createUser();
       await orchestrator.addFeaturesToUser(nukedUser, ['nuked']);
 
