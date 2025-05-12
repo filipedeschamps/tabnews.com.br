@@ -37,7 +37,7 @@ async function sendEmailToUser(user, newEmail, tokenId) {
     confirmationLink: emailConfirmationPageEndpoint,
   });
 
-  await email.send({
+  await email.triggerSend({
     from: 'TabNews <contato@tabnews.com.br>',
     to: newEmail,
     subject: 'Confirme seu novo email',

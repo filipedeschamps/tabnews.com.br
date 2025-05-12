@@ -54,7 +54,7 @@ async function sendEmailToUser(user, tokenId) {
     recoveryLink: recoverPageEndpoint,
   });
 
-  await email.send({
+  await email.triggerSend({
     from: 'TabNews <contato@tabnews.com.br>',
     to: user.email,
     subject: 'Recuperação de Senha',
