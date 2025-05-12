@@ -148,6 +148,7 @@ async function findOneByEmail(email, options = {}) {
           users
         WHERE
           LOWER(email) = LOWER($1)
+          AND NOT 'nuked' = ANY(features)
         LIMIT
           1
       )`;
