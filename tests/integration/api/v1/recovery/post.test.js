@@ -365,19 +365,57 @@ describe('POST /api/v1/recovery', () => {
           username: 'userNotFound',
         }),
       });
+      expect.soft(response.status).toBe(404);
 
       const responseBody = await response.json();
 
-      expect.soft(response.status).toBe(400);
-
       expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
+        name: 'NotFoundError',
         message: 'O "username" informado não foi encontrado no sistema.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
+        action: 'Verifique se o "username" está digitado corretamente.',
+        status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+        error_location_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+        key: 'username',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('With "nuked" user, should respond as if username does not exist', async () => {
+      const userWithPermission = await orchestrator.createUser();
+      await orchestrator.activateUser(userWithPermission);
+      await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
+      const sessionObject = await orchestrator.createSession(userWithPermission);
+
+      const nukedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(nukedUser, ['nuked']);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+
+        body: JSON.stringify({
+          username: nukedUser.username,
+        }),
+      });
+      expect.soft(response.status).toBe(404);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O "username" informado não foi encontrado no sistema.',
+        action: 'Verifique se o "username" está digitado corretamente.',
+        status_code: 404,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
         key: 'username',
       });
 
