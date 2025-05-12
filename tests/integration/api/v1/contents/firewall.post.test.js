@@ -95,8 +95,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(uuidVersion(lastEvent.id)).toBe(4);
         expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
-        const allEmails = await orchestrator.getEmails();
-        expect(allEmails).toHaveLength(0);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('Spamming valid "root" contents with a content deleted', async () => {
@@ -170,8 +169,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(uuidVersion(lastEvent.id)).toBe(4);
         expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
-        const allEmails = await orchestrator.getEmails();
-        expect(allEmails).toHaveLength(0);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('Spamming valid "root" contents with TabCoins earnings', async () => {
@@ -245,8 +243,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const userAfterFirewallCatch = await user.findOneById(defaultUser.id, { withBalance: true });
         expect(userAfterFirewallCatch.tabcoins).toBe(0);
 
-        const allEmails = await orchestrator.getEmails();
-        expect(allEmails).toHaveLength(0);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('Different users spamming valid "root" contents with TabCoins earnings', async () => {
@@ -478,8 +475,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(uuidVersion(lastEvent.id)).toBe(4);
         expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
-        const allEmails = await orchestrator.getEmails();
-        expect(allEmails).toHaveLength(0);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('Spamming valid "child" contents with a content deleted', async () => {
@@ -560,8 +556,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         expect(uuidVersion(lastEvent.id)).toBe(4);
         expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
-        const allEmails = await orchestrator.getEmails();
-        expect(allEmails).toHaveLength(0);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('Spamming valid "child" contents with TabCoins earnings', async () => {
@@ -644,8 +639,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         const userAfterFirewallCatch = await user.findOneById(defaultUser.id, { withBalance: true });
         expect(userAfterFirewallCatch.tabcoins).toBe(0);
 
-        const allEmails = await orchestrator.getEmails();
-        expect(allEmails).toHaveLength(0);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('Spamming valid "child" contents with one with negative TabCoins', async () => {
@@ -806,7 +800,7 @@ describe('POST /api/v1/contents [FIREWALL]', () => {
         });
         expect(user2AfterFirewallCatch.tabcoins).toBe(0);
 
-        const allEmails = await orchestrator.getEmails();
+        const allEmails = await orchestrator.getEmails(2);
         expect(allEmails).toHaveLength(2);
 
         const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));

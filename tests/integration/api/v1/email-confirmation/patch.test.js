@@ -180,7 +180,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       expect(userInDatabaseCheck1.email).toBe('fresh.valid.token@email.com');
 
       // 2) RECEIVE CONFIRMATION EMAIL
-      const confirmationEmail = await orchestrator.getLastEmail();
+      const confirmationEmail = await orchestrator.waitForFirstEmail();
 
       const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
       const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
@@ -325,8 +325,7 @@ describe('PATCH /api/v1/email-confirmation', () => {
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
       expect(userInDatabaseCheck1.email).toBe('validation.error@before.com');
 
-      const confirmationEmail = await orchestrator.getLastEmail();
-      expect(confirmationEmail).toBeNull();
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With an already used email (after creating the token)', async () => {

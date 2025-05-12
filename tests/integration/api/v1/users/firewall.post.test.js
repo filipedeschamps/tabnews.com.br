@@ -9,6 +9,7 @@ beforeAll(async () => {
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
   await orchestrator.createFirewallTestFunctions();
+  await orchestrator.deleteAllEmails();
 });
 
 describe('POST /api/v1/users [FIREWALL]', () => {
@@ -29,6 +30,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
         password: 'validpassword',
       });
 
+      await orchestrator.waitForNthEmail(2);
       await orchestrator.deleteAllEmails();
 
       const { response: response3, responseBody: response3Body } = await usersRequestBuilder.post({
@@ -88,7 +90,7 @@ describe('POST /api/v1/users [FIREWALL]', () => {
       expect(uuidVersion(lastEvent.id)).toBe(4);
       expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
 
-      const allEmails = await orchestrator.getEmails();
+      const allEmails = await orchestrator.getEmails(2);
       expect(allEmails).toHaveLength(2);
 
       const user1Email = allEmails.find((email) => email.recipients.includes(`<${user1.email}>`));

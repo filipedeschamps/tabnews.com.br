@@ -100,33 +100,81 @@ async function deleteAllEmails() {
   });
 }
 
-async function getLastEmail() {
-  const emailListResponse = await fetch(`${emailServiceUrl}/messages`);
-  const emailList = await emailListResponse.json();
-
-  if (emailList.length === 0) {
-    return null;
-  }
-
-  const lastEmailItem = emailList.pop();
-
-  await setEmailTextHtml(lastEmailItem);
-
-  return lastEmailItem;
+function waitForFirstEmail(options) {
+  return waitForNthEmail(1, options);
 }
 
-async function getEmails() {
-  const emailListResponse = await fetch(`${emailServiceUrl}/messages`);
-  const emailList = await emailListResponse.json();
+async function waitForNthEmail(n, { intervalMs = 1, maxAttempts = 500 } = {}) {
+  const logInterval = 5;
 
-  const parsedEmails = [];
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const response = await fetch(`${emailServiceUrl}/messages`);
+    const emailList = await response.json();
 
-  for (const email of emailList) {
-    parsedEmails.push(setEmailTextHtml(email));
+    if (emailList.length >= n) {
+      if (attempt >= logInterval) process.stdout.write('\n');
+      const nthEmail = emailList[n - 1];
+      await setEmailTextHtml(nthEmail);
+      return nthEmail;
+    }
+
+    if (attempt < maxAttempts) {
+      if (attempt === logInterval) {
+        process.stdout.write(`⏳ Waiting for email #${n}`);
+      } else if (attempt % logInterval === 0) {
+        process.stdout.write('.');
+      }
+
+      await delay(intervalMs);
+    }
   }
 
-  const promises = await Promise.allSettled(parsedEmails);
-  return promises.map((p) => p.value);
+  process.stdout.write('\n⚠️ Failed to get email after max attempts.\n');
+  return null;
+}
+
+async function getEmails(minCount = 1, { maxAttempts = 500, intervalMs = 1 } = {}) {
+  const logInterval = 5;
+  let emailList = [];
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const response = await fetch(`${emailServiceUrl}/messages`);
+    emailList = await response.json();
+
+    if (emailList.length >= minCount) {
+      if (attempt >= logInterval) process.stdout.write('\n');
+      break;
+    }
+
+    if (attempt === maxAttempts) {
+      process.stdout.write(`\n⚠️ Reached max attempts (${maxAttempts}). Proceeding with available emails.\n`);
+      break;
+    }
+
+    if (attempt === logInterval) {
+      process.stdout.write(`⏳ Waiting for at least ${minCount} email(s)...`);
+    } else if (attempt % logInterval === 0) {
+      process.stdout.write('.');
+    }
+
+    await delay(intervalMs);
+  }
+
+  const parsed = await Promise.allSettled(emailList.map(setEmailTextHtml));
+  return parsed.map((p) => p.value);
+}
+
+async function hasEmailsAfterDelay(delayMs = 10) {
+  await delay(delayMs);
+
+  const response = await fetch(`${emailServiceUrl}/messages`);
+  const emailList = await response.json();
+
+  return emailList.length > 0;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function setEmailTextHtml(email) {
@@ -469,8 +517,8 @@ const orchestrator = {
   dropAllTables,
   findSessionByToken,
   getEmails,
-  getLastEmail,
   getLastEvent,
+  hasEmailsAfterDelay,
   parseSetCookies,
   removeFeaturesFromUser,
   runPendingMigrations,
@@ -479,6 +527,8 @@ const orchestrator = {
   updateEventCreatedAt,
   updateRewardedAt,
   waitForAllServices,
+  waitForFirstEmail,
+  waitForNthEmail,
   webserverUrl,
 };
 
