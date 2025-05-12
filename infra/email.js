@@ -1,3 +1,4 @@
+import { waitUntil } from '@vercel/functions';
 import retry from 'async-retry';
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
@@ -47,6 +48,16 @@ const transporters = transporterConfigs.map((config) => {
 });
 
 const retries = (retriesPerService + 1) * transporters.length - 1;
+
+// Intentionally async for future compatibility (e.g., switching to a queue system)
+// eslint-disable-next-line require-await
+async function triggerSend(params) {
+  waitUntil(
+    send(params).catch(() => {
+      // The error has already been logged in the send function
+    }),
+  );
+}
 
 async function send({ from, to, subject, html, text }) {
   const mailOptions = {
@@ -108,4 +119,5 @@ async function send({ from, to, subject, html, text }) {
 
 export default Object.freeze({
   send,
+  triggerSend,
 });
