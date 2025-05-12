@@ -147,6 +147,41 @@ describe('POST /api/v1/recovery', () => {
       expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
+    test('With "nuked" user, should simulate recovery and skip email delivery', async () => {
+      await orchestrator.deleteAllEmails();
+      const nukedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(nukedUser, ['nuked']);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          email: nukedUser.email,
+        }),
+      });
+      expect.soft(response.status).toBe(201);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toStrictEqual({
+        used: false,
+        expires_at: responseBody.expires_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+
+      const lastEmail = await orchestrator.getLastEmail();
+      expect(lastEmail).toBeNull();
+    });
+
     test('With "email" malformatted', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
