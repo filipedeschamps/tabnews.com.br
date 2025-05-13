@@ -41,7 +41,7 @@ async function postHandler(request, response) {
     });
   }
 
-  const tokenObject = await recovery.createAndSendRecoveryEmail(validatedInputValues);
+  const tokenObject = await recovery.requestPasswordRecovery(validatedInputValues);
 
   const authorizedValuesToReturn = authorization.filterOutput(userTryingToRecover, 'read:recovery_token', tokenObject);
 
