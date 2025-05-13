@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationError } from 'errors';
+import { NotFoundError } from 'errors';
 import database from 'infra/database.js';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
@@ -7,31 +7,36 @@ import { RecoveryEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function createAndSendRecoveryEmail(secureInputValues) {
-  const userFound = await findUserByUsernameOrEmail(secureInputValues);
-  const tokenObject = await create(userFound);
-  await sendEmailToUser(userFound, tokenObject.id);
+  try {
+    const userFound = await findUserByUsernameOrEmail(secureInputValues);
+    const tokenObject = await create(userFound);
+    await sendEmailToUser(userFound, tokenObject.id);
 
-  return tokenObject;
+    return tokenObject;
+  } catch (error) {
+    if (error instanceof NotFoundError && error.key === 'email') {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 1000 * 60 * 15);
+
+      return {
+        used: false,
+        expires_at: expiresAt,
+        created_at: now,
+        updated_at: now,
+      };
+    } else {
+      throw error;
+    }
+  }
 }
 
 async function findUserByUsernameOrEmail({ username, email }) {
-  try {
-    if (username) {
-      return await user.findOneByUsername(username);
-    }
+  if (username) {
+    return await user.findOneByUsername(username);
+  }
 
-    if (email) {
-      return await user.findOneByEmail(email);
-    }
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      throw new ValidationError({
-        message: `O "${username ? 'username' : 'email'}" informado não foi encontrado no sistema.`,
-        key: username ? 'username' : 'email',
-        errorLocationCode: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
-      });
-    }
-    throw error;
+  if (email) {
+    return await user.findOneByEmail(email);
   }
 }
 

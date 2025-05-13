@@ -7,6 +7,9 @@ beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
+});
+
+beforeEach(async () => {
   await orchestrator.deleteAllEmails();
 });
 
@@ -40,6 +43,8 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With "username" malformatted', async () => {
@@ -116,8 +121,6 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "email" valid, but user not found', async () => {
-      await orchestrator.deleteAllEmails();
-
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
@@ -132,6 +135,39 @@ describe('POST /api/v1/recovery', () => {
       const responseBody = await response.json();
 
       expect.soft(response.status).toBe(201);
+      expect(responseBody).toStrictEqual({
+        used: false,
+        expires_at: responseBody.expires_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
+    });
+
+    test('With "nuked" user, should simulate recovery and skip email delivery', async () => {
+      const nukedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(nukedUser, ['nuked']);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          email: nukedUser.email,
+        }),
+      });
+      expect.soft(response.status).toBe(201);
+
+      const responseBody = await response.json();
+
       expect(responseBody).toStrictEqual({
         used: false,
         expires_at: responseBody.expires_at,
@@ -177,6 +213,8 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With key other than "username" or "email"', async () => {
@@ -268,12 +306,17 @@ describe('POST /api/v1/recovery', () => {
   });
 
   describe('User with "create:recovery_token:username" feature', () => {
-    test('With "username" valid and "user" found', async () => {
-      const defaultUser = await orchestrator.createUser();
+    let sessionObject;
+
+    beforeAll(async () => {
       const userWithPermission = await orchestrator.createUser();
       await orchestrator.activateUser(userWithPermission);
       await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
-      const sessionObject = await orchestrator.createSession(userWithPermission);
+      sessionObject = await orchestrator.createSession(userWithPermission);
+    });
+
+    test('With "username" valid and "user" found', async () => {
+      const defaultUser = await orchestrator.createUser();
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
@@ -315,11 +358,6 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "username" valid, but user not found', async () => {
-      const userWithPermission = await orchestrator.createUser();
-      await orchestrator.activateUser(userWithPermission);
-      await orchestrator.addFeaturesToUser(userWithPermission, ['create:recovery_token:username']);
-      const sessionObject = await orchestrator.createSession(userWithPermission);
-
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
@@ -330,24 +368,61 @@ describe('POST /api/v1/recovery', () => {
           username: 'userNotFound',
         }),
       });
+      expect.soft(response.status).toBe(404);
 
       const responseBody = await response.json();
 
-      expect.soft(response.status).toBe(400);
-
       expect(responseBody).toStrictEqual({
-        name: 'ValidationError',
+        name: 'NotFoundError',
         message: 'O "username" informado não foi encontrado no sistema.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        status_code: 400,
+        action: 'Verifique se o "username" está digitado corretamente.',
+        status_code: 404,
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
-        error_location_code: 'MODEL:RECOVERY:FIND_USER_BY_USERNAME_OR_EMAIL:NOT_FOUND',
+        error_location_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
         key: 'username',
       });
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
+    });
+
+    test('With "nuked" user, should respond as if username does not exist', async () => {
+      const nukedUser = await orchestrator.createUser();
+      await orchestrator.addFeaturesToUser(nukedUser, ['nuked']);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+
+        body: JSON.stringify({
+          username: nukedUser.username,
+        }),
+      });
+      expect.soft(response.status).toBe(404);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toStrictEqual({
+        name: 'NotFoundError',
+        message: 'O "username" informado não foi encontrado no sistema.',
+        action: 'Verifique se o "username" está digitado corretamente.',
+        status_code: 404,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:USER:FIND_ONE_BY_USERNAME:NOT_FOUND',
+        key: 'username',
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
   });
 });
