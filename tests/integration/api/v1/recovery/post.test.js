@@ -7,6 +7,9 @@ beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
+});
+
+beforeEach(async () => {
   await orchestrator.deleteAllEmails();
 });
 
@@ -40,6 +43,8 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With "username" malformatted', async () => {
@@ -116,8 +121,6 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "email" valid, but user not found', async () => {
-      await orchestrator.deleteAllEmails();
-
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',
         headers: {
@@ -148,7 +151,6 @@ describe('POST /api/v1/recovery', () => {
     });
 
     test('With "nuked" user, should simulate recovery and skip email delivery', async () => {
-      await orchestrator.deleteAllEmails();
       const nukedUser = await orchestrator.createUser();
       await orchestrator.addFeaturesToUser(nukedUser, ['nuked']);
 
@@ -178,8 +180,7 @@ describe('POST /api/v1/recovery', () => {
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
-      const lastEmail = await orchestrator.getLastEmail();
-      expect(lastEmail).toBeNull();
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With "email" malformatted', async () => {
@@ -212,6 +213,8 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With key other than "username" or "email"', async () => {
@@ -382,6 +385,8 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With "nuked" user, should respond as if username does not exist', async () => {
@@ -416,6 +421,8 @@ describe('POST /api/v1/recovery', () => {
 
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
   });
 });
