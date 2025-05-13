@@ -183,6 +183,97 @@ describe('POST /api/v1/recovery', () => {
       expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
+    test('With 2 pre-existing valid tokens, should skip email delivery', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.createRecoveryToken(defaultUser);
+      await orchestrator.createRecoveryToken(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          email: defaultUser.email,
+        }),
+      });
+      expect.soft(response.status).toBe(201);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toStrictEqual({
+        used: false,
+        expires_at: responseBody.expires_at,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
+    });
+
+    test('With expired tokens, should create new token and send email', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const expiredToken = await orchestrator.createRecoveryToken(defaultUser);
+      await recovery.update(expiredToken.id, {
+        expires_at: new Date(Date.now() - 1000 * 60 * 3),
+      });
+
+      const usedToken = await orchestrator.createRecoveryToken(defaultUser);
+      await recovery.update(usedToken.id, {
+        used: true,
+        expires_at: new Date(Date.now() - 1000 * 60 * 2),
+      });
+
+      await orchestrator.createRecoveryToken(defaultUser);
+      await recovery.update(usedToken.id, {
+        created_at: new Date(Date.now() - 1000 * 60),
+      });
+
+      // Now user has only one valid token (previous ones were expired/used),
+      // so a new token can be created.
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: defaultUser.email,
+        }),
+      });
+      expect.soft(response.status).toBe(201);
+
+      const tokenInDatabase = await recovery.findOneTokenByUserId(defaultUser.id);
+      const responseBody = await response.json();
+
+      expect(responseBody).toStrictEqual({
+        used: false,
+        expires_at: tokenInDatabase.expires_at.toISOString(),
+        created_at: tokenInDatabase.created_at.toISOString(),
+        updated_at: tokenInDatabase.updated_at.toISOString(),
+      });
+
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.expires_at > responseBody.created_at).toBe(true);
+
+      const lastEmail = await orchestrator.waitForFirstEmail();
+      expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
+      expect(lastEmail.subject).toBe('Recuperação de Senha');
+      expect(lastEmail.text).toContain(defaultUser.username);
+      expect(lastEmail.html).toContain(defaultUser.username);
+      expect(lastEmail.text).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
+      expect(lastEmail.html).toContain(recovery.getRecoverPageEndpoint(tokenInDatabase.id));
+    });
+
     test('With "email" malformatted', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'POST',

@@ -1,4 +1,4 @@
-import { NotFoundError } from 'errors';
+import { InternalServerError, NotFoundError } from 'errors';
 import database from 'infra/database.js';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
@@ -6,27 +6,25 @@ import session from 'models/session';
 import { RecoveryEmail } from 'models/transactional';
 import user from 'models/user.js';
 
-async function createAndSendRecoveryEmail(secureInputValues) {
+async function requestPasswordRecovery(secureInputValues) {
   try {
     const userFound = await findUserByUsernameOrEmail(secureInputValues);
+    const validTokensCount = await countValidTokensByUserId(userFound.id);
+
+    if (validTokensCount >= 2) {
+      return buildFakeToken();
+    }
+
     const tokenObject = await create(userFound);
     await sendEmailToUser(userFound, tokenObject.id);
 
     return tokenObject;
   } catch (error) {
     if (error instanceof NotFoundError && error.key === 'email') {
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + 1000 * 60 * 15);
-
-      return {
-        used: false,
-        expires_at: expiresAt,
-        created_at: now,
-        updated_at: now,
-      };
-    } else {
-      throw error;
+      return buildFakeToken();
     }
+
+    throw error;
   }
 }
 
@@ -38,6 +36,31 @@ async function findUserByUsernameOrEmail({ username, email }) {
   if (email) {
     return await user.findOneByEmail(email);
   }
+}
+
+async function countValidTokensByUserId(userId) {
+  const query = {
+    text: `SELECT COUNT(*) FROM reset_password_tokens
+        WHERE user_id = $1
+        AND used = false
+        AND expires_at >= now();`,
+    values: [userId],
+  };
+  const results = await database.query(query);
+
+  return Number(results.rows[0].count);
+}
+
+function buildFakeToken() {
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 1000 * 60 * 15);
+
+  return {
+    used: false,
+    expires_at: expiresAt,
+    created_at: now,
+    updated_at: now,
+  };
 }
 
 async function create(user) {
@@ -74,24 +97,23 @@ function getRecoverPageEndpoint(tokenId) {
 
 async function resetUserPassword(secureInputValues) {
   const tokenObject = await findOneValidTokenById(secureInputValues.token_id);
+  const userToken = await markTokenAsUsed(tokenObject.id);
 
-  if (!tokenObject.used) {
-    const userToken = await markTokenAsUsed(tokenObject.id);
-    await session.expireAllFromUserId(tokenObject.user_id);
-    await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
-    return userToken;
-  }
+  await session.expireAllFromUserId(tokenObject.user_id);
+  await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
 
-  throw new NotFoundError({
-    message: `O token de recuperação de senha não foi encontrado ou já foi utilizado.`,
-    action: 'Solicite uma nova recuperação de senha.',
-    stack: new Error().stack,
-    errorLocationCode: 'MODEL:RECOVERY:RESET_USER_PASSWORD:NOT_FOUND',
-    key: 'token_id',
-  });
+  return userToken;
 }
 
 async function findOneTokenById(tokenId) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new InternalServerError({
+      message: '"recovery.findOneTokenById" só pode ser utilizado em ambiente de testes.',
+      action: 'Verifique se o ambiente está correto.',
+      errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_TOKEN_BY_ID:INVALID_ENVIRONMENT',
+    });
+  }
+
   const query = {
     text: `SELECT * FROM reset_password_tokens
         WHERE id = $1
@@ -127,7 +149,6 @@ async function findOneValidTokenById(tokenId) {
     throw new NotFoundError({
       message: `O token de recuperação de senha utilizado não foi encontrado no sistema ou expirou.`,
       action: 'Solicite uma nova recuperação de senha.',
-      stack: new Error().stack,
       errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
       key: 'token_id',
     });
@@ -137,9 +158,18 @@ async function findOneValidTokenById(tokenId) {
 }
 
 async function findOneTokenByUserId(userId) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new InternalServerError({
+      message: '"findOneTokenByUserId" só pode ser utilizado em ambiente de testes.',
+      action: 'Verifique se o ambiente está correto.',
+      errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_TOKEN_BY_USER_ID:INVALID_ENVIRONMENT',
+    });
+  }
+
   const query = {
     text: `SELECT * FROM reset_password_tokens
         WHERE user_id = $1
+        ORDER BY created_at DESC
         LIMIT 1;`,
     values: [userId],
   };
@@ -171,6 +201,14 @@ async function markTokenAsUsed(tokenId) {
 }
 
 async function update(tokenId, tokenBody) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new InternalServerError({
+      message: '"recovery.update" só pode ser utilizado em ambiente de testes.',
+      action: 'Verifique se o ambiente está correto.',
+      errorLocationCode: 'MODEL:RECOVERY:UPDATE:INVALID_ENVIRONMENT',
+    });
+  }
+
   const currentToken = await findOneTokenById(tokenId);
   const updatedToken = { ...currentToken, ...tokenBody };
 
@@ -200,10 +238,10 @@ async function update(tokenId, tokenBody) {
 
 export default Object.freeze({
   create,
-  createAndSendRecoveryEmail,
   findOneTokenById,
   findOneTokenByUserId,
   getRecoverPageEndpoint,
+  requestPasswordRecovery,
   resetUserPassword,
   update,
 });
