@@ -52,7 +52,7 @@ async function sendReplyEmailToParentUser(createdContent) {
       contentLink: childContentUrl,
     });
 
-    await email.send({
+    await email.triggerSend({
       to: parentContentUser.email,
       from: 'TabNews <contato@tabnews.com.br>',
       subject: subject,
@@ -89,7 +89,7 @@ async function sendUserDisabled({ eventId, user }) {
     username: user.username,
   });
 
-  await email.send({
+  await email.triggerSend({
     to: user.email,
     from: 'TabNews <contato@tabnews.com.br>',
     subject: 'Sua conta foi desativada',
@@ -111,7 +111,7 @@ async function sendContentDeletedToUser({ contents, eventId, userId }) {
     username: userToNotify.username,
   });
 
-  await email.send({
+  await email.triggerSend({
     to: userToNotify.email,
     from: 'TabNews <contato@tabnews.com.br>',
     subject: subject,

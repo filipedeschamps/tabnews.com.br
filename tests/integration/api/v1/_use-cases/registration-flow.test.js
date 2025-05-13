@@ -53,7 +53,7 @@ describe('Use case: Registration Flow (all successfully)', () => {
   });
 
   test('Receive email (successfully)', async () => {
-    const activationEmail = await orchestrator.getLastEmail();
+    const activationEmail = await orchestrator.waitForFirstEmail();
 
     tokenObjectInDatabase = await activation.findOneTokenByUserId(postUserResponseBody.id);
     const activationPageEndpoint = `${activation.getActivationPageEndpoint()}/${tokenObjectInDatabase.id}`;

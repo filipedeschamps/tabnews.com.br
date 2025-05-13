@@ -625,11 +625,9 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-      const confirmationEmail = await orchestrator.getLastEmail();
-      expect(confirmationEmail).toBeNull();
-
       const foundUser = await user.findOneById(defaultUser.id);
       expect(foundUser.email).toBe(defaultUser.email);
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('Patching itself with "email" duplicated exactly and other fields', async () => {
@@ -664,14 +662,12 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-      const confirmationEmail = await orchestrator.getLastEmail();
-      expect(confirmationEmail).toBeNull();
-
       const foundUser = await user.findOneById(defaultUser.id);
       expect(foundUser.email).toBe(defaultUser.email);
       expect(foundUser.description).toBe('New description');
       expect(foundUser.notifications).toBe(false);
       expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('Patching itself with duplicate "email" and "username" should only return "username" error', async () => {
@@ -724,12 +720,10 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(uuidVersion(responseBody2.error_id)).toBe(4);
       expect(uuidVersion(responseBody2.request_id)).toBe(4);
 
-      const confirmationEmail = await orchestrator.getLastEmail();
-      expect(confirmationEmail).toBeNull();
-
       const foundUser = await user.findOneById(defaultUser.id);
       expect(foundUser.email).toBe(defaultUser.email);
       expect(foundUser.updated_at).toStrictEqual(defaultUser.updated_at);
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('Patching itself with another "email"', async () => {
@@ -772,7 +766,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(userInDatabase.email).toBe('original@email.com');
 
       // RECEIVING CONFIRMATION EMAIL
-      const confirmationEmail = await orchestrator.getLastEmail();
+      const confirmationEmail = await orchestrator.waitForFirstEmail();
 
       const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
       const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
@@ -813,8 +807,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         updated_at: responseBody.updated_at,
       });
 
-      const confirmationEmail = await orchestrator.getLastEmail();
-      expect(confirmationEmail).toBeNull();
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('Patching itself with "notifications"', async () => {
@@ -1041,7 +1034,7 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(foundUser.username).toBe('UpdatedUsername');
       expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
 
-      const confirmationEmail = await orchestrator.getLastEmail();
+      const confirmationEmail = await orchestrator.waitForFirstEmail();
       expect(confirmationEmail.recipients).toStrictEqual(['<random_new_email@example.com>']);
       expect(confirmationEmail.subject).toBe('Confirme seu novo email');
     });

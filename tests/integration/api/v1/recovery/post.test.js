@@ -106,7 +106,7 @@ describe('POST /api/v1/recovery', () => {
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
-      const lastEmail = await orchestrator.getLastEmail();
+      const lastEmail = await orchestrator.waitForFirstEmail();
       expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
       expect(lastEmail.subject).toBe('Recuperação de Senha');
       expect(lastEmail.text).toContain(defaultUser.username);
@@ -144,8 +144,7 @@ describe('POST /api/v1/recovery', () => {
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
-      const lastEmail = await orchestrator.getLastEmail();
-      expect(lastEmail).toBeNull();
+      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
 
     test('With "email" malformatted', async () => {
@@ -306,7 +305,7 @@ describe('POST /api/v1/recovery', () => {
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
       expect(responseBody.expires_at > responseBody.created_at).toBe(true);
 
-      const lastEmail = await orchestrator.getLastEmail();
+      const lastEmail = await orchestrator.waitForFirstEmail();
       expect(lastEmail.recipients[0].includes(defaultUser.email)).toBe(true);
       expect(lastEmail.subject).toBe('Recuperação de Senha');
       expect(lastEmail.text).toContain(defaultUser.username);

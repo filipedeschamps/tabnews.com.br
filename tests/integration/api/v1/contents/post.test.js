@@ -1972,10 +1972,8 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        const getLastEmail = await orchestrator.getLastEmail();
-
         expect.soft(response.status).toBe(201);
-        expect(getLastEmail).toBeNull();
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('My "root" content replied by myself', async () => {
@@ -1997,11 +1995,9 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        const getLastEmail = await orchestrator.getLastEmail();
-
         expect.soft(response.status).toBe(201);
         expect(responseBody.parent_id).toBe(rootContent.id);
-        expect(getLastEmail).toBeNull();
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('My "root" content with short "title" replied by other user', async () => {
@@ -2024,7 +2020,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        const getLastEmail = await orchestrator.getLastEmail();
+        const getLastEmail = await orchestrator.waitForFirstEmail();
 
         const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
 
@@ -2064,7 +2060,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        const getLastEmail = await orchestrator.getLastEmail();
+        const getLastEmail = await orchestrator.waitForFirstEmail();
 
         const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
 
@@ -2106,11 +2102,9 @@ describe('POST /api/v1/contents', () => {
         });
         expect.soft(response.status).toBe(201);
 
-        const getLastEmail = await orchestrator.getLastEmail();
-
         expect(responseBody.parent_id).toBe(rootContent.id);
         expect(responseBody.owner_id).not.toBe(rootContent.owner_id);
-        expect(getLastEmail).toBeNull();
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
 
       test('My "child" content replied by other user', async () => {
@@ -2141,7 +2135,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        const getLastEmail = await orchestrator.getLastEmail();
+        const getLastEmail = await orchestrator.waitForNthEmail(2);
 
         const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
 
@@ -2192,7 +2186,7 @@ describe('POST /api/v1/contents', () => {
           status: 'published',
         });
 
-        const getLastEmail = await orchestrator.getLastEmail();
+        const getLastEmail = await orchestrator.waitForNthEmail(2);
 
         const childContentUrl = `${orchestrator.webserverUrl}/${firstUser.username}/${responseBody.slug}`;
 
@@ -2258,8 +2252,7 @@ describe('POST /api/v1/contents', () => {
         expect.soft(contentResponse1.status).toBe(201);
 
         // 5) CHECK IF FIRST USER RECEIVED ANY EMAIL
-        const getLastEmail1 = await orchestrator.getLastEmail();
-        expect(getLastEmail1).toBeNull();
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
 
         // 6) ENABLE NOTIFICATIONS FOR FIRST USER
         const { response: userPatchResponse2 } = await usersRequestBuilder.patch(`/${firstUser.username}`, {
@@ -2280,7 +2273,7 @@ describe('POST /api/v1/contents', () => {
         expect.soft(contentResponse2.status).toBe(201);
 
         // 8) CHECK IF FIRST USER RECEIVED ANY EMAIL
-        const getLastEmail2 = await orchestrator.getLastEmail();
+        const getLastEmail2 = await orchestrator.waitForFirstEmail();
 
         const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${contentResponse2Body.slug}`;
 
@@ -2329,7 +2322,7 @@ describe('POST /api/v1/contents', () => {
         expect.soft(response.status).toBe(201);
         expect(response.headers.get('content-Type')).toBe('application/x-ndjson');
 
-        const getLastEmail = await orchestrator.getLastEmail();
+        const getLastEmail = await orchestrator.waitForFirstEmail();
 
         const childContentUrl = `${orchestrator.webserverUrl}/${secondUser.username}/${responseBody.slug}`;
 
