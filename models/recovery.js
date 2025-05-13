@@ -97,21 +97,12 @@ function getRecoverPageEndpoint(tokenId) {
 
 async function resetUserPassword(secureInputValues) {
   const tokenObject = await findOneValidTokenById(secureInputValues.token_id);
+  const userToken = await markTokenAsUsed(tokenObject.id);
 
-  if (!tokenObject.used) {
-    const userToken = await markTokenAsUsed(tokenObject.id);
-    await session.expireAllFromUserId(tokenObject.user_id);
-    await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
-    return userToken;
-  }
+  await session.expireAllFromUserId(tokenObject.user_id);
+  await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
 
-  throw new NotFoundError({
-    message: `O token de recuperação de senha não foi encontrado ou já foi utilizado.`,
-    action: 'Solicite uma nova recuperação de senha.',
-    stack: new Error().stack,
-    errorLocationCode: 'MODEL:RECOVERY:RESET_USER_PASSWORD:NOT_FOUND',
-    key: 'token_id',
-  });
+  return userToken;
 }
 
 async function findOneTokenById(tokenId) {
