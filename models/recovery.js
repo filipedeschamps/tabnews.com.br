@@ -1,4 +1,4 @@
-import { NotFoundError } from 'errors';
+import { InternalServerError, NotFoundError } from 'errors';
 import database from 'infra/database.js';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
@@ -115,6 +115,14 @@ async function resetUserPassword(secureInputValues) {
 }
 
 async function findOneTokenById(tokenId) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new InternalServerError({
+      message: '"recovery.findOneTokenById" só pode ser utilizado em ambiente de testes.',
+      action: 'Verifique se o ambiente está correto.',
+      errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_TOKEN_BY_ID:INVALID_ENVIRONMENT',
+    });
+  }
+
   const query = {
     text: `SELECT * FROM reset_password_tokens
         WHERE id = $1
@@ -150,7 +158,6 @@ async function findOneValidTokenById(tokenId) {
     throw new NotFoundError({
       message: `O token de recuperação de senha utilizado não foi encontrado no sistema ou expirou.`,
       action: 'Solicite uma nova recuperação de senha.',
-      stack: new Error().stack,
       errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_VALID_TOKEN_BY_ID:NOT_FOUND',
       key: 'token_id',
     });
@@ -160,6 +167,14 @@ async function findOneValidTokenById(tokenId) {
 }
 
 async function findOneTokenByUserId(userId) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new InternalServerError({
+      message: '"findOneTokenByUserId" só pode ser utilizado em ambiente de testes.',
+      action: 'Verifique se o ambiente está correto.',
+      errorLocationCode: 'MODEL:RECOVERY:FIND_ONE_TOKEN_BY_USER_ID:INVALID_ENVIRONMENT',
+    });
+  }
+
   const query = {
     text: `SELECT * FROM reset_password_tokens
         WHERE user_id = $1
@@ -195,6 +210,14 @@ async function markTokenAsUsed(tokenId) {
 }
 
 async function update(tokenId, tokenBody) {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new InternalServerError({
+      message: '"recovery.update" só pode ser utilizado em ambiente de testes.',
+      action: 'Verifique se o ambiente está correto.',
+      errorLocationCode: 'MODEL:RECOVERY:UPDATE:INVALID_ENVIRONMENT',
+    });
+  }
+
   const currentToken = await findOneTokenById(tokenId);
   const updatedToken = { ...currentToken, ...tokenBody };
 
