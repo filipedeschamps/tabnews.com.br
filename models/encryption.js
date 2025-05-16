@@ -1,28 +1,33 @@
 import crypto from 'crypto';
 
-const cryptoConfigurations = {
+const config = {
   algorithm: 'aes-256-gcm',
-  key: crypto.createHash('sha512').update(process.env.TOTP_SECRET_KEY).digest('hex').substring(0, 32),
+  key: crypto.createHash('sha256').update(process.env.TOTP_SECRET_KEY).digest(),
+  length: 32,
+  ivSize: 16,
+  authTagSize: 16,
+  encoding: 'hex',
+  decoding: 'utf8',
 };
 
 function encryptData(data) {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(cryptoConfigurations.algorithm, cryptoConfigurations.key, iv);
-  const encryptedData = Buffer.concat([cipher.update(data, 'utf8'), cipher.final()]);
+  const iv = crypto.randomBytes(config.ivSize);
+  const cipher = crypto.createCipheriv(config.algorithm, config.key, iv);
+  const encryptedData = Buffer.concat([cipher.update(data, config.decoding), cipher.final()]);
   const authTag = cipher.getAuthTag();
 
-  return Buffer.concat([iv, authTag, encryptedData]).toString('hex');
+  return Buffer.concat([iv, authTag, encryptedData]).toString(config.encoding);
 }
 
 function decryptData(encrypted) {
-  const data = Buffer.from(encrypted, 'hex');
-  const iv = data.subarray(0, 16);
-  const authTag = data.subarray(16, 32);
-  const encryptedData = data.subarray(32);
-  const decipher = crypto.createDecipheriv(cryptoConfigurations.algorithm, cryptoConfigurations.key, iv);
+  const data = Buffer.from(encrypted, config.encoding);
+  const iv = data.subarray(0, config.ivSize);
+  const authTag = data.subarray(config.ivSize, config.ivSize + config.authTagSize);
+  const encryptedData = data.subarray(config.ivSize + config.authTagSize);
+  const decipher = crypto.createDecipheriv(config.algorithm, config.key, iv);
   decipher.setAuthTag(authTag);
 
-  return decipher.update(encryptedData, 'binary', 'utf-8') + decipher.final('utf-8');
+  return Buffer.concat([decipher.update(encryptedData), decipher.final()]).toString(config.decoding);
 }
 
 export default Object.freeze({
