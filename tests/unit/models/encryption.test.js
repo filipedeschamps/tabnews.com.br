@@ -6,7 +6,7 @@ describe('Encryption model', () => {
     const secret = otp.createSecret();
     const encryptedSecret = encryption.encryptData(secret);
 
-    expect(encryptedSecret).toHaveLength(128);
+    expect(encryptedSecret).toHaveLength(120);
   });
 
   it('should decrypt a secret to the same before encryption', () => {

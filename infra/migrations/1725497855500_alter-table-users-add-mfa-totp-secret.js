@@ -1,7 +1,7 @@
 exports.up = (pgm) => {
   pgm.addColumns('users', {
     totp_secret: {
-      type: 'varchar(128)',
+      type: 'varchar(120)',
       notNull: false,
     },
   });

@@ -4,7 +4,7 @@ const config = {
   algorithm: 'aes-256-gcm',
   key: crypto.createHash('sha256').update(process.env.TOTP_SECRET_KEY).digest(),
   length: 32,
-  ivSize: 16,
+  ivSize: 12, // Why 12? https://crypto.stackexchange.com/questions/41601/aes-gcm-recommended-iv-size-why-12-bytes
   authTagSize: 16,
   encoding: 'hex',
   decoding: 'utf8',
