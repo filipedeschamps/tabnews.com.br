@@ -151,7 +151,7 @@ describe('GET /api/v1/user', () => {
 
       const { response, responseBody } = await userRequestBuilder.get();
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,

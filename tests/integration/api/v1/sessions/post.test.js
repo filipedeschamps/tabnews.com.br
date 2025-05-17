@@ -83,7 +83,7 @@ describe('POST /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'O duplo fator de autenticação está habilitado para esta conta.',
@@ -131,7 +131,7 @@ describe('POST /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(201);
+      expect.soft(response.status).toBe(201);
       expect(responseBody.token.length).toBe(96);
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
@@ -182,7 +182,8 @@ describe('POST /api/v1/sessions', () => {
 
       const responseBody = await response.json();
 
-      expect(response.status).toBe(401);
+      expect.soft(response.status).toBe(401);
+
       expect(responseBody).toStrictEqual({
         name: 'UnauthorizedError',
         message: 'O código TOTP informado é inválido',

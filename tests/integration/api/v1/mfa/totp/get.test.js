@@ -16,7 +16,7 @@ describe('GET /api/v1/mfa/totp', () => {
 
       const { response, responseBody } = await enableRequestBuilder.get();
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
         message: 'Usuário não pode executar esta operação.',
@@ -45,7 +45,7 @@ describe('GET /api/v1/mfa/totp', () => {
       const searchParams = new URL(responseBody.totp).searchParams;
       const secret = searchParams.get('secret');
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(secret).toHaveLength(32);
       expect(responseBody).toStrictEqual({
         totp: `otpauth://totp/TabNews:${username}?issuer=TabNews&secret=${secret}&algorithm=SHA1&digits=6&period=30`,

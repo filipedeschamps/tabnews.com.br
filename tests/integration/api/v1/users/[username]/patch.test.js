@@ -903,7 +903,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         totp,
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -938,7 +938,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         totp,
       });
 
-      expect(response.status).toBe(403);
+      expect.soft(response.status).toBe(403);
       expect(responseBody).toStrictEqual({
         name: 'ForbiddenError',
         message: 'O código TOTP informado é inválido.',
@@ -966,7 +966,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         totp,
       });
 
-      expect(response.status).toBe(400);
+      expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
         name: 'ValidationError',
         message: 'Duplo fator de autenticação já habilitado para a conta.',
@@ -997,7 +997,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         totp,
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
@@ -1040,7 +1040,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         description: 'my description',
       });
 
-      expect(response.status).toBe(200);
+      expect.soft(response.status).toBe(200);
       expect(responseBody).toStrictEqual({
         id: defaultUser.id,
         username: defaultUser.username,
