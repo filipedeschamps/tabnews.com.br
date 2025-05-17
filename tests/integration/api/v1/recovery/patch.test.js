@@ -242,20 +242,13 @@ describe('PATCH /api/v1/recovery', () => {
 
       const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const recoveryRequestBuilder = new RequestBuilder('/api/v1/recovery');
 
-        body: JSON.stringify({
-          token_id: recoveryToken.id,
-          password: 'newValidPassword',
-          totp,
-        }),
+      const { response, responseBody } = await recoveryRequestBuilder.patch({
+        token_id: recoveryToken.id,
+        password: 'newValidPassword',
+        totp,
       });
-
-      const responseBody = await response.json();
 
       const updatedTokenInDatabase = await recovery.findOneTokenById(recoveryToken.id);
       const updatedUserInDatabase = await user.findOneById(defaultUser.id);
@@ -295,20 +288,13 @@ describe('PATCH /api/v1/recovery', () => {
 
       const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const recoveryRequestBuilder = new RequestBuilder('/api/v1/recovery');
 
-        body: JSON.stringify({
-          token_id: recoveryToken.id,
-          password: 'newValidPassword',
-          totp: otp.createTotp().generate(),
-        }),
+      const { response, responseBody } = await recoveryRequestBuilder.patch({
+        token_id: recoveryToken.id,
+        password: 'newValidPassword',
+        totp: otp.createTotp().generate(),
       });
-
-      const responseBody = await response.json();
 
       expect.soft(response.status).toBe(403);
 
@@ -343,19 +329,12 @@ describe('PATCH /api/v1/recovery', () => {
 
       const recoveryToken = await orchestrator.createRecoveryToken(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const recoveryRequestBuilder = new RequestBuilder('/api/v1/recovery');
 
-        body: JSON.stringify({
-          token_id: recoveryToken.id,
-          password: 'newValidPassword',
-        }),
+      const { response, responseBody } = await recoveryRequestBuilder.patch({
+        token_id: recoveryToken.id,
+        password: 'newValidPassword',
       });
-
-      const responseBody = await response.json();
 
       expect.soft(response.status).toBe(403);
 

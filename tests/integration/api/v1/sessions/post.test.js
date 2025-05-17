@@ -70,18 +70,12 @@ describe('POST /api/v1/sessions', () => {
         totp,
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'emailWithTotpEnabled@gmail.com',
-          password: 'ValidPassword',
-        }),
-      });
+      const sessionRequestBuilder = new RequestBuilder('/api/v1/sessions');
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await sessionRequestBuilder.post({
+        email: 'emailWithTotpEnabled@gmail.com',
+        password: 'ValidPassword',
+      });
 
       expect.soft(response.status).toBe(400);
       expect(responseBody).toStrictEqual({
@@ -117,19 +111,13 @@ describe('POST /api/v1/sessions', () => {
         totp,
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'emailWithValidTotp@gmail.com',
-          password: 'ValidPasswordAndTotp',
-          totp,
-        }),
-      });
+      const sessionRequestBuilder = new RequestBuilder('/api/v1/sessions');
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await sessionRequestBuilder.post({
+        email: 'emailWithValidTotp@gmail.com',
+        password: 'ValidPasswordAndTotp',
+        totp,
+      });
 
       expect.soft(response.status).toBe(201);
       expect(responseBody.token.length).toBe(96);
@@ -168,19 +156,13 @@ describe('POST /api/v1/sessions', () => {
         totp,
       });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'emailWithInvalidTotp@gmail.com',
-          password: 'ValidPasswordAndInvalidTotp',
-          totp: invalidTotp.generate(),
-        }),
-      });
+      const sessionRequestBuilder = new RequestBuilder('/api/v1/sessions');
 
-      const responseBody = await response.json();
+      const { response, responseBody } = await sessionRequestBuilder.post({
+        email: 'emailWithInvalidTotp@gmail.com',
+        password: 'ValidPasswordAndInvalidTotp',
+        totp: invalidTotp.generate(),
+      });
 
       expect.soft(response.status).toBe(401);
 
