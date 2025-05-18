@@ -36,10 +36,10 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
 
           <RenderItems />
 
-          <EndOfRelevant />
+          <EndOfRelevant pagination={pagination} paginationBasePath={paginationBasePath} />
         </Box>
       ) : (
-        <RenderEmptyMessage {...emptyStateProps} />
+        <EmptyState title="Nenhum conteúdo encontrado" {...emptyStateProps} />
       )}
 
       {list.length > 0 ? <Pagination {...pagination} basePath={paginationBasePath} /> : null}
@@ -140,29 +140,26 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
       );
     });
   }
+}
 
-  function EndOfRelevant() {
-    if (paginationBasePath == '/pagina' && !pagination.nextPage) {
-      return (
-        <Box key="end-of-relevant" sx={{ gridColumnStart: 2 }}>
-          <Link sx={{ wordWrap: 'break-word' }} href={'/recentes/pagina/1'}>
-            <Box
-              sx={{
-                overflow: 'auto',
-                fontWeight: 'semibold',
-                fontSize: 2,
-              }}>
-              Fim dos conteúdos relevantes mais atuais
-            </Box>
-            <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
-          </Link>
-        </Box>
-      );
-    }
-    return null;
+function EndOfRelevant({ pagination, paginationBasePath }) {
+  if (paginationBasePath == '/pagina' && !pagination.nextPage) {
+    return (
+      <Box key="end-of-relevant" sx={{ gridColumnStart: 2 }}>
+        <Link sx={{ wordWrap: 'break-word' }} href={'/recentes/pagina/1'}>
+          <Box
+            sx={{
+              overflow: 'auto',
+              fontWeight: 'semibold',
+              fontSize: 2,
+            }}>
+            Fim dos conteúdos relevantes mais atuais
+          </Box>
+          <Box sx={{ fontSize: 0 }}>Veja todos os conteúdos que já foram publicados na seção Recentes.</Box>
+        </Link>
+      </Box>
+    );
   }
 
-  function RenderEmptyMessage(props) {
-    return <EmptyState title="Nenhum conteúdo encontrado" {...props} />;
-  }
+  return null;
 }

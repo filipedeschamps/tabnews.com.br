@@ -58,61 +58,12 @@ const DESCRIPTION_MAX_LENGTH = 5_000;
 
 function UserProfile({ userFound, onUpdate }) {
   const { user } = useUser();
-  const confirm = useConfirm();
   const [globalMessageObject, setGlobalMessageObject] = useState(null);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
 
   const isAuthenticatedUser = user && user.username === userFound.username;
   const canUpdate = isAuthenticatedUser && user?.features?.includes('update:user');
   const canUpdateDescription = canUpdate || user?.features?.includes('update:user:others');
-
-  async function handleClickNuke() {
-    setGlobalMessageObject(null);
-
-    const confirmDelete1 = await confirm({
-      title: `Atenção: Você está realizando um Nuke!`,
-      content: `Deseja banir o usuário "${userFound.username}" e desfazer todas as suas ações?`,
-      confirmButtonContent: 'Sim',
-      cancelButtonContent: 'Cancelar',
-    });
-
-    if (!confirmDelete1) return;
-
-    // Fake delay to avoid multiple accidental clicks
-    await new Promise((r) => setTimeout(r, 1000));
-
-    const confirmDelete2 = await confirm({
-      title: `Nuke em "${userFound.username}"`,
-      content: `Confirme novamente esta operação.`,
-    });
-
-    if (!confirmDelete2) return;
-
-    const payload = {
-      ban_type: 'nuke',
-    };
-
-    const response = await fetch(`/api/v1/users/${userFound.username}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const responseBody = await response.json();
-
-    if (response.status === 200) {
-      onUpdate(responseBody);
-      return;
-    }
-
-    setGlobalMessageObject({
-      type: 'danger',
-      position: 'main',
-      text: createErrorMessage(responseBody),
-    });
-  }
 
   function handleEditDescription() {
     setGlobalMessageObject(null);
@@ -124,57 +75,6 @@ function UserProfile({ userFound, onUpdate }) {
     onUpdate(newUser);
   }
 
-  function OptionsMenu() {
-    const canNuke =
-      !isAuthenticatedUser && user?.features?.includes('ban:user') && !userFound?.features?.includes('nuked');
-    if (!canNuke && !canUpdate) {
-      return null;
-    }
-
-    return (
-      <ActionMenu>
-        <ActionMenu.Anchor>
-          <IconButton
-            sx={{ ml: 'auto', px: 1, alignSelf: 'center' }}
-            size="small"
-            icon={KebabHorizontalIcon}
-            aria-label="Editar usuário"
-          />
-        </ActionMenu.Anchor>
-        <ActionMenu.Overlay>
-          <ActionList>
-            {canUpdate && (
-              <NavItem href="/perfil">
-                <NavList.LeadingVisual>
-                  <GearIcon />
-                </NavList.LeadingVisual>
-                Editar perfil
-              </NavItem>
-            )}
-            {canNuke && (
-              <ActionList.Item variant="danger" onSelect={handleClickNuke}>
-                <ActionList.LeadingVisual>
-                  <CircleSlashIcon />
-                </ActionList.LeadingVisual>
-                Nuke
-              </ActionList.Item>
-            )}
-          </ActionList>
-        </ActionMenu.Overlay>
-      </ActionMenu>
-    );
-  }
-
-  function UserFeatures() {
-    if (!userFound?.features?.length) return null;
-
-    return (
-      <LabelGroup sx={{ display: 'flex', alignSelf: 'center' }}>
-        {userFound.features.includes('nuked') && <Label variant="danger">nuked</Label>}
-      </LabelGroup>
-    );
-  }
-
   return (
     <>
       {globalMessageObject?.position === 'main' && (
@@ -184,8 +84,15 @@ function UserProfile({ userFound, onUpdate }) {
       )}
 
       <UserHeader username={userFound.username}>
-        <UserFeatures />
-        <OptionsMenu />
+        <UserFeatures userFound={userFound} />
+        <OptionsMenu
+          canUpdate={canUpdate}
+          isAuthenticatedUser={isAuthenticatedUser}
+          onNuke={onUpdate}
+          setGlobalMessageObject={setGlobalMessageObject}
+          user={user}
+          userFound={userFound}
+        />
       </UserHeader>
 
       <Box
@@ -441,6 +348,107 @@ function DescriptionForm({
         </ButtonWithLoader>
       </Box>
     </Box>
+  );
+}
+
+function UserFeatures({ userFound }) {
+  if (!userFound?.features?.length) return null;
+
+  return (
+    <LabelGroup sx={{ display: 'flex', alignSelf: 'center' }}>
+      {userFound.features.includes('nuked') && <Label variant="danger">nuked</Label>}
+    </LabelGroup>
+  );
+}
+
+function OptionsMenu({ canUpdate, isAuthenticatedUser, onNuke, setGlobalMessageObject, user, userFound }) {
+  const confirm = useConfirm();
+
+  async function handleNuke() {
+    setGlobalMessageObject(null);
+
+    const confirmDelete1 = await confirm({
+      title: `Atenção: Você está realizando um Nuke!`,
+      content: `Deseja banir o usuário "${userFound.username}" e desfazer todas as suas ações?`,
+      confirmButtonContent: 'Sim',
+      cancelButtonContent: 'Cancelar',
+    });
+
+    if (!confirmDelete1) return;
+
+    // Fake delay to avoid multiple accidental clicks
+    await new Promise((r) => setTimeout(r, 1000));
+
+    const confirmDelete2 = await confirm({
+      title: `Nuke em "${userFound.username}"`,
+      content: `Confirme novamente esta operação.`,
+    });
+
+    if (!confirmDelete2) return;
+
+    const payload = {
+      ban_type: 'nuke',
+    };
+
+    const response = await fetch(`/api/v1/users/${userFound.username}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responseBody = await response.json();
+
+    if (response.status === 200) {
+      onNuke(responseBody);
+      return;
+    }
+
+    setGlobalMessageObject({
+      type: 'danger',
+      position: 'main',
+      text: createErrorMessage(responseBody),
+    });
+  }
+
+  const canNuke =
+    !isAuthenticatedUser && user?.features?.includes('ban:user') && !userFound?.features?.includes('nuked');
+  if (!canNuke && !canUpdate) {
+    return null;
+  }
+
+  return (
+    <ActionMenu>
+      <ActionMenu.Anchor>
+        <IconButton
+          sx={{ ml: 'auto', px: 1, alignSelf: 'center' }}
+          size="small"
+          icon={KebabHorizontalIcon}
+          aria-label="Editar usuário"
+        />
+      </ActionMenu.Anchor>
+      <ActionMenu.Overlay>
+        <ActionList>
+          {canUpdate && (
+            <NavItem href="/perfil">
+              <NavList.LeadingVisual>
+                <GearIcon />
+              </NavList.LeadingVisual>
+              Editar perfil
+            </NavItem>
+          )}
+          {canNuke && (
+            <ActionList.Item variant="danger" onSelect={handleNuke}>
+              <ActionList.LeadingVisual>
+                <CircleSlashIcon />
+              </ActionList.LeadingVisual>
+              Nuke
+            </ActionList.Item>
+          )}
+        </ActionList>
+      </ActionMenu.Overlay>
+    </ActionMenu>
   );
 }
 

@@ -327,11 +327,7 @@ function DefaultStatusMessage({ status }) {
 function UserSelected({ userSelected }) {
   if (!userSelected) return null;
 
-  return (
-    <Fragment>
-      <Link href={`/${userSelected}`}>{userSelected}&nbsp;</Link>
-    </Fragment>
-  );
+  return <Link href={`/${userSelected}`}>{userSelected}&nbsp;</Link>;
 }
 
 function JoinSharedNetworks({ userSelected, positives, negatives, shared }) {

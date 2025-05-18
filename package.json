@@ -43,7 +43,7 @@
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0",
     "@faker-js/faker": "9.7.0",
-    "@tabnews/config": "0.5.0",
+    "@tabnews/config": "0.6.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
     "concurrently": "9.1.2",

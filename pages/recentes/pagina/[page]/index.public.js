@@ -10,21 +10,19 @@ import validator from 'models/validator.js';
 
 export default function Home({ adFound, contentListFound, pagination }) {
   return (
-    <>
-      <DefaultLayout
-        metadata={{
-          title: `Página ${pagination.currentPage} · Recentes`,
-          description: 'Publicações no TabNews ordenadas pelas mais recentes.',
-        }}>
-        <RecentTabNav />
-        <ContentList
-          ad={adFound}
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/recentes/pagina"
-        />
-      </DefaultLayout>
-    </>
+    <DefaultLayout
+      metadata={{
+        title: `Página ${pagination.currentPage} · Recentes`,
+        description: 'Publicações no TabNews ordenadas pelas mais recentes.',
+      }}>
+      <RecentTabNav />
+      <ContentList
+        ad={adFound}
+        contentList={contentListFound}
+        pagination={pagination}
+        paginationBasePath="/recentes/pagina"
+      />
+    </DefaultLayout>
   );
 }
 
