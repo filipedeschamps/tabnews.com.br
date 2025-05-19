@@ -532,6 +532,7 @@ describe('PATCH /api/v1/users/[username]', () => {
     });
 
     test('Patching itself with another "email"', async () => {
+      await orchestrator.deleteAllEmails();
       let defaultUser = await orchestrator.createUser({
         email: 'original@email.com',
       });
