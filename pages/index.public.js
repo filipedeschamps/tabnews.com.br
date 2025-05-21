@@ -10,21 +10,19 @@ import validator from 'models/validator.js';
 
 export default function Home({ adFound, contentListFound, pagination }) {
   return (
-    <>
-      <DefaultLayout>
-        <ContentList
-          ad={adFound}
-          contentList={contentListFound}
-          pagination={pagination}
-          paginationBasePath="/pagina"
-          emptyStateProps={{
-            title: 'Nenhum conteúdo encontrado',
-            description: 'Quando eu cheguei era tudo mato...',
-            icon: FaTree,
-          }}
-        />
-      </DefaultLayout>
-    </>
+    <DefaultLayout>
+      <ContentList
+        ad={adFound}
+        contentList={contentListFound}
+        pagination={pagination}
+        paginationBasePath="/pagina"
+        emptyStateProps={{
+          title: 'Nenhum conteúdo encontrado',
+          description: 'Quando eu cheguei era tudo mato...',
+          icon: FaTree,
+        }}
+      />
+    </DefaultLayout>
   );
 }
 
