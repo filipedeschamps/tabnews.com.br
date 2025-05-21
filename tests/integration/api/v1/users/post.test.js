@@ -130,84 +130,6 @@ describe('POST /api/v1/users', () => {
       expect(userInDatabase.email).toBe('space.in.the.beggining@gmail.com');
     });
 
-    test('With "username" duplicated exactly (same uppercase letters)', async () => {
-      // firstResponse
-      await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'SaMeUPPERCASE',
-          email: 'email01@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'SaMeUPPERCASE',
-          email: 'email02@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const secondResponseBody = await secondResponse.json();
-
-      expect.soft(secondResponse.status).toBe(400);
-      expect.soft(secondResponseBody.status_code).toBe(400);
-      expect(secondResponseBody.name).toBe('ValidationError');
-      expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
-      expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
-      expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
-      expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(secondResponseBody.key).toBe('username');
-    });
-
-    test('With "username" duplicated (different uppercase letters)', async () => {
-      // firstResponse
-      await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'DIFFERENTuppercase',
-          email: 'email03@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'differentUPPERCASE',
-          email: 'email04@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const secondResponseBody = await secondResponse.json();
-
-      expect.soft(secondResponse.status).toBe(400);
-      expect.soft(secondResponseBody.status_code).toBe(400);
-      expect(secondResponseBody.name).toBe('ValidationError');
-      expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
-      expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
-      expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
-      expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
-      expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(secondResponseBody.key).toBe('username');
-    });
-
     test('With "username" missing', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
         method: 'POST',
@@ -387,110 +309,6 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('username');
-    });
-
-    test('With "email" duplicated (same uppercase letters)', async () => {
-      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'anotherUserName111',
-          email: 'email.will.be.duplicated@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const firstResponseBody = await firstResponse.json();
-
-      const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'anotherUserName222',
-          email: 'email.will.be.duplicated@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const secondResponseBody = await secondResponse.json();
-
-      expect.soft(secondResponse.status).toBe(201);
-
-      expect(secondResponseBody).toStrictEqual({
-        id: secondResponseBody.id,
-        username: 'anotherUserName222',
-        description: '',
-        features: ['read:activation_token'],
-        tabcoins: 0,
-        tabcash: 0,
-        created_at: secondResponseBody.created_at,
-        updated_at: secondResponseBody.updated_at,
-      });
-      expect(uuidVersion(secondResponseBody.id)).toBe(4);
-      expect(Date.parse(secondResponseBody.created_at)).not.toBeNaN();
-      expect(Date.parse(secondResponseBody.updated_at)).not.toBeNaN();
-
-      await expect(user.findOneById(firstResponseBody.id)).resolves.not.toThrow();
-
-      await expect(user.findOneById(secondResponseBody.id)).rejects.toThrow(
-        `O id "${secondResponseBody.id}" não foi encontrado no sistema.`,
-      );
-    });
-
-    test('With "email" duplicated (different uppercase letters)', async () => {
-      const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'willTryToReuseEmail111',
-          email: 'CAPS@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const firstResponseBody = await firstResponse.json();
-
-      const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'willTryToReuseEmail222',
-          email: 'caps@gmail.com',
-          password: 'validpassword',
-        }),
-      });
-
-      const secondResponseBody = await secondResponse.json();
-
-      expect.soft(secondResponse.status).toBe(201);
-
-      expect(secondResponseBody).toStrictEqual({
-        id: secondResponseBody.id,
-        username: 'willTryToReuseEmail222',
-        description: '',
-        features: ['read:activation_token'],
-        tabcoins: 0,
-        tabcash: 0,
-        created_at: secondResponseBody.created_at,
-        updated_at: secondResponseBody.updated_at,
-      });
-      expect(uuidVersion(secondResponseBody.id)).toBe(4);
-      expect(Date.parse(secondResponseBody.created_at)).not.toBeNaN();
-      expect(Date.parse(secondResponseBody.updated_at)).not.toBeNaN();
-
-      await expect(user.findOneById(firstResponseBody.id)).resolves.not.toThrow();
-
-      await expect(user.findOneById(secondResponseBody.id)).rejects.toThrow(
-        `O id "${secondResponseBody.id}" não foi encontrado no sistema.`,
-      );
     });
 
     test('With "email" missing', async () => {
@@ -760,6 +578,190 @@ describe('POST /api/v1/users', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
       expect(responseBody.key).toBe('object');
+    });
+
+    describe('With duplicated "username" and/or "email"', () => {
+      test('With "username" duplicated exactly (same uppercase letters)', async () => {
+        // firstResponse
+        await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'SaMeUPPERCASE',
+            email: 'email01@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'SaMeUPPERCASE',
+            email: 'email02@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const secondResponseBody = await secondResponse.json();
+
+        expect.soft(secondResponse.status).toBe(400);
+        expect.soft(secondResponseBody.status_code).toBe(400);
+        expect(secondResponseBody.name).toBe('ValidationError');
+        expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
+        expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+        expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
+        expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
+        expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+        expect(secondResponseBody.key).toBe('username');
+      });
+
+      test('With "username" duplicated (different uppercase letters)', async () => {
+        // firstResponse
+        await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'DIFFERENTuppercase',
+            email: 'email03@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'differentUPPERCASE',
+            email: 'email04@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const secondResponseBody = await secondResponse.json();
+
+        expect.soft(secondResponse.status).toBe(400);
+        expect.soft(secondResponseBody.status_code).toBe(400);
+        expect(secondResponseBody.name).toBe('ValidationError');
+        expect(secondResponseBody.message).toBe('O "username" informado já está sendo usado.');
+        expect(secondResponseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+        expect(uuidVersion(secondResponseBody.error_id)).toBe(4);
+        expect(uuidVersion(secondResponseBody.request_id)).toBe(4);
+        expect(secondResponseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+        expect(secondResponseBody.key).toBe('username');
+      });
+
+      test('With "email" duplicated (same uppercase letters)', async () => {
+        const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'anotherUserName111',
+            email: 'email.will.be.duplicated@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const firstResponseBody = await firstResponse.json();
+
+        const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'anotherUserName222',
+            email: 'email.will.be.duplicated@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const secondResponseBody = await secondResponse.json();
+
+        expect.soft(secondResponse.status).toBe(201);
+
+        expect(secondResponseBody).toStrictEqual({
+          id: secondResponseBody.id,
+          username: 'anotherUserName222',
+          description: '',
+          features: ['read:activation_token'],
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: secondResponseBody.created_at,
+          updated_at: secondResponseBody.updated_at,
+        });
+        expect(uuidVersion(secondResponseBody.id)).toBe(4);
+        expect(Date.parse(secondResponseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(secondResponseBody.updated_at)).not.toBeNaN();
+
+        await expect(user.findOneById(firstResponseBody.id)).resolves.not.toThrow();
+
+        await expect(user.findOneById(secondResponseBody.id)).rejects.toThrow(
+          `O id "${secondResponseBody.id}" não foi encontrado no sistema.`,
+        );
+      });
+
+      test('With "email" duplicated (different uppercase letters)', async () => {
+        const firstResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'willTryToReuseEmail111',
+            email: 'CAPS@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const firstResponseBody = await firstResponse.json();
+
+        const secondResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'willTryToReuseEmail222',
+            email: 'caps@gmail.com',
+            password: 'validpassword',
+          }),
+        });
+
+        const secondResponseBody = await secondResponse.json();
+
+        expect.soft(secondResponse.status).toBe(201);
+
+        expect(secondResponseBody).toStrictEqual({
+          id: secondResponseBody.id,
+          username: 'willTryToReuseEmail222',
+          description: '',
+          features: ['read:activation_token'],
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: secondResponseBody.created_at,
+          updated_at: secondResponseBody.updated_at,
+        });
+        expect(uuidVersion(secondResponseBody.id)).toBe(4);
+        expect(Date.parse(secondResponseBody.created_at)).not.toBeNaN();
+        expect(Date.parse(secondResponseBody.updated_at)).not.toBeNaN();
+
+        await expect(user.findOneById(firstResponseBody.id)).resolves.not.toThrow();
+
+        await expect(user.findOneById(secondResponseBody.id)).rejects.toThrow(
+          `O id "${secondResponseBody.id}" não foi encontrado no sistema.`,
+        );
+      });
     });
   });
 });

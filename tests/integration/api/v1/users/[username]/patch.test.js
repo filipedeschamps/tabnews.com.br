@@ -242,72 +242,6 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.updated_at > defaultUser.created_at.toISOString()).toBe(true);
     });
 
-    test('Patching itself with "username" duplicated exactly (same uppercase letters)', async () => {
-      await orchestrator.createUser({
-        username: 'SameUPPERCASE',
-      });
-      let defaultUser = await orchestrator.createUser();
-      defaultUser = await orchestrator.activateUser(defaultUser);
-      const defaultUserSession = await orchestrator.createSession(defaultUser);
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${defaultUserSession.token}`,
-        },
-
-        body: JSON.stringify({
-          username: 'SameUPPERCASE',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect.soft(response.status).toBe(400);
-      expect.soft(responseBody.status_code).toBe(400);
-      expect(responseBody.name).toBe('ValidationError');
-      expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
-      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(uuidVersion(responseBody.error_id)).toBe(4);
-      expect(uuidVersion(responseBody.request_id)).toBe(4);
-      expect(responseBody.key).toBe('username');
-    });
-
-    test('Patching itself with "username" duplicated (different uppercase letters)', async () => {
-      await orchestrator.createUser({
-        username: 'DIFFERENTuppercase',
-      });
-      let defaultUser = await orchestrator.createUser();
-      defaultUser = await orchestrator.activateUser(defaultUser);
-      const defaultUserSession = await orchestrator.createSession(defaultUser);
-
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          cookie: `session_id=${defaultUserSession.token}`,
-        },
-
-        body: JSON.stringify({
-          username: 'differentUPPERCASE',
-        }),
-      });
-
-      const responseBody = await response.json();
-
-      expect.soft(response.status).toBe(400);
-      expect.soft(responseBody.status_code).toBe(400);
-      expect(responseBody.name).toBe('ValidationError');
-      expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
-      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
-      expect(responseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
-      expect(uuidVersion(responseBody.error_id)).toBe(4);
-      expect(uuidVersion(responseBody.request_id)).toBe(4);
-      expect(responseBody.key).toBe('username');
-    });
-
     test('Patching itself with "username" set to a null value', async () => {
       let defaultUser = await orchestrator.createUser();
       defaultUser = await orchestrator.activateUser(defaultUser);
@@ -597,136 +531,8 @@ describe('PATCH /api/v1/users/[username]', () => {
       expect(responseBody.key).toBe('object');
     });
 
-    test('Patching itself with "email" duplicated exactly', async () => {
-      await orchestrator.deleteAllEmails();
-      await orchestrator.createUser({
-        email: 'someone@example.com',
-      });
-
-      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
-      const defaultUser = await usersRequestBuilder.buildUser();
-
-      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
-        email: 'someone@example.com',
-      });
-
-      expect.soft(response.status).toBe(200);
-      expect(responseBody).toStrictEqual({
-        id: defaultUser.id,
-        username: defaultUser.username,
-        email: defaultUser.email,
-        description: defaultUser.description,
-        features: defaultUser.features,
-        notifications: defaultUser.notifications,
-        created_at: defaultUser.created_at.toISOString(),
-        updated_at: responseBody.updated_at,
-      });
-
-      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
-      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-
-      const foundUser = await user.findOneById(defaultUser.id);
-      expect(foundUser.email).toBe(defaultUser.email);
-      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
-    });
-
-    test('Patching itself with "email" duplicated exactly and other fields', async () => {
-      await orchestrator.deleteAllEmails();
-      await orchestrator.createUser({
-        email: 'this_user_already_exists@example.com',
-      });
-
-      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
-      const defaultUser = await usersRequestBuilder.buildUser();
-
-      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
-        description: 'New description',
-        email: 'this_user_already_exists@example.com',
-        notifications: false,
-      });
-
-      expect.soft(response.status).toBe(200);
-      expect(responseBody).toStrictEqual({
-        id: defaultUser.id,
-        username: defaultUser.username,
-        email: defaultUser.email,
-        description: 'New description',
-        features: defaultUser.features,
-        notifications: false,
-        tabcoins: 0,
-        tabcash: 0,
-        created_at: defaultUser.created_at.toISOString(),
-        updated_at: responseBody.updated_at,
-      });
-
-      expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
-      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-
-      const foundUser = await user.findOneById(defaultUser.id);
-      expect(foundUser.email).toBe(defaultUser.email);
-      expect(foundUser.description).toBe('New description');
-      expect(foundUser.notifications).toBe(false);
-      expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
-      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
-    });
-
-    test('Patching itself with duplicate "email" and "username" should only return "username" error', async () => {
-      await orchestrator.createUser({ username: 'usernameStoredPreviously' });
-      await orchestrator.createUser({ email: 'this_email_already_exists@example.com' });
-      await orchestrator.createUser({ username: 'usernameStoredLater' });
-
-      const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
-      const defaultUser = await usersRequestBuilder.buildUser();
-      await orchestrator.deleteAllEmails();
-
-      const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
-        email: 'this_email_already_exists@example.com',
-        username: 'usernameStoredPreviously',
-      });
-      expect.soft(response.status).toBe(400);
-
-      expect(responseBody).toStrictEqual({
-        status_code: 400,
-        name: 'ValidationError',
-        message: 'O "username" informado já está sendo usado.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
-        error_id: responseBody.error_id,
-        request_id: responseBody.request_id,
-        key: 'username',
-      });
-      expect(uuidVersion(responseBody.error_id)).toBe(4);
-      expect(uuidVersion(responseBody.request_id)).toBe(4);
-
-      const { response: response2, responseBody: responseBody2 } = await usersRequestBuilder.patch(
-        defaultUser.username,
-        {
-          email: 'this_email_already_exists@example.com',
-          username: 'usernameStoredLater',
-        },
-      );
-      expect.soft(response2.status).toBe(400);
-
-      expect(responseBody2).toStrictEqual({
-        status_code: 400,
-        name: 'ValidationError',
-        message: 'O "username" informado já está sendo usado.',
-        action: 'Ajuste os dados enviados e tente novamente.',
-        error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
-        error_id: responseBody2.error_id,
-        request_id: responseBody2.request_id,
-        key: 'username',
-      });
-      expect(uuidVersion(responseBody2.error_id)).toBe(4);
-      expect(uuidVersion(responseBody2.request_id)).toBe(4);
-
-      const foundUser = await user.findOneById(defaultUser.id);
-      expect(foundUser.email).toBe(defaultUser.email);
-      expect(foundUser.updated_at).toStrictEqual(defaultUser.updated_at);
-      expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
-    });
-
     test('Patching itself with another "email"', async () => {
+      await orchestrator.deleteAllEmails();
       let defaultUser = await orchestrator.createUser({
         email: 'original@email.com',
       });
@@ -1037,6 +843,203 @@ describe('PATCH /api/v1/users/[username]', () => {
       const confirmationEmail = await orchestrator.waitForFirstEmail();
       expect(confirmationEmail.recipients).toStrictEqual(['<random_new_email@example.com>']);
       expect(confirmationEmail.subject).toBe('Confirme seu novo email');
+    });
+
+    describe('With duplicated username and/or email', () => {
+      test('Patching itself with "username" duplicated exactly (same uppercase letters)', async () => {
+        await orchestrator.createUser({
+          username: 'SameUPPERCASE',
+        });
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${defaultUserSession.token}`,
+          },
+
+          body: JSON.stringify({
+            username: 'SameUPPERCASE',
+          }),
+        });
+
+        const responseBody = await response.json();
+
+        expect.soft(response.status).toBe(400);
+        expect.soft(responseBody.status_code).toBe(400);
+        expect(responseBody.name).toBe('ValidationError');
+        expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
+        expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+        expect(responseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+        expect(responseBody.key).toBe('username');
+      });
+
+      test('Patching itself with "username" duplicated (different uppercase letters)', async () => {
+        await orchestrator.createUser({
+          username: 'DIFFERENTuppercase',
+        });
+        let defaultUser = await orchestrator.createUser();
+        defaultUser = await orchestrator.activateUser(defaultUser);
+        const defaultUserSession = await orchestrator.createSession(defaultUser);
+
+        const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            cookie: `session_id=${defaultUserSession.token}`,
+          },
+
+          body: JSON.stringify({
+            username: 'differentUPPERCASE',
+          }),
+        });
+
+        const responseBody = await response.json();
+
+        expect.soft(response.status).toBe(400);
+        expect.soft(responseBody.status_code).toBe(400);
+        expect(responseBody.name).toBe('ValidationError');
+        expect(responseBody.message).toBe('O "username" informado já está sendo usado.');
+        expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+        expect(responseBody.error_location_code).toBe('MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS');
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+        expect(responseBody.key).toBe('username');
+      });
+
+      test('Patching itself with "email" duplicated exactly', async () => {
+        await orchestrator.deleteAllEmails();
+        await orchestrator.createUser({
+          email: 'someone@example.com',
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await usersRequestBuilder.buildUser();
+
+        const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+          email: 'someone@example.com',
+        });
+
+        expect.soft(response.status).toBe(200);
+        expect(responseBody).toStrictEqual({
+          id: defaultUser.id,
+          username: defaultUser.username,
+          email: defaultUser.email,
+          description: defaultUser.description,
+          features: defaultUser.features,
+          notifications: defaultUser.notifications,
+          created_at: defaultUser.created_at.toISOString(),
+          updated_at: responseBody.updated_at,
+        });
+
+        expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+        const foundUser = await user.findOneById(defaultUser.id);
+        expect(foundUser.email).toBe(defaultUser.email);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
+      });
+
+      test('Patching itself with "email" duplicated exactly and other fields', async () => {
+        await orchestrator.deleteAllEmails();
+        await orchestrator.createUser({
+          email: 'this_user_already_exists@example.com',
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+        const defaultUser = await usersRequestBuilder.buildUser();
+
+        const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+          description: 'New description',
+          email: 'this_user_already_exists@example.com',
+          notifications: false,
+        });
+
+        expect.soft(response.status).toBe(200);
+        expect(responseBody).toStrictEqual({
+          id: defaultUser.id,
+          username: defaultUser.username,
+          email: defaultUser.email,
+          description: 'New description',
+          features: defaultUser.features,
+          notifications: false,
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: defaultUser.created_at.toISOString(),
+          updated_at: responseBody.updated_at,
+        });
+
+        expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+        const foundUser = await user.findOneById(defaultUser.id);
+        expect(foundUser.email).toBe(defaultUser.email);
+        expect(foundUser.description).toBe('New description');
+        expect(foundUser.notifications).toBe(false);
+        expect(foundUser.updated_at.toISOString()).toBe(responseBody.updated_at);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
+      });
+
+      test('Patching itself with duplicate "email" and "username" should only return "username" error', async () => {
+        await orchestrator.createUser({ username: 'usernameStoredPreviously' });
+        await orchestrator.createUser({ email: 'this_email_already_exists@example.com' });
+        await orchestrator.createUser({ username: 'usernameStoredLater' });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
+        const defaultUser = await usersRequestBuilder.buildUser();
+        await orchestrator.deleteAllEmails();
+
+        const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
+          email: 'this_email_already_exists@example.com',
+          username: 'usernameStoredPreviously',
+        });
+        expect.soft(response.status).toBe(400);
+
+        expect(responseBody).toStrictEqual({
+          status_code: 400,
+          name: 'ValidationError',
+          message: 'O "username" informado já está sendo usado.',
+          action: 'Ajuste os dados enviados e tente novamente.',
+          error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
+          key: 'username',
+        });
+        expect(uuidVersion(responseBody.error_id)).toBe(4);
+        expect(uuidVersion(responseBody.request_id)).toBe(4);
+
+        const { response: response2, responseBody: responseBody2 } = await usersRequestBuilder.patch(
+          defaultUser.username,
+          {
+            email: 'this_email_already_exists@example.com',
+            username: 'usernameStoredLater',
+          },
+        );
+        expect.soft(response2.status).toBe(400);
+
+        expect(responseBody2).toStrictEqual({
+          status_code: 400,
+          name: 'ValidationError',
+          message: 'O "username" informado já está sendo usado.',
+          action: 'Ajuste os dados enviados e tente novamente.',
+          error_location_code: 'MODEL:USER:VALIDATE_UNIQUE_USERNAME:ALREADY_EXISTS',
+          error_id: responseBody2.error_id,
+          request_id: responseBody2.request_id,
+          key: 'username',
+        });
+        expect(uuidVersion(responseBody2.error_id)).toBe(4);
+        expect(uuidVersion(responseBody2.request_id)).toBe(4);
+
+        const foundUser = await user.findOneById(defaultUser.id);
+        expect(foundUser.email).toBe(defaultUser.email);
+        expect(foundUser.updated_at).toStrictEqual(defaultUser.updated_at);
+        expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
+      });
     });
 
     describe('TEMPORARY BEHAVIOR', () => {
