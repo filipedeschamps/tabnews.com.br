@@ -3,8 +3,9 @@ import { MoonIcon, SunIcon } from '@/TabNewsUI/icons';
 
 export default function ThemeSelector({ onSelect, sx, ...props }) {
   const { colorMode, setColorMode } = useTheme();
+
   const handleChangeColorMode = (index) => {
-    const mode = ['night', 'auto', 'day'][index];
+    const mode = ['dark', 'auto', 'light'][index];
     setColorMode(mode);
     onSelect?.(mode);
     localStorage.setItem('colorMode', mode);
@@ -39,9 +40,10 @@ export default function ThemeSelector({ onSelect, sx, ...props }) {
 
 export function ThemeSwitcher({ ...props }) {
   const { resolvedColorMode: mode, setColorMode } = useTheme();
+  const isLight = ['day', 'light'].includes(mode);
 
   const handleSwitchMode = () => {
-    const newMode = mode === 'day' ? 'night' : 'day';
+    const newMode = isLight ? 'dark' : 'light';
     setColorMode(newMode);
     localStorage.setItem('colorMode', newMode);
   };
@@ -52,9 +54,9 @@ export function ThemeSwitcher({ ...props }) {
       onClick={handleSwitchMode}
       variant="invisible"
       sx={{
-        color: mode === 'day' ? '#e7dfc3' : '#ecdc0f99',
+        color: isLight ? '#e7dfc3' : '#ecdc0f99',
         '&:hover': {
-          color: mode === 'day' ? '#e7dfc370' : '#ecdc0f',
+          color: isLight ? '#e7dfc370' : '#ecdc0f',
           backgroundColor: 'transparent',
         },
         '&:focus-visible': {
@@ -64,7 +66,7 @@ export function ThemeSwitcher({ ...props }) {
         pb: '3px',
       }}
       {...props}>
-      {mode === 'day' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+      {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
     </Button>
   );
 }
