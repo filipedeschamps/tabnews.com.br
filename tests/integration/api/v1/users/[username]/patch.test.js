@@ -1040,6 +1040,127 @@ describe('PATCH /api/v1/users/[username]', () => {
         expect(foundUser.updated_at).toStrictEqual(defaultUser.updated_at);
         expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
       });
+
+      test('Patching itself with a duplicate "username" for an inactive user with expired activation token', async () => {
+        const inactiveUser = await orchestrator.createUser({ username: 'existentInactiveUser' });
+        await orchestrator.updateActivateAccountTokenByUserId(inactiveUser.id, {
+          expires_at: new Date(Date.now() - 1000),
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
+        const defaultUser = await usersRequestBuilder.buildUser();
+
+        const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
+          username: 'existentInactiveUser',
+        });
+        expect.soft(response.status).toBe(200);
+
+        expect(responseBody).toStrictEqual({
+          id: defaultUser.id,
+          username: 'existentInactiveUser',
+          email: defaultUser.email,
+          description: defaultUser.description,
+          features: defaultUser.features,
+          notifications: true,
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: defaultUser.created_at.toISOString(),
+          updated_at: responseBody.updated_at,
+        });
+
+        expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+        await expect(user.findOneById(inactiveUser.id)).rejects.toThrow(
+          `O id "${inactiveUser.id}" não foi encontrado no sistema.`,
+        );
+      });
+
+      test('Patching itself with a duplicate "email" for an inactive user with expired activation token', async () => {
+        await orchestrator.deleteAllEmails();
+        const inactiveUser = await orchestrator.createUser({ email: 'existent.inactive.user@example.com' });
+        await orchestrator.updateActivateAccountTokenByUserId(inactiveUser.id, {
+          expires_at: new Date(Date.now() - 1000),
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
+        const defaultUser = await usersRequestBuilder.buildUser();
+
+        const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
+          email: 'existent.inactive.user@example.com',
+        });
+        expect.soft(response.status).toBe(200);
+
+        expect(responseBody).toStrictEqual({
+          id: defaultUser.id,
+          username: defaultUser.username,
+          email: defaultUser.email,
+          description: defaultUser.description,
+          features: defaultUser.features,
+          notifications: true,
+          created_at: defaultUser.created_at.toISOString(),
+          updated_at: responseBody.updated_at,
+        });
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+        await expect(user.findOneById(inactiveUser.id)).rejects.toThrow(
+          `O id "${inactiveUser.id}" não foi encontrado no sistema.`,
+        );
+
+        const confirmationEmail = await orchestrator.waitForFirstEmail();
+
+        expect(confirmationEmail.recipients).toStrictEqual(['<existent.inactive.user@example.com>']);
+        expect(confirmationEmail.subject).toBe('Confirme seu novo email');
+      });
+
+      test('Patching itself with "username" and "email" duplicated from different users, both inactive with expired tokens', async () => {
+        await orchestrator.deleteAllEmails();
+        const firstInactiveUser = await orchestrator.createUser({ username: 'firstInactiveUser' });
+        const secondInactiveUser = await orchestrator.createUser({ email: 'second.inactive.user@example.com' });
+        await orchestrator.updateActivateAccountTokenByUserId(firstInactiveUser.id, {
+          expires_at: new Date(Date.now() - 1000),
+        });
+        await orchestrator.updateActivateAccountTokenByUserId(secondInactiveUser.id, {
+          expires_at: new Date(Date.now() - 1000),
+        });
+
+        const usersRequestBuilder = new RequestBuilder('/api/v1/users/');
+        const defaultUser = await usersRequestBuilder.buildUser();
+
+        const { response, responseBody } = await usersRequestBuilder.patch(defaultUser.username, {
+          username: 'firstInactiveUser',
+          email: 'second.inactive.user@example.com',
+        });
+        expect.soft(response.status).toBe(200);
+
+        expect(responseBody).toStrictEqual({
+          id: defaultUser.id,
+          username: 'firstInactiveUser',
+          email: defaultUser.email,
+          description: defaultUser.description,
+          features: defaultUser.features,
+          notifications: true,
+          tabcoins: 0,
+          tabcash: 0,
+          created_at: defaultUser.created_at.toISOString(),
+          updated_at: responseBody.updated_at,
+        });
+
+        expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
+        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+        const confirmationEmail = await orchestrator.waitForFirstEmail();
+
+        expect(confirmationEmail.recipients).toStrictEqual(['<second.inactive.user@example.com>']);
+        expect(confirmationEmail.subject).toBe('Confirme seu novo email');
+
+        await expect(user.findOneById(firstInactiveUser.id)).rejects.toThrow(
+          `O id "${firstInactiveUser.id}" não foi encontrado no sistema.`,
+        );
+        await expect(user.findOneById(secondInactiveUser.id)).rejects.toThrow(
+          `O id "${secondInactiveUser.id}" não foi encontrado no sistema.`,
+        );
+      });
     });
 
     describe('TEMPORARY BEHAVIOR', () => {

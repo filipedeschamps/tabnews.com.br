@@ -10,6 +10,7 @@ import migrator from 'infra/migrator.js';
 import webserver from 'infra/webserver.js';
 import activation from 'models/activation.js';
 import balance from 'models/balance.js';
+import ban from 'models/ban';
 import content from 'models/content.js';
 import event from 'models/event.js';
 import recovery from 'models/recovery.js';
@@ -257,6 +258,10 @@ async function activateUser(userObject) {
   return await user.findOneById(userObject.id);
 }
 
+async function nukeUser(userObject) {
+  return await ban.nuke(userObject.id);
+}
+
 async function createSession(userObject) {
   return await session.create(userObject.id);
 }
@@ -365,6 +370,29 @@ async function createRate(contentObject, amount, fromUserId) {
 
 async function createRecoveryToken(userObject) {
   return await recovery.create(userObject);
+}
+
+async function createActivateAccountToken(userObject) {
+  return await activation.create(userObject);
+}
+
+async function updateActivateAccountTokenByUserId(userId, tokenBody) {
+  const query = {
+    text: `
+      UPDATE
+        activate_account_tokens
+      SET
+        expires_at = $2
+      WHERE
+        user_id = $1
+      RETURNING
+        *
+    ;`,
+    values: [userId, tokenBody.expires_at],
+  };
+
+  const results = await database.query(query);
+  return results.rows[0];
 }
 
 async function updateEmailConfirmationToken(tokenId, tokenBody) {
@@ -526,6 +554,7 @@ function parseSetCookies(response) {
 const orchestrator = {
   activateUser,
   addFeaturesToUser,
+  createActivateAccountToken,
   createBalance,
   createContent,
   createFirewallTestFunctions,
@@ -540,9 +569,11 @@ const orchestrator = {
   getEmails,
   getLastEvent,
   hasEmailsAfterDelay,
+  nukeUser,
   parseSetCookies,
   removeFeaturesFromUser,
   runPendingMigrations,
+  updateActivateAccountTokenByUserId,
   updateContent,
   updateEmailConfirmationToken,
   updateEventCreatedAt,

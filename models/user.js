@@ -231,6 +231,7 @@ async function findOneById(userId, options = {}) {
 async function create(postedUserData) {
   const validUserData = validatePostSchema(postedUserData);
   await validateUniqueUser(validUserData);
+  await deleteExpiredUsers(validUserData);
   await hashPasswordInObject(validUserData);
 
   validUserData.features = ['read:activation_token'];
@@ -296,6 +297,7 @@ async function update(targetUser, postedUserData, options = {}) {
   if (shouldValidateUsername || shouldValidateEmail) {
     try {
       await validateUniqueUser({ ...validPostedUserData, id: currentUser.id }, { transaction: options.transaction });
+      await deleteExpiredUsers(validPostedUserData);
       if (shouldValidateEmail && !options.skipEmailConfirmation) {
         await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
           transaction: options.transaction,
@@ -376,30 +378,36 @@ async function validateUniqueUser(userData, options) {
 
   if (userData.username) {
     queryValues.push(userData.username);
-    orConditions.push(`LOWER(username) = LOWER($${queryValues.length})`);
+    orConditions.push(`LOWER(u.username) = LOWER($${queryValues.length})`);
   }
 
   if (userData.email) {
     queryValues.push(userData.email);
-    orConditions.push(`LOWER(email) = LOWER($${queryValues.length})`);
+    orConditions.push(`LOWER(u.email) = LOWER($${queryValues.length})`);
   }
 
   let where = `(${orConditions.join(' OR ')})`;
 
   if (userData.id) {
     queryValues.push(userData.id);
-    where += ` AND id <> $${queryValues.length}`;
+    where += ` AND u.id <> $${queryValues.length}`;
   }
 
   const query = {
     text: `
       SELECT
-        username,
-        email
+        u.username,
+        u.email
       FROM
-        users
+        users u
+      LEFT JOIN activate_account_tokens aat ON user_id = u.id
       WHERE
-        ${where}
+        (
+          COALESCE(aat.used, true)
+          OR aat.expires_at > NOW()
+          OR 'nuked' = ANY(u.features)
+        )
+        AND ${where}
     `,
     values: queryValues,
   };
@@ -427,6 +435,33 @@ async function validateUniqueUser(userData, options) {
     errorLocationCode: `MODEL:USER:VALIDATE_UNIQUE_EMAIL:ALREADY_EXISTS`,
     key: 'email',
   });
+}
+
+async function deleteExpiredUsers(userObject) {
+  const query = {
+    text: `
+      DELETE FROM
+        users u
+      WHERE
+        (
+          LOWER(u.username) = LOWER($1)
+          OR LOWER(u.email) = LOWER($2)
+        )
+        AND NOT ('nuked' = ANY(u.features))
+        AND NOT EXISTS (
+          SELECT 1
+          FROM activate_account_tokens aat
+          WHERE aat.user_id = u.id
+            AND (
+              COALESCE(aat.used, true)
+              OR aat.expires_at > NOW()
+            )
+        )
+    ;`,
+    values: [userObject.username, userObject.email],
+  };
+
+  await database.query(query);
 }
 
 async function hashPasswordInObject(userObject) {
