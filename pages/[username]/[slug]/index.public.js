@@ -90,7 +90,12 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             }}>
             <Content
               key={contentFound.id}
-              content={{ owner_id: contentFound.owner_id, parent_id: contentFound.id }}
+              content={{
+                owner_id: contentFound.owner_id,
+                parent_id: contentFound.id,
+                owner_username: contentFound.owner_username,
+                slug: contentFound.slug,
+              }}
               mode="compact"
             />
           </Box>
@@ -270,7 +275,16 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
               <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />
 
               <Box sx={{ display: 'flex', flex: 1, mt: 4, alignItems: 'end' }}>
-                <Content content={{ owner_id, parent_id: id }} mode="compact" viewFrame={true} />
+                <Content
+                  content={{
+                    owner_id,
+                    parent_id: id,
+                    owner_username: child.owner_username,
+                    slug: child.slug,
+                  }}
+                  mode="compact"
+                  viewFrame={true}
+                />
               </Box>
 
               {children_deep_count > 0 && (

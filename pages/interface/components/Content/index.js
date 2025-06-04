@@ -27,6 +27,7 @@ import {
   Viewer,
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
+import webserver from 'infra/webserver';
 import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
@@ -636,14 +637,40 @@ function CompactMode({ contentObject, setComponentMode }) {
     }
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
+  const handleShare = () => {
+    const url = `${webserver.host}/${contentObject.owner_username}/${contentObject.slug}`;
+    if (navigator.share) {
+      navigator.share({
+        title: document.title,
+        url,
+      });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      alert('Link copiado para a área de transferência!');
+    }
+  };
+
   return (
-    <Button
-      sx={{
-        maxWidth: 'fit-content',
-      }}
-      onClick={handleClick}>
-      Responder
-    </Button>
+    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+      <Button
+        sx={{
+          maxWidth: 'fit-content',
+          flexWrap: 'nowrap',
+        }}
+        onClick={handleClick}>
+        Responder
+      </Button>
+      <Button
+        sx={{
+          maxWidth: 'fit-content',
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'nowrap',
+        }}
+        onClick={handleShare}>
+        Compartilhar
+      </Button>
+    </Box>
   );
 }
 
