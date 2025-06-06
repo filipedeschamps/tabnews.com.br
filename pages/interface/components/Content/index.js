@@ -661,14 +661,9 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
 
   return (
     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-      <Button
-        sx={{
-          maxWidth: 'fit-content',
-          flexWrap: 'nowrap',
-        }}
-        onClick={handleClick}>
-        Responder
-      </Button>
+      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" sx={{ position: 'absolute' }}>
+        <Button onClick={handleClick}>Responder</Button>
+      </Tooltip>
       <Tooltip
         text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`}
         direction="n"
