@@ -26,7 +26,8 @@ import {
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, LinkIcon, PencilIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { KebabHorizontalIcon, LinkIcon, PencilIcon, ShareIcon, TrashIcon } from '@/TabNewsUI/icons';
+import webserver from 'infra/webserver';
 import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
@@ -41,7 +42,7 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
 
 const BODY_MAX_LENGTH = 20_000;
 
-export default function Content({ content, isPageRootOwner, mode = 'view', viewFrame = false }) {
+export default function Content({ content, isPageRootOwner, mode = 'view', rootContent, viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -85,7 +86,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', viewF
       />
     );
   } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
+    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} rootContent={rootContent} />;
   } else if (componentMode === 'edit') {
     return (
       <EditMode
@@ -609,10 +610,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CompactMode({ contentObject, setComponentMode }) {
+function CompactMode({ contentObject, rootContent, setComponentMode }) {
+  const [isLinkCopied, setCopied] = useState(false);
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
+
+  const isRootContent = !rootContent?.title || rootContent.id === contentObject.id;
 
   const handleClick = useCallback(async () => {
     if (user && !isLoading) {
@@ -636,14 +640,39 @@ function CompactMode({ contentObject, setComponentMode }) {
     }
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
+  const handleShare = async () => {
+    const title = isRootContent
+      ? contentObject.title
+      : `Resposta de "${contentObject.owner_username}" em "${rootContent.title}"`;
+    const url = `${webserver.host}/${contentObject.owner_username}/${contentObject.slug}`;
+
+    try {
+      await navigator.share({ title, url });
+    } catch {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        alert('Não foi possível copiar o link. Verifique as permissões e se o navegador suporta a funcionalidade.');
+      }
+    }
+  };
+
   return (
-    <Button
-      sx={{
-        maxWidth: 'fit-content',
-      }}
-      onClick={handleClick}>
-      Responder
-    </Button>
+    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" sx={{ position: 'absolute' }}>
+        <Button onClick={handleClick}>Responder</Button>
+      </Tooltip>
+      <Tooltip
+        text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`}
+        direction="n"
+        sx={{ position: 'absolute' }}>
+        <Button onClick={handleShare}>
+          {isLinkCopied ? <Text sx={{ color: 'fg.muted' }}>Link copiado!</Text> : <ShareIcon size={16} />}
+        </Button>
+      </Tooltip>
+    </Box>
   );
 }
 

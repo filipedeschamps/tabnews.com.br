@@ -24,6 +24,7 @@ export {
   PlusIcon,
   SearchIcon,
   SignOutIcon,
+  ShareIcon,
   SquareFillIcon,
   SunIcon,
   ThreeBarsIcon,
