@@ -92,10 +92,12 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
               key={contentFound.id}
               content={{
                 owner_id: contentFound.owner_id,
-                parent_id: contentFound.id,
                 owner_username: contentFound.owner_username,
+                parent_id: contentFound.id,
                 slug: contentFound.slug,
+                title: contentFound.title,
               }}
+              rootContent={rootContentFound}
               mode="compact"
             />
           </Box>
@@ -109,6 +111,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             pageRootOwnerId={contentFound.owner_id}
             renderIntent={childrenToShow}
             renderIncrement={Math.ceil(childrenToShow / 2)}
+            rootContent={rootContentFound || contentFound}
           />
         </Box>
       </DefaultLayout>
@@ -191,11 +194,21 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, renderIncrement }) {
+function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, renderIncrement, rootContent }) {
   const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
 
   return childrenState.map((child) => {
-    const { children, children_deep_count, groupedCount, id, owner_id, renderIntent, renderShowMore } = child;
+    const {
+      children,
+      children_deep_count,
+      groupedCount,
+      id,
+      owner_id,
+      owner_username,
+      renderIntent,
+      renderShowMore,
+      slug,
+    } = child;
     const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
     const plural = labelShowMore != 1 ? 's' : '';
     const isPageRootOwner = pageRootOwnerId === owner_id;
@@ -276,13 +289,9 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
 
               <Box sx={{ display: 'flex', flex: 1, mt: 4, alignItems: 'end' }}>
                 <Content
-                  content={{
-                    owner_id,
-                    parent_id: id,
-                    owner_username: child.owner_username,
-                    slug: child.slug,
-                  }}
+                  content={{ owner_id, owner_username, parent_id: id, slug }}
                   mode="compact"
+                  rootContent={rootContent}
                   viewFrame={true}
                 />
               </Box>
@@ -294,6 +303,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
                   pageRootOwnerId={pageRootOwnerId}
                   renderIntent={renderIntent - 1}
                   renderIncrement={renderIncrement}
+                  rootContent={rootContent}
                 />
               )}
             </Box>
@@ -431,7 +441,7 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
 
     secureParentContentFound = authorization.filterOutput(userTryingToGet, 'read:content', parentContentFound);
 
-    secureRootContentFound = { id: secureParentContentFound.id };
+    secureRootContentFound = { id: secureParentContentFound.id, title: secureParentContentFound.title };
   }
 
   return {
