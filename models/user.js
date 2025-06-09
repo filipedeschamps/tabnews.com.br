@@ -371,6 +371,9 @@ function validatePatchSchema(postedUserData) {
 }
 
 async function validateUniqueUser(userData, options) {
+  if (!userData.username && !userData.email) {
+    return;
+  }
   const orConditions = [];
   const queryValues = [];
 
@@ -558,4 +561,5 @@ export default Object.freeze({
   addFeatures,
   createAnonymous,
   updateRewardedAt,
+  validateUniqueUser,
 });
