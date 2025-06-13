@@ -95,9 +95,8 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
                 owner_username: contentFound.owner_username,
                 parent_id: contentFound.id,
                 slug: contentFound.slug,
-                title: contentFound.title,
               }}
-              rootContent={rootContentFound}
+              rootContent={rootContentFound || contentFound}
               mode="compact"
             />
           </Box>
