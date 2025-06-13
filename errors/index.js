@@ -61,13 +61,25 @@ export class NotFoundError extends BaseError {
 }
 
 export class ServiceError extends BaseError {
-  constructor({ message, action, stack, context, statusCode, errorLocationCode, databaseErrorCode }) {
+  constructor({
+    message,
+    action,
+    stack,
+    context,
+    statusCode,
+    errorId,
+    requestId,
+    errorLocationCode,
+    databaseErrorCode,
+  }) {
     super({
       name: 'ServiceError',
       message: message || 'Serviço indisponível no momento.',
       action: action || 'Verifique se o serviço está disponível.',
       stack: stack,
       statusCode: statusCode || 503,
+      errorId: errorId,
+      requestId: requestId,
       context: context,
       errorLocationCode: errorLocationCode,
       databaseErrorCode: databaseErrorCode,
