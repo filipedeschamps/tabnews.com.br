@@ -616,7 +616,7 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
 
-  const isRootContent = !rootContent?.title || rootContent.id === contentObject.id;
+  const isRootContent = rootContent.id === contentObject.parent_id;
 
   const handleClick = useCallback(async () => {
     if (user && !isLoading) {
@@ -641,9 +641,12 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
   const handleShare = async () => {
-    const title = isRootContent
-      ? contentObject.title
-      : `Resposta de "${contentObject.owner_username}" em "${rootContent.title}"`;
+    const title =
+      isRootContent && rootContent.title
+        ? rootContent.title
+        : rootContent.title
+          ? `Comentário de "${contentObject.owner_username}" em "${rootContent.title}"`
+          : `Conteúdo de "${contentObject.owner_username}"`;
     const url = `${webserver.host}/${contentObject.owner_username}/${contentObject.slug}`;
 
     try {
