@@ -1,4 +1,4 @@
-import { isTrustedDomain } from 'pages/interface';
+import { isTrustedDomain } from '@tabnews/helpers';
 
 describe('isTrustedDomain', () => {
   it('should trust only specific domains and their subdomains', () => {
