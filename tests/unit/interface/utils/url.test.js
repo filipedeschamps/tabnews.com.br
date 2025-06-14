@@ -1,4 +1,5 @@
-import { getDomain, isExternalLink } from 'pages/interface';
+import { getDomain, isExternalLink } from '@tabnews/helpers';
+
 import orchestrator from 'tests/orchestrator';
 
 describe('getDomain', () => {

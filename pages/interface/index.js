@@ -7,5 +7,3 @@ export { default as suggestEmail } from './utils/email-suggestion';
 export { default as createErrorMessage } from './utils/error-message';
 export { default as isValidJsonString } from './utils/is-valid-json-string';
 export { default as processNdJsonStream } from './utils/nd-json-stream';
-export { default as isTrustedDomain } from './utils/trusted-domain';
-export { getDomain, isExternalLink } from './utils/url';
