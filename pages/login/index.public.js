@@ -1,4 +1,5 @@
 import { email, password, useForm } from '@tabnews/forms';
+import { tryParseUrl } from '@tabnews/helpers';
 import { FormField } from '@tabnews/ui';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -18,15 +19,12 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!router.isReady || !user?.id) return;
 
-    if (
-      router.query?.redirect?.startsWith('/') &&
-      !router.query?.redirect?.startsWith('//') &&
-      !router.query.redirect.startsWith('/login') &&
-      !router.query.redirect.startsWith('/cadastro')
-    ) {
-      router.replace(router.query.redirect);
+    const url = tryParseUrl(router.query.redirect);
+
+    if (url.origin === location?.origin) {
+      router.replace(url.pathname);
     } else {
       router.replace('/');
     }
