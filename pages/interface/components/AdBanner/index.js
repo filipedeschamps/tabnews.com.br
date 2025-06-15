@@ -1,10 +1,9 @@
-import { truncate } from '@tabnews/helpers';
+import { getDomain, isExternalLink, isTrustedDomain, truncate } from '@tabnews/helpers';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 import { Box, Link, SkeletonLoader, Text, Tooltip } from '@/TabNewsUI';
 import { LinkExternalIcon } from '@/TabNewsUI/icons';
-import { getDomain, isExternalLink, isTrustedDomain } from 'pages/interface';
 
 export default function AdBanner({ ad: newAd, isLoading, ...props }) {
   const [ad, setAd] = useState(newAd);
