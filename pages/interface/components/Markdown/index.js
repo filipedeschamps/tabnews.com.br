@@ -1,6 +1,5 @@
+import { isTrustedDomain } from '@tabnews/helpers';
 import { MarkdownEditor, MarkdownViewer } from '@tabnews/ui/markdown';
-
-import { isTrustedDomain } from 'pages/interface';
 
 const shouldAddNofollow = (url) => !isTrustedDomain(url);
 
