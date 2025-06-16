@@ -72,6 +72,7 @@ async function tryToGetNewClientFromPool() {
       const errorObject = new ServiceError({
         message: error.message,
         stack: error.stack,
+        cause: error.cause,
         context: {
           attempt,
           databaseCache: {

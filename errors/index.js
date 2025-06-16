@@ -3,6 +3,7 @@ class BaseError extends Error {
     name,
     message,
     stack,
+    cause,
     action,
     statusCode,
     errorId,
@@ -16,6 +17,7 @@ class BaseError extends Error {
     super();
     this.name = name;
     this.message = message;
+    this.cause = cause;
     this.action = action;
     this.statusCode = statusCode || 500;
     this.errorId = errorId || crypto.randomUUID();
@@ -61,12 +63,13 @@ export class NotFoundError extends BaseError {
 }
 
 export class ServiceError extends BaseError {
-  constructor({ message, action, stack, context, statusCode, errorLocationCode, databaseErrorCode }) {
+  constructor({ message, action, stack, context, statusCode, errorLocationCode, databaseErrorCode, cause }) {
     super({
       name: 'ServiceError',
       message: message || 'Serviço indisponível no momento.',
       action: action || 'Verifique se o serviço está disponível.',
       stack: stack,
+      cause: cause,
       statusCode: statusCode || 503,
       context: context,
       errorLocationCode: errorLocationCode,
