@@ -421,6 +421,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
         parent_id: null,
+        children_deep_count: 3,
         status: 'draft',
         type: 'content',
         published_at: null,
@@ -481,6 +482,7 @@ describe('GET /api/v1/contents/[username]/[slug]/root', () => {
       expect(responseBody).toStrictEqual({
         id: rootContent.id,
         parent_id: null,
+        children_deep_count: 3,
         status: 'deleted',
         type: 'content',
         published_at: rootContent.published_at.toISOString(),

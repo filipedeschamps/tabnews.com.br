@@ -75,6 +75,96 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
       expect(responseBody).toStrictEqual([]);
     });
 
+    test('From "root" content, ignore deleted child without children', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content',
+        status: 'published',
+      });
+
+      const childContentDeleted = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Deleted]',
+        status: 'published',
+      });
+      await orchestrator.updateContent(childContentDeleted.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`,
+      );
+      expect.soft(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      expect(responseBody).toStrictEqual([]);
+    });
+
+    test('From "root" content, include child of deleted child', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content',
+        status: 'published',
+      });
+
+      const childContentLevel1Deleted = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 1] [Deleted]',
+        status: 'published',
+      });
+
+      const childContentLevel2 = await orchestrator.createContent({
+        parent_id: childContentLevel1Deleted.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 2] [Published]',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(childContentLevel1Deleted.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/children`,
+      );
+      expect.soft(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      expect(responseBody).toStrictEqual([
+        {
+          id: childContentLevel1Deleted.id,
+          parent_id: rootContent.id,
+          children_deep_count: 1,
+          type: 'content',
+          children: [
+            {
+              id: childContentLevel2.id,
+              owner_id: defaultUser.id,
+              parent_id: childContentLevel1Deleted.id,
+              slug: childContentLevel2.slug,
+              title: childContentLevel2.title,
+              body: childContentLevel2.body,
+              tabcoins: 0,
+              tabcoins_credit: 0,
+              tabcoins_debit: 0,
+              status: childContentLevel2.status,
+              type: 'content',
+              source_url: childContentLevel2.source_url,
+              created_at: childContentLevel2.created_at.toISOString(),
+              updated_at: childContentLevel2.updated_at.toISOString(),
+              published_at: childContentLevel2.published_at.toISOString(),
+              deleted_at: null,
+              owner_username: defaultUser.username,
+              children: [],
+              children_deep_count: 0,
+            },
+          ],
+        },
+      ]);
+    });
+
     test('From "root" content with "published" status with 6 "published" and 1 "draft" children', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
@@ -387,6 +477,153 @@ describe('GET /api/v1/contents/[username]/[slug]/children', () => {
           children_deep_count: 0,
         },
       ]);
+    });
+
+    test('From published "child", ignore deleted child without children', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content',
+        status: 'published',
+      });
+
+      const childContentLevel1 = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 1]',
+        status: 'published',
+      });
+
+      const childContentLevel2Deleted = await orchestrator.createContent({
+        parent_id: childContentLevel1.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 2] [Deleted]',
+        status: 'published',
+      });
+      await orchestrator.updateContent(childContentLevel2Deleted.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContentLevel1.slug}/children`,
+      );
+      expect.soft(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      expect(responseBody).toStrictEqual([]);
+    });
+
+    test('From published "child", include child of deleted child', async () => {
+      const defaultUser = await orchestrator.createUser();
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content',
+        status: 'published',
+      });
+
+      const childContentLevel1 = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 1]',
+        status: 'published',
+      });
+
+      const childContentLevel2Deleted = await orchestrator.createContent({
+        parent_id: childContentLevel1.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 2] [Deleted]',
+        status: 'published',
+      });
+
+      const childContentLevel3 = await orchestrator.createContent({
+        parent_id: childContentLevel2Deleted.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 3]',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(childContentLevel2Deleted.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContentLevel1.slug}/children`,
+      );
+      expect.soft(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      expect(responseBody).toStrictEqual([
+        {
+          id: childContentLevel2Deleted.id,
+          parent_id: childContentLevel1.id,
+          children_deep_count: 1,
+          type: 'content',
+          children: [
+            {
+              id: childContentLevel3.id,
+              owner_id: defaultUser.id,
+              parent_id: childContentLevel2Deleted.id,
+              slug: childContentLevel3.slug,
+              title: childContentLevel3.title,
+              body: childContentLevel3.body,
+              tabcoins: 0,
+              tabcoins_credit: 0,
+              tabcoins_debit: 0,
+              status: 'published',
+              type: 'content',
+              source_url: childContentLevel3.source_url,
+              created_at: childContentLevel3.created_at.toISOString(),
+              updated_at: childContentLevel3.updated_at.toISOString(),
+              published_at: childContentLevel3.published_at.toISOString(),
+              deleted_at: null,
+              owner_username: defaultUser.username,
+              children: [],
+              children_deep_count: 0,
+            },
+          ],
+        },
+      ]);
+    });
+
+    test('From deleted "child", return "not found"', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Root content',
+        status: 'published',
+      });
+
+      const childContentLevel1Deleted = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 1] [Deleted]',
+        status: 'published',
+      });
+
+      // childContentLevel2
+      await orchestrator.createContent({
+        parent_id: childContentLevel1Deleted.id,
+        owner_id: defaultUser.id,
+        title: 'Child content [Level 2]',
+        status: 'published',
+      });
+
+      await orchestrator.updateContent(childContentLevel1Deleted.id, { status: 'deleted' });
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContentLevel1Deleted.slug}/children`,
+      );
+      expect.soft(response.status).toBe(404);
+
+      const responseBody = await response.json();
+      expect(responseBody).toStrictEqual({
+        status_code: 404,
+        name: 'NotFoundError',
+        message: 'O conteúdo informado não foi encontrado no sistema.',
+        action: 'Verifique se o "slug" está digitado corretamente.',
+        key: 'slug',
+        error_id: expect.any(String),
+        request_id: expect.any(String),
+        error_location_code: 'CONTROLLER:CONTENT:CHILDREN:GET_HANDLER:SLUG_NOT_FOUND',
+      });
     });
 
     test('Tree with TabCoins credits and debits', async () => {

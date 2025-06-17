@@ -690,19 +690,12 @@ function DeletedMode({ viewFrame }) {
         gap: 2,
         width: '100%',
         borderWidth: viewFrame ? 1 : 0,
-        p: viewFrame ? 4 : 0,
+        p: viewFrame ? 2 : 0,
         borderRadius: '6px',
         borderColor: 'border.default',
         borderStyle: 'solid',
       }}>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}>
-        Conteúdo apagado com sucesso.
-      </Box>
+      <Box sx={{ color: 'closed.fg', textAlign: 'center' }}>Conteúdo excluído</Box>
     </Box>
   );
 }

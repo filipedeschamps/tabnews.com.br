@@ -198,7 +198,6 @@ function filterOutput(user, feature, output) {
       delete clonedOutput.body;
       delete clonedOutput.slug;
       delete clonedOutput.source_url;
-      delete clonedOutput.children_deep_count;
       delete clonedOutput.owner_id;
       delete clonedOutput.owner_username;
       delete clonedOutput.tabcoins;
