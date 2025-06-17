@@ -207,12 +207,17 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
       renderIntent,
       renderShowMore,
       slug,
+      status,
     } = child;
+    const isPublished = status === 'published';
     const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
     const plural = labelShowMore != 1 ? 's' : '';
     const isPageRootOwner = pageRootOwnerId === owner_id;
 
-    return !renderIntent && !renderShowMore ? null : (
+    if (!renderIntent && !renderShowMore) return null;
+    if (!isPublished && !children_deep_count) return null;
+
+    return (
       <Box
         sx={{
           width: '100%',
@@ -229,8 +234,9 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                minWidth: '28px',
               }}>
-              <TabCoinButtons content={child} />
+              {isPublished && <TabCoinButtons content={child} />}
               <Tooltip
                 direction="ne"
                 text={`Ocultar resposta${plural}`}
@@ -284,12 +290,12 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
 
             <Box
               sx={{ display: 'flex', flexDirection: 'column', width: '100%', mt: '9px', pl: '1px', overflow: 'auto' }}>
-              <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />
+              {isPublished && <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />}
 
-              <Box sx={{ display: 'flex', flex: 1, mt: 4, alignItems: 'end' }}>
+              <Box sx={{ display: 'flex', flex: 1, mt: isPublished ? 4 : 0, alignItems: 'end' }}>
                 <Content
                   content={{ owner_id, owner_username, parent_id: id, slug }}
-                  mode="compact"
+                  mode={isPublished ? 'compact' : 'deleted'}
                   rootContent={rootContent}
                   viewFrame={true}
                 />
