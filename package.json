@@ -46,6 +46,7 @@
     "@tabnews/config": "0.6.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "concurrently": "9.1.2",
     "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.5.0",
@@ -55,7 +56,8 @@
     "lint-staged": "16.0.0",
     "react-email": "4.0.15",
     "set-cookie-parser": "2.7.1",
-    "uuid": "9.0.1"
+    "uuid": "9.0.1",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "dev": "npm run services:seed && npm run next && npm run services:stop",
