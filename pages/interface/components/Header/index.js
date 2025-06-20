@@ -32,14 +32,14 @@ import { useMediaQuery, useUser } from 'pages/interface';
 export default function HeaderComponent() {
   const isScreenSmall = useMediaQuery('(max-width: 440px)');
   const { user, isLoading, logout } = useUser();
-  const { asPath } = useRouter();
+  const { asPath, pathname } = useRouter();
   const { SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } = useSearchBox();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
   const loginUrl =
-    !asPath || user || asPath.startsWith('/cadastro')
+    !asPath || user || pathname.startsWith('/cadastro')
       ? '/login'
-      : asPath.startsWith('/login')
+      : pathname.startsWith('/login')
         ? asPath
         : `/login?redirect=${asPath}`;
 

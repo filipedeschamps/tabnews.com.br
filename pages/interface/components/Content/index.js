@@ -1,3 +1,4 @@
+import { isTrustedDomain } from '@tabnews/helpers';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -28,7 +29,7 @@ import {
 } from '@/TabNewsUI';
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, ShareIcon, TrashIcon } from '@/TabNewsUI/icons';
 import webserver from 'infra/webserver';
-import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
+import { createErrorMessage, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
