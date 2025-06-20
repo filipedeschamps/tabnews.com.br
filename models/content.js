@@ -1077,4 +1077,5 @@ export default Object.freeze({
   confirmFirewallStatus,
   undoFirewallStatus,
   creditOrDebitTabCoins,
+  populatePublishedAtValue,
 });
