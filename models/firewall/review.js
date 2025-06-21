@@ -219,4 +219,5 @@ async function unblockContents(options) {
 
 export default Object.freeze({
   reviewEvent,
+  unblockUsers,
 });
