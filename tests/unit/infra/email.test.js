@@ -33,53 +33,53 @@ vi.mock('infra/webserver', () => ({
   },
 }));
 
+let send;
+let originalEnv;
+const sendMail = vi.fn();
+
+const defaultTestEnv = {
+  EMAIL_SMTP_HOST: 'host.test',
+  EMAIL_SMTP_PORT: 1025,
+  EMAIL_USER: 'email_user_test',
+  EMAIL_PASSWORD: 'email_password_test',
+  RETRIES_PER_EMAIL_SERVICE: '1',
+  EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS: '40',
+};
+
+const defaultMailOptions = {
+  auth: {
+    user: defaultTestEnv.EMAIL_USER,
+    pass: defaultTestEnv.EMAIL_PASSWORD,
+  },
+  secure: false,
+  host: defaultTestEnv.EMAIL_SMTP_HOST,
+  port: defaultTestEnv.EMAIL_SMTP_PORT,
+};
+
+const defaultEmailData = {
+  from: 'test@example.com',
+  to: 'recipient@example.com',
+  subject: 'Test Email',
+  html: '<p>Test HTML</p>',
+  text: 'Test Text',
+};
+
+beforeAll(() => {
+  originalEnv = { ...process.env }; // Store a copy
+});
+
+beforeEach(() => {
+  vi.resetModules();
+  vi.clearAllMocks();
+  sendMail.mockResolvedValue();
+  nodemailer.createTransport.mockReturnValue({ sendMail });
+});
+
+afterAll(() => {
+  process.env = originalEnv; // Restore original environment
+});
+
 describe('infra/email > send', () => {
-  let send;
-  let originalEnv;
-  const sendMail = vi.fn();
-
-  const defaultTestEnv = {
-    EMAIL_SMTP_HOST: 'host.test',
-    EMAIL_SMTP_PORT: 1025,
-    EMAIL_USER: 'email_user_test',
-    EMAIL_PASSWORD: 'email_password_test',
-    RETRIES_PER_EMAIL_SERVICE: '1',
-    EMAIL_ATTEMPT_TIMEOUT_IN_SECONDS: '40',
-  };
-
-  const defaultMailOptions = {
-    auth: {
-      user: defaultTestEnv.EMAIL_USER,
-      pass: defaultTestEnv.EMAIL_PASSWORD,
-    },
-    secure: false,
-    host: defaultTestEnv.EMAIL_SMTP_HOST,
-    port: defaultTestEnv.EMAIL_SMTP_PORT,
-  };
-
-  const defaultEmailData = {
-    from: 'test@example.com',
-    to: 'recipient@example.com',
-    subject: 'Test Email',
-    html: '<p>Test HTML</p>',
-    text: 'Test Text',
-  };
-
-  beforeAll(() => {
-    originalEnv = process.env;
-  });
-
-  beforeEach(() => {
-    vi.resetModules();
-    vi.clearAllMocks();
-    sendMail.mockResolvedValue();
-    nodemailer.createTransport.mockReturnValue({ sendMail });
-  });
-
-  afterAll(() => {
-    process.env = originalEnv;
-  });
-
   describe('With single email service', () => {
     beforeEach(async () => {
       process.env = {
@@ -372,3 +372,76 @@ function getExpectedError(props) {
     ...props,
   });
 }
+
+describe('MC/DC Coverage for Secondary SMTP Service (EMAIL_SMTP_HOST2)', () => {
+  const host2MailOptions = (secure = false) => ({
+    auth: {
+      user: 'user_host2',
+      pass: 'pass_host2',
+    },
+    secure,
+    host: 'host2.test',
+    port: 1027,
+  });
+
+  // Corresponds to MC/DC Case 1: HOST2=T, isServerless=T, FORCE_SECURE=F => Outcome T (Service 2 added, secure=true)
+  it('should add smtpService2 (secure) when HOST2 is set, isServerlessRuntime is true, and FORCE_SECURE is not set', async () => {
+    process.env = {
+      ...originalEnv,
+      ...defaultTestEnv,
+      EMAIL_SMTP_HOST2: 'host2.test',
+      EMAIL_SMTP_PORT2: 1027,
+      EMAIL_USER2: 'user_host2',
+      EMAIL_PASSWORD2: 'pass_host2',
+    };
+    webserver.isServerlessRuntime = true;
+    send = await import('infra/email').then((module) => module.default.send);
+    await send(defaultEmailData);
+    expect(nodemailer.createTransport).toHaveBeenCalledWith(expect.objectContaining(host2MailOptions(true)));
+  });
+
+  // Corresponds to MC/DC Case 2: HOST2=F, isServerless=T, FORCE_SECURE=F => Outcome F (Service 2 not added)
+  it('should NOT add smtpService2 when HOST2 is NOT set (even if isServerlessRuntime is true)', async () => {
+    process.env = {
+      ...originalEnv,
+      ...defaultTestEnv, 
+    };
+    webserver.isServerlessRuntime = true;
+    send = await import('infra/email').then((module) => module.default.send);
+    await send(defaultEmailData);
+    expect(nodemailer.createTransport).not.toHaveBeenCalledWith(expect.objectContaining({ host: 'host2.test' }));
+  });
+
+  // Corresponds to MC/DC Case 4: HOST2=T, isServerless=F, FORCE_SECURE=F => Outcome F (Service 2 not added)
+  it('should add smtpService2 with secure:false when HOST2 is set, isServerlessRuntime is false, and FORCE_SECURE is false', async () => {
+    process.env = {
+      ...originalEnv,
+      ...defaultTestEnv,
+      EMAIL_SMTP_HOST2: 'host2.test',
+      EMAIL_SMTP_PORT2: 1027,
+      EMAIL_USER2: 'user_host2',
+      EMAIL_PASSWORD2: 'pass_host2',
+    };
+    webserver.isServerlessRuntime = false;
+    send = await import('infra/email').then((module) => module.default.send);
+    await send(defaultEmailData);
+    expect(nodemailer.createTransport).toHaveBeenCalledWith(expect.objectContaining(host2MailOptions(false)));
+  });
+
+  // Corresponds to MC/DC Case 5: HOST2=T, isServerless=F, FORCE_SECURE=T => Outcome T (Service 2 added, secure=true)
+  it('should add smtpService2 (secure) when HOST2 is set, isServerlessRuntime is false, but FORCE_SECURE is true', async () => {
+    process.env = {
+      ...originalEnv,
+      ...defaultTestEnv,
+      EMAIL_SMTP_HOST2: 'host2.test',
+      EMAIL_SMTP_PORT2: 1027,
+      EMAIL_USER2: 'user_host2',
+      EMAIL_PASSWORD2: 'pass_host2',
+      EMAIL_SMTP_HOST2_FORCE_SECURE: 'true',
+    };
+    webserver.isServerlessRuntime = false;
+    send = await import('infra/email').then((module) => module.default.send);
+    await send(defaultEmailData);
+    expect(nodemailer.createTransport).toHaveBeenCalledWith(expect.objectContaining(host2MailOptions(false)));
+  });
+});
