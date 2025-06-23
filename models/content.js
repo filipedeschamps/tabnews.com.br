@@ -1000,6 +1000,24 @@ async function findTree(options = {}) {
         table[row.parent_id].children.push(row);
       } else if (!row.path.some((id) => table[id])) {
         tree.children.push(row);
+      } else {
+        let currentNode = row;
+        let parentId = currentNode.parent_id;
+
+        while (parentId && !table[parentId]) {
+          table[parentId] = {
+            id: parentId,
+            children: [currentNode],
+            path: currentNode.path.slice(0, -1),
+            parent_id: currentNode.path.at(-2) || null,
+          };
+          currentNode = table[parentId];
+          parentId = currentNode.parent_id;
+        }
+
+        if (parentId) {
+          table[parentId].children.push(currentNode);
+        }
       }
     });
 
@@ -1008,7 +1026,11 @@ async function findTree(options = {}) {
     return tree.children;
 
     function recursiveInjectChildrenDeepCount(node) {
-      let count = node.children.length;
+      let count = 0;
+
+      for (const child of node.children) {
+        if (child.status === 'published') count++;
+      }
 
       if (node.children) {
         node.children = rankContentListByRelevance(node.children);
@@ -1058,6 +1080,10 @@ const boostPeriodInMilliseconds = 1000 * 60 * 10; // 10 minutes
 const offset = 0.5;
 
 function getContentScore(contentObject) {
+  if (contentObject.status !== 'published') {
+    return -10;
+  }
+
   const tabcoins = contentObject.tabcoins;
   const ageInMilliseconds = Date.now() - new Date(contentObject.published_at);
   const initialBoost = ageInMilliseconds < boostPeriodInMilliseconds ? 3 : 1;
