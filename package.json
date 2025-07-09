@@ -45,6 +45,7 @@
     "@faker-js/faker": "9.8.0",
     "@tabnews/config": "0.6.0",
     "@testing-library/dom": "10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "16.3.0",
     "concurrently": "9.1.2",
     "cz-conventional-changelog": "3.3.0",

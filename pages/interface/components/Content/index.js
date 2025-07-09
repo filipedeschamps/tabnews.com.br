@@ -30,6 +30,8 @@ import { KebabHorizontalIcon, LinkIcon, PencilIcon, ShareIcon, TrashIcon } from 
 import webserver from 'infra/webserver';
 import { createErrorMessage, isTrustedDomain, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
+import ShareButton from '../ShareButton';
+
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
   'e.g. Desafios ao empreender como desenvolvedor',
@@ -237,9 +239,12 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
         </Box>
 
         {!contentObject.parent_id && contentObject.title && (
-          <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
-            {contentObject.title}
-          </Heading>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
+              {contentObject.title}
+            </Heading>
+            <ShareButton title={contentObject.title} slug={`${contentObject.owner_username}/${contentObject.slug}`} />
+          </Box>
         )}
       </Box>
       <Box sx={{ overflow: 'hidden' }}>
