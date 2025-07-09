@@ -695,7 +695,7 @@ function DeletedMode({ viewFrame }) {
         borderColor: 'border.default',
         borderStyle: 'solid',
       }}>
-      <Box sx={{ color: 'closed.fg', textAlign: 'center' }}>Conteúdo excluído</Box>
+      <Box sx={{ color: 'fg.muted', textAlign: 'center' }}>Conteúdo excluído</Box>
     </Box>
   );
 }

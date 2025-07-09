@@ -8,6 +8,14 @@ import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function TabCoinButtons({ content }) {
+  if (content?.status !== 'published') {
+    return <DisabledButtons />;
+  }
+
+  return <ActiveButtons content={content} />;
+}
+
+function ActiveButtons({ content }) {
   const router = useRouter();
   const { user, isLoading, fetchUser } = useUser();
 
@@ -133,6 +141,15 @@ export default function TabCoinButtons({ content }) {
           disabled={isInAction}
         />
       </Tooltip>
+    </Box>
+  );
+}
+
+function DisabledButtons() {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', color: 'border.muted', mt: 1, gap: 4, mb: 2 }}>
+      <ChevronUpIcon />
+      <ChevronDownIcon />
     </Box>
   );
 }
