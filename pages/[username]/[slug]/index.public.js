@@ -236,7 +236,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
                 alignItems: 'center',
                 minWidth: '28px',
               }}>
-              {isPublished && <TabCoinButtons content={child} />}
+              <TabCoinButtons content={child} />
               <Tooltip
                 direction="ne"
                 text={`Ocultar resposta${plural}`}
