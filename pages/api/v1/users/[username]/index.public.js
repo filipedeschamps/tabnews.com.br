@@ -135,10 +135,7 @@ async function patchHandler(request, response) {
     await transaction.release();
 
     if (error instanceof ValidationError && error.key === 'email') {
-      updatedUser = {
-        ...targetUser,
-        updated_at: new Date(),
-      };
+      updatedUser = targetUser;
     } else {
       throw error;
     }
