@@ -305,7 +305,7 @@ async function update(targetUser, postedUserData, options = {}) {
         delete validPostedUserData.email;
       }
     } catch (error) {
-      if (error instanceof ValidationError && error.key === 'email' && Object.keys(validPostedUserData).length > 1) {
+      if (error instanceof ValidationError && error.key === 'email' && !options.skipEmailConfirmation) {
         delete validPostedUserData.email;
       } else {
         throw error;
