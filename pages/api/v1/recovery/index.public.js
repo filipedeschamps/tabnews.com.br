@@ -7,6 +7,7 @@ import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import event from 'models/event';
 import recovery from 'models/recovery.js';
+import user from 'models/user.js';
 import validator from 'models/validator.js';
 
 export default createRouter()
@@ -32,6 +33,20 @@ function postValidationHandler(request, response, next) {
 async function postHandler(request, response) {
   const userTryingToRecover = request.context.user;
   const validatedInputValues = request.body;
+
+  const { email, username } = validatedInputValues;
+
+  try {
+    if (email) {
+      await user.findOneByEmail(email);
+    } else if (username) {
+      await user.findOneByUsername(username);
+    } else {
+      return response.status(400).json({ message: 'É necessário informar um e-mail ou username.' });
+    }
+  } catch (error) {
+    return response.status(404).json({ message: 'O e-mail ou nome de usuário informado não está cadastrado.' });
+  }
 
   if (validatedInputValues.username && !authorization.can(userTryingToRecover, 'create:recovery_token:username')) {
     throw new ForbiddenError({
