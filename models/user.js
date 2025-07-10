@@ -297,7 +297,7 @@ async function update(targetUser, postedUserData, options = {}) {
   if (shouldValidateUsername || shouldValidateEmail) {
     try {
       await validateUniqueUser({ ...validPostedUserData, id: currentUser.id }, { transaction: options.transaction });
-      await deleteExpiredUsers(validPostedUserData);
+      await deleteExpiredUsers(validPostedUserData, { transaction: options.transaction });
       if (shouldValidateEmail && !options.skipEmailConfirmation) {
         await emailConfirmation.createAndSendEmail(currentUser, validPostedUserData.email, {
           transaction: options.transaction,
@@ -437,7 +437,7 @@ async function validateUniqueUser(userData, options) {
   });
 }
 
-async function deleteExpiredUsers(userObject) {
+async function deleteExpiredUsers(userObject, options) {
   const query = {
     text: `
       DELETE FROM
@@ -461,7 +461,7 @@ async function deleteExpiredUsers(userObject) {
     values: [userObject.username, userObject.email],
   };
 
-  await database.query(query);
+  await database.query(query, options);
 }
 
 async function hashPasswordInObject(userObject) {
