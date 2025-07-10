@@ -43,42 +43,62 @@ function postValidationHandler(request, response, next) {
 }
 
 async function postHandler(request, response) {
+  const startTime = process.hrtime.bigint();
+  const targetTime = Math.random() * 1000 + 2500;
+
   const userTryingToCreateSession = request.context.user;
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
 
-  // Compress all mismatch errors (email and password) into one single error.
+  let authenticationError;
+  let sessionObject;
   let storedUser;
+
+  // Compress all mismatch errors (email and password) into one single error.
   try {
-    storedUser = await user.findOneByEmail(secureInputValues.email);
-    await authentication.comparePasswords(secureInputValues.password, storedUser.password);
+    try {
+      storedUser = await user.findOneByEmail(secureInputValues.email);
+      await authentication.comparePasswords(secureInputValues.password, storedUser.password);
+    } catch (error) {
+      throw new UnauthorizedError({
+        message: `Dados não conferem.`,
+        action: `Verifique se os dados enviados estão corretos.`,
+        errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+      });
+    }
+
+    if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
+      await activation.createAndSendActivationEmail(storedUser);
+      throw new ForbiddenError({
+        message: `O seu usuário ainda não está ativado.`,
+        action: `Verifique seu email, pois acabamos de enviar um novo convite de ativação.`,
+        errorLocationCode: 'CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED',
+      });
+    }
+
+    if (!authorization.can(storedUser, 'create:session')) {
+      throw new ForbiddenError({
+        message: `Você não possui permissão para fazer login.`,
+        action: `Verifique se este usuário possui a feature "create:session".`,
+        errorLocationCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
+      });
+    }
+
+    sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
   } catch (error) {
-    throw new UnauthorizedError({
-      message: `Dados não conferem.`,
-      action: `Verifique se os dados enviados estão corretos.`,
-      errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
-    });
+    authenticationError = error;
   }
 
-  if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {
-    await activation.createAndSendActivationEmail(storedUser);
-    throw new ForbiddenError({
-      message: `O seu usuário ainda não está ativado.`,
-      action: `Verifique seu email, pois acabamos de enviar um novo convite de ativação.`,
-      errorLocationCode: 'CONTROLLER:SESSIONS:POST_HANDLER:USER_NOT_ACTIVATED',
-    });
+  const elapsed = Number(process.hrtime.bigint() - startTime) / 1000000; // Convert to milliseconds
+  const remainingTime = targetTime - elapsed;
+  if (remainingTime > 0) {
+    await new Promise((resolve) => setTimeout(resolve, remainingTime));
   }
 
-  if (!authorization.can(storedUser, 'create:session')) {
-    throw new ForbiddenError({
-      message: `Você não possui permissão para fazer login.`,
-      action: `Verifique se este usuário possui a feature "create:session".`,
-      errorLocationCode: 'CONTROLLER:SESSIONS:POST_HANDLER:CAN_NOT_CREATE_SESSION',
-    });
+  if (authenticationError) {
+    throw authenticationError;
   }
-
-  const sessionObject = await authentication.createSessionAndSetCookies(storedUser.id, response);
 
   const secureOutputValues = authorization.filterOutput(storedUser, 'create:session', sessionObject);
 
