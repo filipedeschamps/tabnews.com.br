@@ -1,6 +1,6 @@
 import { createRouter } from 'next-connect';
 
-import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
+import { ForbiddenError, UnprocessableEntityError } from 'errors';
 import database from 'infra/database.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -129,19 +129,12 @@ async function patchHandler(request, response) {
     );
 
     await transaction.query('COMMIT');
-    await transaction.release();
   } catch (error) {
     await transaction.query('ROLLBACK');
-    await transaction.release();
 
-    if (error instanceof ValidationError && error.key === 'email') {
-      updatedUser = {
-        ...targetUser,
-        updated_at: new Date(),
-      };
-    } else {
-      throw error;
-    }
+    throw error;
+  } finally {
+    await transaction.release();
   }
 
   const secureOutputValues = authorization.filterOutput(
