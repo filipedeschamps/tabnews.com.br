@@ -43,17 +43,31 @@ function postValidationHandler(request, response, next) {
 }
 
 async function postHandler(request, response) {
+  const ENUMERATION_DELAY_MS = parseInt(process.env.ENUMERATION_DELAY_MS) || 0;
+  const startMs = Date.now();
+
   const userTryingToCreateSession = request.context.user;
   const insecureInputValues = request.body;
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
 
-  // Compress all mismatch errors (email and password) into one single error.
   let storedUser;
+
+  // Compress all mismatch errors (email and password) into one single error.
   try {
     storedUser = await user.findOneByEmail(secureInputValues.email);
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
   } catch (error) {
+    const remainingMs = startMs - Date.now() + ENUMERATION_DELAY_MS + Math.random() * 10;
+
+    if (remainingMs < 0) {
+      console.warn(
+        `ENUMERATION_DELAY_MS (${ENUMERATION_DELAY_MS}ms) might be too low. Request processing time was ${Date.now() - startMs}ms.`,
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, remainingMs));
+
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
       action: `Verifique se os dados enviados estão corretos.`,
