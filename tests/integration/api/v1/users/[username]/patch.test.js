@@ -562,7 +562,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         features: defaultUser.features,
         notifications: defaultUser.notifications,
         created_at: defaultUser.created_at.toISOString(),
-        updated_at: responseBody.updated_at,
+        updated_at: defaultUser.updated_at.toISOString(),
       });
 
       // Attention: it should not update the email in the database
@@ -934,11 +934,8 @@ describe('PATCH /api/v1/users/[username]', () => {
           features: defaultUser.features,
           notifications: defaultUser.notifications,
           created_at: defaultUser.created_at.toISOString(),
-          updated_at: responseBody.updated_at,
+          updated_at: defaultUser.updated_at.toISOString(),
         });
-
-        expect(responseBody.updated_at).not.toBe(defaultUser.updated_at.toISOString());
-        expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
         const foundUser = await user.findOneById(defaultUser.id);
         expect(foundUser.email).toBe(defaultUser.email);

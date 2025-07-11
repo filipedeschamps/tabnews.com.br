@@ -316,11 +316,8 @@ describe('PATCH /api/v1/email-confirmation', () => {
         features: firstUser.features,
         notifications: firstUser.notifications,
         created_at: firstUser.created_at.toISOString(),
-        updated_at: responseBody.updated_at,
+        updated_at: firstUser.updated_at.toISOString(),
       });
-
-      expect(responseBody.updated_at).not.toBe(firstUser.updated_at.toISOString());
-      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       const userInDatabaseCheck1 = await user.findOneById(firstUser.id);
       expect(userInDatabaseCheck1.email).toBe('validation.error@before.com');
