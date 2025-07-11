@@ -3,6 +3,8 @@ import { version as uuidVersion } from 'uuid';
 import session from 'models/session';
 import orchestrator from 'tests/orchestrator.js';
 
+process.env.ENUMERATION_DELAY_MS = '10';
+
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
@@ -459,12 +461,12 @@ describe('POST /api/v1/sessions', () => {
     expect.soft(response1.status).toBe(401);
     expect.soft(response2.status).toBe(401);
 
-    expect(duration1).toBeGreaterThan(2400);
-    expect(duration1).toBeLessThan(3600);
-    expect(duration2).toBeGreaterThan(2400);
-    expect(duration2).toBeLessThan(3600);
+    expect(duration1).toBeGreaterThan(10);
+    expect(duration1).toBeLessThan(30);
+    expect(duration2).toBeGreaterThan(10);
+    expect(duration2).toBeLessThan(30);
 
     const timeDifference = Math.abs(duration1 - duration2);
-    expect(timeDifference).toBeLessThan(500);
-  }, 10000);
+    expect(timeDifference).toBeLessThan(20);
+  }, 15000);
 });
