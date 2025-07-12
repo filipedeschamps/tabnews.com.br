@@ -271,6 +271,12 @@ function filterOutput(user, feature, output) {
     ).ad_list;
   }
 
+  if (feature === 'read:totp') {
+    filteredOutputValues = {
+      totp: output.totp,
+    };
+  }
+
   // Force the clean up of "undefined" values
   return JSON.parse(JSON.stringify(filteredOutputValues));
 }

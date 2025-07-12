@@ -21,8 +21,13 @@ export default nextConnect({
   );
 
 function getHandler(request, response) {
-  const username = request.context.user.username;
+  const authenticatedUser = request.context.user;
+  const username = authenticatedUser.username;
   const totp = otp.createTotp(null, username);
 
-  response.status(200).json({ totp: totp.toString() });
+  authenticatedUser.totp = totp.toString();
+
+  const secureOutputValues = authorization.filterOutput(request.context.user, 'read:totp', authenticatedUser);
+
+  return response.status(200).json(secureOutputValues);
 }
