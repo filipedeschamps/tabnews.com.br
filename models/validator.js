@@ -299,6 +299,24 @@ const schemas = {
     });
   },
 
+  user_id: function () {
+    return Joi.object({
+      user_id: Joi.string()
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.user_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
+  content_id: function () {
+    return Joi.object({
+      content_id: Joi.string()
+        .trim()
+        .guid({ version: 'uuidv4' })
+        .when('$required.content_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
   created_at: function () {
     return Joi.object({
       created_at: Joi.date().when('$required.created_at', {
