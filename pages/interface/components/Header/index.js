@@ -21,10 +21,12 @@ import {
 import {
   CgTab,
   GearIcon,
+  KebabHorizontalIcon,
   ListUnorderedIcon,
   PersonIcon,
   PlusIcon,
   SignOutIcon,
+  StarIcon,
   ThreeBarsIcon,
 } from '@/TabNewsUI/icons';
 import { useMediaQuery, useUser } from 'pages/interface';
@@ -61,7 +63,10 @@ export default function HeaderComponent() {
 
             <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
 
-            <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>Relevantes</Box>
+            <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>
+              <StarIcon size={18} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+              Relevantes
+            </Box>
           </HeaderLink>
         </PrimerHeader.Item>
 
@@ -70,6 +75,7 @@ export default function HeaderComponent() {
             href="/recentes/pagina/1"
             aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
             sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
+            <KebabHorizontalIcon size={18} style={{ marginRight: 6, verticalAlign: 'middle' }} />
             Recentes
           </HeaderLink>
         </PrimerHeader.Item>

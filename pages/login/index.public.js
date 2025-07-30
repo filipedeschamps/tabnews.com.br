@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 import { Box, ButtonWithLoader, DefaultLayout, Flash, Heading, Link, Text } from '@/TabNewsUI';
+import { KeyIcon, MailIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage, useUser } from 'pages/interface';
 
 const formConfig = {
@@ -97,8 +98,8 @@ function LoginForm() {
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
-      <FormField {...getFieldProps('email')} />
-      <FormField {...getFieldProps('password')} />
+      <FormField {...getFieldProps('email')} leadingVisual={<MailIcon size={18} />} />
+      <FormField {...getFieldProps('password')} leadingVisual={<KeyIcon size={18} />} />
 
       {globalErrorMessage && (
         <Flash variant="danger" sx={{ mt: 3 }}>

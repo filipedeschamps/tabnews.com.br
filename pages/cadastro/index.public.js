@@ -3,6 +3,7 @@ import { FormField, Text } from '@tabnews/ui';
 import { useRouter } from 'next/router';
 
 import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
+import { KeyIcon, MailIcon, PersonIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage } from 'pages/interface';
 
 const formConfig = {
@@ -85,9 +86,14 @@ function SignUpForm() {
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
-      <FormField {...getFieldProps('username')} name="name" autoComplete="off" />
-      <FormField {...getFieldProps('email')} autoComplete="username" />
-      <FormField {...getFieldProps('password')} autoComplete="new-password" />
+      <FormField
+        {...getFieldProps('username')}
+        name="name"
+        autoComplete="off"
+        leadingVisual={<PersonIcon size={18} />}
+      />
+      <FormField {...getFieldProps('email')} autoComplete="username" leadingVisual={<MailIcon size={18} />} />
+      <FormField {...getFieldProps('password')} autoComplete="new-password" leadingVisual={<KeyIcon size={18} />} />
       <FormField
         {...getFieldProps('termsAccepted')}
         sx={{ minHeight: 'auto' }}

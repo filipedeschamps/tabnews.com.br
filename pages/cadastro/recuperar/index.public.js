@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { MailIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
@@ -148,6 +149,7 @@ function RecoverPasswordForm() {
         {!user?.features.includes('create:recovery_token:username') && (
           <FormControl id="userInput">
             <FormControl.Label>Digite seu e-mail</FormControl.Label>
+            <MailIcon size={18} />
             <TextInput
               contrast
               sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}

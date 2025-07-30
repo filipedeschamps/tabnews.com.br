@@ -31,4 +31,7 @@ export {
   TrashIcon,
   UnfoldIcon,
   XCircleFillIcon,
+  StarIcon,
+  MailIcon,
+  KeyIcon,
 } from '@primer/octicons-react';
