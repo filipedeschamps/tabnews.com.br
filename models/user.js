@@ -89,7 +89,7 @@ async function findAllWithPagination(values) {
 }
 
 async function countTotalRows() {
-  const countQuery = `SELECT COUNT(*) OVER()::INTEGER as total_rows FROM users`;
+  const countQuery = `SELECT COUNT(*)::INTEGER as total_rows FROM users`;
   const countResult = await database.query(countQuery);
   return countResult.rows[0].total_rows;
 }
