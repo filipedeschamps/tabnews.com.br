@@ -1,8 +1,3 @@
 {
-  "functions": {
-    "pages/**/*.js": {
-      "memory": 1769
-    }
-  },
   "regions": ["gru1"]
 }
