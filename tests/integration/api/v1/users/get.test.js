@@ -111,7 +111,7 @@ describe('GET /api/v1/users', () => {
     });
 
     test('With an invalid value for "page"', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents?page=first`);
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/users?page=first`);
       const responseBody = await response.json();
 
       expect.soft(response.status).toBe(400);
