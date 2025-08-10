@@ -486,8 +486,6 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   try {
     context.params = validator(context.params, {
       username: 'required',
-      page: 'optional',
-      per_page: 'optional',
     });
   } catch (error) {
     return {

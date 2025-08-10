@@ -18,7 +18,7 @@ export default function UserHeader({ username, children, rootContentCount, child
             pathname: '/[username]/conteudos/[page]',
             query: { username, page: 1 },
           }}>
-          Publicações {!!rootContentCount && <CounterLabel>{rootContentCount}</CounterLabel>}
+          Publicações {!!rootContentCount && <CounterLabel>{rootContentCount.toLocaleString('pt-BR')}</CounterLabel>}
         </TabNavLink>
 
         <TabNavLink
@@ -26,7 +26,7 @@ export default function UserHeader({ username, children, rootContentCount, child
             pathname: '/[username]/comentarios/[page]',
             query: { username, page: 1 },
           }}>
-          Comentários {!!childContentCount && <CounterLabel>{childContentCount}</CounterLabel>}
+          Comentários {!!childContentCount && <CounterLabel>{childContentCount.toLocaleString('pt-BR')}</CounterLabel>}
         </TabNavLink>
 
         <TabNavLink
@@ -34,7 +34,7 @@ export default function UserHeader({ username, children, rootContentCount, child
             pathname: '/[username]/classificados/[page]',
             query: { username, page: 1 },
           }}>
-          Classificados {!!adContentCount && <CounterLabel>{adContentCount}</CounterLabel>}
+          Classificados {!!adContentCount && <CounterLabel>{adContentCount.toLocaleString('pt-BR')}</CounterLabel>}
         </TabNavLink>
       </TabNav>
     </>
