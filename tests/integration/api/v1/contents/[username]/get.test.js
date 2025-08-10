@@ -304,7 +304,7 @@ describe('GET /api/v1/contents/[username]', () => {
       expect(responseBody[0].published_at > responseBody[1].published_at).toBe(true);
     });
 
-    test('"username" existent with 4 contents, but only 2 "root" "published"', async () => {
+    test('"username" existent with 4 contents, with 2 "root" "published", 1 "root" and 1 "child" "draft", and strategy "new"', async () => {
       const firstUser = await orchestrator.createUser();
       const secondUser = await orchestrator.createUser();
 
@@ -330,12 +330,13 @@ describe('GET /api/v1/contents/[username]', () => {
         status: 'draft',
       });
 
-      const childContent = await orchestrator.createContent({
+      // childContent
+      await orchestrator.createContent({
         owner_id: firstUser.id,
         parent_id: firstRootContent.id,
         title: 'Quarto conteúdo criado',
-        body: `Este conteúdo que agora deverá aparecer na lista retornada pelo /contents/[username]`,
-        status: 'published',
+        body: `Este conteúdo não deverá aparecer na lista retornada pelo /contents/[username] porque é draft.`,
+        status: 'draft',
       });
 
       // secondUserRootContent
@@ -351,26 +352,6 @@ describe('GET /api/v1/contents/[username]', () => {
       expect.soft(response.status).toBe(200);
 
       expect(responseBody).toStrictEqual([
-        {
-          id: childContent.id,
-          owner_id: firstUser.id,
-          parent_id: firstRootContent.id,
-          slug: 'quarto-conteudo-criado',
-          title: 'Quarto conteúdo criado',
-          body: 'Este conteúdo que agora deverá aparecer na lista retornada pelo /contents/[username]',
-          status: 'published',
-          type: 'content',
-          source_url: null,
-          created_at: childContent.created_at.toISOString(),
-          updated_at: childContent.updated_at.toISOString(),
-          published_at: childContent.published_at.toISOString(),
-          deleted_at: null,
-          owner_username: firstUser.username,
-          tabcoins: 0,
-          tabcoins_credit: 0,
-          tabcoins_debit: 0,
-          children_deep_count: 0,
-        },
         {
           id: secondRootContent.id,
           owner_id: firstUser.id,
@@ -407,7 +388,7 @@ describe('GET /api/v1/contents/[username]', () => {
           tabcoins_credit: 0,
           tabcoins_debit: 0,
           owner_username: firstUser.username,
-          children_deep_count: 1,
+          children_deep_count: 0,
         },
       ]);
 
