@@ -1,3 +1,8 @@
+/*
+Sugerido por @filipedeschamps
+https://github.com/filipedeschamps/tabnews.com.br/issues/1931
+*/
+
 import { NextResponse } from 'next/server';
 import snakeize from 'snakeize';
 
