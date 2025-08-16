@@ -103,6 +103,7 @@ describe('Controller', () => {
           forwarded: 'omit',
           'x-vercel-proxy-signature': 'omit',
           'x-vercel-sc-headers': 'omit',
+          'x-vercel-oidc-token': 'omit',
           'other-header': 'test',
         },
         body: {

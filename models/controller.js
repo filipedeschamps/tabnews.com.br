@@ -122,7 +122,13 @@ function logRequest(request, response, next) {
 }
 
 const headersToRedact = ['authorization', 'cookie'];
-const headerToOmit = ['access-control-allow-headers', 'forwarded', 'x-vercel-proxy-signature', 'x-vercel-sc-headers'];
+const headerToOmit = [
+  'access-control-allow-headers',
+  'forwarded',
+  'x-vercel-proxy-signature',
+  'x-vercel-sc-headers',
+  'x-vercel-oidc-token',
+];
 
 function clearHeaders(headers) {
   const cleanHeaders = { ...headers };
