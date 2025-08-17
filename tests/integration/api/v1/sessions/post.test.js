@@ -3,6 +3,8 @@ import { version as uuidVersion } from 'uuid';
 import session from 'models/session';
 import orchestrator from 'tests/orchestrator.js';
 
+process.env.ENUMERATION_DELAY_MS = '10';
+
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
@@ -414,4 +416,57 @@ describe('POST /api/v1/sessions', () => {
       expect(responseBody.key).toBe('object');
     });
   });
+
+  test('Should take similar time for existing and non-existing emails (timing attack protection)', async () => {
+    const existingUser = await orchestrator.createUser({
+      email: 'timing-test-existing@gmail.com',
+      password: 'ValidPassword123',
+    });
+
+    await orchestrator.activateUser(existingUser);
+
+    const nonExistingEmail = 'timing-test-nonexisting@gmail.com';
+    const wrongPassword = 'wrongpassword';
+
+    // Teste com email existente e senha errada
+    const startTime1 = process.hrtime.bigint();
+    const response1 = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: existingUser.email,
+        password: wrongPassword,
+      }),
+    });
+    const endTime1 = process.hrtime.bigint();
+    const duration1 = Number(endTime1 - startTime1) / 1000000;
+
+    // Teste com email inexistente
+    const startTime2 = process.hrtime.bigint();
+    const response2 = await fetch(`${orchestrator.webserverUrl}/api/v1/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: nonExistingEmail,
+        password: wrongPassword,
+      }),
+    });
+    const endTime2 = process.hrtime.bigint();
+    const duration2 = Number(endTime2 - startTime2) / 1000000;
+
+    expect.soft(response1.status).toBe(401);
+    expect.soft(response2.status).toBe(401);
+
+    expect(duration1).toBeGreaterThan(10);
+    expect(duration1).toBeLessThan(30);
+    expect(duration2).toBeGreaterThan(10);
+    expect(duration2).toBeLessThan(30);
+
+    const timeDifference = Math.abs(duration1 - duration2);
+    expect(timeDifference).toBeLessThan(20);
+  }, 15000);
 });
