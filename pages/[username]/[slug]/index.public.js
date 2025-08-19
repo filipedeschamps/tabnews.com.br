@@ -13,8 +13,10 @@ import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
 
+const initialRenderIntent = 100;
+const renderIncrement = 50;
+
 export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
-  const [childrenToShow, setChildrenToShow] = useState(108);
   const [showConfetti, setShowConfetti] = useState(false);
 
   const {
@@ -29,8 +31,6 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
   );
 
   useEffect(() => {
-    setChildrenToShow(Math.ceil(window.innerHeight / 10));
-
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
@@ -107,8 +107,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             key={contentFound.id}
             childrenList={contentFound.children}
             pageRootOwnerId={contentFound.owner_id}
-            renderIntent={childrenToShow}
-            renderIncrement={Math.ceil(childrenToShow / 2)}
+            renderIntent={initialRenderIntent}
             rootContent={rootContentFound || contentFound}
           />
         </Box>
@@ -192,7 +191,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, renderIncrement, rootContent }) {
+function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rootContent }) {
   const { nodeStates, handleCollapse, handleExpand } = useTreeCollapse({
     nodes: childrenList,
     totalBudget: renderIntent,
@@ -299,7 +298,6 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
                   childrenList={children}
                   pageRootOwnerId={pageRootOwnerId}
                   renderIntent={expandedSize - 1}
-                  renderIncrement={renderIncrement}
                   rootContent={rootContent}
                 />
               )}
