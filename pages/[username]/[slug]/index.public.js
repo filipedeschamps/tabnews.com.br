@@ -1,4 +1,5 @@
 import { truncate } from '@tabnews/helpers';
+import { useTreeCollapse } from '@tabnews/hooks';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -11,7 +12,6 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
-import { useCollapse } from 'pages/interface';
 
 export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [childrenToShow, setChildrenToShow] = useState(108);
@@ -105,7 +105,6 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
 
           <RenderChildrenTree
             key={contentFound.id}
-            childrenDeepCount={contentFound.children_deep_count}
             childrenList={contentFound.children}
             pageRootOwnerId={contentFound.owner_id}
             renderIntent={childrenToShow}
@@ -194,27 +193,21 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
 }
 
 function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, renderIncrement, rootContent }) {
-  const { childrenState, handleCollapse, handleExpand } = useCollapse({ childrenList, renderIntent, renderIncrement });
+  const { nodeStates, handleCollapse, handleExpand } = useTreeCollapse({
+    nodes: childrenList,
+    totalBudget: renderIntent,
+    additionalBudget: renderIncrement,
+  });
 
-  return childrenState.map((child) => {
-    const {
-      children,
-      children_deep_count,
-      groupedCount,
-      id,
-      owner_id,
-      owner_username,
-      renderIntent,
-      renderShowMore,
-      slug,
-      status,
-    } = child;
+  return nodeStates.map((child) => {
+    const { children, children_deep_count, collapsedSize, expandedSize, id, owner_id, owner_username, slug, status } =
+      child;
     const isPublished = status === 'published';
-    const labelShowMore = Math.min(groupedCount, renderIncrement) || '';
+    const labelShowMore = Math.min(collapsedSize, renderIncrement) || '';
     const plural = labelShowMore != 1 ? 's' : '';
     const isPageRootOwner = pageRootOwnerId === owner_id;
 
-    if (!renderIntent && !renderShowMore) return null;
+    if (!expandedSize && !collapsedSize) return null;
     if (!isPublished && !children_deep_count) return null;
 
     return (
@@ -226,7 +219,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
           mt: 3,
         }}
         key={id}>
-        {renderIntent ? (
+        {expandedSize ? (
           <>
             <Box
               sx={{
@@ -303,10 +296,9 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
 
               {children_deep_count > 0 && (
                 <RenderChildrenTree
-                  childrenDeepCount={children_deep_count}
                   childrenList={children}
                   pageRootOwnerId={pageRootOwnerId}
-                  renderIntent={renderIntent - 1}
+                  renderIntent={expandedSize - 1}
                   renderIncrement={renderIncrement}
                   rootContent={rootContent}
                 />
@@ -316,7 +308,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rende
         ) : (
           <Button onClick={() => handleExpand(id)} variant="invisible" sx={{ color: 'accent.fg' }}>
             <UnfoldIcon /> {`Ver mais ${labelShowMore} resposta${plural}`}
-            {labelShowMore != groupedCount && ` (${groupedCount} ocultas)`}
+            {labelShowMore != collapsedSize && ` (${collapsedSize} ocultas)`}
           </Button>
         )}
       </Box>
