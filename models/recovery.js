@@ -240,6 +240,7 @@ export default Object.freeze({
   create,
   findOneTokenById,
   findOneTokenByUserId,
+  findOneValidTokenById,
   getRecoverPageEndpoint,
   requestPasswordRecovery,
   resetUserPassword,
