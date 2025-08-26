@@ -271,6 +271,18 @@ function filterOutput(user, feature, output) {
     ).ad_list;
   }
 
+  if (feature === 'read:totp') {
+    filteredOutputValues = {
+      totp_url: output.totp_url,
+    };
+  }
+
+  if (feature === 'read:user_totp') {
+    filteredOutputValues = {
+      totp_enabled: output.totp_enabled,
+    };
+  }
+
   // Force the clean up of "undefined" values
   return JSON.parse(JSON.stringify(filteredOutputValues));
 }
