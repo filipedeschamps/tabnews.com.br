@@ -200,6 +200,12 @@ const schemas = {
     });
   },
 
+  totp_token: function () {
+    return Joi.object({
+      totp_token: Joi.string().length(6).when('$required.totp_token', { is: 'required', then: Joi.required() }),
+    });
+  },
+
   session_id: function () {
     return Joi.object({
       session_id: Joi.string()
