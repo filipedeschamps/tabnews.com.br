@@ -32,6 +32,7 @@ function filterInput(user, feature, input, target) {
     filteredInputValues = {
       email: input.email,
       password: input.password,
+      totp_token: input.totp_token,
     };
   }
 
