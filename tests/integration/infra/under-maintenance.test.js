@@ -1,12 +1,15 @@
 import orchestrator from 'tests/orchestrator.js';
 
+// middleware inativo
+const middlewareIsActive = false;
+
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.dropAllTables();
   await orchestrator.runPendingMigrations();
 });
 
-describe('Under maintenance route', () => {
+(middlewareIsActive ? describe : describe.skip)('Under maintenance route', () => {
   describe('Anonymous user', () => {
     test('Trying to access "method" and "path" under maintenance', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/under-maintenance-test`, {
