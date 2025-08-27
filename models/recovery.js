@@ -95,13 +95,14 @@ function getRecoverPageEndpoint(tokenId) {
   return `${webserver.host}/cadastro/recuperar/${tokenId}`;
 }
 
-async function resetUserPassword(secureInputValues) {
-  const tokenObject = await findOneValidTokenById(secureInputValues.token_id);
-  const userToken = await markTokenAsUsed(tokenObject.id);
+async function resetUserPassword(secureInputValues, options) {
+  const tokenObject = await findOneValidTokenById(secureInputValues.token_id, options);
+  const userToken = await markTokenAsUsed(tokenObject.id, options);
 
-  await session.expireAllFromUserId(tokenObject.user_id);
-  await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password });
+  await session.expireAllFromUserId(tokenObject.user_id, options);
+  const updatedUser = await user.update({ id: tokenObject.user_id }, { password: secureInputValues.password }, options);
 
+  userToken.user = updatedUser;
   return userToken;
 }
 
@@ -133,7 +134,7 @@ async function findOneTokenById(tokenId) {
   return results.rows[0];
 }
 
-async function findOneValidTokenById(tokenId) {
+async function findOneValidTokenById(tokenId, options) {
   const query = {
     text: `SELECT * FROM reset_password_tokens
         WHERE id = $1
@@ -143,7 +144,7 @@ async function findOneValidTokenById(tokenId) {
     values: [tokenId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -186,7 +187,7 @@ async function findOneTokenByUserId(userId) {
   return results.rows[0];
 }
 
-async function markTokenAsUsed(tokenId) {
+async function markTokenAsUsed(tokenId, options) {
   const query = {
     text: `UPDATE reset_password_tokens
             SET used = true,
@@ -196,7 +197,7 @@ async function markTokenAsUsed(tokenId) {
     values: [tokenId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
   return results.rows[0];
 }
 
@@ -240,6 +241,7 @@ export default Object.freeze({
   create,
   findOneTokenById,
   findOneTokenByUserId,
+  findOneValidTokenById,
   getRecoverPageEndpoint,
   requestPasswordRecovery,
   resetUserPassword,
