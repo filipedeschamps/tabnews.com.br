@@ -1,0 +1,27 @@
+/*
+Sugerido por @filipedeschamps
+https://github.com/filipedeschamps/tabnews.com.br/issues/1931
+*/
+
+import { NextResponse } from 'next/server';
+
+import underMaintenance from 'infra/under-maintenance';
+
+export const config = {
+  matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],
+};
+
+export async function middleware(request) {
+  const isUnderMaintenance = await underMaintenance.check(request);
+
+  if (isUnderMaintenance) {
+    return new NextResponse(isUnderMaintenance.body, {
+      status: isUnderMaintenance.status,
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+  }
+
+  return NextResponse.next();
+}
