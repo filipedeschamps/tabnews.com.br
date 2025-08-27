@@ -112,4 +112,5 @@ export default Object.freeze({
   startSetup,
   enable,
   disable,
+  validateToken,
 });
