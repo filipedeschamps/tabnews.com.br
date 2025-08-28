@@ -3,6 +3,7 @@ import { version as uuidVersion } from 'uuid';
 import emailConfirmation from 'models/email-confirmation.js';
 import user from 'models/user.js';
 import orchestrator from 'tests/orchestrator.js';
+import RequestBuilder from 'tests/request-builder';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -256,6 +257,204 @@ describe('PATCH /api/v1/email-confirmation', () => {
       // 4) CHECK IF EMAIL WAS UPDATED
       const userInDatabaseCheck2 = await user.findOneById(defaultUser.id);
       expect(userInDatabaseCheck2.email).toBe('new@email.com');
+    });
+
+    test('With valid data and TOTP enabled', async () => {
+      await orchestrator.deleteAllEmails();
+
+      // 1) UPDATE USER EMAIL
+      const defaultUser = await orchestrator.createUser({
+        email: 'user.with.totp@example.com',
+      });
+      await orchestrator.activateUser(defaultUser);
+      const userTotp = await orchestrator.enableTotp(defaultUser);
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const { response: userUpdateResponse } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: 'user.with.totp.new@example.com',
+      });
+
+      expect.soft(userUpdateResponse.status).toBe(200);
+
+      const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
+      expect(userInDatabaseCheck1.email).toBe('user.with.totp@example.com');
+
+      // 2) RECEIVE CONFIRMATION EMAIL
+      const confirmationEmail = await orchestrator.waitForFirstEmail();
+
+      const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
+      const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
+        tokenObjectInDatabase.id,
+      );
+
+      expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toStrictEqual(['<user.with.totp.new@example.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
+      expect(confirmationEmail.text).toContain(defaultUser.username);
+      expect(confirmationEmail.html).toContain(defaultUser.username);
+      expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
+      expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
+
+      // 3) USE CONFIRMATION TOKEN
+      const emailConfirmationRequestBuilder = new RequestBuilder('/api/v1/email-confirmation');
+      const { response: emailConfirmationResponse, responseBody: emailConfirmationResponseBody } =
+        await emailConfirmationRequestBuilder.patch({
+          token_id: tokenObjectInDatabase.id,
+          totp_token: userTotp.generate(),
+        });
+
+      expect.soft(emailConfirmationResponse.status).toBe(200);
+
+      expect(emailConfirmationResponseBody).toStrictEqual({
+        id: emailConfirmationResponseBody.id,
+        used: true,
+        expires_at: tokenObjectInDatabase.expires_at.toISOString(),
+        created_at: tokenObjectInDatabase.created_at.toISOString(),
+        updated_at: emailConfirmationResponseBody.updated_at,
+      });
+
+      expect(uuidVersion(emailConfirmationResponseBody.id)).toBe(4);
+      expect(emailConfirmationResponseBody.updated_at > tokenObjectInDatabase.updated_at.toISOString()).toBe(true);
+
+      // 4) CHECK IF EMAIL WAS UPDATED
+      const userInDatabaseCheck2 = await user.findOneById(defaultUser.id);
+      expect(userInDatabaseCheck2.email).toBe('user.with.totp.new@example.com');
+    });
+
+    test('With valid data and TOTP enabled, but sending an invalid "totp_token"', async () => {
+      await orchestrator.deleteAllEmails();
+
+      // 1) UPDATE USER EMAIL
+      const defaultUser = await orchestrator.createUser({
+        email: 'user.with.wrong.totp@example.com',
+      });
+      await orchestrator.activateUser(defaultUser);
+      const userTotp = await orchestrator.enableTotp(defaultUser);
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const { response: userUpdateResponse } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: 'user.with.wrong.totp.new@example.com',
+      });
+
+      expect.soft(userUpdateResponse.status).toBe(200);
+
+      const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
+      expect(userInDatabaseCheck1.email).toBe('user.with.wrong.totp@example.com');
+
+      // 2) RECEIVE CONFIRMATION EMAIL
+      const confirmationEmail = await orchestrator.waitForFirstEmail();
+
+      const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
+      const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
+        tokenObjectInDatabase.id,
+      );
+
+      expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toStrictEqual(['<user.with.wrong.totp.new@example.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
+      expect(confirmationEmail.text).toContain(defaultUser.username);
+      expect(confirmationEmail.html).toContain(defaultUser.username);
+      expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
+      expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
+
+      // 3) USE CONFIRMATION TOKEN
+      const emailConfirmationRequestBuilder = new RequestBuilder('/api/v1/email-confirmation');
+      const { response: emailConfirmationResponse, responseBody: emailConfirmationResponseBody } =
+        await emailConfirmationRequestBuilder.patch({
+          token_id: tokenObjectInDatabase.id,
+          totp_token: orchestrator.getInvalidTotpToken(userTotp),
+        });
+
+      expect.soft(emailConfirmationResponse.status).toBe(401);
+      expect(emailConfirmationResponseBody).toStrictEqual({
+        status_code: 401,
+        name: 'UnauthorizedError',
+        message: 'O código TOTP informado é inválido.',
+        action: 'Verifique o código e tente novamente.',
+        error_location_code: 'CONTROLLER:EMAIL_CONFIRMATION:PATCH_HANDLER:TOTP_INVALID',
+        error_id: emailConfirmationResponseBody.error_id,
+        request_id: emailConfirmationResponseBody.request_id,
+      });
+
+      expect(uuidVersion(emailConfirmationResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(emailConfirmationResponseBody.request_id)).toBe(4);
+
+      // 4) CONFIRM EMAIL WAS NOT UPDATED
+      const userInDatabaseCheck2 = await user.findOneById(defaultUser.id);
+      expect(userInDatabaseCheck2.email).toBe('user.with.wrong.totp@example.com');
+    });
+
+    test('With valid data and TOTP enabled, but not sending "totp_token"', async () => {
+      await orchestrator.deleteAllEmails();
+
+      // 1) UPDATE USER EMAIL
+      const defaultUser = await orchestrator.createUser({
+        email: 'user.with.totp.not.informed@example.com',
+      });
+      await orchestrator.activateUser(defaultUser);
+      await orchestrator.enableTotp(defaultUser);
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      await usersRequestBuilder.setUser(defaultUser);
+
+      const { response: userUpdateResponse } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        email: 'user.with.totp.not.informed.new@example.com',
+      });
+
+      expect.soft(userUpdateResponse.status).toBe(200);
+
+      const userInDatabaseCheck1 = await user.findOneById(defaultUser.id);
+      expect(userInDatabaseCheck1.email).toBe('user.with.totp.not.informed@example.com');
+
+      // 2) RECEIVE CONFIRMATION EMAIL
+      const confirmationEmail = await orchestrator.waitForFirstEmail();
+
+      const tokenObjectInDatabase = await emailConfirmation.findOneTokenByUserId(defaultUser.id);
+      const emailConfirmationPageEndpoint = emailConfirmation.getEmailConfirmationPageEndpoint(
+        tokenObjectInDatabase.id,
+      );
+
+      expect(confirmationEmail.sender).toBe('<contato@tabnews.com.br>');
+      expect(confirmationEmail.recipients).toStrictEqual(['<user.with.totp.not.informed.new@example.com>']);
+      expect(confirmationEmail.subject).toBe('Confirme seu novo email');
+      expect(confirmationEmail.text).toContain(defaultUser.username);
+      expect(confirmationEmail.html).toContain(defaultUser.username);
+      expect(confirmationEmail.text).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.html).toContain('Uma alteração de email foi solicitada.');
+      expect(confirmationEmail.text).toContain(emailConfirmationPageEndpoint);
+      expect(confirmationEmail.html).toContain(emailConfirmationPageEndpoint);
+
+      // 3) USE CONFIRMATION TOKEN
+      const emailConfirmationRequestBuilder = new RequestBuilder('/api/v1/email-confirmation');
+      const { response: emailConfirmationResponse, responseBody: emailConfirmationResponseBody } =
+        await emailConfirmationRequestBuilder.patch({
+          token_id: tokenObjectInDatabase.id,
+        });
+
+      expect.soft(emailConfirmationResponse.status).toBe(400);
+      expect(emailConfirmationResponseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: `"totp_token" é um campo obrigatório.`,
+        action: `Ajuste os dados enviados e tente novamente.`,
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'totp_token',
+        type: 'any.required',
+        error_id: emailConfirmationResponseBody.error_id,
+        request_id: emailConfirmationResponseBody.request_id,
+      });
+
+      expect(uuidVersion(emailConfirmationResponseBody.error_id)).toBe(4);
+      expect(uuidVersion(emailConfirmationResponseBody.request_id)).toBe(4);
+
+      // 4) CONFIRM EMAIL WAS NOT UPDATED
+      const userInDatabaseCheck2 = await user.findOneById(defaultUser.id);
+      expect(userInDatabaseCheck2.email).toBe('user.with.totp.not.informed@example.com');
     });
 
     test('With an already used, but valid token', async () => {
