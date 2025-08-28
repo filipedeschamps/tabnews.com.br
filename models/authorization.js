@@ -161,6 +161,7 @@ function filterOutput(user, feature, output) {
         description: output.description,
         notifications: output.notifications,
         features: output.features,
+        totp_enabled: !!output.totp_secret,
         tabcoins: output.tabcoins,
         tabcash: output.tabcash,
         created_at: output.created_at,
