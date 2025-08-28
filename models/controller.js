@@ -4,6 +4,7 @@ import { randomUUID as uuidV4 } from 'node:crypto';
 import snakeize from 'snakeize';
 
 import {
+  ConflictError,
   ForbiddenError,
   InternalServerError,
   MethodNotAllowedError,
@@ -55,7 +56,8 @@ function onErrorHandler(error, request, response) {
     error instanceof NotFoundError ||
     error instanceof ForbiddenError ||
     error instanceof UnprocessableEntityError ||
-    error instanceof TooManyRequestsError
+    error instanceof TooManyRequestsError ||
+    error instanceof ConflictError
   ) {
     const publicErrorObject = { ...error, requestId: request.context.requestId };
 
@@ -146,7 +148,7 @@ function clearHeaders(headers) {
   return [cleanHeaders];
 }
 
-const bodyToRedact = ['email', 'password'];
+const bodyToRedact = ['email', 'password', 'totp_token'];
 
 function clearBody(requestBody) {
   const cleanBody = { ...requestBody };
