@@ -5,6 +5,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
+import event from 'models/event';
 import userTotp from 'models/user-totp';
 import validator from 'models/validator';
 
@@ -40,6 +41,12 @@ async function postHandler(request, response) {
   };
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:totp', output);
 
+  await event.create({
+    type: 'totp:start_setup',
+    originator_user_id: authenticatedUser.id,
+    originator_ip: request.context.clientIp,
+  });
+
   return response.status(201).json(secureOutputValues);
 }
 
@@ -67,6 +74,17 @@ async function patchHandler(request, response) {
 
   const output = { totp_enabled: true };
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:user_totp', output);
+
+  await event.create({
+    type: 'update:user',
+    originator_user_id: authenticatedUser.id,
+    originator_ip: request.context.clientIp,
+    metadata: {
+      id: authenticatedUser.id,
+      updatedFields: ['totp_secret'],
+      totp_enabled: { old: !!authenticatedUser.totp_secret, new: true },
+    },
+  });
 
   return response.status(200).json(secureOutputValues);
 }
@@ -101,6 +119,19 @@ async function deleteHandler(request, response) {
       message: `Dados não conferem.`,
       action: `Verifique se a senha e o código TOTP informados estão corretos.`,
       errorLocationCode: `CONTROLLER:USER_TOTP:DELETE_HANDLER:DATA_MISMATCH`,
+    });
+  }
+
+  if (authenticatedUser.totp_secret) {
+    await event.create({
+      type: 'update:user',
+      originator_user_id: authenticatedUser.id,
+      originator_ip: request.context.clientIp,
+      metadata: {
+        id: authenticatedUser.id,
+        updatedFields: ['totp_secret'],
+        totp_enabled: { old: !!authenticatedUser.totp_secret, new: false },
+      },
     });
   }
 

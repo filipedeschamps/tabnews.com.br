@@ -646,6 +646,7 @@ const schemas = {
           'moderation:unblock_contents:text_child',
           'reward:user:tabcoins',
           'system:update:tabcoins',
+          'totp:start_setup',
         )
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',
@@ -671,6 +672,10 @@ const schemas = {
             username: Joi.object({
               old: Joi.string().required(),
               new: Joi.string().required(),
+            }),
+            totp_enabled: Joi.object({
+              old: Joi.boolean().required(),
+              new: Joi.boolean().required(),
             }),
           }),
         },
