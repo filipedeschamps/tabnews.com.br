@@ -6,7 +6,12 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe('Under maintenance route', () => {
+// The route is temporarily disabled because we removed the middleware.
+// The middleware can be added again when in maintenance, or
+// if there is another need, and then this test can be re-enabled.
+
+// eslint-disable-next-line vitest/no-disabled-tests
+describe.skip('Under maintenance route', () => {
   describe('Anonymous user', () => {
     test('Trying to access "method" and "path" under maintenance', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/under-maintenance-test`, {
