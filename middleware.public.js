@@ -1,39 +1,14 @@
 import { NextResponse } from 'next/server';
 import snakeize from 'snakeize';
 
-import { UnauthorizedError } from 'errors';
 import logger from 'infra/logger.js';
 import underMaintenance from 'infra/under-maintenance';
-import webserver from 'infra/webserver.js';
-import ip from 'models/ip.js';
 
 export const config = {
   matcher: ['/((?!_next/static|va/|favicon|manifest).*)'],
 };
 
 export function middleware(request) {
-  if (webserver.isProduction && !ip.isRequestFromCloudflare(request)) {
-    const publicErrorObject = new UnauthorizedError({
-      message: 'Host não autorizado. Por favor, acesse https://www.tabnews.com.br.',
-      action: 'Não repita esta requisição.',
-    });
-
-    const privateErrorObject = {
-      ...publicErrorObject,
-      context: {
-        clientIp: ip.extractFromRequest(request),
-      },
-    };
-    logger.info(snakeize(privateErrorObject));
-
-    return new NextResponse(JSON.stringify(publicErrorObject), {
-      status: 401,
-      headers: {
-        'content-type': 'application/json',
-      },
-    });
-  }
-
   const isUnderMaintenance = underMaintenance.check(request);
 
   if (isUnderMaintenance) {
