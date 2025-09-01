@@ -3,6 +3,7 @@ const defaultConfig = require('@tabnews/config/eslint');
 const config = [
   ...defaultConfig,
   {
+    files: ['**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
