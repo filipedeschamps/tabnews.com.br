@@ -9,6 +9,11 @@ const formConfig = {
   username,
   email,
   password,
+  confirmPassword: {
+    ...password,
+    label: 'Confirme sua senha',
+    name: 'confirmPassword',
+  },
   termsAccepted: { checked: false },
   globalMessage: '',
   loading: false,
@@ -31,9 +36,20 @@ function SignUpForm() {
   const { getFieldProps, handleSubmit, state, updateState } = useForm(formConfig);
   const globalErrorMessage = state.globalMessage.error;
 
+  const passwordsFilled = Boolean(state?.password?.value) && Boolean(state?.confirmPassword?.value);
+  const passwordsMismatch = passwordsFilled && state.password.value !== state.confirmPassword.value;
+
   async function onSubmit(data) {
+    if (data.password !== data.confirmPassword) {
+      updateState({
+        confirmPassword: { error: 'As senhas não coincidem.' },
+      });
+      return;
+    }
+
     updateState({
       globalMessage: { error: null },
+      confirmPassword: { error: null },
       loading: { value: true },
     });
 
@@ -88,6 +104,7 @@ function SignUpForm() {
       <FormField {...getFieldProps('username')} name="name" autoComplete="off" />
       <FormField {...getFieldProps('email')} autoComplete="username" />
       <FormField {...getFieldProps('password')} autoComplete="new-password" />
+      <FormField {...getFieldProps('confirmPassword')} autoComplete="new-password" />
       <FormField
         {...getFieldProps('termsAccepted')}
         sx={{ minHeight: 'auto' }}
@@ -98,6 +115,12 @@ function SignUpForm() {
           </Text>
         }
       />
+
+      {passwordsMismatch && (
+        <Flash variant="danger" sx={{ mt: 2 }}>
+          As senhas não coincidem.
+        </Flash>
+      )}
 
       {globalErrorMessage && (
         <Flash variant="danger" sx={{ mt: 3 }}>
