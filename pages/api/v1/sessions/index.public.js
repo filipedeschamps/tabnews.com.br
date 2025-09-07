@@ -1,6 +1,6 @@
 import { createRouter } from 'next-connect';
 
-import { ForbiddenError, UnauthorizedError } from 'errors';
+import { ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from 'errors';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -8,6 +8,7 @@ import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import session from 'models/session';
 import user from 'models/user';
+import userTotp from 'models/user-totp';
 import validator from 'models/validator.js';
 
 export default createRouter()
@@ -35,6 +36,7 @@ function postValidationHandler(request, response, next) {
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
+    totp_token: 'optional',
   });
 
   request.body = cleanValues;
@@ -48,17 +50,30 @@ async function postHandler(request, response) {
 
   const secureInputValues = authorization.filterInput(userTryingToCreateSession, 'create:session', insecureInputValues);
 
-  // Compress all mismatch errors (email and password) into one single error.
+  // Compress all mismatch errors (email, password and TOTP) into one single error.
   let storedUser;
   try {
     storedUser = await user.findOneByEmail(secureInputValues.email);
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
+
+    if (storedUser.totp_secret) {
+      validator(secureInputValues, { totp_token: 'required' });
+      userTotp.validateToken(storedUser.totp_secret, secureInputValues.totp_token);
+    }
   } catch (error) {
-    throw new UnauthorizedError({
-      message: `Dados não conferem.`,
-      action: `Verifique se os dados enviados estão corretos.`,
-      errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
-    });
+    if (
+      error instanceof NotFoundError ||
+      error instanceof UnauthorizedError ||
+      (error instanceof ValidationError && error.errorLocationCode.startsWith('MODEL:USER_TOTP:'))
+    ) {
+      throw new UnauthorizedError({
+        message: `Dados não conferem.`,
+        action: `Verifique se os dados enviados estão corretos.`,
+        errorLocationCode: `CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH`,
+      });
+    }
+
+    throw error;
   }
 
   if (!authorization.can(storedUser, 'create:session') && authorization.can(storedUser, 'read:activation_token')) {

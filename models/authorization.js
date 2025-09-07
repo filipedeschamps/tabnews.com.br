@@ -32,6 +32,7 @@ function filterInput(user, feature, input, target) {
     filteredInputValues = {
       email: input.email,
       password: input.password,
+      totp_token: input.totp_token,
     };
   }
 
@@ -160,6 +161,7 @@ function filterOutput(user, feature, output) {
         description: output.description,
         notifications: output.notifications,
         features: output.features,
+        totp_enabled: !!output.totp_secret,
         tabcoins: output.tabcoins,
         tabcash: output.tabcash,
         created_at: output.created_at,
@@ -269,6 +271,18 @@ function filterOutput(user, feature, output) {
         ad_list: 'required',
       },
     ).ad_list;
+  }
+
+  if (feature === 'read:totp') {
+    filteredOutputValues = {
+      totp_url: output.totp_url,
+    };
+  }
+
+  if (feature === 'read:user_totp') {
+    filteredOutputValues = {
+      totp_enabled: output.totp_enabled,
+    };
   }
 
   // Force the clean up of "undefined" values
