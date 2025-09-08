@@ -1,6 +1,7 @@
 import { createRouter } from 'next-connect';
 
 import { ForbiddenError, UnauthorizedError } from 'errors';
+import logger from 'infra/logger';
 import activation from 'models/activation.js';
 import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
@@ -42,7 +43,11 @@ function postValidationHandler(request, response, next) {
   return next();
 }
 
+const ENUMERATION_DELAY_MS = parseInt(process.env.ENUMERATION_DELAY_MS) || 0;
+
 async function postHandler(request, response) {
+  const startMs = Date.now();
+
   const userTryingToCreateSession = request.context.user;
   const insecureInputValues = request.body;
 
@@ -54,6 +59,17 @@ async function postHandler(request, response) {
     storedUser = await user.findOneByEmail(secureInputValues.email);
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
   } catch (error) {
+    const remainingMs = startMs - Date.now() + ENUMERATION_DELAY_MS + Math.random() * 10;
+
+    if (remainingMs < 0 && process.env.NODE_ENV === 'production') {
+      logger.warn({
+        message: `ENUMERATION_DELAY_MS (${ENUMERATION_DELAY_MS}ms) pode estar muito baixo. O tempo de processamento da requisição foi de ${Date.now() - startMs}ms.`,
+        error_location_code: 'CONTROLLER:SESSIONS:POST_HANDLER:ENUMERATION_DELAY_MS_TOO_LOW',
+      });
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, remainingMs));
+
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
       action: `Verifique se os dados enviados estão corretos.`,
