@@ -592,16 +592,11 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 type="button"
                 disabled={isPosting}
                 sx={{ marginRight: 3, fontSize: 1, fontWeight: 'normal', cursor: 'pointer', color: 'fg.muted' }}
-                aria-label="Cancelar alteração"
                 onClick={handleCancel}>
                 Cancelar
               </Button>
             )}
-            <ButtonWithLoader
-              variant="primary"
-              type="submit"
-              aria-label={isPosting ? 'Carregando...' : contentObject?.id ? 'Atualizar' : 'Publicar'}
-              isLoading={isPosting}>
+            <ButtonWithLoader variant="primary" type="submit" isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
             </ButtonWithLoader>
           </Box>

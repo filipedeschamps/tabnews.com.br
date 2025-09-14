@@ -338,12 +338,11 @@ function DescriptionForm({
           type="button"
           disabled={isPosting}
           sx={{ fontWeight: 'normal', color: 'fg.muted' }}
-          aria-label="Cancelar alteração"
           onClick={handleCancel}>
           Cancelar
         </Button>
 
-        <ButtonWithLoader variant="primary" type="submit" aria-label="Salvar" isLoading={isPosting}>
+        <ButtonWithLoader variant="primary" type="submit" isLoading={isPosting}>
           Salvar
         </ButtonWithLoader>
       </Box>

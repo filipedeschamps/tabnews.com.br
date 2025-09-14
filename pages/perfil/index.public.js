@@ -200,7 +200,6 @@ function EditProfileForm() {
             autoCapitalize="none"
             spellCheck={false}
             block={true}
-            aria-label="Seu nome de usuário"
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
             onChange={() => setShowUsernameCaption(true)}
@@ -232,7 +231,6 @@ function EditProfileForm() {
             autoCapitalize="none"
             spellCheck={false}
             block={true}
-            aria-label="Seu email"
             contrast
             sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
           />
@@ -286,12 +284,7 @@ function EditProfileForm() {
         <FormControl id="notifications" sx={{ gap: 2, alignItems: 'center' }}>
           <FormControl.Label>Receber notificações por email</FormControl.Label>
 
-          <Checkbox
-            sx={{ display: 'flex' }}
-            ref={notificationsRef}
-            name="notifications"
-            aria-label="Você deseja receber notificações?"
-          />
+          <Checkbox sx={{ display: 'flex' }} ref={notificationsRef} name="notifications" />
 
           {errorObject?.key === 'notifications' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -311,13 +304,7 @@ function EditProfileForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
-          <ButtonWithLoader
-            variant="primary"
-            size="large"
-            type="submit"
-            sx={{ width: '100%' }}
-            aria-label="Salvar"
-            isLoading={isLoading}>
+          <ButtonWithLoader variant="primary" size="large" type="submit" sx={{ width: '100%' }} isLoading={isLoading}>
             Salvar
           </ButtonWithLoader>
         </FormControl>

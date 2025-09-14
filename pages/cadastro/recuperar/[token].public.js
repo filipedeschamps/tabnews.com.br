@@ -95,7 +95,6 @@ function RecoverPasswordForm() {
         size="large"
         type="submit"
         sx={{ width: '100%', mt: 3 }}
-        aria-label="Alterar senha"
         isLoading={state.loading.value}>
         Alterar senha
       </ButtonWithLoader>
