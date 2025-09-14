@@ -555,7 +555,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 name="source_url"
                 size="large"
                 autoCorrect="off"
-                autoCapitalize="off"
+                autoCapitalize="none"
                 spellCheck={false}
                 placeholder="https://origem.site/noticia"
                 block={true}

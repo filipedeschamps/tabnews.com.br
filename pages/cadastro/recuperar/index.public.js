@@ -128,7 +128,7 @@ function RecoverPasswordForm() {
               name="userInput"
               size="large"
               autoCorrect="off"
-              autoCapitalize="off"
+              autoCapitalize="none"
               spellCheck={false}
               block={true}
               aria-label="Digite seu e-mail ou o nome de usuário de outra pessoa"
@@ -156,7 +156,7 @@ function RecoverPasswordForm() {
               name="userInput"
               size="large"
               autoCorrect="off"
-              autoCapitalize="off"
+              autoCapitalize="none"
               spellCheck={false}
               block={true}
               aria-label="Seu e-mail"

@@ -197,7 +197,7 @@ function EditProfileForm() {
             name="username"
             size="large"
             autoCorrect="off"
-            autoCapitalize="off"
+            autoCapitalize="none"
             spellCheck={false}
             block={true}
             aria-label="Seu nome de usuário"
@@ -229,7 +229,7 @@ function EditProfileForm() {
             name="email"
             size="large"
             autoCorrect="off"
-            autoCapitalize="off"
+            autoCapitalize="none"
             spellCheck={false}
             block={true}
             aria-label="Seu email"
