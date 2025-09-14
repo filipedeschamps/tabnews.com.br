@@ -1,4 +1,4 @@
-import { truncate } from '@tabnews/helpers';
+import { findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
 import { useTreeCollapse } from '@tabnews/hooks';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
@@ -18,6 +18,7 @@ const renderIncrement = 50;
 
 export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [showConfetti, setShowConfetti] = useState(false);
+  const [autoExpandPath, setAutoExpandPath] = useState(null);
 
   const {
     data: { body: adsFound },
@@ -38,6 +39,45 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
       localStorage.removeItem('justPublishedNewRootContent');
     }
   }, []);
+
+  // Scroll to the target if URL has a hash that matches a child content
+  useEffect(() => {
+    let clearRetryScroll = () => {};
+
+    function handleHashChange({ newURL }) {
+      if (!contentFound?.children) return;
+
+      const hash = newURL.split('#')[1];
+      if (!hash) return;
+
+      const separatorIndex = hash.indexOf('-');
+      if (separatorIndex === -1) return;
+
+      const targetUsername = hash.slice(0, separatorIndex);
+      const targetSlug = hash.slice(separatorIndex + 1);
+      if (!targetUsername?.length || !targetSlug?.length) return;
+
+      const pathToTarget = findPathToNode(
+        contentFound.children,
+        (child) => child.slug === targetSlug && child.owner_username === targetUsername,
+      );
+      if (!pathToTarget) return;
+
+      const targetElement = document.getElementById(hash);
+      if (!targetElement) setAutoExpandPath(pathToTarget);
+
+      clearRetryScroll();
+      clearRetryScroll = scrollToElementWithRetry(hash);
+    }
+
+    handleHashChange({ newURL: window.location.href });
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      clearRetryScroll();
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [contentFound]);
 
   return (
     <>
@@ -105,6 +145,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
 
           <RenderChildrenTree
             key={contentFound.id}
+            autoExpandPath={autoExpandPath}
             childrenList={contentFound.children}
             pageRootOwnerId={contentFound.owner_id}
             renderIntent={initialRenderIntent}
@@ -191,11 +232,12 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rootContent }) {
+function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, renderIntent, rootContent }) {
   const { nodeStates, handleCollapse, handleExpand } = useTreeCollapse({
     nodes: childrenList,
     totalBudget: renderIntent,
     additionalBudget: renderIncrement,
+    defaultExpandedId: autoExpandPath?.[0],
   });
 
   return nodeStates.map((child) => {
@@ -295,6 +337,7 @@ function RenderChildrenTree({ childrenList, pageRootOwnerId, renderIntent, rootC
 
               {children_deep_count > 0 && (
                 <RenderChildrenTree
+                  autoExpandPath={autoExpandPath?.[0] === id ? autoExpandPath?.slice(1) : null}
                   childrenList={children}
                   pageRootOwnerId={pageRootOwnerId}
                   renderIntent={expandedSize - 1}
