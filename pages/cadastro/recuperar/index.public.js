@@ -128,10 +128,9 @@ function RecoverPasswordForm() {
               name="userInput"
               size="large"
               autoCorrect="off"
-              autoCapitalize="off"
+              autoCapitalize="none"
               spellCheck={false}
               block={true}
-              aria-label="Digite seu e-mail ou o nome de usuário de outra pessoa"
             />
             {['userInput', 'email', 'username'].includes(errorObject?.key) && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -156,10 +155,9 @@ function RecoverPasswordForm() {
               name="userInput"
               size="large"
               autoCorrect="off"
-              autoCapitalize="off"
+              autoCapitalize="none"
               spellCheck={false}
               block={true}
-              aria-label="Seu e-mail"
             />
             {['userInput', 'email'].includes(errorObject?.key) && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -173,13 +171,7 @@ function RecoverPasswordForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <ButtonWithLoader
-            variant="primary"
-            size="large"
-            type="submit"
-            sx={{ width: '100%' }}
-            aria-label="Recuperar"
-            isLoading={isLoading}>
+          <ButtonWithLoader variant="primary" size="large" type="submit" sx={{ width: '100%' }} isLoading={isLoading}>
             Recuperar
           </ButtonWithLoader>
         </FormControl>

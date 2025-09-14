@@ -111,7 +111,6 @@ function LoginForm() {
         size="large"
         type="submit"
         sx={{ width: '100%', mt: 3 }}
-        aria-label="Login"
         isLoading={state.loading.value}>
         Login
       </ButtonWithLoader>

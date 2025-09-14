@@ -110,7 +110,6 @@ function SignUpForm() {
         size="large"
         type="submit"
         sx={{ width: '100%', mt: 3 }}
-        aria-label="Criar cadastro"
         disabled={!state.termsAccepted.checked}
         isLoading={state.loading.value}>
         Criar cadastro
