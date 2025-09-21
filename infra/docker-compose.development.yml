@@ -2,7 +2,7 @@ name: 'tabnews'
 services:
   postgres_dev:
     container_name: 'postgres-dev'
-    image: 'postgres:14.7-alpine'
+    image: 'postgres:14.17-alpine'
     env_file:
       - ../.env
     ports:
