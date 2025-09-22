@@ -41,12 +41,12 @@
   "devDependencies": {
     "@commitlint/cli": "19.8.1",
     "@commitlint/config-conventional": "19.8.1",
+    "@commitlint/cz-commitlint": "19.8.1",
     "@faker-js/faker": "9.8.0",
     "@tabnews/config": "0.6.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
     "concurrently": "9.1.2",
-    "cz-conventional-changelog": "3.3.0",
     "dotenv": "16.5.0",
     "dotenv-expand": "12.0.2",
     "husky": "9.1.7",
@@ -89,7 +89,7 @@
     "pre-commit": "lint-staged"
   },
   "engines": {
-    "node": "20"
+    "node": "22.x"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
@@ -109,7 +109,7 @@
   "homepage": "https://www.tabnews.com.br/",
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "@commitlint/cz-commitlint"
     }
   }
 }
