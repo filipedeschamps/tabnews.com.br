@@ -8,6 +8,7 @@ import {
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
+  ServiceError,
   TooManyRequestsError,
   UnauthorizedError,
   UnprocessableEntityError,
@@ -72,12 +73,20 @@ function onErrorHandler(error, request, response) {
     errorLocationCode: error.errorLocationCode,
   });
 
+  const ErrorClass = error instanceof ServiceError ? ServiceError : InternalServerError;
   const privateErrorObject = {
-    ...new InternalServerError({
-      ...error,
+    ...new ErrorClass({
+      message: error.message,
+      action: error.action,
+      statusCode: error.statusCode,
+      errorId: error.errorId,
+      errorLocationCode: error.errorLocationCode,
+      databaseErrorCode: error.databaseErrorCode,
       requestId: request.context?.requestId,
     }),
-    context: { ...request.context },
+    cause: error.cause,
+    stack: error.stack,
+    context: { ...request.context, ...error.context },
   };
 
   logger.error(snakeize(privateErrorObject));
