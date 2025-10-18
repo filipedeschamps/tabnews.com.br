@@ -149,7 +149,7 @@ describe('GET /api/v1/contents/[username]/[slug]', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
-    test('Content "root" with with "children"', async () => {
+    test('Content "root" with "children"', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
 
