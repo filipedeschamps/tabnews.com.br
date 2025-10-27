@@ -1,0 +1,23 @@
+name: 'tabnews'
+services:
+  postgres_dev:
+    extends:
+      file: docker-compose.development.yml
+      service: postgres_dev
+    tmpfs:
+      - /var/lib/postgresql/data
+  mailcatcher:
+    extends:
+      file: docker-compose.development.yml
+      service: mailcatcher
+  umami:
+    extends:
+      file: docker-compose.development.yml
+      service: umami
+    depends_on:
+      postgres_dev:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
+volumes:
+  postgres_data:
