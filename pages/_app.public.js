@@ -1,4 +1,5 @@
 import { RevalidateProvider } from 'next-swr';
+import { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import '@tabnews/ui/css';
 
@@ -20,6 +21,18 @@ async function SWRFetcher(resource, init) {
 const fallbackData = { body: null, headers: {} };
 
 function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('scrollPos', window.scrollY);
+      console.warn('Posição do Scroll SALVA:', window.scrollY);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
   return (
     <ThemeProvider>
       <Turnstile />
