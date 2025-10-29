@@ -50,7 +50,7 @@
     "dotenv": "16.5.0",
     "dotenv-expand": "12.0.2",
     "husky": "9.1.7",
-    "kill-port": "1.6.1",
+    "kill-port": "^1.6.1",
     "lint-staged": "16.0.0",
     "react-email": "4.0.15",
     "set-cookie-parser": "2.7.1",
