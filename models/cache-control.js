@@ -1,13 +1,13 @@
 import { InternalServerError } from 'errors';
 
-function setCacheControl(res, cacheControl) {
+export function setCacheControl(res, cacheControl) {
   const cacheControlHeader = res.getHeaders()['cache-control'];
 
   if (cacheControlHeader?.toLowerCase() === cacheControl.toLowerCase()) return;
 
   res.setHeader('Cache-Control', cacheControl);
 
-  const setHeader = res.setHeader;
+  const setHeader = res.setHeader.bind(res);
 
   res.setHeader = (name, value) => {
     if (name.toLowerCase() === 'cache-control') {
