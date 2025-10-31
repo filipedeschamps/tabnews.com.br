@@ -1,0 +1,32 @@
+name: 'tabnews'
+services:
+  postgres_dev:
+    container_name: 'postgres-dev'
+    image: 'postgres:14.17-alpine'
+    env_file:
+      - ../.env
+    ports:
+      - '${POSTGRES_PORT}:5432'
+    volumes:
+      - ./scripts:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    tmpfs:
+      - /var/lib/postgresql/data
+  mailcatcher:
+    extends:
+      file: docker-compose.development.yml
+      service: mailcatcher
+  umami:
+    extends:
+      file: docker-compose.development.yml
+      service: umami
+    depends_on:
+      postgres_dev:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
