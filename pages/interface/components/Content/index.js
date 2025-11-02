@@ -1,6 +1,6 @@
 import { isTrustedDomain } from '@tabnews/helpers';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import slug from 'slug';
 
 import {
@@ -178,88 +178,107 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
 
   return (
     <Box
-      as="article"
-      id={`${contentObject.owner_username}-${contentObject.slug}`}
+      className="content-container"
+      as="div"
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
+        gap: '16px',
         width: '100%',
-        borderWidth: viewFrame ? 1 : 0,
-        p: viewFrame ? 4 : 0,
-        borderRadius: '6px',
-        borderColor: 'border.default',
-        borderStyle: 'solid',
-        wordBreak: 'break-word',
+        alignItems: 'flex-start',
       }}>
-      <Box>
-        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
+      <Box
+        className="article-column"
+        as="article"
+        id={`${contentObject.owner_username}-${contentObject.slug}`}
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          borderWidth: viewFrame ? 1 : 0,
+          p: viewFrame ? 4 : 0,
+          borderRadius: '6px',
+          borderColor: 'border.default',
+          borderStyle: 'solid',
+          wordBreak: 'break-word',
+        }}>
+        <Box>
+          {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              whiteSpace: 'nowrap',
-              gap: 1,
-              color: 'fg.muted',
-            }}>
-            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
-              <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
-            </BranchName>
-            <LabelGroup>
-              {isPageRootOwner && (
-                <Tooltip text="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
-                  <Label>Autor</Label>
-                </Tooltip>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+                gap: 1,
+                color: 'fg.muted',
+              }}>
+              <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
+                <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
+              </BranchName>
+              <LabelGroup>
+                {isPageRootOwner && (
+                  <Tooltip text="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                    <Label>Autor</Label>
+                  </Tooltip>
+                )}
+                {contentObject.type === 'ad' && (
+                  <Tooltip text="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                    <Label variant="success">Patrocinado</Label>
+                  </Tooltip>
+                )}
+              </LabelGroup>
+              {!contentObject.parent_id && (
+                <>
+                  <ReadTime text={contentObject.body} />
+                  {' · '}
+                </>
               )}
-              {contentObject.type === 'ad' && (
-                <Tooltip text="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
-                  <Label variant="success">Patrocinado</Label>
-                </Tooltip>
-              )}
-            </LabelGroup>
-            {!contentObject.parent_id && (
-              <>
-                <ReadTime text={contentObject.body} />
-                {' · '}
-              </>
+              <Link
+                href={`/${contentObject.owner_username}/${contentObject.slug}`}
+                prefetch={false}
+                sx={{ fontSize: 0, color: 'fg.muted' }}>
+                <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
+              </Link>
+            </Box>
+            {isOptionsMenuVisible && (
+              <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
             )}
-            <Link
-              href={`/${contentObject.owner_username}/${contentObject.slug}`}
-              prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted' }}>
-              <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
-            </Link>
           </Box>
-          {isOptionsMenuVisible && (
-            <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
+
+          {!contentObject.parent_id && contentObject.title && (
+            <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
+              {contentObject.title}
+            </Heading>
           )}
         </Box>
-
-        {!contentObject.parent_id && contentObject.title && (
-          <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
-            {contentObject.title}
-          </Heading>
+        <Box sx={{ overflow: 'hidden' }}>
+          <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
+        </Box>
+        {contentObject.source_url && (
+          <Box>
+            <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
+              <LinkIcon size={16} /> Fonte:{' '}
+              <Link
+                href={contentObject.source_url}
+                rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
+                {contentObject.source_url}
+              </Link>
+            </Text>
+          </Box>
         )}
       </Box>
-      <TableOfContents articleId={`${contentObject.owner_username}-${contentObject.slug}`} />
-      <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
+      <Box
+        className="toc-column"
+        sx={{
+          position: 'sticky',
+          top: '12px',
+          width: 'auto',
+          flexShrink: 0,
+          alignSelf: 'flex-start',
+        }}>
+        <TableOfContents articleId={`${contentObject.owner_username}-${contentObject.slug}`} />
       </Box>
-      {contentObject.source_url && (
-        <Box>
-          <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
-            <LinkIcon size={16} /> Fonte:{' '}
-            <Link
-              href={contentObject.source_url}
-              rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
-              {contentObject.source_url}
-            </Link>
-          </Text>
-        </Box>
-      )}
     </Box>
   );
 }
@@ -724,6 +743,7 @@ function TableOfContents({ articleId }) {
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState(null);
   const [filterTerm, setFilterTerm] = useState('');
+  const containerRef = useRef(null);
 
   function slugify(text) {
     try {
@@ -779,15 +799,13 @@ function TableOfContents({ articleId }) {
 
   useEffect(() => {
     function handleClickOutside(e) {
-      // if click outside the TOC, close
-      const container = document.querySelector(`#${CSS.escape(articleId)} .toc-container`);
-      if (!container) return;
-      if (!container.contains(e.target)) setOpen(false);
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target)) setOpen(false);
     }
 
     if (open) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, articleId]);
+  }, [open]);
   useEffect(() => {
     function onScroll() {
       if (!headings || headings.length === 0) return;
@@ -817,8 +835,11 @@ function TableOfContents({ articleId }) {
   if (!headings || headings.length === 0) return null;
 
   return (
-    <Box sx={{ position: 'relative' }} className="toc-container">
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <Box
+      ref={containerRef}
+      sx={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }}
+      className="toc-container">
+      <Box sx={{ display: 'flex' }}>
         <IconButton
           variant="invisible"
           aria-label="Mostrar sumário"
@@ -845,8 +866,9 @@ function TableOfContents({ articleId }) {
           sx={{
             position: 'absolute',
             right: 0,
-            mt: 1,
-            zIndex: 40,
+            top: '100%',
+            marginTop: '8px',
+            zIndex: 99,
             bg: 'canvas.default',
             border: '1px solid',
             borderColor: 'border.default',
