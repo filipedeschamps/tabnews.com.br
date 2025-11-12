@@ -35,6 +35,7 @@ describe('GET /api/v1/contents', () => {
         'permissions-policy': ['camera=(), microphone=(), geolocation=()'],
         'x-content-type-options': ['nosniff'],
         'referrer-policy': ['origin-when-cross-origin'],
+        'cross-origin-opener-policy': ['same-origin-allow-popups'],
         'access-control-allow-credentials': ['true'],
         'access-control-allow-origin': ['*'],
         'cache-control': ['public, s-maxage=10, stale-while-revalidate'],
