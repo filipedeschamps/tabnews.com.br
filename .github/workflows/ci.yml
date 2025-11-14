@@ -49,7 +49,12 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint
+
+      - name: Lint package.json versions
+        run: npx npmPkgJsonLint .
+
+      - name: Lint code and styles
+        run: npm run lint
 
   lint-commits:
     name: Lint Commits
