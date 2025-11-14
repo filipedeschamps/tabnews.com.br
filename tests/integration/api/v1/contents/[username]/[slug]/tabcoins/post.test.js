@@ -196,7 +196,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    test('With "transaction_type" set to "credit" four times (should be blocked)', async () => {
+    test('With "transaction_type" set to "credit" twice (second should be blocked)', async () => {
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -213,7 +213,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 8,
+        amount: 4,
       });
 
       // ROUND 1 OF CREDIT
@@ -223,49 +223,37 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       expect.soft(postTabCoinsResponse1.status).toBe(201);
 
-      // ROUND 2 OF CREDIT
-      const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
-        transaction_type: 'credit',
-      });
-
-      expect.soft(postTabCoinsResponse2.status).toBe(201);
-
-      // ROUND 3 OF CREDIT
-      const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
-        transaction_type: 'credit',
-      });
-
-      expect.soft(postTabCoinsResponse3.status).toBe(201);
-
-      // ROUND 4 OF CREDIT
-      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+      // ROUND 2 OF CREDIT (should be blocked now)
+      const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
         await tabcoinsRequestBuilder.post({
           transaction_type: 'credit',
         });
 
-      expect.soft(postTabCoinsResponse4.status).toBe(400);
-      expect(postTabCoinsResponse4Body).toStrictEqual({
+      expect.soft(postTabCoinsResponse2.status).toBe(400);
+      expect(postTabCoinsResponse2Body).toStrictEqual({
         name: 'ValidationError',
-        message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+        message: 'Você já qualificou este conteúdo anteriormente.',
         action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
         status_code: 400,
-        error_id: postTabCoinsResponse4Body.error_id,
-        request_id: postTabCoinsResponse4Body.request_id,
+        error_id: postTabCoinsResponse2Body.error_id,
+        request_id: postTabCoinsResponse2Body.request_id,
       });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toBe(3);
+      // Only 1 credit was successful, so first user gets 1 tabcoin
+      expect(firstUserResponseBody.tabcoins).toBe(1);
       expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
+      // Second user spent 2 tabcoins for the first vote, has 2 remaining
       expect(secondUserResponseBody.tabcoins).toBe(2);
-      expect(secondUserResponseBody.tabcash).toBe(3);
+      expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    test('With "transaction_type" set to "debit" four times (should be blocked)', async () => {
+    test('With "transaction_type" set to "debit" twice (second should be blocked)', async () => {
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -282,7 +270,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 8,
+        amount: 4,
       });
 
       // ROUND 1 OF DEBIT
@@ -292,46 +280,34 @@ describe('POST /api/v1/contents/tabcoins', () => {
 
       expect.soft(postTabCoinsResponse1.status).toBe(201);
 
-      // ROUND 2 OF DEBIT
-      const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
-        transaction_type: 'debit',
-      });
-
-      expect.soft(postTabCoinsResponse2.status).toBe(201);
-
-      // ROUND 3 OF DEBIT
-      const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
-        transaction_type: 'debit',
-      });
-
-      expect.soft(postTabCoinsResponse3.status).toBe(201);
-
-      // ROUND 4 OF DEBIT
-      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+      // ROUND 2 OF DEBIT (should be blocked now)
+      const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
         await tabcoinsRequestBuilder.post({
           transaction_type: 'debit',
         });
 
-      expect.soft(postTabCoinsResponse4.status).toBe(400);
-      expect(postTabCoinsResponse4Body).toStrictEqual({
+      expect.soft(postTabCoinsResponse2.status).toBe(400);
+      expect(postTabCoinsResponse2Body).toStrictEqual({
         name: 'ValidationError',
-        message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+        message: 'Você já qualificou este conteúdo anteriormente.',
         action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
         status_code: 400,
-        error_id: postTabCoinsResponse4Body.error_id,
-        request_id: postTabCoinsResponse4Body.request_id,
+        error_id: postTabCoinsResponse2Body.error_id,
+        request_id: postTabCoinsResponse2Body.request_id,
       });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toBe(-3);
+      // Only 1 debit was successful, so first user gets -1 tabcoin
+      expect(firstUserResponseBody.tabcoins).toBe(-1);
       expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
+      // Second user spent 2 tabcoins for the first vote, has 2 remaining
       expect(secondUserResponseBody.tabcoins).toBe(2);
-      expect(secondUserResponseBody.tabcash).toBe(3);
+      expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
     test('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
@@ -475,9 +451,9 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    // This tests are being temporarily skipped because of the new feature of not allowing
-    // to credit/debit four times the same content. This feature is just a temporary test
-    // to a more sophisticated feature that will be implemented in the future.
+    // This test is being skipped because of the new feature that only allows
+    // users to vote once on the same content (previously allowed up to 3 times).
+    // The new feature is designed to prevent disproportionate influence from a single user.
 
     // eslint-disable-next-line vitest/no-disabled-tests
     test.skip('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
