@@ -196,7 +196,7 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    test('With "transaction_type" set to "credit" twice (second should be blocked)', async () => {
+    test('With changing vote from credit to debit (should be allowed as it changes the vote)', async () => {
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -213,47 +213,78 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 4,
+        amount: 6, // Need enough tabcoins for multiple votes (only first costs)
       });
 
       // ROUND 1 OF CREDIT
-      const { response: postTabCoinsResponse1 } = await tabcoinsRequestBuilder.post({
+      const { response: postTabCoinsResponse1, responseBody: postTabCoinsResponse1Body } = await tabcoinsRequestBuilder.post({
         transaction_type: 'credit',
       });
 
       expect.soft(postTabCoinsResponse1.status).toBe(201);
+      expect(postTabCoinsResponse1Body).toStrictEqual({
+        tabcoins: 2,
+        tabcoins_credit: 1,
+        tabcoins_debit: 0,
+      });
 
-      // ROUND 2 OF CREDIT (should be blocked now)
+      // ROUND 2: Change to DEBIT (should be allowed and apply delta of -2)
       const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
         await tabcoinsRequestBuilder.post({
-          transaction_type: 'credit',
+          transaction_type: 'debit', // Change from credit to debit
         });
 
-      expect.soft(postTabCoinsResponse2.status).toBe(400);
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
       expect(postTabCoinsResponse2Body).toStrictEqual({
+        tabcoins: 0, // Changed from +1 to -1, so +0 net effect
+        tabcoins_credit: 0,
+        tabcoins_debit: -1,
+      });
+
+      // ROUND 3: Change back to CREDIT (should be allowed and apply delta of +2)
+      const { response: postTabCoinsResponse3, responseBody: postTabCoinsResponse3Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit', // Change from debit to credit
+        });
+
+      expect.soft(postTabCoinsResponse3.status).toBe(201);
+      expect(postTabCoinsResponse3Body).toStrictEqual({
+        tabcoins: 2, // Changed from -1 to +1, so +2 net effect
+        tabcoins_credit: 1,
+        tabcoins_debit: 0,
+      });
+
+      // ROUND 4: Change to DEBIT again (should be blocked - 4th change exceeds max limit)
+      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
+
+      expect.soft(postTabCoinsResponse4.status).toBe(400);
+      expect(postTabCoinsResponse4Body).toStrictEqual({
         name: 'ValidationError',
-        message: 'Você já qualificou este conteúdo anteriormente.',
-        action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+        message: 'Você atingiu o limite de alterações de voto para este conteúdo.',
+        action: 'Tente novamente após 72 horas.',
         status_code: 400,
-        error_id: postTabCoinsResponse2Body.error_id,
-        request_id: postTabCoinsResponse2Body.request_id,
+        error_id: postTabCoinsResponse4Body.error_id,
+        request_id: postTabCoinsResponse4Body.request_id,
       });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      // Only 1 credit was successful, so first user gets 1 tabcoin
-      expect(firstUserResponseBody.tabcoins).toBe(1);
+      // Net effect is +1 from the final vote
+      expect(firstUserResponseBody.tabcoins).toBe(2);
       expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      // Second user spent 2 tabcoins for the first vote, has 2 remaining
-      expect(secondUserResponseBody.tabcoins).toBe(2);
+      // Second user spent 2 tabcoins for the first vote only (no extra cost for subsequent changes), has 4 remaining
+      expect(secondUserResponseBody.tabcoins).toBe(4);
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    test('With "transaction_type" set to "debit" twice (second should be blocked)', async () => {
+    test('With changing vote from debit to credit (should be allowed as it changes the vote)', async () => {
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
         owner_id: firstUser.id,
@@ -270,43 +301,74 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 4,
+        amount: 6, // Need enough tabcoins for multiple votes (only first costs)
       });
 
       // ROUND 1 OF DEBIT
-      const { response: postTabCoinsResponse1 } = await tabcoinsRequestBuilder.post({
+      const { response: postTabCoinsResponse1, responseBody: postTabCoinsResponse1Body } = await tabcoinsRequestBuilder.post({
         transaction_type: 'debit',
       });
 
       expect.soft(postTabCoinsResponse1.status).toBe(201);
+      expect(postTabCoinsResponse1Body).toStrictEqual({
+        tabcoins: 0,
+        tabcoins_credit: 0,
+        tabcoins_debit: -1,
+      });
 
-      // ROUND 2 OF DEBIT (should be blocked now)
+      // ROUND 2: Change to CREDIT (should be allowed and apply delta of +2)
       const { response: postTabCoinsResponse2, responseBody: postTabCoinsResponse2Body } =
         await tabcoinsRequestBuilder.post({
-          transaction_type: 'debit',
+          transaction_type: 'credit', // Change from debit to credit
         });
 
-      expect.soft(postTabCoinsResponse2.status).toBe(400);
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
       expect(postTabCoinsResponse2Body).toStrictEqual({
+        tabcoins: 2, // Changed from -1 to +1, so +2 net effect
+        tabcoins_credit: 1,
+        tabcoins_debit: 0,
+      });
+
+      // ROUND 3: Change back to DEBIT (should be allowed and apply delta of -2)
+      const { response: postTabCoinsResponse3, responseBody: postTabCoinsResponse3Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit', // Change from credit to debit
+        });
+
+      expect.soft(postTabCoinsResponse3.status).toBe(201);
+      expect(postTabCoinsResponse3Body).toStrictEqual({
+        tabcoins: 0, // Changed from +1 to -1, so -2 net effect
+        tabcoins_credit: 0,
+        tabcoins_debit: -1,
+      });
+
+      // ROUND 4: Change to CREDIT again (should be blocked - 4th change exceeds max limit)
+      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+      expect.soft(postTabCoinsResponse4.status).toBe(400);
+      expect(postTabCoinsResponse4Body).toStrictEqual({
         name: 'ValidationError',
-        message: 'Você já qualificou este conteúdo anteriormente.',
-        action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+        message: 'Você atingiu o limite de alterações de voto para este conteúdo.',
+        action: 'Tente novamente após 72 horas.',
         status_code: 400,
-        error_id: postTabCoinsResponse2Body.error_id,
-        request_id: postTabCoinsResponse2Body.request_id,
+        error_id: postTabCoinsResponse4Body.error_id,
+        request_id: postTabCoinsResponse4Body.request_id,
       });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      // Only 1 debit was successful, so first user gets -1 tabcoin
+      // Net effect is -1 from the final vote
       expect(firstUserResponseBody.tabcoins).toBe(-1);
       expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
 
-      // Second user spent 2 tabcoins for the first vote, has 2 remaining
-      expect(secondUserResponseBody.tabcoins).toBe(2);
+      // Second user spent 2 tabcoins for the first vote only (no extra cost for subsequent changes), has 4 remaining
+      expect(secondUserResponseBody.tabcoins).toBe(4);
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
@@ -451,8 +513,8 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    // This test is being skipped because of the new feature that only allows
-    // users to vote once on the same content (previously allowed up to 3 times).
+    // This test is being skipped because of the new feature that limits users to
+    // 3 vote changes per content within 72 hours (previously allowed unlimited changes).
     // The new feature is designed to prevent disproportionate influence from a single user.
 
     // eslint-disable-next-line vitest/no-disabled-tests

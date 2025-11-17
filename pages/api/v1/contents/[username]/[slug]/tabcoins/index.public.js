@@ -153,11 +153,12 @@ async function postHandler(request, response) {
 }
 
 async function canUserUpdateContentTabCoins(contentId, userId) {
-  // Check if the same user has already voted on this content (hard limit of 1 vote per user per content)
-  const userVoteResults = await database.query({
+  const MAX_CHANGES_PER_WINDOW = 3;
+
+  const result = await database.query({
     text: `
       SELECT
-        count(*)
+        count(*)::int AS total
       FROM
         events
       WHERE
@@ -165,14 +166,14 @@ async function canUserUpdateContentTabCoins(contentId, userId) {
         AND metadata->>'from_user_id' = $1
         AND metadata->>'content_id' = $2
         AND created_at > NOW() - INTERVAL '72 hours'
-      ;`,
+    ;`,
     values: [userId, contentId],
   });
 
-  if (userVoteResults.rows[0].count > 0) {
+  if (result.rows[0].total >= MAX_CHANGES_PER_WINDOW) {
     throw new ValidationError({
-      message: 'Você já qualificou este conteúdo anteriormente.',
-      action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+      message: 'Você atingiu o limite de alterações de voto para este conteúdo.',
+      action: 'Tente novamente após 72 horas.',
     });
   }
 }
