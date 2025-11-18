@@ -1,4 +1,4 @@
-import { UnprocessableEntityError } from 'errors';
+import { UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 
 const tableNameMap = {
@@ -123,9 +123,12 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   const newVoteValue = transactionType === 'credit' ? 1 : -1;
   const voteDelta = newVoteValue - previousVoteValue;
 
-  // If user sends the same vote again, no-op
+  // If user sends the same vote again
   if (voteDelta === 0) {
-    return getContentTabcoinsCreditDebit({ recipientId: contentId }, options);
+    throw new ValidationError({
+      message: 'Você já enviou esse voto nessa postagem',
+      action: 'Você pode votar apenas positivo ou negativo',
+    });
   }
 
   const isFirstEngagement = previousVoteValue === 0;
