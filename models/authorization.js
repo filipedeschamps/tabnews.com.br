@@ -279,14 +279,14 @@ function validateUser(user) {
   if (!user) {
     throw new ValidationError({
       message: `Nenhum "user" foi especificado para a ação de autorização.`,
-      action: `Contate o suporte informado o campo "errorId".`,
+      action: `Contate o suporte informando o campo "errorId".`,
     });
   }
 
   if (!user.features || !Array.isArray(user.features)) {
     throw new ValidationError({
       message: `"user" não possui "features" ou não é um array.`,
-      action: `Contate o suporte informado o campo "errorId".`,
+      action: `Contate o suporte informando o campo "errorId".`,
     });
   }
 }
@@ -295,14 +295,14 @@ function validateFeature(feature) {
   if (!feature) {
     throw new ValidationError({
       message: `Nenhuma "feature" foi especificada para a ação de autorização.`,
-      action: `Contate o suporte informado o campo "errorId".`,
+      action: `Contate o suporte informando o campo "errorId".`,
     });
   }
 
   if (!availableFeatures.has(feature)) {
     throw new ValidationError({
       message: `A feature utilizada não está disponível na lista de features existentes.`,
-      action: `Contate o suporte informado o campo "errorId".`,
+      action: `Contate o suporte informando o campo "errorId".`,
       context: {
         feature: feature,
       },
@@ -314,7 +314,7 @@ function validateInput(input) {
   if (!input) {
     throw new ValidationError({
       message: `Nenhum "input" foi especificado para a ação de filtro.`,
-      action: `Contate o suporte informado o campo "errorId".`,
+      action: `Contate o suporte informando o campo "errorId".`,
     });
   }
 }
@@ -323,7 +323,7 @@ function validateOutput(output) {
   if (!output) {
     throw new ValidationError({
       message: `Nenhum "output" foi especificado para a ação de filtro.`,
-      action: `Contate o suporte informado o campo "errorId".`,
+      action: `Contate o suporte informando o campo "errorId".`,
     });
   }
 }
