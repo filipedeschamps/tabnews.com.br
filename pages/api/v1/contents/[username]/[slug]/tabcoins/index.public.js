@@ -69,7 +69,7 @@ async function postHandler(request, response) {
 
   // TODO: Refactor firewall.js to accept other parameters such as content.id
   // and move this function to there.
-  await canIpUpdateContentTabCoins(request.context.clientIp, contentFound.id);
+  await canUserUpdateContentTabCoins(contentFound.id, userTryingToPost.id);
 
   let currentContentTabCoinsBalance;
 
@@ -152,28 +152,28 @@ async function postHandler(request, response) {
   return response.status(201).json(secureOutputValues);
 }
 
-async function canIpUpdateContentTabCoins(clientIp, contentId) {
-  const results = await database.query({
+async function canUserUpdateContentTabCoins(contentId, userId) {
+  const MAX_CHANGES_PER_WINDOW = 3;
+
+  const result = await database.query({
     text: `
       SELECT
-        count(*)
+        count(*)::int AS total
       FROM
         events
       WHERE
         type = 'update:content:tabcoins'
-        AND originator_ip = $1
+        AND metadata->>'from_user_id' = $1
         AND metadata->>'content_id' = $2
         AND created_at > NOW() - INTERVAL '72 hours'
-      ;`,
-    values: [clientIp, contentId],
+    ;`,
+    values: [userId, contentId],
   });
 
-  const pass = results.rows[0].count > 2 ? false : true;
-
-  if (!pass) {
+  if (result.rows[0].total >= MAX_CHANGES_PER_WINDOW) {
     throw new ValidationError({
-      message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
-      action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+      message: 'Você atingiu o limite de alterações de voto para este conteúdo.',
+      action: 'Tente novamente após 72 horas.',
     });
   }
 }

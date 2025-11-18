@@ -1,4 +1,4 @@
-import { UnprocessableEntityError } from 'errors';
+import { UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
 
 const tableNameMap = {
@@ -93,12 +93,55 @@ async function getContentTabcoinsCreditDebit({ recipientId }, options = {}) {
 }
 
 async function rateContent({ contentId, contentOwnerId, fromUserId, transactionType }, options = {}) {
-  const tabCoinsToDebitFromUser = -2;
-  const tabCashToCreditToUser = 1;
-  const tabCoinsToTransactToContentOwner = transactionType === 'credit' ? 1 : -1;
-  const tabCoinsToTransactToContent = transactionType === 'credit' ? 1 : -1;
   const originatorType = 'event';
   const originatorId = options.eventId;
+
+  // 1) Get last logical vote for this (user, content)
+  const previousVoteResult = await database.query(
+    {
+      text: `
+        SELECT balance_type
+        FROM content_tabcoin_operations
+        WHERE recipient_id = $1
+          AND originator_type = 'user'
+          AND originator_id = $2
+        ORDER BY id DESC
+        LIMIT 1;
+      `,
+      values: [contentId, fromUserId],
+    },
+    options,
+  );
+
+  let previousVoteValue = 0; // 0 = none, +1 = credit, -1 = debit
+
+  if (previousVoteResult.rows.length > 0) {
+    if (previousVoteResult.rows[0].balance_type === 'credit') previousVoteValue = 1;
+    if (previousVoteResult.rows[0].balance_type === 'debit') previousVoteValue = -1;
+  }
+
+  const newVoteValue = transactionType === 'credit' ? 1 : -1;
+  const voteDelta = newVoteValue - previousVoteValue;
+
+  // If user sends the same vote again
+  if (voteDelta === 0) {
+    throw new ValidationError({
+      message: 'Você já enviou esse voto nessa postagem',
+      action: 'Você pode votar apenas positivo ou negativo',
+    });
+  }
+
+  const isFirstEngagement = previousVoteValue === 0;
+
+  // Cost for the voting user:
+  // - first time: -2 TabCoins, +1 TabCash
+  // - subsequent changes: no extra cost
+  const tabCoinsToDebitFromUser = isFirstEngagement ? -2 : 0;
+  const tabCashToCreditToUser = isFirstEngagement ? 1 : 0;
+
+  // Apply only the delta to content and content owner
+  const tabCoinsToTransactToContent = voteDelta;
+  const tabCoinsToTransactToContentOwner = voteDelta;
 
   const query = {
     text: `
@@ -108,8 +151,7 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
         VALUES
           ($1, $2, $8, $9),
           ($6, $7, $8, $9)
-        RETURNING
-          *
+        RETURNING *
       ),
       users_tabcash_insert AS (
         INSERT INTO user_tabcash_operations
@@ -122,36 +164,30 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
           (balance_type, recipient_id, amount, originator_type, originator_id)
         VALUES
           ($10, $4, $5, 'user', $1)
-        RETURNING
-          *
+        RETURNING *
       )
       SELECT
         get_user_current_tabcoins($1) AS user_current_tabcoin_balance,
-        tabcoins_count.total_balance as content_current_tabcoin_balance,
-        tabcoins_count.total_credit as content_current_tabcoin_credit,
-        tabcoins_count.total_debit as content_current_tabcoin_debit 
+        tabcoins_count.total_balance  AS content_current_tabcoin_balance,
+        tabcoins_count.total_credit   AS content_current_tabcoin_credit,
+        tabcoins_count.total_debit    AS content_current_tabcoin_debit
       FROM
         users_tabcoin_inserts,
         content_insert,
         get_content_balance_credit_debit(content_insert.recipient_id) tabcoins_count
-      LIMIT
-        1
+      LIMIT 1
     ;`,
     values: [
-      fromUserId, // $1
-      tabCoinsToDebitFromUser, // $2
-      tabCashToCreditToUser, // $3
-
-      contentId, // $4
-      tabCoinsToTransactToContent, // $5
-
-      contentOwnerId, // $6
-      tabCoinsToTransactToContentOwner, // $7
-
-      originatorType, // $8
-      originatorId, // $9
-
-      transactionType, // $10
+      fromUserId,                       // $1
+      tabCoinsToDebitFromUser,         // $2
+      tabCashToCreditToUser,           // $3
+      contentId,                       // $4
+      tabCoinsToTransactToContent,     // $5
+      contentOwnerId,                  // $6
+      tabCoinsToTransactToContentOwner,// $7
+      originatorType,                  // $8
+      originatorId,                    // $9
+      transactionType,                 // $10
     ],
   };
 
@@ -167,9 +203,9 @@ async function rateContent({ contentId, contentOwnerId, fromUserId, transactionT
   }
 
   return {
-    tabcoins: currentBalances.content_current_tabcoin_balance,
+    tabcoins:        currentBalances.content_current_tabcoin_balance,
     tabcoins_credit: currentBalances.content_current_tabcoin_credit,
-    tabcoins_debit: currentBalances.content_current_tabcoin_debit,
+    tabcoins_debit:  currentBalances.content_current_tabcoin_debit,
   };
 }
 
