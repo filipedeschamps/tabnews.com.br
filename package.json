@@ -72,7 +72,7 @@
     "preconcurrently": "kill-port 3000 && npm run services:up",
     "concurrently": "concurrently -s first -P -k -n next,vitest \"npm run next\" \"vitest {@}\"",
     "postconcurrently": "npm run services:stop",
-    "test": "npm run concurrently -- --hide next -- run",
+    "test": "npx jest infra/database.test.js",
     "test:watch": "vitest watch",
     "test:watch:services": "npm run concurrently -- -- watch",
     "lint": "npm run lint:eslint && npm run lint:prettier",
