@@ -14,7 +14,7 @@
     "date-fns": "4.1.0",
     "feed": "4.2.2",
     "is-in-subnet": "4.0.1",
-    "joi": "17.13.3",
+    "joi": "18.0.2",
     "next": "15.3.2",
     "next-connect": "1.0.0",
     "next-swr": "0.2.0-canary.0",
