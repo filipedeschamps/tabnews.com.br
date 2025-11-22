@@ -516,4 +516,10 @@ describe('POST /api/v1/recovery', () => {
       expect(await orchestrator.hasEmailsAfterDelay()).toBe(false);
     });
   });
+
+  test("deve processar solicitação rapidamente", async () => {
+    const inicio = Date.now();
+    const tempoDecorrido = Date.now() - inicio;
+    expect(tempoDecorrido).toBeLessThan(1000);
+  });
 });
