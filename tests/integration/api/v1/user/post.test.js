@@ -1,5 +1,4 @@
 import { version as uuidVersion } from 'uuid';
-
 import orchestrator from 'tests/orchestrator.js';
 
 beforeAll(async () => {
@@ -18,7 +17,6 @@ describe('POST /api/v1/user', () => {
       const responseBody = await response.json();
 
       expect.soft(response.status).toBe(405);
-
       expect(responseBody).toStrictEqual({
         name: 'MethodNotAllowedError',
         message: 'Método "POST" não permitido para "/api/v1/user".',
@@ -27,7 +25,6 @@ describe('POST /api/v1/user', () => {
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
       });
-
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
