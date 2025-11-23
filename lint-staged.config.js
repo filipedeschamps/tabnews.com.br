@@ -1,3 +1,6 @@
 const { npm } = require('@tabnews/config/lint-staged');
 
-module.exports = npm;
+module.exports = {
+  ...npm,
+  'package.json': 'npmPkgJsonLint .',
+};
