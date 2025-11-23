@@ -10,7 +10,7 @@ function can(user, feature, resource) {
 
   switch (feature) {
     case 'update:user':
-      return resource?.id && user.id === resource.id;
+      return !!resource?.id && user.id === resource.id;
 
     case 'update:content':
       return (resource?.owner_id && user.id === resource.owner_id) || user.features.includes('update:content:others');
