@@ -122,6 +122,20 @@ export class ForbiddenError extends BaseError {
   }
 }
 
+export class ConflictError extends BaseError {
+  constructor({ message, action, requestId, stack, errorLocationCode }) {
+    super({
+      name: 'ConflictError',
+      message: message || 'Um conflito ocorreu ao processar a requisição.',
+      action: action || 'Verifique se os dados enviados estão corretos e tente novamente.',
+      requestId: requestId,
+      statusCode: 409,
+      stack: stack,
+      errorLocationCode: errorLocationCode,
+    });
+  }
+}
+
 export class TooManyRequestsError extends BaseError {
   constructor({ message, action, context, stack, errorLocationCode }) {
     super({
