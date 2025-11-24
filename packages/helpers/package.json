@@ -1,0 +1,32 @@
+{
+  "name": "@tabnews/helpers",
+  "version": "0.4.1",
+  "description": "TabNews helpers",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "!src/**/*.test.js"
+  ],
+  "scripts": {
+    "test": "tn test",
+    "test:run": "tn test run",
+    "lint": "eslint . && prettier --check .",
+    "format": "eslint --fix . && prettier --write ."
+  },
+  "author": "TabNews",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/filipedeschamps/tabnews.com.br",
+    "directory": "packages/helpers"
+  },
+  "keywords": [
+    "tabnews",
+    "helpers"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

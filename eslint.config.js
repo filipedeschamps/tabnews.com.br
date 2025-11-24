@@ -14,6 +14,28 @@ const config = [
           caughtErrors: 'none',
         },
       ],
+      'import/order': [
+        'warn',
+        {
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+          },
+          groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
+          'newlines-between': 'always',
+          pathGroups: [
+            {
+              pattern: '@tabnews/**',
+              group: 'external',
+            },
+            {
+              pattern: '@/**',
+              group: 'internal',
+            },
+          ],
+          pathGroupsExcludedImportTypes: [],
+        },
+      ],
     },
   },
 ];
