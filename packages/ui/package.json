@@ -1,0 +1,57 @@
+{
+  "name": "@tabnews/ui",
+  "version": "0.6.2",
+  "description": "TabNews UI",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./document": "./src/_document.jsx",
+    "./markdown": "./src/Markdown/index.js",
+    "./primer": "./src/primer-react.js",
+    "./css": "./src/ui.css"
+  },
+  "scripts": {
+    "test": "tn test",
+    "test:run": "tn test run",
+    "lint": "eslint . && prettier --check .",
+    "format": "eslint --fix . && prettier --write ."
+  },
+  "dependencies": {
+    "@bytemd/plugin-breaks": "^1.22.0",
+    "@bytemd/plugin-gemoji": "^1.22.0",
+    "@bytemd/plugin-gfm": "^1.22.0",
+    "@bytemd/plugin-highlight-ssr": "^1.22.0",
+    "@bytemd/plugin-math": "^1.22.0",
+    "@bytemd/plugin-mermaid": "^1.22.0",
+    "@bytemd/react": "^1.22.0",
+    "@primer/octicons-react": "^19.15.2",
+    "@primer/react": "^37.24.0",
+    "rehype-external-links": "^3.0.0",
+    "rehype-slug": "^6.0.0",
+    "styled-components": "^5.3.11"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/user-event": "14.5.2",
+    "next": "15.3.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "peerDependencies": {
+    "next": ">=15.2.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "author": "TabNews",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/filipedeschamps/tabnews.com.br",
+    "directory": "packages/ui"
+  },
+  "keywords": [
+    "tabnews",
+    "ui"
+  ]
+}
