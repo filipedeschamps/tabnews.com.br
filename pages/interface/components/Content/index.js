@@ -535,6 +535,23 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
 
+            {newData.body?.trim().startsWith('# ') && (
+              <div
+                style={{
+                  marginTop: '8px',
+                  padding: '12px',
+                  backgroundColor: '#fff8c5',
+                  border: '1px solid #d4a72c',
+                  borderRadius: '6px',
+                  color: '#4b3c08',
+                  fontSize: '14px',
+                  lineHeight: '1.5',
+                }}>
+                <strong>⚠️ Dica de formatação:</strong> O título da publicação já é renderizado como título principal
+                (H1). Recomendamos usar <code>##</code> (H2) para subtítulos no corpo do texto.
+              </div>
+            )}
+
             <Box sx={{ display: 'flex', width: '100%' }}>
               {errorObject?.key === 'body' && (
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
