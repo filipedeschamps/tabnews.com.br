@@ -1,3 +1,12 @@
+const normalizeUrl = (url) => {
+  if (!url) return null;
+  return url.replace(/\/+$/, '');
+};
+
+const umamiApiBase =
+  normalizeUrl(process.env.UMAMI_API_ENDPOINT) ||
+  (process.env.NEXT_PUBLIC_UMAMI_ENDPOINT ? `${normalizeUrl(process.env.NEXT_PUBLIC_UMAMI_ENDPOINT)}/api` : null);
+
 module.exports = {
   transpilePackages: ['@primer/react', '@tabnews/ui', '@tabnews/forms'],
   experimental: {
@@ -51,16 +60,21 @@ module.exports = {
     ];
   },
   rewrites() {
-    return [
+    const rules = [
       {
         source: '/recentes/rss',
         destination: '/api/v1/contents/rss',
       },
-      {
-        source: '/api/v1/analytics',
-        destination: `${process.env.NEXT_PUBLIC_UMAMI_ENDPOINT}/api/send`,
-      },
     ];
+
+    if (umamiApiBase) {
+      rules.push({
+        source: '/api/v1/analytics',
+        destination: `${umamiApiBase}/send`,
+      });
+    }
+
+    return rules;
   },
   headers() {
     // Security Headers based on: https://nextjs.org/docs/advanced-features/security-headers
