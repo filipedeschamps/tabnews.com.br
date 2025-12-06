@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.gitpod.yml
+.vscode
+.idea
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
