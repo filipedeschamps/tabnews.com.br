@@ -6,9 +6,12 @@ export default getLogger({
     paths: [
       'password',
       'email',
+      'totp_token',
+      'totp_url',
       'context.user.password',
       'context.user.email',
       'context.user.description',
+      'context.user.totp_secret',
       'context.session.token',
     ],
     remove: true,
