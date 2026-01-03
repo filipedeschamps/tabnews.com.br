@@ -30,7 +30,12 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
   });
 
   return (
-    <DefaultLayout metadata={{ title: 'Estatísticas e Status do Site' }}>
+    <DefaultLayout
+      metadata={{
+        title: 'Estatísticas e Status do Site',
+        description:
+          'Estatísticas e status do TabNews: cadastros, publicações, respostas, qualificações e dados técnicos do site.',
+      }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
