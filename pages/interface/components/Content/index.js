@@ -274,7 +274,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     source_url: contentObject?.source_url || '',
     isSponsoredContent: contentObject?.type === 'ad',
   });
-  const [titlePlaceholder, setTitlePlaceholder] = useState('');
+  const [titlePlaceholder] = useState(randomTitlePlaceholder);
 
   const confirm = useConfirm();
 
@@ -299,11 +299,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     addEventListener('focus', onFocus);
     return () => removeEventListener('focus', onFocus);
   }, [localStorageKey]);
-
-  useEffect(() => {
-    setTitlePlaceholder(randomTitlePlaceholder());
-  }, []);
-
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -516,6 +511,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoFocus={true}
                 block={true}
                 value={newData.title}
+                suppressHydrationWarning={true}
               />
 
               {errorObject?.key === 'title' && (
