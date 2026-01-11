@@ -69,6 +69,7 @@ async function findAll(values) {
     text: `
       SELECT
         usc.slug,
+        c.id as id,
         c.title,
         c.body,
         c.created_at,
@@ -109,6 +110,7 @@ async function findAll(values) {
     updated_at: row.updated_at,
     published_at: row.published_at,
     tabcoins: Number(row.tabcoins),
+    children_deep_count: row.children_deep_count,
   }));
 
   return {
