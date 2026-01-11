@@ -15,6 +15,7 @@ export default createRouter()
   .use(cacheControl.noCache)
   .get(getValidationHandler, authorization.canRequest('update:user'), getHandler)
   .post(postValidationHandler, authorization.canRequest('update:user'), postHandler)
+  .delete(deleteValidationHandler, authorization.canRequest('update:user'), deleteHandler)
   .handler(controller.handlerOptions);
 
 function getValidationHandler(request, _, next) {
@@ -223,6 +224,87 @@ async function postHandler(request, response) {
     return response.status(500).json({
       name: 'InternalServerError',
       message: 'Erro ao salvar o conteúdo.',
+      status_code: 500,
+    });
+  }
+}
+
+function deleteValidationHandler(request, _, next) {
+  const cleanBodyValues = validator(request.body, {
+    owner_id: 'required',
+    slug: 'required',
+  });
+
+  request.body = cleanBodyValues;
+
+  next();
+}
+
+async function deleteHandler(request, response) {
+  const { id: userId } = request.context.user;
+  const { owner_id: ownerId, slug } = request.body;
+
+  const contentExists = await content.findOne({
+    where: {
+      owner_id: ownerId,
+      slug: slug,
+      status: 'published',
+    },
+  });
+
+  if (!contentExists) {
+    return response.status(404).json({
+      name: 'NotFoundError',
+      message: 'O conteúdo que você está tentando remover dos favoritos não foi encontrado.',
+      status_code: 404,
+    });
+  }
+
+  const checkQuery = {
+    text: `
+      SELECT EXISTS (
+        SELECT 1 
+        FROM users_favorites 
+        WHERE user_id = $1 
+          AND owner_id = $2 
+          AND slug = $3
+      ) as is_saved;
+    `,
+    values: [userId, ownerId, slug],
+  };
+
+  const checkResult = await database.query(checkQuery);
+  const isSaved = checkResult.rows[0]?.is_saved || false;
+
+  if (!isSaved) {
+    return response.status(404).json({
+      name: 'NotFoundError',
+      message: 'Este conteúdo não está salvo nos seus favoritos.',
+      status_code: 404,
+    });
+  }
+
+  try {
+    const deleteQuery = {
+      text: `
+        DELETE FROM users_favorites
+        WHERE user_id = $1 
+          AND owner_id = $2 
+          AND slug = $3
+        RETURNING *;
+      `,
+      values: [userId, ownerId, slug],
+    };
+
+    await database.query(deleteQuery);
+
+    return response.status(200).json({
+      is_saved: false,
+    });
+  } catch (error) {
+    return response.status(500).json({
+      name: 'InternalServerError',
+      message: 'Erro ao remover o conteúdo dos favoritos.',
       status_code: 500,
     });
   }
