@@ -66,7 +66,26 @@ describe('GET /api/v1/favorites', () => {
       const { response, responseBody } = await favoritesRequestBuilder.get();
 
       expect.soft(response.status).toBe(200);
-      expect(responseBody.is_saved).toBeUndefined();
+      expect.soft(responseBody.is_saved).toBe(false);
+
+      const setAsFavoriteRequestBuilder = new RequestBuilder(`/api/v1/favorites`);
+
+      await setAsFavoriteRequestBuilder.setUser(user);
+
+      favoritesRequestBuilder.buildHeaders();
+
+      const { response: postResponse } = await setAsFavoriteRequestBuilder.post({
+        owner_id: content.owner_id,
+        slug: content.slug,
+      });
+
+      expect.soft(postResponse.status).toBe(201);
+
+      const { response: afterFavoriteResponse, responseBody: afterFavoriteResponseBody } =
+        await favoritesRequestBuilder.get();
+
+      expect.soft(afterFavoriteResponse.status).toBe(200);
+      expect.soft(afterFavoriteResponseBody.is_saved).toBe(true);
     });
 
     test('With non existing "slug" search param', async () => {
