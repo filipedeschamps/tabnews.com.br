@@ -21,7 +21,13 @@ import { createErrorMessage, suggestEmail, useUser } from 'pages/interface';
 
 export default function EditProfile() {
   return (
-    <DefaultLayout containerWidth="medium" metadata={{ title: 'Editar Perfil' }}>
+    <DefaultLayout
+      containerWidth="medium"
+      metadata={{
+        title: 'Editar Perfil',
+        description:
+          'Edite seu perfil no TabNews: nome de usuário, descrição, notificações e outras dados da sua conta.',
+      }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Editar Perfil
       </Heading>

@@ -16,7 +16,13 @@ const formConfig = {
 
 export default function Register() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Cadastro' }}>
+    <DefaultLayout
+      containerWidth="small"
+      metadata={{
+        title: 'Cadastro',
+        description:
+          'Crie sua conta no TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
+      }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Cadastro
       </Heading>

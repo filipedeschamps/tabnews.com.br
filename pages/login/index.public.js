@@ -31,7 +31,14 @@ export default function Login() {
   }, [user, router]);
 
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Login', canonical: '/login' }}>
+    <DefaultLayout
+      containerWidth="small"
+      metadata={{
+        title: 'Login',
+        description:
+          'Entrar no TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
+        canonical: '/login',
+      }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Login
       </Heading>

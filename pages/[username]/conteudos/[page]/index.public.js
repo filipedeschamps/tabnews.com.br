@@ -16,7 +16,11 @@ export default function RootContent({ contentListFound, pagination, username }) 
   const isAuthenticatedUser = user && user.username === username;
 
   return (
-    <DefaultLayout metadata={{ title: `Publicações · Página ${pagination.currentPage} · ${username}` }}>
+    <DefaultLayout
+      metadata={{
+        title: `Publicações · Página ${pagination.currentPage} · ${username}`,
+        description: `Publicações de ${username} no TabNews - página ${pagination.currentPage} de ${pagination.totalPages}.`,
+      }}>
       <UserHeader username={username} rootContentCount={pagination.totalRows} />
 
       <ContentList

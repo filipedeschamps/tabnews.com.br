@@ -10,7 +10,11 @@ import validator from 'models/validator.js';
 
 export default function Home({ adFound, contentListFound, pagination }) {
   return (
-    <DefaultLayout metadata={{ title: `Página ${pagination.currentPage} · Relevantes` }}>
+    <DefaultLayout
+      metadata={{
+        title: `Página ${pagination.currentPage} · Relevantes`,
+        description: `Conteúdos mais relevantes do TabNews - página ${pagination.currentPage} de ${pagination.totalPages}.`,
+      }}>
       <ContentList ad={adFound} contentList={contentListFound} pagination={pagination} paginationBasePath="/pagina" />
     </DefaultLayout>
   );

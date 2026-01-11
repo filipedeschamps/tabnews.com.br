@@ -26,7 +26,12 @@ export default function Page() {
   `;
 
   return (
-    <DefaultLayout metadata={{ title: 'Contato' }}>
+    <DefaultLayout
+      metadata={{
+        title: 'Contato',
+        description:
+          'Entre em contato com a equipe do TabNews para reportar problemas, sugerir melhorias ou tirar dúvidas sobre a plataforma.',
+      }}>
       <Box>
         <Heading as="h1">Contato</Heading>
         <Viewer value={body} clobberPrefix="" />
