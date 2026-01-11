@@ -90,30 +90,41 @@ export function copyCodeToClipboardPlugin() {
         if (!codeElement.innerHTML) return;
 
         const pre = codeElement.parentElement;
-        if (pre.childElementCount > 1) return;
+        if (pre.dataset.copyButtonInjected === 'true') return;
+
+        const isMermaidBlock = codeElement.classList.contains('language-mermaid') || pre.classList.contains('mermaid');
+
+        if (isMermaidBlock) return;
 
         const codeToCopy = codeElement.innerText;
 
-        const externalDivElement = document.createElement('div');
-        setStyleProperties(externalDivElement, {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('copy-code-wrapper');
+
+        const preComputedStyle = window.getComputedStyle(pre);
+        setStyleProperties(wrapper, {
           position: 'relative',
-          top: '-6px',
-          right: '-6px',
-          'min-width': '32px',
-        });
-        setStyleProperties(pre, {
-          display: 'flex',
-          'justify-content': 'space-between',
-          gap: '4px',
+          'margin-top': preComputedStyle.marginTop,
+          'margin-bottom': preComputedStyle.marginBottom,
         });
 
-        pre.appendChild(externalDivElement);
+        const existingPaddingRight = parseFloat(preComputedStyle.paddingRight) || 0;
+        pre.style.paddingRight = `${existingPaddingRight + 40}px`;
 
-        const internalDivElement = document.createElement('div');
-        internalDivElement.style.position = 'absolute';
-        externalDivElement.appendChild(internalDivElement);
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
 
-        createCopyButton(internalDivElement, codeToCopy);
+        const buttonWrapper = document.createElement('div');
+        setStyleProperties(buttonWrapper, {
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+        });
+
+        wrapper.appendChild(buttonWrapper);
+        createCopyButton(buttonWrapper, codeToCopy);
+
+        pre.dataset.copyButtonInjected = 'true';
       });
     },
   };
