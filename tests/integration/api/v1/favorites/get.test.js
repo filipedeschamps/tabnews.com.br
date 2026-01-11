@@ -87,7 +87,7 @@ describe('GET /api/v1/favorites', () => {
       const { response, responseBody } = await favoritesRequestBuilder.get();
 
       expect.soft(response.status).toBe(404);
-      expect(responseBody.name).not.toBe('NotFoundError');
+      expect(responseBody.name).toBe('NotFoundError');
     });
 
     test('With unpublished "slug" search param', async () => {
@@ -113,7 +113,7 @@ describe('GET /api/v1/favorites', () => {
       const { response, responseBody } = await favoritesRequestBuilder.get();
 
       expect.soft(response.status).toBe(404);
-      expect(responseBody.name).not.toBe('NotFoundError');
+      expect(responseBody.name).toBe('NotFoundError');
     });
 
     test('With no search params (user have favorites)', async () => {
