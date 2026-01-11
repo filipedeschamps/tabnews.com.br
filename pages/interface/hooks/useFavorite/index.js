@@ -57,51 +57,38 @@ export default function useFavorite(contentObject, user, debounceDelay = 300) {
     }
 
     const timeoutId = setTimeout(async () => {
-      if (isFavorite) {
-        handleRemoveFavorite();
-      } else {
-        await handleSetFavorite();
+      try {
+        setLoading(true);
+
+        const response = await fetch('/api/v1/favorites', {
+          method: isFavorite ? 'DELETE' : 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            owner_id: contentObject.owner_id,
+            slug: contentObject.slug,
+          }),
+        });
+
+        if (!response.ok || response.status >= 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Erro ao salvar conteúdo');
+        }
+
+        const responseBody = await response.json();
+        setFavorite(responseBody.is_saved);
+        setError(null);
+      } catch (error) {
+        setError(error.message || 'Não foi possível salvar o conteúdo');
+      } finally {
+        setLoading(false);
       }
       setDebounce(null);
     }, debounceDelay);
 
     setDebounce(timeoutId);
-  }
-
-  async function handleSetFavorite() {
-    try {
-      setLoading(true);
-
-      const response = await fetch('/api/v1/favorites', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          owner_id: contentObject.owner_id,
-          slug: contentObject.slug,
-        }),
-      });
-
-      if (!response.ok || response.status >= 400) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao salvar conteúdo');
-      }
-
-      const responseBody = await response.json();
-      setFavorite(responseBody.is_saved);
-      setError(null);
-    } catch (error) {
-      setError(error.message || 'Não foi possível salvar o conteúdo');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleRemoveFavorite() {
-    // TODO: Implementar rota DELETE para remover conteúdos salvos e fazer o fetch aqui
-    alert('NOT IMPLEMENTED');
   }
 
   function isElegible() {
