@@ -1,0 +1,38 @@
+{
+  "name": "@tabnews/infra",
+  "version": "1.0.0",
+  "description": "TabNews Infra",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "!src/**/*.test.js"
+  ],
+  "scripts": {
+    "test": "tn test",
+    "test:run": "tn test run",
+    "lint": "eslint . && prettier --check .",
+    "format": "eslint --fix . && prettier --write ."
+  },
+  "dependencies": {
+    "@axiomhq/js": "1.3.1",
+    "@tabnews/helpers": "*",
+    "@vercel/functions": "2.1.0",
+    "pino": "9.7.0"
+  },
+  "author": "TabNews",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/filipedeschamps/tabnews.com.br",
+    "directory": "packages/infra"
+  },
+  "keywords": [
+    "tabnews",
+    "infra"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

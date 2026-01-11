@@ -1,5 +1,12 @@
 module.exports = {
-  transpilePackages: ['@primer/react', '@tabnews/ui', '@tabnews/forms'],
+  transpilePackages: [
+    '@primer/react',
+    '@tabnews/ui',
+    '@tabnews/forms',
+    '@tabnews/helpers',
+    '@tabnews/hooks',
+    '@tabnews/infra',
+  ],
   experimental: {
     scrollRestoration: true,
   },
@@ -10,6 +17,7 @@ module.exports = {
   },
   compiler: {
     styledComponents: true,
+    styledJsx: true,
   },
   redirects() {
     return [

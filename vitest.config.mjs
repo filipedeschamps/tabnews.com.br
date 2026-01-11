@@ -21,7 +21,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'unit',
-          exclude: ['**/integration/**', '**/interface/**', ...defaultExclude],
+          exclude: ['**/integration/**', '**/interface/**', 'packages/**', ...defaultExclude],
         },
       },
       {
@@ -30,6 +30,16 @@ export default defineConfig({
           name: 'ui',
           environment: 'jsdom',
           include: ['**/interface/**/*.{test,spec}.{js,ts}'],
+          exclude: ['packages/**', ...defaultExclude],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'packages',
+          environment: 'jsdom',
+          include: ['packages/**/*.{test,spec}.{js,ts}'],
+          isolate: true,
         },
       },
     ],
