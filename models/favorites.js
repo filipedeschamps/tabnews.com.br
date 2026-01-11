@@ -46,39 +46,74 @@ async function findOne(values) {
 async function findAll(values) {
   const cleanValues = validateFindAllSchema(values);
 
+  const page = cleanValues.page || 1;
+  const perPage = cleanValues.per_page || 15;
+  const offset = (page - 1) * perPage;
+
+  const countQuery = {
+    text: `
+      SELECT COUNT(*) as total
+      FROM users_favorites usc
+      INNER JOIN contents c ON c.owner_id = usc.owner_id 
+        AND c.slug = usc.slug
+        AND c.status = 'published'
+      WHERE usc.user_id = $1;
+    `,
+    values: [cleanValues.user_id],
+  };
+
+  const countResult = await database.query(countQuery);
+  const totalRows = parseInt(countResult.rows[0].total);
+
   const query = {
     text: `
       SELECT
         usc.slug,
         c.title,
         c.body,
-        u.username as owner_username
+        c.created_at,
+        c.updated_at,
+        c.published_at,
+        tabcoins_count.total_balance as tabcoins,
+        c.owner_id,
+        u.username as owner_username,
+        (
+          SELECT COUNT(*)
+          FROM contents as children
+          WHERE children.path @> ARRAY[c.id]
+          AND children.status = 'published'
+        ) as children_deep_count
       FROM users_favorites usc
       INNER JOIN users u ON u.id = usc.owner_id
-      LEFT JOIN contents c ON c.owner_id = usc.owner_id 
+      INNER JOIN contents c ON c.owner_id = usc.owner_id 
         AND c.slug = usc.slug
         AND c.status = 'published'
+      LEFT JOIN LATERAL get_content_balance_credit_debit(c.id) tabcoins_count ON true
       WHERE usc.user_id = $1
       ORDER BY usc.created_at DESC
-      LIMIT 15;
+      LIMIT $2 OFFSET $3;
     `,
-    values: [cleanValues.user_id],
+    values: [cleanValues.user_id, perPage, offset],
   };
 
   const result = await database.query(query);
 
-  const savedContents = result.rows
-    .filter((row) => row.title !== null)
-    .map((row) => ({
-      owner_username: row.owner_username,
-      slug: row.slug,
-      title: row.title,
-      body: row.body,
-    }));
+  const savedContents = result.rows.map((row) => ({
+    id: row.id,
+    owner_id: row.owner_id,
+    owner_username: row.owner_username,
+    slug: row.slug,
+    title: row.title,
+    body: row.body,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    published_at: row.published_at,
+    tabcoins: Number(row.tabcoins),
+  }));
 
   return {
     saved_contents: savedContents,
-    total: savedContents.length,
+    total: totalRows,
   };
 }
 
@@ -201,6 +236,8 @@ function validateFindSchema(values) {
 function validateFindAllSchema(values) {
   return validator(values, {
     user_id: 'required',
+    page: 'optional',
+    per_page: 'optional',
   });
 }
 

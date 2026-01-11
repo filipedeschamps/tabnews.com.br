@@ -31,7 +31,12 @@ function getValidationHandler(request, _, next) {
       type: 'check',
     };
   } else {
+    const cleanQueryValues = validator(request.query, {
+      page: 'optional',
+      per_page: 'optional',
+    });
     request.query = {
+      ...cleanQueryValues,
       type: 'list',
     };
   }
@@ -41,7 +46,7 @@ function getValidationHandler(request, _, next) {
 
 async function getHandler(request, response) {
   const { id: userId } = request.context.user;
-  const { type, owner_id, slug } = request.query;
+  const { type, owner_id, slug, page, per_page } = request.query;
 
   if (type === 'check') {
     const result = await favorites.findOne({
@@ -55,6 +60,8 @@ async function getHandler(request, response) {
 
   const result = await favorites.findAll({
     user_id: userId,
+    page: page,
+    per_page: per_page,
   });
 
   return response.status(200).json(result);
