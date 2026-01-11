@@ -1,6 +1,6 @@
 {
   "name": "@tabnews/forms",
-  "version": "0.4.1",
+  "version": "1.0.0",
   "description": "TabNews useForm hook and form validators",
   "license": "MIT",
   "private": true,
@@ -17,8 +17,8 @@
     "format": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
-    "@tabnews/helpers": "^0.4.1",
-    "@tabnews/hooks": "^0.1.7",
+    "@tabnews/helpers": "*",
+    "@tabnews/hooks": "*",
     "validation-br": "^1.5.2"
   },
   "peerDependencies": {
