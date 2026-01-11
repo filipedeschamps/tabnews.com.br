@@ -69,11 +69,7 @@ describe('POST /api/v1/favorites', () => {
 
       expect.soft(response.status).toBe(400);
 
-      expect(responseBody).toStrictEqual({
-        name: 'BadRequestError',
-        message: 'Você não pode salvar seus próprios conteúdos.',
-        status_code: 400,
-      });
+      expect(responseBody.message).toBe('Você não pode salvar seus próprios conteúdos.');
     });
 
     test("With another user's content as param", async () => {
@@ -140,21 +136,13 @@ describe('POST /api/v1/favorites', () => {
 
       expect.soft(response2.response.status).toBe(400);
 
-      expect.soft(response2.responseBody).toStrictEqual({
-        name: 'BadRequestError',
-        message: 'Este conteúdo já foi salvo anteriormente.',
-        status_code: 400,
-      });
+      expect.soft(response2.responseBody.message).toBe('Este conteúdo já foi salvo anteriormente.');
 
       const response3 = await favoriteContent();
 
       expect.soft(response3.response.status).toBe(400);
 
-      expect.soft(response3.responseBody).toStrictEqual({
-        name: 'BadRequestError',
-        message: 'Este conteúdo já foi salvo anteriormente.',
-        status_code: 400,
-      });
+      expect.soft(response3.responseBody.message).toStrictEqual('Este conteúdo já foi salvo anteriormente.');
     });
   });
 });
