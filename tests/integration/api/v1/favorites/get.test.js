@@ -180,6 +180,8 @@ describe('GET /api/v1/favorites', () => {
       expect(responseBody).toStrictEqual({
         saved_contents: [
           {
+            children_deep_count: 0,
+            id: content2.id,
             title: content2.title,
             slug: content2.slug,
             body: content2.body,
@@ -191,6 +193,8 @@ describe('GET /api/v1/favorites', () => {
             tabcoins: 0,
           },
           {
+            children_deep_count: 0,
+            id: content1.id,
             title: content1.title,
             slug: content1.slug,
             body: content1.body,
