@@ -172,6 +172,17 @@ describe('DELETE /api/v1/favorites', () => {
     });
 
     test('With non existing content', async () => {
+      const contentOwnerUser = await orchestrator.createUser();
+      const content = await orchestrator.createContent({
+        owner_id: contentOwnerUser.id,
+        ...CONTENT_DATA,
+      });
+
+      await orchestrator.updateContent(content.id, {
+        ...content,
+        status: 'deleted',
+      });
+
       const favoritesRequestBuilder = new RequestBuilder(`/api/v1/favorites`);
 
       const user = await favoritesRequestBuilder.buildUser({
@@ -182,8 +193,8 @@ describe('DELETE /api/v1/favorites', () => {
       favoritesRequestBuilder.buildHeaders();
 
       const { response, responseBody } = await favoritesRequestBuilder.delete({
-        owner_id: 'non-existing-owner',
-        slug: 'non-existing-slug',
+        owner_id: content.owner_id,
+        slug: content.slug,
       });
 
       expect.soft(response.status).toBe(404);
