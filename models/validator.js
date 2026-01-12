@@ -299,6 +299,14 @@ const schemas = {
     });
   },
 
+  content_id: function () {
+    return Joi.object({
+      content_id: schemas
+        .uuidV4()
+        .when('$required.content_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
   owner_id: function () {
     return Joi.object({
       owner_id: schemas
