@@ -60,13 +60,14 @@ describe('DELETE /api/v1/favorites', () => {
       expect(deleteResponseBody).toHaveProperty('is_saved');
       expect(deleteResponseBody.is_saved).toBe(false);
 
-      const getRequestBuilder = new RequestBuilder(`/api/v1/favorites?content_id=${content.id}`);
+      const getRequestBuilder = new RequestBuilder(`/api/v1/favorites/${content.id}/status`);
       await getRequestBuilder.setUser(user);
       getRequestBuilder.buildHeaders();
 
       const { response: getResponse, responseBody: getResponseBody } = await getRequestBuilder.get();
 
       expect.soft(getResponse.status).toBe(200);
+      expect(getResponseBody).toHaveProperty('is_saved');
       expect(getResponseBody.is_saved).toBe(false);
     });
 
