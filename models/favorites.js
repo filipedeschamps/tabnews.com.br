@@ -8,8 +8,7 @@ async function findOne(values) {
 
   const contentExists = await content.findOne({
     where: {
-      owner_id: cleanValues.owner_id,
-      slug: cleanValues.slug,
+      id: cleanValues.content_id,
       status: 'published',
     },
   });
@@ -26,13 +25,15 @@ async function findOne(values) {
     text: `
       SELECT EXISTS (
         SELECT 1 
-        FROM users_favorites 
-        WHERE user_id = $1 
-          AND owner_id = $2 
-          AND slug = $3
+        FROM entity_relations 
+        WHERE entity_id = $1
+          AND entity_type = 'user'
+          AND target_id = $2
+          AND target_type = 'content'
+          AND relation_type = 'favorite'
       ) as is_saved;
     `,
-    values: [cleanValues.user_id, cleanValues.owner_id, cleanValues.slug],
+    values: [cleanValues.user_id, cleanValues.content_id],
   };
 
   const result = await database.query(query);
@@ -53,11 +54,13 @@ async function findAll(values) {
   const countQuery = {
     text: `
       SELECT COUNT(*) as total
-      FROM users_favorites usc
-      INNER JOIN contents c ON c.owner_id = usc.owner_id 
-        AND c.slug = usc.slug
+      FROM entity_relations er
+      INNER JOIN contents c ON c.id = er.target_id
         AND c.status = 'published'
-      WHERE usc.user_id = $1;
+      WHERE er.entity_id = $1
+        AND er.entity_type = 'user'
+        AND er.target_type = 'content'
+        AND er.relation_type = 'favorite';
     `,
     values: [cleanValues.user_id],
   };
@@ -68,8 +71,8 @@ async function findAll(values) {
   const query = {
     text: `
       SELECT
-        usc.slug,
         c.id as id,
+        c.slug,
         c.title,
         c.body,
         c.created_at,
@@ -84,14 +87,16 @@ async function findAll(values) {
           WHERE children.path @> ARRAY[c.id]
           AND children.status = 'published'
         ) as children_deep_count
-      FROM users_favorites usc
-      INNER JOIN users u ON u.id = usc.owner_id
-      INNER JOIN contents c ON c.owner_id = usc.owner_id 
-        AND c.slug = usc.slug
+      FROM entity_relations er
+      INNER JOIN contents c ON c.id = er.target_id
         AND c.status = 'published'
+      INNER JOIN users u ON u.id = c.owner_id
       LEFT JOIN LATERAL get_content_balance_credit_debit(c.id) tabcoins_count ON true
-      WHERE usc.user_id = $1
-      ORDER BY usc.created_at DESC
+      WHERE er.entity_id = $1
+        AND er.entity_type = 'user'
+        AND er.target_type = 'content'
+        AND er.relation_type = 'favorite'
+      ORDER BY er.created_at DESC
       LIMIT $2 OFFSET $3;
     `,
     values: [cleanValues.user_id, perPage, offset],
@@ -122,18 +127,9 @@ async function findAll(values) {
 async function create(values) {
   const cleanValues = validateCreateSchema(values);
 
-  if (cleanValues.user_id === cleanValues.owner_id) {
-    throw new ValidationError({
-      message: 'Você não pode salvar seus próprios conteúdos.',
-      key: 'owner_id',
-      errorLocationCode: 'MODEL:FAVORITES:CREATE:CANNOT_SAVE_OWN_CONTENT',
-    });
-  }
-
   const contentExists = await content.findOne({
     where: {
-      owner_id: cleanValues.owner_id,
-      slug: cleanValues.slug,
+      id: cleanValues.content_id,
       status: 'published',
     },
   });
@@ -146,27 +142,34 @@ async function create(values) {
     });
   }
 
+  if (cleanValues.user_id === contentExists.owner_id) {
+    throw new ValidationError({
+      message: 'Você não pode salvar seus próprios conteúdos.',
+      key: 'content_id',
+      errorLocationCode: 'MODEL:FAVORITES:CREATE:CANNOT_SAVE_OWN_CONTENT',
+    });
+  }
+
   const alreadySaved = await findOne({
     user_id: cleanValues.user_id,
-    owner_id: cleanValues.owner_id,
-    slug: cleanValues.slug,
+    content_id: cleanValues.content_id,
   });
 
   if (alreadySaved.is_saved) {
     throw new ValidationError({
       message: 'Este conteúdo já foi salvo anteriormente.',
-      key: 'slug',
+      key: 'content_id',
       errorLocationCode: 'MODEL:FAVORITES:CREATE:ALREADY_SAVED',
     });
   }
 
   const insertQuery = {
     text: `
-      INSERT INTO users_favorites (user_id, owner_id, slug)
-      VALUES ($1, $2, $3)
+      INSERT INTO entity_relations (entity_id, entity_type, target_id, target_type, relation_type)
+      VALUES ($1, 'user', $2, 'content', 'favorite')
       RETURNING *;
     `,
-    values: [cleanValues.user_id, cleanValues.owner_id, cleanValues.slug],
+    values: [cleanValues.user_id, cleanValues.content_id],
   };
 
   await database.query(insertQuery);
@@ -181,8 +184,7 @@ async function remove(values) {
 
   const contentExists = await content.findOne({
     where: {
-      owner_id: cleanValues.owner_id,
-      slug: cleanValues.slug,
+      id: cleanValues.content_id,
       status: 'published',
     },
   });
@@ -197,8 +199,7 @@ async function remove(values) {
 
   const isSaved = await findOne({
     user_id: cleanValues.user_id,
-    owner_id: cleanValues.owner_id,
-    slug: cleanValues.slug,
+    content_id: cleanValues.content_id,
   });
 
   if (!isSaved.is_saved) {
@@ -211,13 +212,15 @@ async function remove(values) {
 
   const deleteQuery = {
     text: `
-      DELETE FROM users_favorites
-      WHERE user_id = $1 
-        AND owner_id = $2 
-        AND slug = $3
+      DELETE FROM entity_relations
+      WHERE entity_id = $1 
+        AND entity_type = 'user'
+        AND target_id = $2
+        AND target_type = 'content'
+        AND relation_type = 'favorite'
       RETURNING *;
     `,
-    values: [cleanValues.user_id, cleanValues.owner_id, cleanValues.slug],
+    values: [cleanValues.user_id, cleanValues.content_id],
   };
 
   await database.query(deleteQuery);
@@ -230,8 +233,7 @@ async function remove(values) {
 function validateFindSchema(values) {
   return validator(values, {
     user_id: 'required',
-    owner_id: 'required',
-    slug: 'required',
+    content_id: 'required',
   });
 }
 
@@ -246,16 +248,14 @@ function validateFindAllSchema(values) {
 function validateCreateSchema(values) {
   return validator(values, {
     user_id: 'required',
-    owner_id: 'required',
-    slug: 'required',
+    content_id: 'required',
   });
 }
 
 function validateRemoveSchema(values) {
   return validator(values, {
     user_id: 'required',
-    owner_id: 'required',
-    slug: 'required',
+    content_id: 'required',
   });
 }
 
