@@ -24,10 +24,7 @@ describe('DELETE /api/v1/favorites', () => {
 
       const favoritesRequestBuilder = new RequestBuilder(`/api/v1/favorites`);
 
-      const { response, responseBody } = await favoritesRequestBuilder.delete({
-        owner_id: content.owner_id,
-        slug: content.slug,
-      });
+      const { response, responseBody } = await favoritesRequestBuilder.delete({ content_id: content.id });
 
       expect.soft(response.status).toBe(403);
       expect(responseBody.name).toBe('ForbiddenError');
@@ -51,25 +48,19 @@ describe('DELETE /api/v1/favorites', () => {
       await favoritesRequestBuilder.setUser(user);
       favoritesRequestBuilder.buildHeaders();
 
-      const { response: postResponse } = await favoritesRequestBuilder.post({
-        owner_id: content.owner_id,
-        slug: content.slug,
-      });
+      const { response: postResponse } = await favoritesRequestBuilder.post({ content_id: content.id });
 
       expect.soft(postResponse.status).toBe(201);
 
       const { response: deleteResponse, responseBody: deleteResponseBody } = await favoritesRequestBuilder.delete({
-        owner_id: content.owner_id,
-        slug: content.slug,
+        content_id: content.id,
       });
 
       expect.soft(deleteResponse.status).toBe(200);
       expect(deleteResponseBody).toHaveProperty('is_saved');
       expect(deleteResponseBody.is_saved).toBe(false);
 
-      const getRequestBuilder = new RequestBuilder(
-        `/api/v1/favorites?owner_id=${content.owner_id}&slug=${content.slug}`,
-      );
+      const getRequestBuilder = new RequestBuilder(`/api/v1/favorites?content_id=${content.id}`);
       await getRequestBuilder.setUser(user);
       getRequestBuilder.buildHeaders();
 
@@ -93,10 +84,7 @@ describe('DELETE /api/v1/favorites', () => {
       await firstUserRequestBuilder.setUser(firstUser);
       firstUserRequestBuilder.buildHeaders();
 
-      await firstUserRequestBuilder.post({
-        owner_id: content.owner_id,
-        slug: content.slug,
-      });
+      await firstUserRequestBuilder.post({ content_id: content.id });
 
       const secondUserRequestBuilder = new RequestBuilder(`/api/v1/favorites`);
       const secondUser = await secondUserRequestBuilder.buildUser({
@@ -105,10 +93,7 @@ describe('DELETE /api/v1/favorites', () => {
       await secondUserRequestBuilder.setUser(secondUser);
       secondUserRequestBuilder.buildHeaders();
 
-      const { response, responseBody } = await secondUserRequestBuilder.delete({
-        owner_id: content.owner_id,
-        slug: content.slug,
-      });
+      const { response, responseBody } = await secondUserRequestBuilder.delete({ content_id: content.id });
 
       expect.soft(response.status).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
@@ -130,10 +115,7 @@ describe('DELETE /api/v1/favorites', () => {
       await favoritesRequestBuilder.setUser(user);
       favoritesRequestBuilder.buildHeaders();
 
-      const { response, responseBody } = await favoritesRequestBuilder.delete({
-        owner_id: content.owner_id,
-        slug: content.slug,
-      });
+      const { response, responseBody } = await favoritesRequestBuilder.delete({ content_id: content.id });
 
       expect.soft(response.status).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
@@ -151,7 +133,7 @@ describe('DELETE /api/v1/favorites', () => {
 
       const { response: responseMissingSlug, responseBody: responseBodyMissingSlug } =
         await favoritesRequestBuilder.delete({
-          owner_id: 'some-owner-id',
+          content_id: 'some-owner-id',
         });
 
       expect.soft(responseMissingSlug.status).toBe(400);
@@ -159,7 +141,7 @@ describe('DELETE /api/v1/favorites', () => {
 
       const { response: responseMissingOwnerId, responseBody: responseBodyMissingOwnerId } =
         await favoritesRequestBuilder.delete({
-          slug: 'some-slug',
+          content_id: '',
         });
 
       expect.soft(responseMissingOwnerId.status).toBe(400);
@@ -192,10 +174,7 @@ describe('DELETE /api/v1/favorites', () => {
       await favoritesRequestBuilder.setUser(user);
       favoritesRequestBuilder.buildHeaders();
 
-      const { response, responseBody } = await favoritesRequestBuilder.delete({
-        owner_id: content.owner_id,
-        slug: content.slug,
-      });
+      const { response, responseBody } = await favoritesRequestBuilder.delete({ content_id: content.id });
 
       expect.soft(response.status).toBe(404);
       expect(responseBody.name).toBe('NotFoundError');
