@@ -131,6 +131,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             <Content
               key={contentFound.id}
               content={{
+                id: contentFound.id,
                 owner_id: contentFound.owner_id,
                 owner_username: contentFound.owner_username,
                 parent_id: contentFound.id,
@@ -328,7 +329,7 @@ function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, ren
 
               <Box sx={{ display: 'flex', flex: 1, mt: isPublished ? 4 : 0, alignItems: 'end' }}>
                 <Content
-                  content={{ owner_id, owner_username, parent_id: id, slug }}
+                  content={{ id, owner_id, owner_username, parent_id: id, slug }}
                   mode={isPublished ? 'compact' : 'deleted'}
                   rootContent={rootContent}
                   viewFrame={true}

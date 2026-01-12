@@ -2,18 +2,19 @@ import { useEffect, useState } from 'react';
 
 /**
  * @typedef {ContentObject} - Representa um conteúdo do site, como uma publicação ou comentário
+ * @property {string} id - ID único do conteúdo (UUID)
  * @property {string} owner_id - Representa o ID do usuário que postou
- * @property {string} slug - Uma string única gerada a partir do título
  */
 
 /**
  * @typedef {UserObject} - Representa o usuário atual navegando no site
+ * @property {string} id - ID único do usuário (UUID)
  */
 
 /**
  * @param {ContentObject} contentObject - O conteúdo a ser consultado
  * @param {UserObject} [user] - O usuário navegando no site se houver
- * @param {number} [debounce] - Valor do debounce antes de realizar o fetch em "ms"
+ * @param {number} [debounceDelay] - Valor do debounce antes de realizar o fetch em "ms"
  */
 
 export default function useFavorite(contentObject, user, debounceDelay = 300) {
@@ -25,27 +26,32 @@ export default function useFavorite(contentObject, user, debounceDelay = 300) {
   useEffect(() => {
     async function checkIfIsAlreadyFavorite() {
       if (isElegible()) {
-        const response = await fetch(
-          `/api/v1/favorites?owner_id=${contentObject.owner_id}&slug=${contentObject.slug}`,
-          {
+        try {
+          const response = await fetch(`/api/v1/favorites/${contentObject.id}/status`, {
             method: 'GET',
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
             },
-          },
-        );
+          });
 
-        const data = await response.json();
+          if (response.ok) {
+            const data = await response.json();
 
-        if (data.is_saved) {
-          setFavorite(true);
+            if (data.is_saved) {
+              setFavorite(true);
+            }
+          }
+        } catch (error) {
+          if (error && error.message) {
+            setError(error.message || 'Não foi possível verificar o status de favorito do conteúdo');
+          }
         }
       }
     }
     checkIfIsAlreadyFavorite();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, contentObject]);
+  }, [user, contentObject.id]);
 
   function handleToggleFavorite() {
     if (!isElegible() || loading) {
@@ -59,26 +65,26 @@ export default function useFavorite(contentObject, user, debounceDelay = 300) {
     const timeoutId = setTimeout(async () => {
       try {
         setLoading(true);
+        if (user && contentObject.id) {
+          const response = await fetch('/api/v1/favorites', {
+            method: isFavorite ? 'DELETE' : 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              content_id: contentObject.id,
+            }),
+          });
 
-        const response = await fetch('/api/v1/favorites', {
-          method: isFavorite ? 'DELETE' : 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            owner_id: contentObject.owner_id,
-            slug: contentObject.slug,
-          }),
-        });
+          if (!response.ok || response.status >= 400) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Erro ao salvar conteúdo');
+          }
 
-        if (!response.ok || response.status >= 400) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Erro ao salvar conteúdo');
+          const responseBody = await response.json();
+          setFavorite(responseBody.is_saved);
         }
-
-        const responseBody = await response.json();
-        setFavorite(responseBody.is_saved);
         setError(null);
       } catch (error) {
         setError(error.message || 'Não foi possível salvar o conteúdo');
