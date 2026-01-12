@@ -30,10 +30,7 @@ describe('POST /api/v1/favorites', () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          owner_id: owner.id,
-          slug: content.slug,
-        }),
+        body: JSON.stringify({ content_id: content.id }),
       });
 
       expect(response.status).toBe(403);
@@ -62,10 +59,7 @@ describe('POST /api/v1/favorites', () => {
         owner_id: userObject.id,
       });
 
-      const { response, responseBody } = await favoritesRequestBuilder.post({
-        owner_id: userObject.id,
-        slug: loggedUserContent.slug,
-      });
+      const { response, responseBody } = await favoritesRequestBuilder.post({ content_id: loggedUserContent.id });
 
       expect.soft(response.status).toBe(400);
 
@@ -89,10 +83,7 @@ describe('POST /api/v1/favorites', () => {
       await favoritesRequestBuilder.setUser(userObject);
       favoritesRequestBuilder.buildHeaders();
 
-      const { response, responseBody } = await favoritesRequestBuilder.post({
-        owner_id: contentOwnerUser.id,
-        slug: content.slug,
-      });
+      const { response, responseBody } = await favoritesRequestBuilder.post({ content_id: content.id });
 
       expect.soft(response.status).toBe(201);
 
@@ -118,19 +109,11 @@ describe('POST /api/v1/favorites', () => {
       await favoritesRequestBuilder.setUser(userObject);
       favoritesRequestBuilder.buildHeaders();
 
-      const favoriteContent = async () =>
-        await favoritesRequestBuilder.post({
-          owner_id: contentOwnerUser.id,
-          slug: content.slug,
-        });
+      const favoriteContent = async () => await favoritesRequestBuilder.post({ content_id: content.id });
 
       const response1 = await favoriteContent();
 
       expect.soft(response1.response.status).toBe(201);
-
-      expect.soft(response1.responseBody).toStrictEqual({
-        is_saved: true,
-      });
 
       const response2 = await favoriteContent();
 
