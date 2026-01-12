@@ -12,51 +12,25 @@ export default createRouter()
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
-  .get(getValidationHandler, authorization.canRequest('update:user'), getHandler)
+  .get(getListValidationHandler, authorization.canRequest('update:user'), getListHandler)
   .post(postValidationHandler, authorization.canRequest('update:user'), postHandler)
   .delete(deleteValidationHandler, authorization.canRequest('update:user'), deleteHandler)
   .handler(controller.handlerOptions);
 
-function getValidationHandler(request, _, next) {
-  const { owner_id, slug } = request.query;
+function getListValidationHandler(request, _, next) {
+  const cleanQueryValues = validator(request.query, {
+    page: 'optional',
+    per_page: 'optional',
+  });
 
-  if (owner_id || slug) {
-    const cleanQueryValues = validator(request.query, {
-      owner_id: 'required',
-      slug: 'required',
-    });
-
-    request.query = {
-      ...cleanQueryValues,
-      type: 'check',
-    };
-  } else {
-    const cleanQueryValues = validator(request.query, {
-      page: 'optional',
-      per_page: 'optional',
-    });
-    request.query = {
-      ...cleanQueryValues,
-      type: 'list',
-    };
-  }
+  request.query = cleanQueryValues;
 
   return next();
 }
 
-async function getHandler(request, response) {
+async function getListHandler(request, response) {
   const { id: userId } = request.context.user;
-  const { type, owner_id, slug, page, per_page } = request.query;
-
-  if (type === 'check') {
-    const result = await favorites.findOne({
-      user_id: userId,
-      owner_id: owner_id,
-      slug: slug,
-    });
-
-    return response.status(200).json(result);
-  }
+  const { page, per_page } = request.query;
 
   const result = await favorites.findAll({
     user_id: userId,
@@ -69,8 +43,7 @@ async function getHandler(request, response) {
 
 function postValidationHandler(request, _, next) {
   const cleanBodyValues = validator(request.body, {
-    owner_id: 'required',
-    slug: 'required',
+    content_id: 'required',
   });
 
   request.body = cleanBodyValues;
@@ -80,12 +53,11 @@ function postValidationHandler(request, _, next) {
 
 async function postHandler(request, response) {
   const { id: userId } = request.context.user;
-  const { owner_id, slug } = request.body;
+  const { content_id } = request.body;
 
   const result = await favorites.create({
     user_id: userId,
-    owner_id,
-    slug,
+    content_id,
   });
 
   return response.status(201).json(result);
@@ -93,8 +65,7 @@ async function postHandler(request, response) {
 
 function deleteValidationHandler(request, _, next) {
   const cleanBodyValues = validator(request.body, {
-    owner_id: 'required',
-    slug: 'required',
+    content_id: 'required',
   });
 
   request.body = cleanBodyValues;
@@ -104,12 +75,11 @@ function deleteValidationHandler(request, _, next) {
 
 async function deleteHandler(request, response) {
   const { id: userId } = request.context.user;
-  const { owner_id, slug } = request.body;
+  const { content_id } = request.body;
 
   const result = await favorites.remove({
     user_id: userId,
-    owner_id,
-    slug,
+    content_id,
   });
 
   return response.status(200).json(result);
