@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 const { Client } = require('pg');
 
-const endpoint = process.env.NEXT_PUBLIC_UMAMI_ENDPOINT;
+const publicEndpoint = process.env.NEXT_PUBLIC_UMAMI_ENDPOINT;
+const endpoint = process.env.UMAMI_INTERNAL_ENDPOINT || publicEndpoint;
 const websiteDomain = `${process.env.NEXT_PUBLIC_WEBSERVER_HOST}:${process.env.NEXT_PUBLIC_WEBSERVER_PORT}`;
 const websiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 const connectionString = `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.UMAMI_DB}`;
@@ -14,6 +15,13 @@ const client = new Client({
   idleTimeoutMillis: 30000,
   allowExitOnIdle: false,
 });
+
+if (!endpoint || !websiteId) {
+  console.log(
+    '> Skipping Umami configuration because NEXT_PUBLIC_UMAMI_ENDPOINT/UMAMI_INTERNAL_ENDPOINT or NEXT_PUBLIC_UMAMI_WEBSITE_ID is missing.',
+  );
+  process.exit(0);
+}
 
 configUmami();
 
@@ -77,7 +85,7 @@ async function configUmami() {
   console.log('> Umami configuration created!');
 }
 
-async function waitForServer(attempts = 5) {
+async function waitForServer(attempts = 30) {
   try {
     return await fetch(`${endpoint}/api/heartbeat`);
   } catch (error) {
@@ -87,7 +95,7 @@ async function waitForServer(attempts = 5) {
       return waitForServer(attempts - 1);
     }
 
-    console.error('🔴 Umami is not ready, exiting...');
+    console.error('> Umami is not ready, exiting...');
     process.exit(1);
   }
 }

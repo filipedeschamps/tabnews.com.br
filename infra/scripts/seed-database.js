@@ -3,22 +3,34 @@ const fs = require('node:fs');
 const { join, resolve } = require('node:path');
 const { Client } = require('pg');
 
+const { DATABASE_URL } = process.env;
+
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required to seed the database.');
+}
+
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: DATABASE_URL,
   connectionTimeoutMillis: 5000,
   idleTimeoutMillis: 30000,
   allowExitOnIdle: false,
 });
 
-seedDatabase();
+seedDatabase().catch((error) => {
+  console.error('> Failed to seed database:', error);
+  process.exit(1);
+});
 
 async function seedDatabase() {
   console.log('> Seeding database...');
 
   await client.connect();
-  await seedDevelopmentUsers();
-  await createFirewallFunctions();
-  await client.end();
+  try {
+    await seedDevelopmentUsers();
+    await createFirewallFunctions();
+  } finally {
+    await client.end();
+  }
 
   console.log('\n> Database seeded!');
 }
