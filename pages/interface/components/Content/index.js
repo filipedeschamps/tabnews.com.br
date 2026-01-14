@@ -531,6 +531,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
 
+            {!contentObject?.parent_id && (newData.body?.startsWith('# ') || newData.body?.startsWith('<h1>')) && (
+              <Flash variant="warning" sx={{ mt: 2 }}>
+                <strong>⚠️ Dica de formatação:</strong> O título da publicação já é renderizado como título principal
+                (H1). Recomendamos usar <code>##</code> (H2) para subtítulos no corpo do texto.
+              </Flash>
+            )}
+
             <Box sx={{ display: 'flex', width: '100%' }}>
               {errorObject?.key === 'body' && (
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
