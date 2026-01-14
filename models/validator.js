@@ -291,6 +291,22 @@ const schemas = {
     });
   },
 
+  user_id: function () {
+    return Joi.object({
+      user_id: schemas
+        .uuidV4()
+        .when('$required.user_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
+  content_id: function () {
+    return Joi.object({
+      content_id: schemas
+        .uuidV4()
+        .when('$required.content_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
   owner_id: function () {
     return Joi.object({
       owner_id: schemas
