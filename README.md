@@ -56,6 +56,8 @@ http://localhost:3000/
 http://localhost:3000/api/v1/status
 ```
 
+**Observação sobre Umami (analytics):** Se o serviço Umami demorar a iniciar durante o `npm run dev`, você pode pular a configuração automática definindo `SKIP_UMAMI_SETUP=true` no seu `.env`. Alternativamente, ajuste `UMAMI_READY_ATTEMPTS` e `UMAMI_READY_DELAY_MS` para aumentar o tempo de espera antes de o processo seguir adiante. Por padrão, `SKIP_UMAMI_SETUP=false`, `UMAMI_READY_ATTEMPTS=60` e `UMAMI_READY_DELAY_MS=2000`.
+
 Observações:
 
 - Para derrubar todos os serviços, basta utilizar as teclas `CTRL+C`, que é o padrão dos terminais para matar processos.

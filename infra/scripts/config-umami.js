@@ -15,13 +15,23 @@ const client = new Client({
   allowExitOnIdle: false,
 });
 
+// Allow skipping Umami setup during local development when not needed
+if (process.env.SKIP_UMAMI_SETUP === 'true') {
+  console.log('> SKIP_UMAMI_SETUP=true — pulando configuração do Umami.');
+  process.exit(0);
+}
+
 configUmami();
 
 async function configUmami() {
   console.log('\n> Waiting for Umami Server to start...');
   console.log('> Endpoint:', endpoint);
 
-  await waitForServer();
+  const ready = await waitForServer();
+  if (!ready) {
+    console.log('> Umami não ficou pronto dentro do tempo esperado; pulando configuração do Umami por enquanto.');
+    return;
+  }
 
   console.log('> Creating Umami configuration...');
 
@@ -77,17 +87,19 @@ async function configUmami() {
   console.log('> Umami configuration created!');
 }
 
-async function waitForServer(attempts = 5) {
+async function waitForServer(attempts = parseInt(process.env.UMAMI_READY_ATTEMPTS || '60', 10)) {
+  const delayMs = parseInt(process.env.UMAMI_READY_DELAY_MS || '2000', 10);
   try {
-    return await fetch(`${endpoint}/api/heartbeat`);
+    await fetch(`${endpoint}/api/heartbeat`);
+    return true;
   } catch (error) {
     if (attempts > 1) {
-      console.log('> Umami is not ready, waiting...');
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log(`> Umami is not ready, waiting... (${attempts - 1} attempts left, retrying in ${delayMs}ms)`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
       return waitForServer(attempts - 1);
     }
 
-    console.error('🔴 Umami is not ready, exiting...');
-    process.exit(1);
+    console.error('🔴 Umami is not ready after multiple attempts; continuing without configuring Umami.');
+    return false;
   }
 }
