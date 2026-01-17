@@ -7,8 +7,49 @@ beforeAll(async () => {
 });
 
 describe('GET /api/v1/sponsored-beta', () => {
+  const adsRequestBuilder = new RequestBuilder('/api/v1/sponsored-beta');
+
   describe('Anonymous user', () => {
-    const adsRequestBuilder = new RequestBuilder('/api/v1/sponsored-beta');
+    it('should not accept "owner_id" with square brackets', async () => {
+      const { response, responseBody } = await adsRequestBuilder.get(
+        '?owner_id=[e627895c-7988-417d-8700-2cbdc75ad104]',
+      );
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"owner_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'owner_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+    });
+
+    it('should not accept "ignore_id" with brackets', async () => {
+      const { response, responseBody } = await adsRequestBuilder.get(
+        '?ignore_id={54490da8-b75d-4e96-ac9d-9fe4c509537e}',
+      );
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"ignore_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'ignore_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+    });
+  });
+
+  describe('Anonymous user (with beforeEach)', () => {
     let owner;
 
     beforeEach(async () => {

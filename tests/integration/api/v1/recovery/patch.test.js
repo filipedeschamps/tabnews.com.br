@@ -318,6 +318,36 @@ describe('PATCH /api/v1/recovery', () => {
       expect(uuidVersion(responseBody.request_id)).toBe(4);
     });
 
+    test('With token_id as a malformatted uuid with square brackets', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '[c604e22e-514d-4bf4-82b9-9fcf64ab04ba]',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
     test('With "password" missing', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/recovery`, {
         method: 'PATCH',

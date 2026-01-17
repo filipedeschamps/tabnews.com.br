@@ -30,11 +30,12 @@ import { CircleSlashIcon, GearIcon, KebabHorizontalIcon } from '@/TabNewsUI/icon
 import { NotFoundError } from 'errors';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
 import { createErrorMessage, useUser } from 'pages/interface';
 
-export default function Page({ userFound: userFoundFallback }) {
+export default function Page({ userFound: userFoundFallback, metadata }) {
   const {
     data: { body: userFound },
     mutate: userFoundMutate,
@@ -48,7 +49,7 @@ export default function Page({ userFound: userFoundFallback }) {
   }
 
   return (
-    <DefaultLayout metadata={{ title: `${userFound.username}` }}>
+    <DefaultLayout metadata={{ ...metadata, title: `${userFound.username}` }}>
       <UserProfile key={userFound.id} userFound={userFound} onUpdate={onUpdate} />
     </DefaultLayout>
   );
@@ -510,9 +511,22 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
     throw error;
   }
 
+  let pageDescription = `Acompanhe as publicações e conteúdos de ${secureUserFound.username} no TabNews.`;
+
+  if (secureUserFound.description) {
+    pageDescription = removeMarkdown(secureUserFound.description, { maxLength: 150 });
+
+    if (pageDescription.length < 50) {
+      pageDescription = `${pageDescription} | Perfil de ${secureUserFound.username} no TabNews`;
+    }
+  }
+
   return {
     props: {
       userFound: JSON.parse(JSON.stringify(secureUserFound)),
+      metadata: {
+        description: pageDescription,
+      },
     },
 
     revalidate: 10,

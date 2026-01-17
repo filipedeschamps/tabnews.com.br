@@ -151,6 +151,35 @@ describe('PATCH /api/v1/email-confirmation', () => {
       });
     });
 
+    test('With a malformatted uuid token with square brackets', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/email-confirmation`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '[ab5db012-d162-41c6-a5f6-a8fe0aa6cd38]',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        status_code: 400,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+      });
+    });
+
     test('With a fresh and valid token', async () => {
       // 1) UPDATE USER EMAIL
       const defaultUser = await orchestrator.createUser({

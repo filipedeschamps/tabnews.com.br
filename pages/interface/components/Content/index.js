@@ -274,7 +274,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     source_url: contentObject?.source_url || '',
     isSponsoredContent: contentObject?.type === 'ad',
   });
-  const [titlePlaceholder, setTitlePlaceholder] = useState('');
+  const [titlePlaceholder] = useState(randomTitlePlaceholder);
 
   const confirm = useConfirm();
 
@@ -299,11 +299,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     addEventListener('focus', onFocus);
     return () => removeEventListener('focus', onFocus);
   }, [localStorageKey]);
-
-  useEffect(() => {
-    setTitlePlaceholder(randomTitlePlaceholder());
-  }, []);
-
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
@@ -516,6 +511,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                 autoFocus={true}
                 block={true}
                 value={newData.title}
+                suppressHydrationWarning={true}
               />
 
               {errorObject?.key === 'title' && (
@@ -534,6 +530,13 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               initialHeight={!contentObject?.parent_id ? 'calc(100vh - 410px)' : undefined}
               clobberPrefix={`${contentObject?.owner_username ?? user?.username}-content-`}
             />
+
+            {!contentObject?.parent_id && (newData.body?.startsWith('# ') || newData.body?.startsWith('<h1>')) && (
+              <Flash variant="warning" sx={{ mt: 2 }}>
+                <strong>⚠️ Dica de formatação:</strong> O título da publicação já é renderizado como título principal
+                (H1). Recomendamos usar <code>##</code> (H2) para subtítulos no corpo do texto.
+              </Flash>
+            )}
 
             <Box sx={{ display: 'flex', width: '100%' }}>
               {errorObject?.key === 'body' && (

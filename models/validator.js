@@ -101,11 +101,14 @@ export default function validator(object, keys) {
 }
 
 const schemas = {
+  uuidV4: function () {
+    return Joi.string().trim().guid({ version: 'uuidv4', separator: '-', wrapper: false });
+  },
+
   id: function () {
     return Joi.object({
-      id: Joi.string()
-        .trim()
-        .guid({ version: 'uuidv4' })
+      id: schemas
+        .uuidV4()
         .when('$required.id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
     });
   },
@@ -191,9 +194,8 @@ const schemas = {
 
   token_id: function () {
     return Joi.object({
-      token_id: Joi.string()
-        .trim()
-        .guid({ version: 'uuidv4' })
+      token_id: schemas
+        .uuidV4()
         .when('$required.token_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
@@ -209,9 +211,8 @@ const schemas = {
 
   parent_id: function () {
     return Joi.object({
-      parent_id: Joi.string()
-        .trim()
-        .guid({ version: 'uuidv4' })
+      parent_id: schemas
+        .uuidV4()
         .when('$required.parent_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
     });
   },
@@ -292,9 +293,8 @@ const schemas = {
 
   owner_id: function () {
     return Joi.object({
-      owner_id: Joi.string()
-        .trim()
-        .guid({ version: 'uuidv4' })
+      owner_id: schemas
+        .uuidV4()
         .when('$required.owner_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
     });
   },
@@ -410,7 +410,7 @@ const schemas = {
 
   ignore_id: function () {
     return Joi.object({
-      ignore_id: schemas.id().extract('id'),
+      ignore_id: schemas.uuidV4().when('$required.optional', { is: 'required', then: Joi.required() }),
     });
   },
 
@@ -644,7 +644,7 @@ const schemas = {
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',
         }),
-      originator_user_id: Joi.string().allow(null).guid({ version: 'uuidv4' }).optional(),
+      originator_user_id: schemas.uuidV4().optional().allow(null),
       originator_ip: Joi.string()
         .ip({
           version: ['ipv4', 'ipv6'],

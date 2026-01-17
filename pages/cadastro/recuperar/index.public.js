@@ -5,7 +5,13 @@ import { createErrorMessage, useUser } from 'pages/interface';
 
 export default function RecoverPassword() {
   return (
-    <DefaultLayout containerWidth="small" metadata={{ title: 'Recuperação de senha' }}>
+    <DefaultLayout
+      containerWidth="small"
+      metadata={{
+        title: 'Recuperação de senha',
+        description:
+          'Recupere sua senha do TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
+      }}>
       <Heading as="h1" sx={{ mb: 3 }}>
         Recuperação de senha
       </Heading>

@@ -152,7 +152,12 @@ Após o fechamento da falha, o TabNews se compromete em criar um Postmortem púb
   const content = `${tableOfContents}\n\n${faqMarkdown}`;
 
   return (
-    <DefaultLayout metadata={{ title: 'FAQ - Perguntas frequentes' }}>
+    <DefaultLayout
+      metadata={{
+        title: 'FAQ - Perguntas frequentes',
+        description:
+          'Perguntas frequentes sobre o funcionamento do TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
+      }}>
       <Box sx={{ width: '100%' }}>
         <Heading as="h1">FAQ - Perguntas Frequentes</Heading>
         <Viewer areLinksTrusted value={content} clobberPrefix="" />

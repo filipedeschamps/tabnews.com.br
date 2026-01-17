@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Box, DefaultLayout, Heading, Text } from '@/TabNewsUI';
 
 export default function ConfirmSignup() {
-  const [email, setEmail] = useState('');
-
-  useEffect(() => {
+  const [email] = useState(() => {
+    if (typeof localStorage === 'undefined') return null;
     const userEmail = localStorage.getItem('registrationEmail');
     localStorage.removeItem('registrationEmail');
-    setEmail(userEmail);
-  }, []);
+    return userEmail;
+  });
 
   return (
     <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirme seu email' }}>

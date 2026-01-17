@@ -43,7 +43,12 @@ export default function Page() {
   `;
 
   return (
-    <DefaultLayout metadata={{ title: 'Termos de Uso' }}>
+    <DefaultLayout
+      metadata={{
+        title: 'Termos de Uso',
+        description:
+          'Leia os Termos de Uso do TabNews e conheça nossas diretrizes sobre privacidade, conduta e conteúdos de valor concreto para quem trabalha com tecnologia.',
+      }}>
       <Box>
         <Heading as="h1">Termos de Uso</Heading>
         <Viewer areLinksTrusted value={body} clobberPrefix="" />

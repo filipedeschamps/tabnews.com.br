@@ -129,6 +129,156 @@ describe('PATCH /api/v1/activation', () => {
       expect(responseBody.key).toBe('token_id');
     });
 
+    test('Activating using a malformatted array-like uuid without hyphens', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '[41aae2b4c8cc41a58443c5f8589b32dc]',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Activating using a malformatted uuid with square brackets', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '[7c19bfe3-1602-4ce2-ba16-5e4a6b6fb375]',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Activating using a malformatted uuid with brackets', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '{2d825c13-7206-46e2-8d8d-783dc36d5731}',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Activating using a malformatted uuid with ":" as separators', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '0a2a951d:70c7:424a:aa5d:cc7a2fc1fd59',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Activating using a malformatted uuid without separators', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/activation`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify({
+          token_id: '41aae2b4c8cc41a58443c5f8589b32dc',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'token_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
     test('Activating using a fresh and valid token', async () => {
       const defaultUser = await orchestrator.createUser();
       const activationToken = await activation.create(defaultUser);

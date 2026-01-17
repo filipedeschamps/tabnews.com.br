@@ -1843,6 +1843,41 @@ describe('POST /api/v1/contents', () => {
       expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
+    test('"child" content with "parent_id" containing a malformatted uuid with square brackets', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const sessionObject = await orchestrator.createSession(defaultUser);
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/contents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${sessionObject.token}`,
+        },
+        body: JSON.stringify({
+          body: 'Não deveria conseguir, pois o "parent_id" abaixo está num formato errado',
+          parent_id: '[69d46836-a83a-4a91-bb7f-781707e5079a]',
+        }),
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(400);
+      expect(responseBody).toStrictEqual({
+        status_code: 400,
+        name: 'ValidationError',
+        message: '"parent_id" deve possuir um token UUID na versão 4.',
+        action: 'Ajuste os dados enviados e tente novamente.',
+        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
+        key: 'parent_id',
+        type: 'string.guid',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
     test('"child" content with "parent_id" that does not exists', async () => {
       const contentsRequestBuilder = new RequestBuilder('/api/v1/contents');
       await contentsRequestBuilder.buildUser();
