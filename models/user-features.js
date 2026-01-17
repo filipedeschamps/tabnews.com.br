@@ -18,6 +18,9 @@ const availableFeatures = new Set([
   // EMAIL_CONFIRMATION_TOKEN
   'read:email_confirmation_token',
 
+  // NOTIFICATIONS
+  'read:notifications',
+
   // SESSION
   'create:session',
   'read:session',
