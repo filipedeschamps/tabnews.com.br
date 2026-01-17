@@ -16,6 +16,7 @@ import {
   ThemeSwitcher,
   Tooltip,
   Truncate,
+  useBellNotification,
   useSearchBox,
 } from '@/TabNewsUI';
 import {
@@ -34,6 +35,7 @@ export default function HeaderComponent() {
   const { user, isLoading, logout } = useUser();
   const { asPath, pathname } = useRouter();
   const { SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } = useSearchBox();
+  const { NotificationsMenu } = useBellNotification();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
   const loginUrl =
@@ -109,6 +111,7 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <NotificationsMenu user={user} />
           {!isScreenSmall && (
             <PrimerHeader.Item sx={{ m: 2 }}>
               <Tooltip text="Publicar novo conteúdo" direction="s">
