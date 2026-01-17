@@ -21,6 +21,7 @@ export {
   MoonIcon,
   PencilIcon,
   PersonIcon,
+  BellIcon,
   PlusIcon,
   SearchIcon,
   SignOutIcon,
