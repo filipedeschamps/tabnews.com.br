@@ -13,6 +13,7 @@ import balance from 'models/balance.js';
 import ban from 'models/ban';
 import content from 'models/content.js';
 import event from 'models/event.js';
+import notification from 'models/notification.js';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
@@ -226,6 +227,26 @@ async function createUser(userObject) {
   await activation.create(createdUser);
 
   return createdUser;
+}
+
+async function createNotification(notificationObject) {
+  notificationObject.user_id = notificationObject?.user_id || randomUUID();
+  notificationObject.type = notificationObject?.type || 'content:created';
+  notificationObject.entity_id = notificationObject?.entity_id || randomUUID();
+  notificationObject.metadata = notificationObject?.metadata || {
+    content_link: 'default-link',
+    content_title: 'Default Title',
+    content_owner: faker.internet.username(),
+    content_slug: 'default-slug',
+    root_content_slug: 'default-root-slug',
+    root_content_title: 'Default Root Title',
+  };
+
+  return await notification.create(notificationObject);
+}
+
+async function findAllNotification(values) {
+  return await notification.findAll(values);
 }
 
 async function addFeaturesToUser(userObject, features) {
@@ -563,6 +584,8 @@ const orchestrator = {
   createRecoveryToken,
   createSession,
   createUser,
+  createNotification,
+  findAllNotification,
   deleteAllEmails,
   dropAllTables,
   findSessionByToken,

@@ -5,19 +5,38 @@ import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import notification from 'models/notification';
+import validator from 'models/validator.js';
 
 export default createRouter()
   .use(controller.injectRequestMetadata)
   .use(authentication.injectAnonymousOrUser)
   .use(controller.logRequest)
   .use(cacheControl.noCache)
-  .patch(authorization.canRequest('read:session'), patchHandler)
+  .patch(authorization.canRequest('read:session'), patchValidationHandler, patchHandler)
   .handler(controller.handlerOptions);
+
+function patchValidationHandler(request, response, next) {
+  const cleanValues = validator(request.query, {
+    id: 'required',
+  });
+
+  const cleanBody = validator(request.body, {
+    read: 'required',
+  });
+
+  request.body = cleanBody;
+  request.query = cleanValues;
+
+  return next();
+}
 
 async function patchHandler(request, response) {
   const authenticatedUser = request.context.user;
 
-  await notification.markAllAsRead(authenticatedUser.id);
+  await notification.update(
+    { read: request.body.read },
+    { where: { id: request.query.id, user_id: authenticatedUser.id } },
+  );
 
   return response.status(200).json({ success: true });
 }

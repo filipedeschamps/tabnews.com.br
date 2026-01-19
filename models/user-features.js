@@ -19,7 +19,7 @@ const availableFeatures = new Set([
   'read:email_confirmation_token',
 
   // NOTIFICATIONS
-  'read:notifications',
+  'read:notifications:list',
 
   // SESSION
   'create:session',

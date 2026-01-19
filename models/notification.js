@@ -5,16 +5,15 @@ import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import pagination from 'models/pagination.js';
 import { FirewallEmail, NotificationEmail } from 'models/transactional';
 import user from 'models/user.js';
 
 async function create(postedNotificationData) {
-  maybeDeleteOld();
-
   const query = {
     text: `
       INSERT INTO
-        notifications (user_id, type, entity_id, content_link, message)
+        notifications (user_id, type, entity_id, metadata, read)
       VALUES
         ($1, $2, $3, $4, $5)
       RETURNING
@@ -24,8 +23,8 @@ async function create(postedNotificationData) {
       postedNotificationData.user_id,
       postedNotificationData.type,
       postedNotificationData.entity_id,
-      postedNotificationData.content_link,
-      postedNotificationData.message,
+      postedNotificationData.metadata,
+      postedNotificationData.read || false,
     ],
   };
 
@@ -34,56 +33,50 @@ async function create(postedNotificationData) {
   return newNotification;
 }
 
-let lastCleanupAt = null;
-
-async function maybeDeleteOld() {
-  const ONE_DAY = 24 * 60 * 60 * 1000;
-
-  if (lastCleanupAt && Date.now() - lastCleanupAt < ONE_DAY) {
-    return;
-  }
-
-  await database.query(`
-    DELETE FROM notifications
-    WHERE created_at < NOW() - INTERVAL '90 days';
-  `);
-
-  lastCleanupAt = Date.now();
-}
-
-function setLastCleanupAt(value) {
-  lastCleanupAt = value;
-}
-
-async function read(notificationId, user_id) {
+async function findAll(values) {
+  const offset = (values.page - 1) * values.per_page;
+  const where = values.where ?? {};
+  const whereClause = buildWhereClause(where);
   const query = {
     text: `
-      UPDATE
+      SELECT
+        *
+      FROM
         notifications
-      SET
-        is_read = TRUE,
-        updated_at = (now() at time zone 'utc')
-      WHERE
-        id = $1 AND user_id = $2
-      ;`,
-    values: [notificationId, user_id],
+      ${whereClause.text}
+      ORDER BY
+        created_at DESC
+      LIMIT $${whereClause.values.length + 1} OFFSET $${whereClause.values.length + 2};
+    `,
+    values: [...whereClause.values, values.per_page, offset],
   };
 
-  await database.query(query);
+  const queryResults = await database.query(query);
+
+  const results = {
+    rows: queryResults.rows,
+  };
+
+  values.total_rows = await count({ where: { user_id: where.user_id, read: where.read } });
+
+  results.pagination = pagination.get(values);
+
+  return results;
 }
 
-async function markAllAsRead(userId) {
+async function update(notification, values = {}) {
+  const where = values.where ?? {};
+  const whereClause = buildWhereClause(where);
   const query = {
     text: `
       UPDATE
         notifications
       SET
-        is_read = TRUE,
+        read = $${whereClause.values.length + 1},
         updated_at = (now() at time zone 'utc')
-      WHERE
-        user_id = $1
+      ${whereClause.text}
       ;`,
-    values: [userId],
+    values: [...whereClause.values, notification.read],
   };
 
   await database.query(query);
@@ -96,7 +89,7 @@ async function count(values = {}, options = {}) {
   const query = {
     text: `
       SELECT
-        COUNT(1)
+        COUNT(1)::integer as count
       FROM
         notifications
         ${whereClause.text}
@@ -105,29 +98,7 @@ async function count(values = {}, options = {}) {
   };
 
   const results = await database.query(query, options);
-  return results.rows[0];
-}
-
-async function findAll(values = {}, options = {}) {
-  const where = values.where ?? {};
-  const { limit = 5, offset = 0 } = options;
-
-  const whereClause = buildWhereClause(where);
-  const query = {
-    text: `
-      SELECT
-        *
-      FROM
-        notifications
-        ${whereClause.text}
-      ORDER BY
-        is_read ASC, created_at DESC
-      LIMIT $${whereClause.values.length + 1} OFFSET $${whereClause.values.length + 2};`,
-    values: [...whereClause.values, limit, offset],
-  };
-
-  const results = await database.query(query);
-  return results.rows;
+  return results.rows[0].count;
 }
 
 function buildWhereClause(where, nextArgumentIndex = 1) {
@@ -190,11 +161,16 @@ async function sendReplyEmailToParentUser(createdContent) {
     });
 
     create({
-      user_id: secureRootContent.owner_id,
-      type: 'reply',
+      user_id: parentContent.owner_id,
+      type: 'content:created',
       entity_id: secureCreatedContent.id,
-      content_link: childContentUrl,
-      message: bodyReplyLine,
+      metadata: {
+        content_slug: secureCreatedContent.slug,
+        content_owner: secureCreatedContent.owner_username,
+        content_title: secureCreatedContent.title,
+        root_content_slug: secureRootContent.slug,
+        root_content_title: secureRootContent.title,
+      },
     });
 
     await email.triggerSend({
@@ -296,12 +272,9 @@ function getFirewallDeletedContentLine(contents) {
 
 export default Object.freeze({
   findAll,
-  count,
-  read,
-  markAllAsRead,
+  update,
+  create,
   sendContentDeletedToUser,
   sendReplyEmailToParentUser,
   sendUserDisabled,
 });
-
-export { create, setLastCleanupAt }; // Only use in tests

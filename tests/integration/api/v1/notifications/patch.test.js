@@ -6,10 +6,10 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe('PATCH /api/v1/notifications/mark-all-read', () => {
+describe('PATCH /api/v1/notifications', () => {
   describe('Anonymous User', () => {
     it('403 - Marking notification as read as anonymous user', async () => {
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications/mark-all-read`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
         method: 'PATCH',
         headers: {},
       });
@@ -22,12 +22,15 @@ describe('PATCH /api/v1/notifications/mark-all-read', () => {
     });
   });
   describe('Authenticated User', () => {
-    it('200 - Marking notification as read', async () => {
+    it('200 - Marking all notifications as read', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications/mark-all-read`, {
+      await orchestrator.createNotification({ user_id: defaultUser.id, read: false });
+      await orchestrator.createNotification({ user_id: defaultUser.id, read: false });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -40,6 +43,13 @@ describe('PATCH /api/v1/notifications/mark-all-read', () => {
       expect.soft(response.status).toBe(200);
       expect.soft(response.headers.get('Content-Type')).toContain('application/json');
       expect.soft(responseBody.success).toBe(true);
+
+      const unreadNotifications = await orchestrator.findAllNotification({
+        where: { user_id: defaultUser.id, read: false },
+        page: 1,
+        per_page: 10,
+      });
+      expect.soft(unreadNotifications.rows.length).toBe(0);
     });
   });
 });

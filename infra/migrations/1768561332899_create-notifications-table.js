@@ -13,28 +13,20 @@ exports.up = (pgm) => {
     user_id: {
       type: 'uuid',
       notNull: true,
-      references: '"users"',
-      onDelete: 'CASCADE',
     },
     type: {
-      type: 'varchar(50)',
+      type: 'varchar(20)',
       notNull: true,
     },
-    message: {
-      type: 'text',
+    metadata: {
+      type: 'jsonb',
       notNull: true,
     },
     entity_id: {
       type: 'uuid',
       notNull: true,
-      references: '"contents"',
-      onDelete: 'CASCADE',
     },
-    content_link: {
-      type: 'text',
-      notNull: true,
-    },
-    is_read: {
+    read: {
       type: 'boolean',
       notNull: true,
       default: false,
@@ -52,10 +44,8 @@ exports.up = (pgm) => {
   });
 
   pgm.createIndex('notifications', 'user_id');
-  pgm.createIndex('notifications', ['user_id', 'is_read']);
+  pgm.createIndex('notifications', ['user_id', 'read']);
   pgm.createIndex('notifications', [{ name: 'created_at', sort: 'DESC' }]);
 };
 
-exports.down = (pgm) => {
-  pgm.dropTable('notifications');
-};
+exports.down = false;
