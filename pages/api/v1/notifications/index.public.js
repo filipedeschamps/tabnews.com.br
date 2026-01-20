@@ -13,7 +13,7 @@ export default createRouter()
   .use(controller.logRequest)
   .use(cacheControl.noCache)
   .get(authorization.canRequest('read:session'), getValidationHandler, getHandler)
-  .patch(authorization.canRequest('read:session'), patchHandler)
+  .patch(authorization.canRequest('read:session'), patchValidationHandler, patchHandler)
   .handler(controller.handlerOptions);
 
 function getValidationHandler(request, response, next) {
@@ -24,6 +24,16 @@ function getValidationHandler(request, response, next) {
   });
 
   request.query = cleanValues;
+
+  return next();
+}
+
+function patchValidationHandler(request, response, next) {
+  const cleanValues = validator(request.body, {
+    unread_until: 'optional',
+  });
+
+  request.body = cleanValues;
 
   return next();
 }
@@ -59,7 +69,7 @@ async function getHandler(request, response) {
 async function patchHandler(request, response) {
   const authenticatedUser = request.context.user;
 
-  await notification.markAllAsRead(authenticatedUser.id);
+  await notification.markAllAsRead(authenticatedUser.id, request.body.unread_until);
 
   return response.status(200).json({ success: true });
 }

@@ -890,6 +890,16 @@ const schemas = {
 
     return notificationSchema;
   },
+
+  unread_until: function () {
+    return Joi.object({
+      unread_until: Joi.date().when('$required.unread_until', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
+  },
 };
 
 const noTrailingHyphen = (value) => {

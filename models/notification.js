@@ -57,7 +57,7 @@ async function findAll(values) {
     rows: queryResults.rows,
   };
 
-  values.total_rows = await count({ where: { user_id: where.user_id, read: where.read } });
+  values.total_rows = await count({ where: where });
 
   results.pagination = pagination.get(values);
 
@@ -82,7 +82,7 @@ async function update(notification, values = {}) {
   await database.query(query);
 }
 
-async function markAllAsRead(userId) {
+async function markAllAsRead(userId, unread_until = new Date()) {
   const query = {
     text: `
       UPDATE
@@ -91,9 +91,9 @@ async function markAllAsRead(userId) {
         read = $2,
         updated_at = (now() at time zone 'utc')
       WHERE
-        user_id = $1 and created_at <= ((now() at time zone 'utc') - interval '1 minute')
+        user_id = $1 and created_at <= $3
       ;`,
-    values: [userId, true],
+    values: [userId, true, unread_until],
   };
 
   await database.query(query);

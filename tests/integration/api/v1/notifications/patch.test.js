@@ -30,12 +30,10 @@ describe('PATCH /api/v1/notifications', () => {
       await orchestrator.createNotification({
         user_id: defaultUser.id,
         read: false,
-        created_at: new Date(Date.now() - 1000000),
       });
       await orchestrator.createNotification({
         user_id: defaultUser.id,
         read: false,
-        created_at: new Date(Date.now() - 1000000),
       });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
@@ -44,6 +42,9 @@ describe('PATCH /api/v1/notifications', () => {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
         },
+        body: JSON.stringify({
+          unread_until: new Date(),
+        }),
       });
 
       const responseBody = await response.json();
@@ -68,9 +69,9 @@ describe('PATCH /api/v1/notifications', () => {
       await orchestrator.createNotification({
         user_id: defaultUser.id,
         read: false,
-        created_at: new Date(Date.now() - 1000000),
+        created_at: new Date(Date.now() + 1000000),
       });
-      await orchestrator.createNotification({ user_id: defaultUser.id, read: false, created_at: new Date(Date.now()) });
+      await orchestrator.createNotification({ user_id: defaultUser.id, read: false });
 
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
         method: 'PATCH',
@@ -78,6 +79,9 @@ describe('PATCH /api/v1/notifications', () => {
           'Content-Type': 'application/json',
           cookie: `session_id=${defaultUserSession.token}`,
         },
+        body: JSON.stringify({
+          unread_until: new Date(),
+        }),
       });
 
       const responseBody = await response.json();

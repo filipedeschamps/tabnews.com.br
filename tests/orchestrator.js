@@ -233,6 +233,7 @@ async function createNotification(notificationObject) {
   notificationObject.user_id = notificationObject?.user_id || randomUUID();
   notificationObject.type = notificationObject?.type || 'content:created';
   notificationObject.entity_id = notificationObject?.entity_id || randomUUID();
+  notificationObject.created_at = notificationObject?.created_at || new Date();
   notificationObject.metadata = notificationObject?.metadata || {
     content_link: 'default-link',
     content_title: 'Default Title',

@@ -8,7 +8,7 @@ beforeAll(async () => {
 
 describe('GET /api/v1/notifications', () => {
   describe('Anonymous user', () => {
-    test('403 - Retrieving notifications as anonymous user', async () => {
+    test('403 - Retrieving notifications', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
         method: 'GET',
         headers: {},
@@ -22,7 +22,7 @@ describe('GET /api/v1/notifications', () => {
     });
   });
   describe('Authenticated User', () => {
-    test('200 - Retrieving notifications as authenticated user when is empty', async () => {
+    test('200 - Retrieving notifications when is empty', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -46,7 +46,7 @@ describe('GET /api/v1/notifications', () => {
       expect.soft(responseBody.pagination.currentPage).toBe(1);
     });
 
-    test('200 - Retrieving notifications as authenticated user only unread', async () => {
+    test('200 - Retrieving notifications only unread', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -54,7 +54,7 @@ describe('GET /api/v1/notifications', () => {
       await orchestrator.createNotification({ user_id: defaultUser.id, read: true });
       await orchestrator.createNotification({ user_id: defaultUser.id, read: false });
 
-      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications?read=false`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ describe('GET /api/v1/notifications', () => {
       expect.soft(responseBody.pagination.totalRows).toBe(2);
     });
 
-    test('200 - Retrieving notifications as authenticated user only read', async () => {
+    test('200 - Retrieving notifications only read', async () => {
       const defaultUser = await orchestrator.createUser();
       await orchestrator.activateUser(defaultUser);
       const defaultUserSession = await orchestrator.createSession(defaultUser);
@@ -98,6 +98,33 @@ describe('GET /api/v1/notifications', () => {
       expect.soft(responseBody.rows.length).toBe(1);
       expect.soft(responseBody.pagination.currentPage).toBe(1);
       expect.soft(responseBody.pagination.totalRows).toBe(1);
+    });
+
+    test('200 - Retrieving all notifications', async () => {
+      const defaultUser = await orchestrator.createUser();
+      await orchestrator.activateUser(defaultUser);
+      const defaultUserSession = await orchestrator.createSession(defaultUser);
+      await orchestrator.createNotification({ user_id: defaultUser.id, read: false });
+      await orchestrator.createNotification({ user_id: defaultUser.id, read: true });
+      await orchestrator.createNotification({ user_id: defaultUser.id, read: false });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/api/v1/notifications`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${defaultUserSession.token}`,
+        },
+      });
+
+      const responseBody = await response.json();
+
+      expect.soft(response.status).toBe(200);
+      expect.soft(response.headers.get('Content-Type')).toContain('application/json');
+
+      expect.soft(Array.isArray(responseBody.rows)).toBe(true);
+      expect.soft(responseBody.rows.length).toBe(3);
+      expect.soft(responseBody.pagination.currentPage).toBe(1);
+      expect.soft(responseBody.pagination.totalRows).toBe(3);
     });
   });
 });
