@@ -280,7 +280,7 @@ function filterOutput(user, feature, output) {
   }
 
   // Force the clean up of "undefined" values
-  return structuredClone(filteredOutputValues);
+  return JSON.parse(JSON.stringify(filteredOutputValues));
 }
 
 function validateUser(user) {

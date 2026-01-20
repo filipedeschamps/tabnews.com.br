@@ -242,7 +242,28 @@ async function createNotification(notificationObject) {
     root_content_title: 'Default Root Title',
   };
 
-  return await notification.create(notificationObject);
+  const query = {
+    text: `
+        INSERT INTO
+          notifications (user_id, type, entity_id, metadata, read, created_at)
+        VALUES
+          ($1, $2, $3, $4, $5, $6)
+        RETURNING
+          *
+        ;`,
+    values: [
+      notificationObject.user_id,
+      notificationObject.type,
+      notificationObject.entity_id,
+      notificationObject.metadata,
+      notificationObject.read || false,
+      notificationObject.created_at || new Date(),
+    ],
+  };
+
+  const results = await database.query(query);
+  const newNotification = results.rows[0];
+  return newNotification;
 }
 
 async function findAllNotification(values) {

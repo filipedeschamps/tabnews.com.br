@@ -843,9 +843,7 @@ const schemas = {
 
   read: function () {
     return Joi.object({
-      read: Joi.boolean()
-        .default(false)
-        .when('$required.read', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+      read: Joi.boolean().when('$required.read', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
     });
   },
 
@@ -867,6 +865,16 @@ const schemas = {
     });
   },
 
+  notification_type: function () {
+    return Joi.object({
+      type: Joi.string().valid('content:created').when('$required.type', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
+  },
+
   notification: function () {
     let notificationSchema = Joi.object({
       children: Joi.array().optional().items(Joi.link('#notifications')),
@@ -875,7 +883,7 @@ const schemas = {
       .min(1)
       .id('notifications');
 
-    for (const key of ['id', 'user_id', 'entity_id', 'read', 'created_at', 'metadata']) {
+    for (const key of ['id', 'notification_type', 'user_id', 'entity_id', 'read', 'created_at', 'metadata']) {
       const keyValidationFunction = schemas[key];
       notificationSchema = notificationSchema.concat(keyValidationFunction());
     }

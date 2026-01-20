@@ -31,8 +31,14 @@ function getValidationHandler(request, response, next) {
 async function getHandler(request, response) {
   const authenticatedUser = request.context.user;
 
+  let where = { user_id: authenticatedUser.id };
+
+  if (typeof request.query.read === 'boolean') {
+    where = { ...where, read: request.query.read };
+  }
+
   const notificationsPage = await notification.findAll({
-    where: { user_id: authenticatedUser.id, read: request.query.read },
+    where: where,
     page: request.query.page,
     per_page: request.query.per_page,
   });
@@ -53,7 +59,7 @@ async function getHandler(request, response) {
 async function patchHandler(request, response) {
   const authenticatedUser = request.context.user;
 
-  await notification.update({ read: true }, { where: { user_id: authenticatedUser.id } });
+  await notification.markAllAsRead(authenticatedUser.id);
 
   return response.status(200).json({ success: true });
 }

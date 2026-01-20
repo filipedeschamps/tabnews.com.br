@@ -82,6 +82,23 @@ async function update(notification, values = {}) {
   await database.query(query);
 }
 
+async function markAllAsRead(userId) {
+  const query = {
+    text: `
+      UPDATE
+        notifications
+      SET
+        read = $2,
+        updated_at = (now() at time zone 'utc')
+      WHERE
+        user_id = $1 and created_at <= ((now() at time zone 'utc') - interval '1 minute')
+      ;`,
+    values: [userId, true],
+  };
+
+  await database.query(query);
+}
+
 async function count(values = {}, options = {}) {
   const where = values.where ?? {};
 
@@ -165,11 +182,16 @@ async function sendReplyEmailToParentUser(createdContent) {
       type: 'content:created',
       entity_id: secureCreatedContent.id,
       metadata: {
+        content_owner_id: secureCreatedContent.owner_id,
         content_slug: secureCreatedContent.slug,
         content_owner: secureCreatedContent.owner_username,
         content_title: secureCreatedContent.title,
+        parent_owner_id: parentContent.owner_id,
+        parent_title: parentContent.title,
+        root_content_owner_id: secureRootContent.owner_id,
         root_content_slug: secureRootContent.slug,
         root_content_title: secureRootContent.title,
+        root_content_owner: secureRootContent.owner_username,
       },
     });
 
@@ -273,6 +295,7 @@ function getFirewallDeletedContentLine(contents) {
 export default Object.freeze({
   findAll,
   update,
+  markAllAsRead,
   create,
   sendContentDeletedToUser,
   sendReplyEmailToParentUser,
