@@ -22,7 +22,12 @@ export default function Post() {
   }, [user, router, isLoading]);
 
   return (
-    <DefaultLayout metadata={{ title: 'Publicar novo conteúdo' }}>
+    <DefaultLayout
+      metadata={{
+        title: 'Publicar novo conteúdo',
+        description:
+          'Publicar novo conteúdo no TabNews - artigos, tutoriais, indicações, curiosidades, ferramentas e outros assuntos relacionados a tecnologia.',
+      }}>
       {contents?.length === 0 && (
         <Box sx={{ width: '100%', mb: 3 }}>
           <Flash variant="warning">
