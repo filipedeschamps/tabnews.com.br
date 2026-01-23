@@ -1,7 +1,9 @@
 'use client';
 import { KebabHorizontalIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, Box, IconButton } from '@primer/react';
+import { ActionList, ActionMenu, Box, Button, IconButton } from '@primer/react';
 import { createElement, isValidElement, useRef, useState } from 'react';
+
+import { Pagination } from '@/TabNewsUI';
 
 import { useNotifications } from './Provider';
 
@@ -18,7 +20,8 @@ import { useNotifications } from './Provider';
  * @returns {JSX.Element} A React component that displays the notification list.
  */
 export function NotificationList() {
-  const { notifications, isLoading, labels } = useNotifications();
+  const { notifications, isLoading, labels, onMarkAllAsRead, getCount, pagination, showPagination } =
+    useNotifications();
 
   if (!notifications?.length && !isLoading) {
     return (
@@ -29,19 +32,39 @@ export function NotificationList() {
   }
 
   return (
-    <ActionList>
-      {notifications.map((item) => (
-        <NotificationItem key={item.id} item={item} />
-      ))}
-
-      {isLoading && (
-        <ActionList.Item disabled loading>
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <span>{labels.loading}</span>
-          </Box>
-        </ActionList.Item>
+    <>
+      {getCount?.(notifications) > 0 && typeof onMarkAllAsRead === 'function' && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+          <Button
+            variant="invisible"
+            size="small"
+            onClick={onMarkAllAsRead}
+            sx={{
+              color: 'fg.muted',
+              '&:hover': {
+                color: 'fg.default',
+                bg: 'canvas.subtle',
+              },
+            }}>
+            {labels.markAllAsRead || 'Marcar todas como lidas'}
+          </Button>
+        </Box>
       )}
-    </ActionList>
+      <ActionList>
+        {notifications.map((item) => (
+          <NotificationItem key={item.id} item={item} />
+        ))}
+
+        {isLoading && (
+          <ActionList.Item disabled loading>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <span>{labels.loading}</span>
+            </Box>
+          </ActionList.Item>
+        )}
+        {showPagination && <Pagination {...pagination} />}
+      </ActionList>
+    </>
   );
 }
 
@@ -72,6 +95,11 @@ function NotificationItem({ item }) {
       {getItemIcon && <ActionList.LeadingVisual>{getItemIcon(item)}</ActionList.LeadingVisual>}
 
       {item.title}
+      {item.created_at && (
+        <Box as="span" sx={{ color: 'var(--fgColor-muted)', fontSize: 0, ml: 2 }}>
+          • {formatTimeAgo(item.created_at)}
+        </Box>
+      )}
 
       <ActionList.Description variant="block">
         <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.body}</Box>
@@ -222,4 +250,34 @@ export function focusSiblingIfRemoved(currentId) {
       nextElement.focus();
     }
   });
+}
+
+function formatTimeAgo(dateString) {
+  const now = new Date();
+  const date = new Date(dateString);
+
+  const diffMs = now - date;
+  const diffSeconds = Math.floor(diffMs / 1000);
+
+  if (diffSeconds < 60) {
+    return `há ${diffSeconds}s`;
+  }
+
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) {
+    return `há ${diffMinutes}m`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `há ${diffHours}h`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays == 1) return `há 1 dia`;
+  if (diffDays <= 90) {
+    return `há ${diffDays} dias`;
+  }
+
+  return `há 90+ dias`;
 }
