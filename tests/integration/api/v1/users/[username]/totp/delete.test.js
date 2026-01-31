@@ -10,7 +10,7 @@ beforeAll(async () => {
   await orchestrator.runPendingMigrations();
 });
 
-describe('PATCH /api/v1/users/[username]/totp', () => {
+describe('DELETE /api/v1/users/[username]/totp', () => {
   describe('Anonymous user', () => {
     test('With a non-existent user', async () => {
       const requestBuilder = new RequestBuilder('/api/v1/users');
@@ -105,7 +105,7 @@ describe('PATCH /api/v1/users/[username]/totp', () => {
         }),
       });
 
-      expect.soft(response.status).toBe(204);
+      expect.soft(response.status).toBe(401);
 
       const userInDatabase = await user.findOneById(createdUser.id);
       expect(userInDatabase.totp_secret).toBeNull();
@@ -144,15 +144,13 @@ describe('PATCH /api/v1/users/[username]/totp', () => {
         password: 'validPassword',
       });
 
-      expect.soft(response.status).toBe(400);
+      expect.soft(response.status).toBe(401);
       expect(responseBody).toStrictEqual({
-        status_code: 400,
-        name: 'ValidationError',
-        message: `"totp_token" é um campo obrigatório.`,
+        status_code: 401,
+        name: 'UnauthorizedError',
+        message: `Dados não conferem.`,
         action: 'Ajuste os dados enviados e tente novamente.',
-        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
-        key: 'totp_token',
-        type: 'any.required',
+        error_location_code: 'CONTROLLER:USER_TOTP:DELETE_HANDLER:DATA_MISMATCH',
         error_id: expect.any(String),
         request_id: expect.any(String),
       });
@@ -202,7 +200,7 @@ describe('PATCH /api/v1/users/[username]/totp', () => {
         status_code: 401,
         name: 'UnauthorizedError',
         message: 'Dados não conferem.',
-        action: 'Verifique se a senha e o código TOTP informados estão corretos.',
+        action: 'Ajuste os dados enviados e tente novamente.',
         error_location_code: 'CONTROLLER:USER_TOTP:DELETE_HANDLER:DATA_MISMATCH',
         error_id: expect.any(String),
         request_id: expect.any(String),
@@ -230,7 +228,7 @@ describe('PATCH /api/v1/users/[username]/totp', () => {
         status_code: 401,
         name: 'UnauthorizedError',
         message: 'Dados não conferem.',
-        action: 'Verifique se a senha e o código TOTP informados estão corretos.',
+        action: 'Ajuste os dados enviados e tente novamente.',
         error_location_code: 'CONTROLLER:USER_TOTP:DELETE_HANDLER:DATA_MISMATCH',
         error_id: expect.any(String),
         request_id: expect.any(String),

@@ -74,7 +74,14 @@ describe('PATCH /api/v1/users/[username]/totp', () => {
       });
 
       expect.soft(response.status).toBe(200);
-      expect(responseBody).toStrictEqual({ totp_enabled: true });
+      expect(responseBody).toStrictEqual({ totp_enabled: true, recovery_codes: responseBody.recovery_codes });
+
+      expect(responseBody.recovery_codes).toBeDefined();
+      expect(responseBody.recovery_codes).not.toBeNull();
+      expect(responseBody.recovery_codes).toHaveLength(10);
+      for (const code of responseBody.recovery_codes) {
+        expect(code).toHaveLength(10);
+      }
 
       const updatedUser = await user.findOneById(createdUser.id);
       expect(updatedUser.totp_secret).toBeDefined();

@@ -94,7 +94,7 @@ describe('POST /api/v1/sessions', () => {
       });
     });
 
-    test('Using a valid email and password with TOTP enabled but not sending TOTP token', async () => {
+    test('Using a valid email and password with TOTP enabled but not sending TOTP token or recovery code', async () => {
       const defaultUser = await orchestrator.createUser({
         email: 'emailWithTotpEnabled@example.com',
         password: 'ValidPassword',
@@ -109,15 +109,13 @@ describe('POST /api/v1/sessions', () => {
         password: 'ValidPassword',
       });
 
-      expect.soft(response.status).toBe(400);
+      expect.soft(response.status).toBe(401);
       expect(responseBody).toStrictEqual({
-        status_code: 400,
-        name: 'ValidationError',
-        message: `"totp_token" é um campo obrigatório.`,
-        action: `Ajuste os dados enviados e tente novamente.`,
-        error_location_code: 'MODEL:VALIDATOR:FINAL_SCHEMA',
-        key: 'totp_token',
-        type: 'any.required',
+        status_code: 401,
+        name: 'UnauthorizedError',
+        message: `Dados não conferem.`,
+        action: `Verifique se os dados enviados estão corretos.`,
+        error_location_code: 'CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH',
         error_id: responseBody.error_id,
         request_id: responseBody.request_id,
       });
@@ -140,6 +138,82 @@ describe('POST /api/v1/sessions', () => {
         email: 'emailWithInvalidTotp@example.com',
         password: 'ValidPasswordAndInvalidTotp',
         totp_token: orchestrator.getInvalidTotpToken(userTotp),
+      });
+
+      expect.soft(response.status).toBe(401);
+      expect(responseBody).toStrictEqual({
+        status_code: 401,
+        name: 'UnauthorizedError',
+        message: `Dados não conferem.`,
+        action: `Verifique se os dados enviados estão corretos.`,
+        error_location_code: 'CONTROLLER:SESSIONS:POST_HANDLER:DATA_MISMATCH',
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+      });
+
+      expect(uuidVersion(responseBody.error_id)).toBe(4);
+      expect(uuidVersion(responseBody.request_id)).toBe(4);
+    });
+
+    test('Using a valid email and password with TOTP enabled and not sending TOTP token but a valid recovery code', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailWithValidRecoveryToken@example.com',
+        password: 'ValidRecoveryCode',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await orchestrator.enableTotp(defaultUser);
+      const recoveryCodes = await orchestrator.createRecoveryCodes(defaultUser);
+
+      const sessionRequestBuilder = new RequestBuilder('/api/v1/sessions');
+      const { response, responseBody } = await sessionRequestBuilder.post({
+        email: 'emailWithValidRecoveryToken@example.com',
+        password: 'ValidRecoveryCode',
+        recovery_code: recoveryCodes[1],
+      });
+
+      expect.soft(response.status).toBe(201);
+      expect(responseBody).toStrictEqual({
+        token: expect.any(String),
+        id: expect.any(String),
+        created_at: expect.any(String),
+        updated_at: expect.any(String),
+        expires_at: expect.any(String),
+      });
+      expect(responseBody.token.length).toBe(96);
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.expires_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      const sessionObjectInDatabase = await session.findOneById(responseBody.id);
+      expect(sessionObjectInDatabase.user_id).toStrictEqual(defaultUser.id);
+
+      const parsedCookiesFromResponse = orchestrator.parseSetCookies(response);
+      expect(parsedCookiesFromResponse.session_id).toStrictEqual({
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 30,
+        name: 'session_id',
+        path: '/',
+        value: responseBody.token,
+      });
+    });
+
+    test('Using a valid email and password with TOTP enabled and not sending TOTP token but a invalid recovery code', async () => {
+      const defaultUser = await orchestrator.createUser({
+        email: 'emailWithInvalidRecoveryCode@example.com',
+        password: 'invalidRecoveryCode',
+      });
+
+      await orchestrator.activateUser(defaultUser);
+      await orchestrator.enableTotp(defaultUser);
+      await orchestrator.createRecoveryCodes(defaultUser);
+
+      const sessionRequestBuilder = new RequestBuilder('/api/v1/sessions');
+      const { response, responseBody } = await sessionRequestBuilder.post({
+        email: 'emailWithInvalidRecoveryCode@example.com',
+        password: 'invalidRecoveryCode',
+        recovery_code: 'abcdefghij',
       });
 
       expect.soft(response.status).toBe(401);

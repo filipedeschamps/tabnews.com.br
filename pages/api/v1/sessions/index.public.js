@@ -7,6 +7,7 @@ import authentication from 'models/authentication.js';
 import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
+import recoveryCodes from 'models/recovery-codes';
 import session from 'models/session';
 import user from 'models/user';
 import userTotp from 'models/user-totp';
@@ -38,6 +39,7 @@ function postValidationHandler(request, response, next) {
     email: 'required',
     password: 'required',
     totp_token: 'optional',
+    recovery_code: 'optional',
   });
 
   request.body = cleanValues;
@@ -62,8 +64,18 @@ async function postHandler(request, response) {
     await authentication.comparePasswords(secureInputValues.password, storedUser.password);
 
     if (storedUser.totp_secret) {
-      validator(secureInputValues, { totp_token: 'required' });
-      userTotp.validateToken(storedUser.totp_secret, secureInputValues.totp_token);
+      // validator(secureInputValues, { totp_token: 'required', recovery_code: 'required' });
+      if (secureInputValues?.totp_token) {
+        userTotp.validateToken(storedUser.totp_secret, secureInputValues.totp_token);
+      } else if (secureInputValues?.recovery_code) {
+        const recoveryCodeId = await recoveryCodes.findRecoveryCodeByUserId(
+          storedUser.id,
+          secureInputValues.recovery_code,
+        );
+        await recoveryCodes.invalidateRecoveryCodeById(recoveryCodeId);
+      } else {
+        throw new UnauthorizedError({});
+      }
     }
   } catch (error) {
     const remainingMs = startMs - Date.now() + ENUMERATION_DELAY_MS + Math.random() * 10;

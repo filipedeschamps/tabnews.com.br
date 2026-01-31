@@ -206,6 +206,12 @@ const schemas = {
     });
   },
 
+  recovery_code: function () {
+    return Joi.object({
+      recovery_code: Joi.string().length(10).when('$required.recovery_code', { is: 'required', then: Joi.required() }),
+    });
+  },
+
   session_id: function () {
     return Joi.object({
       session_id: Joi.string()
@@ -647,6 +653,9 @@ const schemas = {
           'reward:user:tabcoins',
           'system:update:tabcoins',
           'totp:start_setup',
+          'recovery_codes:create',
+          'recovery_codes:update',
+          'recovery_codes:delete',
         )
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',

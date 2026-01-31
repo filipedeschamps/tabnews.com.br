@@ -70,10 +70,8 @@ async function findOneValidByUserId(userId) {
   return result.rows[0];
 }
 
-async function disable(userObject, token) {
+async function disable(userObject) {
   if (!userObject.totp_secret) return;
-
-  validateToken(userObject.totp_secret, token);
 
   const query = {
     text: `

@@ -6,6 +6,7 @@ import authorization from 'models/authorization.js';
 import cacheControl from 'models/cache-control';
 import controller from 'models/controller.js';
 import event from 'models/event';
+import recoveryCodes from 'models/recovery-codes';
 import userTotp from 'models/user-totp';
 import validator from 'models/validator';
 
@@ -72,7 +73,9 @@ async function patchHandler(request, response) {
 
   await userTotp.enable(authenticatedUser, request.body.totp_token);
 
-  const output = { totp_enabled: true };
+  const userRecoveryCodes = await recoveryCodes.create(authenticatedUser);
+
+  const output = { totp_enabled: true, recovery_codes: userRecoveryCodes };
   const secureOutputValues = authorization.filterOutput(authenticatedUser, 'read:user_totp', output);
 
   await event.create({
@@ -96,7 +99,8 @@ function deleteValidationHandler(request, response, next) {
 
   const cleanBody = validator(request.body, {
     password: 'required',
-    totp_token: 'required',
+    totp_token: 'optional',
+    recovery_code: 'optional',
   });
 
   request.query = cleanQuery;
@@ -110,14 +114,23 @@ async function deleteHandler(request, response) {
 
   const authenticatedUser = request.context.user;
 
-  // Compress all mismatch errors (TOTP token and password) into one single error.
+  // Compress all mismatch errors (TOTP token, recovery code and password) into one single error.
   try {
     await authentication.comparePasswords(request.body.password, authenticatedUser.password);
-    await userTotp.disable(authenticatedUser, request.body.totp_token);
+    if (request.body?.totp_token) {
+      userTotp.validateToken(authenticatedUser.totp_secret, request.body.totp_token);
+    } else if (request.body?.recovery_code) {
+      await recoveryCodes.findRecoveryCodeByUserId(authenticatedUser.id, request.body.recovery_code);
+    } else {
+      throw new UnauthorizedError({});
+    }
+
+    await userTotp.disable(authenticatedUser);
+    await recoveryCodes.invalidateAllRecoveryCodesByUserId(authenticatedUser.id);
   } catch (error) {
     throw new UnauthorizedError({
       message: `Dados não conferem.`,
-      action: `Verifique se a senha e o código TOTP informados estão corretos.`,
+      action: `Ajuste os dados enviados e tente novamente.`,
       errorLocationCode: `CONTROLLER:USER_TOTP:DELETE_HANDLER:DATA_MISMATCH`,
     });
   }

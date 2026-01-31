@@ -33,6 +33,7 @@ function filterInput(user, feature, input, target) {
       email: input.email,
       password: input.password,
       totp_token: input.totp_token,
+      recovery_code: input.recovery_code,
     };
   }
 
@@ -282,6 +283,13 @@ function filterOutput(user, feature, output) {
   if (feature === 'read:user_totp') {
     filteredOutputValues = {
       totp_enabled: output.totp_enabled,
+      recovery_codes: output.recovery_codes,
+    };
+  }
+
+  if (feature === 'read:recovery_codes') {
+    filteredOutputValues = {
+      recovery_codes: output.recovery_codes,
     };
   }
 

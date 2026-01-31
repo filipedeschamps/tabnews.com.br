@@ -13,6 +13,7 @@ import balance from 'models/balance.js';
 import ban from 'models/ban';
 import content from 'models/content.js';
 import event from 'models/event.js';
+import recoveryCodes from 'models/recovery-codes';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
 import userTotp from 'models/user-totp';
@@ -574,7 +575,13 @@ async function expireTemporaryTotp(userObject) {
 async function enableTotp(userObject) {
   const totp = await userTotp.startSetup(userObject);
   await userTotp.enable(userObject, totp.generate());
+
   return totp;
+}
+
+async function createRecoveryCodes(userObject) {
+  const userRecoveryCodes = await recoveryCodes.create(userObject);
+  return userRecoveryCodes;
 }
 
 function getInvalidTotpToken(totp) {
@@ -597,6 +604,7 @@ const orchestrator = {
   createPrestige,
   createRate,
   createRecoveryToken,
+  createRecoveryCodes,
   createSession,
   createTemporaryTotp,
   createUser,
