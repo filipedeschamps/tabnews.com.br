@@ -47,8 +47,7 @@ function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow, copyAnc
     ];
 
     if (copyAnchorLink !== false) {
-      const copyAnchorLinkOptions = typeof copyAnchorLink === 'object' ? copyAnchorLink : {};
-      pluginList.push(copyAnchorLinkPlugin(copyAnchorLinkOptions));
+      pluginList.push(copyAnchorLinkPlugin());
     }
 
     if (!areLinksTrusted) {

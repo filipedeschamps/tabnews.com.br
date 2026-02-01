@@ -34,7 +34,7 @@ export default function Page() {
       }}>
       <Box>
         <Heading as="h1">Contato</Heading>
-        <Viewer value={body} clobberPrefix="" />
+        <Viewer value={body} clobberPrefix="" copyAnchorLink={false} />
       </Box>
     </DefaultLayout>
   );
