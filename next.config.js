@@ -64,10 +64,6 @@ module.exports = {
         source: '/recentes/rss',
         destination: '/api/v1/contents/rss',
       },
-      {
-        source: '/api/v1/analytics',
-        destination: `${process.env.NEXT_PUBLIC_UMAMI_ENDPOINT}/api/send`,
-      },
     ];
   },
   headers() {
