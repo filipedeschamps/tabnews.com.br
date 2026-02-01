@@ -15,6 +15,13 @@ const client = new Client({
   allowExitOnIdle: false,
 });
 
+if (!endpoint || !websiteId) {
+  console.log(
+    '> Skipping Umami configuration because NEXT_PUBLIC_UMAMI_ENDPOINT or NEXT_PUBLIC_UMAMI_WEBSITE_ID is missing.',
+  );
+  process.exit(0);
+}
+
 configUmami();
 
 async function configUmami() {
@@ -77,7 +84,7 @@ async function configUmami() {
   console.log('> Umami configuration created!');
 }
 
-async function waitForServer(attempts = 5) {
+async function waitForServer(attempts = 15) {
   try {
     return await fetch(`${endpoint}/api/heartbeat`);
   } catch (error) {
@@ -87,7 +94,7 @@ async function waitForServer(attempts = 5) {
       return waitForServer(attempts - 1);
     }
 
-    console.error('🔴 Umami is not ready, exiting...');
+    console.error('> Umami is not ready, exiting...');
     process.exit(1);
   }
 }
