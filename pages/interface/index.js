@@ -1,6 +1,7 @@
 export { default as Analytics } from './components/Analytics';
 export { DefaultHead, default as Head } from './components/Head';
 export { default as useMediaQuery } from './hooks/useMediaQuery';
+export { default as useNotificationConfig } from './hooks/useNotificationConfig';
 export { UserProvider, default as useUser } from './hooks/useUser';
 export { default as suggestEmail } from './utils/email-suggestion';
 export { default as createErrorMessage } from './utils/error-message';
