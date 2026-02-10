@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   anchorHeadersPlugin,
+  copyAnchorLinkPlugin,
   copyCodeToClipboardPlugin,
   externalLinksPlugin,
   removeDuplicateClobberPrefix,
@@ -33,7 +34,7 @@ const bytemdPluginBaseList = [
   copyCodeToClipboardPlugin(),
 ];
 
-function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow }) {
+function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow, copyAnchorLink }) {
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
@@ -45,19 +46,30 @@ function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow }) {
       removeDuplicateClobberPrefix({ clobberPrefix }),
     ];
 
+    if (copyAnchorLink !== false) {
+      pluginList.push(copyAnchorLinkPlugin());
+    }
+
     if (!areLinksTrusted) {
       pluginList.push(externalLinksPlugin({ shouldAddNofollow }));
     }
 
     return pluginList;
-  }, [areLinksTrusted, clobberPrefix, colorScheme, shouldAddNofollow]);
+  }, [areLinksTrusted, clobberPrefix, colorScheme, copyAnchorLink, shouldAddNofollow]);
 
   return plugins;
 }
 
-export function MarkdownViewer({ value: _value, areLinksTrusted, clobberPrefix, shouldAddNofollow, ...props }) {
+export function MarkdownViewer({
+  value: _value,
+  areLinksTrusted,
+  clobberPrefix,
+  copyAnchorLink,
+  shouldAddNofollow,
+  ...props
+}) {
   clobberPrefix = clobberPrefix?.toLowerCase();
-  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow });
+  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, copyAnchorLink, shouldAddNofollow });
   const [value, setValue] = useState(_value);
 
   useEffect(() => {

@@ -48,6 +48,7 @@ const exportedByMarkdown = [
   'MarkdownEditor',
   'MarkdownViewer',
   'anchorHeadersPlugin',
+  'copyAnchorLinkPlugin',
   'copyCodeToClipboardPlugin',
   'externalLinksPlugin',
   'removeDuplicateClobberPrefix',
