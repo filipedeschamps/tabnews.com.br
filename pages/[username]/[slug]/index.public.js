@@ -89,6 +89,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
           sx={{
             width: '100%',
             display: 'flex',
+            overflow: 'visible',
           }}>
           <Box
             sx={{
@@ -111,7 +112,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             />
           </Box>
 
-          <Box sx={{ width: '100%', mt: contentFound.title ? 0 : '9px', pl: '1px', overflow: 'auto' }}>
+          <Box sx={{ width: '100%', mt: contentFound.title ? 0 : '9px', pl: '1px', overflow: 'visible' }}>
             <Content key={contentFound.id} content={contentFound} mode="view" />
           </Box>
         </Box>
@@ -323,7 +324,14 @@ function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, ren
             </Box>
 
             <Box
-              sx={{ display: 'flex', flexDirection: 'column', width: '100%', mt: '9px', pl: '1px', overflow: 'auto' }}>
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                mt: '9px',
+                pl: '1px',
+                overflow: 'visible',
+              }}>
               {isPublished && <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />}
 
               <Box sx={{ display: 'flex', flex: 1, mt: isPublished ? 4 : 0, alignItems: 'end' }}>
