@@ -21,15 +21,24 @@ import {
   Link,
   PastTime,
   ReadTime,
+  Spinner,
   Text,
   TextInput,
   Tooltip,
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, LinkIcon, PencilIcon, ShareIcon, TrashIcon } from '@/TabNewsUI/icons';
+import {
+  BookmarkFilledIcon,
+  BookmarkIcon,
+  KebabHorizontalIcon,
+  LinkIcon,
+  PencilIcon,
+  ShareIcon,
+  TrashIcon,
+} from '@/TabNewsUI/icons';
 import webserver from 'infra/webserver';
-import { createErrorMessage, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
+import { createErrorMessage, isValidJsonString, processNdJsonStream, useFavorite, useUser } from 'pages/interface';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
@@ -613,6 +622,7 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   const [isLinkCopied, setCopied] = useState(false);
   const router = useRouter();
   const { user, isLoading } = useUser();
+  const favorite = useFavorite(contentObject, user);
   const confirm = useConfirm();
 
   const isRootContent = rootContent.id === contentObject.parent_id;
@@ -661,6 +671,12 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
     }
   };
 
+  useEffect(() => {
+    if (typeof favorite.error === 'string') {
+      alert(favorite.error);
+    }
+  }, [favorite.error]);
+
   return (
     <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
       <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" sx={{ position: 'absolute' }}>
@@ -674,6 +690,34 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
           {isLinkCopied ? <Text sx={{ color: 'fg.muted' }}>Link copiado!</Text> : <ShareIcon size={16} />}
         </Button>
       </Tooltip>
+      {favorite.isElegible && (
+        <Tooltip
+          text={`Salvar ${isRootContent ? 'publicação' : 'comentário'}`}
+          direction="n"
+          sx={{ position: 'absolute' }}>
+          <Button onClick={favorite.handleToggleFavorite}>
+            {favorite.loading ? (
+              <Spinner size="small" />
+            ) : favorite.isFavorite ? (
+              <>
+                <Text
+                  sx={{
+                    // Faz com que seja "visível apenas para leitores de tela"
+                    position: 'absolute',
+                    left: '-10000px',
+                    top: 'auto',
+                    width: '1px',
+                    height: '1px',
+                    overflow: 'hidden',
+                  }}>{`${isRootContent ? 'Publicação salva' : 'Comentário salvo'} !`}</Text>
+                <BookmarkFilledIcon size={16} />
+              </>
+            ) : (
+              <BookmarkIcon size={16} />
+            )}
+          </Button>
+        </Tooltip>
+      )}
     </Box>
   );
 }

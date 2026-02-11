@@ -85,7 +85,7 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
                   },
                 },
               }}>
-              {contentObject.parent_id ? (
+              {contentObject.parent_id || !contentObject.title || contentObject.title.length === 0 ? (
                 <Link
                   sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal' }}
                   href={`/${contentObject.owner_username}/${contentObject.slug}`}>
