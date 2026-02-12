@@ -13,8 +13,10 @@ import balance from 'models/balance.js';
 import ban from 'models/ban';
 import content from 'models/content.js';
 import event from 'models/event.js';
+import recoveryCodes from 'models/recovery-codes';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
+import userTotp from 'models/user-totp';
 import user from 'models/user.js';
 
 if (process.env.NODE_ENV !== 'test') {
@@ -551,6 +553,47 @@ function parseSetCookies(response) {
   return parsedCookies;
 }
 
+async function findTemporaryTotpByUser(userObject) {
+  const results = await database.query({
+    text: 'SELECT * FROM temp_totp_secrets WHERE user_id = $1;',
+    values: [userObject.id],
+  });
+  return results.rows[0];
+}
+
+async function createTemporaryTotp(userObject) {
+  return await userTotp.startSetup(userObject);
+}
+
+async function expireTemporaryTotp(userObject) {
+  await database.query({
+    text: `UPDATE temp_totp_secrets SET expires_at = now() - interval '1 second' WHERE user_id = $1;`,
+    values: [userObject.id],
+  });
+}
+
+async function enableTotp(userObject) {
+  const totp = await userTotp.startSetup(userObject);
+  await userTotp.enable(userObject, totp.generate());
+
+  return totp;
+}
+
+async function createRecoveryCodes(userObject) {
+  const userRecoveryCodes = await recoveryCodes.create(userObject);
+  return userRecoveryCodes;
+}
+
+function getInvalidTotpToken(totp) {
+  // A hardcoded token such as "000000" may be valid by a small chance,
+  // so we need to generate an invalid token.
+  const validToken = totp.generate();
+  const numericToken = parseInt(validToken, 10);
+  const invalidNumericToken = (numericToken + 1) % 1_000_000; // (999999 + 1 -> 000000)
+  const invalidToken = invalidNumericToken.toString().padStart(6, '0');
+  return invalidToken;
+}
+
 const orchestrator = {
   activateUser,
   addFeaturesToUser,
@@ -561,12 +604,18 @@ const orchestrator = {
   createPrestige,
   createRate,
   createRecoveryToken,
+  createRecoveryCodes,
   createSession,
+  createTemporaryTotp,
   createUser,
   deleteAllEmails,
   dropAllTables,
+  enableTotp,
+  expireTemporaryTotp,
   findSessionByToken,
+  findTemporaryTotpByUser,
   getEmails,
+  getInvalidTotpToken,
   getLastEvent,
   hasEmailsAfterDelay,
   nukeUser,

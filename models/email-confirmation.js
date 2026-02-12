@@ -77,7 +77,7 @@ async function findOneTokenByUserId(userId) {
   return results.rows[0];
 }
 
-async function markTokenAsUsedById(tokenId) {
+async function markTokenAsUsedById(tokenId, options) {
   const query = {
     text: `
       UPDATE
@@ -95,7 +95,7 @@ async function markTokenAsUsedById(tokenId) {
     values: [tokenId],
   };
 
-  const results = await database.query(query);
+  const results = await database.query(query, options);
 
   if (results.rowCount === 0) {
     throw new NotFoundError({
@@ -110,10 +110,15 @@ async function markTokenAsUsedById(tokenId) {
   return results.rows[0];
 }
 
-async function confirmEmailUpdate(tokenId) {
-  const usedToken = await markTokenAsUsedById(tokenId);
-  await user.update({ id: usedToken.user_id }, { email: usedToken.email }, { skipEmailConfirmation: true });
+async function confirmEmailUpdate(tokenId, options) {
+  const usedToken = await markTokenAsUsedById(tokenId, options);
+  const updatedUser = await user.update(
+    { id: usedToken.user_id },
+    { email: usedToken.email },
+    { skipEmailConfirmation: true, transaction: options?.transaction },
+  );
 
+  usedToken.user = updatedUser;
   return usedToken;
 }
 

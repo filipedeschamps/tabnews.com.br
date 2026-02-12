@@ -46,6 +46,10 @@ const availableFeatures = new Set([
 
   // ADVERTISEMENT
   'read:ad:list',
+
+  // MFA
+  'read:totp',
+  'read:user_totp',
 ]);
 
 export default Object.freeze(availableFeatures);
