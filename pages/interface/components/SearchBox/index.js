@@ -85,6 +85,7 @@ export default function useSearchBox() {
       setIsLoading(false);
       input.focus();
       inputRef.current = input;
+      input.setAttribute('enterkeyhint', 'search');
     };
 
     const onSuggestionsRender = (suggestionsBox) => {
