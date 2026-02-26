@@ -21,6 +21,7 @@ function ActiveButtons({ content }) {
 
   const [contentObject, setContentObject] = useRevalidate(content);
   const [isPosting, setIsPosting] = useState(false);
+  const [voteChange, setVoteChange] = useState(0);
 
   useEffect(() => {
     setContentObject(content);
@@ -47,12 +48,14 @@ function ActiveButtons({ content }) {
   });
 
   async function transactTabCoin(transactionType) {
-    setIsPosting(true);
-
     if (!user && !isLoading) {
       router.push(`/login?redirect=${router.asPath}`);
       return;
     }
+
+    setIsPosting(true);
+    const change = transactionType === 'credit' ? 1 : -1;
+    setVoteChange(change);
 
     try {
       const response = await fetch(`/api/v1/contents/${contentObject.owner_username}/${contentObject.slug}/tabcoins`, {
@@ -72,6 +75,8 @@ function ActiveButtons({ content }) {
         fetchUser();
         setContentObject({ ...contentObject, ...responseBody });
         setIsPosting(false);
+        setVoteChange(0);
+
         if (transactionType === 'credit') {
           rewardCredit();
         }
@@ -89,12 +94,23 @@ function ActiveButtons({ content }) {
       );
 
       setIsPosting(false);
+      setVoteChange(0);
     } catch (error) {
       setIsPosting(false);
+      setVoteChange(0);
     }
   }
 
   const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit;
+
+  const upColor = voteChange > 0 || isAnimatingCredit ? 'success.emphasis' : 'fg.subtle';
+  const downColor = voteChange < 0 || isAnimatingDebit ? 'danger.emphasis' : 'fg.subtle';
+  const countColor =
+    voteChange > 0 || isAnimatingCredit
+      ? 'success.emphasis'
+      : voteChange < 0 || isAnimatingDebit
+        ? 'danger.emphasis'
+        : 'accent.emphasis';
 
   return (
     <Box
@@ -109,7 +125,7 @@ function ActiveButtons({ content }) {
           aria-label="Creditar TabCoin"
           icon={ChevronUpIcon}
           size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+          sx={{ color: upColor, lineHeight: '18px' }}
           onClick={() => transactTabCoin('credit')}
           disabled={isInAction}
         />
@@ -123,12 +139,12 @@ function ActiveButtons({ content }) {
           fontWeight: 'bold',
           my: 2,
           py: 1,
-          color: 'accent.emphasis',
+          color: countColor,
         }}
-        credit={contentObject.tabcoins_credit}
-        debit={contentObject.tabcoins_debit}>
+        credit={contentObject.tabcoins_credit + (voteChange > 0 ? 1 : 0)}
+        debit={contentObject.tabcoins_debit + (voteChange < 0 ? -1 : 0)}>
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
-        {contentObject.tabcoins}
+        {contentObject.tabcoins + voteChange}
       </TabCoinBalanceTooltip>
       <Tooltip text="Não achei relevante" direction="ne">
         <IconButton
@@ -136,7 +152,7 @@ function ActiveButtons({ content }) {
           aria-label="Debitar TabCoin"
           icon={ChevronDownIcon}
           size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px', mb: 2 }}
+          sx={{ color: downColor, lineHeight: '18px', mb: 2 }}
           onClick={() => transactTabCoin('debit')}
           disabled={isInAction}
         />
