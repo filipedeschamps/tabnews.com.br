@@ -24,6 +24,7 @@
     "node-pg-migrate": "7.9.1",
     "nodemailer": "7.0.10",
     "nprogress": "0.2.0",
+    "otpauth": "9.4.1",
     "parse-link-header": "2.0.0",
     "pg": "8.15.6",
     "react": "18.3.1",

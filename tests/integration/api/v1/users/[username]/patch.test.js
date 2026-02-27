@@ -146,6 +146,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -191,6 +192,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -234,6 +236,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -561,6 +564,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         email: defaultUser.email,
         features: defaultUser.features,
         notifications: defaultUser.notifications,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: defaultUser.updated_at.toISOString(),
       });
@@ -609,6 +613,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -677,6 +682,40 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: defaultUser.notifications,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+    });
+
+    test('Patching itself with a "description" containing a valid value and totp enabled', async () => {
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await usersRequestBuilder.buildUser();
+      await orchestrator.enableTotp(defaultUser);
+
+      const { response, responseBody } = await usersRequestBuilder.patch(`/${defaultUser.username}`, {
+        description: 'my description',
+      });
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toStrictEqual({
+        id: defaultUser.id,
+        username: defaultUser.username,
+        description: 'my description',
+        email: defaultUser.email,
+        features: [
+          'create:session',
+          'read:session',
+          'create:content',
+          'create:content:text_root',
+          'create:content:text_child',
+          'update:content',
+          'update:user',
+        ],
+        notifications: defaultUser.notifications,
+        tabcoins: 0,
+        tabcash: 0,
+        totp_enabled: true,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -797,6 +836,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         features: defaultUser.features,
         notifications: defaultUser.notifications,
         tabcoins: 200,
+        totp_enabled: false,
         tabcash: 55,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
@@ -826,6 +866,7 @@ describe('PATCH /api/v1/users/[username]', () => {
         notifications: false,
         tabcoins: 0,
         tabcash: 0,
+        totp_enabled: false,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,
       });
@@ -933,6 +974,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           description: defaultUser.description,
           features: defaultUser.features,
           notifications: defaultUser.notifications,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: defaultUser.updated_at.toISOString(),
         });
@@ -965,6 +1007,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           description: 'New description',
           features: defaultUser.features,
           notifications: false,
+          totp_enabled: false,
           tabcoins: 0,
           tabcash: 0,
           created_at: defaultUser.created_at.toISOString(),
@@ -1059,6 +1102,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           description: defaultUser.description,
           features: defaultUser.features,
           notifications: true,
+          totp_enabled: false,
           tabcoins: 0,
           tabcash: 0,
           created_at: defaultUser.created_at.toISOString(),
@@ -1095,6 +1139,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           description: defaultUser.description,
           features: defaultUser.features,
           notifications: true,
+          totp_enabled: false,
           created_at: defaultUser.created_at.toISOString(),
           updated_at: responseBody.updated_at,
         });
@@ -1137,6 +1182,7 @@ describe('PATCH /api/v1/users/[username]', () => {
           description: defaultUser.description,
           features: defaultUser.features,
           notifications: true,
+          totp_enabled: false,
           tabcoins: 0,
           tabcash: 0,
           created_at: defaultUser.created_at.toISOString(),
