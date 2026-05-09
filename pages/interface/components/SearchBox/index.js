@@ -14,6 +14,27 @@ export default function useSearchBox() {
     setIsOpen(true);
   }
 
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key !== '/') return;
+
+      const activeElement = document.activeElement;
+      const isTyping =
+        activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA' || activeElement?.isContentEditable;
+
+      if (isTyping) return;
+
+      event.preventDefault();
+      setIsOpen(true);
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   function SearchIconButton({ sx, ...props }) {
     return (
       <IconButton
