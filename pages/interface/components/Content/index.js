@@ -1,6 +1,7 @@
 import { isTrustedDomain } from '@tabnews/helpers';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import slug from 'slug';
 
 import {
   ActionList,
@@ -27,7 +28,7 @@ import {
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
-import { KebabHorizontalIcon, LinkIcon, PencilIcon, ShareIcon, TrashIcon } from '@/TabNewsUI/icons';
+import { KebabHorizontalIcon, LinkIcon, ListUnorderedIcon, PencilIcon, ShareIcon, TrashIcon } from '@/TabNewsUI/icons';
 import webserver from 'infra/webserver';
 import { createErrorMessage, isValidJsonString, processNdJsonStream, useUser } from 'pages/interface';
 
@@ -177,87 +178,107 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
 
   return (
     <Box
-      as="article"
-      id={`${contentObject.owner_username}-${contentObject.slug}`}
+      className="content-container"
+      as="div"
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
+        gap: '16px',
         width: '100%',
-        borderWidth: viewFrame ? 1 : 0,
-        p: viewFrame ? 4 : 0,
-        borderRadius: '6px',
-        borderColor: 'border.default',
-        borderStyle: 'solid',
-        wordBreak: 'break-word',
+        alignItems: 'flex-start',
       }}>
-      <Box>
-        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
+      <Box
+        className="article-column"
+        as="article"
+        id={`${contentObject.owner_username}-${contentObject.slug}`}
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          borderWidth: viewFrame ? 1 : 0,
+          p: viewFrame ? 4 : 0,
+          borderRadius: '6px',
+          borderColor: 'border.default',
+          borderStyle: 'solid',
+          wordBreak: 'break-word',
+        }}>
+        <Box>
+          {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              whiteSpace: 'nowrap',
-              gap: 1,
-              color: 'fg.muted',
-            }}>
-            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
-              <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
-            </BranchName>
-            <LabelGroup>
-              {isPageRootOwner && (
-                <Tooltip text="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
-                  <Label>Autor</Label>
-                </Tooltip>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+                gap: 1,
+                color: 'fg.muted',
+              }}>
+              <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
+                <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
+              </BranchName>
+              <LabelGroup>
+                {isPageRootOwner && (
+                  <Tooltip text="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                    <Label>Autor</Label>
+                  </Tooltip>
+                )}
+                {contentObject.type === 'ad' && (
+                  <Tooltip text="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                    <Label variant="success">Patrocinado</Label>
+                  </Tooltip>
+                )}
+              </LabelGroup>
+              {!contentObject.parent_id && (
+                <>
+                  <ReadTime text={contentObject.body} />
+                  {' · '}
+                </>
               )}
-              {contentObject.type === 'ad' && (
-                <Tooltip text="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
-                  <Label variant="success">Patrocinado</Label>
-                </Tooltip>
-              )}
-            </LabelGroup>
-            {!contentObject.parent_id && (
-              <>
-                <ReadTime text={contentObject.body} />
-                {' · '}
-              </>
+              <Link
+                href={`/${contentObject.owner_username}/${contentObject.slug}`}
+                prefetch={false}
+                sx={{ fontSize: 0, color: 'fg.muted' }}>
+                <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
+              </Link>
+            </Box>
+            {isOptionsMenuVisible && (
+              <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
             )}
-            <Link
-              href={`/${contentObject.owner_username}/${contentObject.slug}`}
-              prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted' }}>
-              <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
-            </Link>
           </Box>
-          {isOptionsMenuVisible && (
-            <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
+
+          {!contentObject.parent_id && contentObject.title && (
+            <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
+              {contentObject.title}
+            </Heading>
           )}
         </Box>
-
-        {!contentObject.parent_id && contentObject.title && (
-          <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
-            {contentObject.title}
-          </Heading>
+        <Box sx={{ overflow: 'hidden' }}>
+          <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
+        </Box>
+        {contentObject.source_url && (
+          <Box>
+            <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
+              <LinkIcon size={16} /> Fonte:{' '}
+              <Link
+                href={contentObject.source_url}
+                rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
+                {contentObject.source_url}
+              </Link>
+            </Text>
+          </Box>
         )}
       </Box>
-      <Box sx={{ overflow: 'hidden' }}>
-        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
+      <Box
+        className="toc-column"
+        sx={{
+          position: 'sticky',
+          top: '12px',
+          width: 'auto',
+          flexShrink: 0,
+          alignSelf: 'flex-start',
+        }}>
+        <TableOfContents articleId={`${contentObject.owner_username}-${contentObject.slug}`} />
       </Box>
-      {contentObject.source_url && (
-        <Box>
-          <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
-            <LinkIcon size={16} /> Fonte:{' '}
-            <Link
-              href={contentObject.source_url}
-              rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
-              {contentObject.source_url}
-            </Link>
-          </Text>
-        </Box>
-      )}
     </Box>
   );
 }
@@ -718,4 +739,197 @@ function ErrorMessage({ error, omitErrorId, ...props }) {
 
 function randomTitlePlaceholder() {
   return CONTENT_TITLE_PLACEHOLDER_EXAMPLES[Math.floor(Math.random() * CONTENT_TITLE_PLACEHOLDER_EXAMPLES.length)];
+}
+
+function TableOfContents({ articleId }) {
+  const [headings, setHeadings] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [activeId, setActiveId] = useState(null);
+  const [filterTerm, setFilterTerm] = useState('');
+  const containerRef = useRef(null);
+
+  function slugify(text) {
+    try {
+      return slug(String(text || '') || 'heading');
+    } catch (e) {
+      return (String(text || '') || 'heading').replace(/[^a-z0-9-]/gi, '-');
+    }
+  }
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    function buildTOC() {
+      const article = document.getElementById(articleId);
+      if (!article) {
+        setHeadings([]);
+        return;
+      }
+
+      const nodes = article.querySelectorAll('h2,h3,h4');
+      const nodesArr = Array.from(nodes);
+
+      const items = nodesArr.map((node) => {
+        let id = node.id;
+        if (!id) {
+          const text = (node.innerText || node.textContent || 'heading').trim();
+          const base = slugify(text);
+          let uniq = base;
+          let i = 1;
+          while (document.getElementById(uniq)) {
+            uniq = `${base}-${i++}`;
+          }
+          id = uniq;
+          node.id = id;
+        }
+        const level = parseInt(node.tagName.substring(1), 10) || 2;
+        return { id, text: node.innerText || node.textContent || '', level };
+      });
+
+      setHeadings(items);
+    }
+
+    buildTOC();
+
+    const article = document.getElementById(articleId);
+    if (!article) return;
+
+    const mo = new MutationObserver(() => buildTOC());
+    mo.observe(article, { childList: true, subtree: true, characterData: true });
+
+    return () => mo.disconnect();
+  }, [articleId]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target)) setOpen(false);
+    }
+
+    if (open) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+  useEffect(() => {
+    function onScroll() {
+      if (!headings || headings.length === 0) return;
+      let current = null;
+      for (let i = 0; i < headings.length; i++) {
+        const el = document.getElementById(headings[i].id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= 120) {
+          current = headings[i].id;
+        }
+      }
+      setActiveId(current);
+    }
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [headings]);
+
+  const filteredHeadings = useMemo(() => {
+    if (!filterTerm) return headings;
+    const term = String(filterTerm).toLowerCase();
+    return headings.filter((h) => (h.text || '').toLowerCase().includes(term));
+  }, [headings, filterTerm]);
+
+  if (!headings || headings.length === 0) return null;
+
+  return (
+    <Box
+      ref={containerRef}
+      sx={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }}
+      className="toc-container">
+      <Box sx={{ display: 'flex' }}>
+        <IconButton
+          variant="invisible"
+          aria-label="Mostrar sumário"
+          aria-expanded={open}
+          aria-controls={`${articleId}-toc`}
+          icon={ListUnorderedIcon}
+          size="small"
+          onClick={() => setOpen((s) => !s)}
+          sx={{
+            color: 'fg.subtle',
+            transition: 'transform 120ms ease, box-shadow 120ms ease',
+            // subtle click feedback instead of rotation
+            ':active': { transform: 'scale(0.96)' },
+            ':focus': { boxShadow: 'focus' },
+          }}
+        />
+      </Box>
+
+      {open && (
+        <Box
+          id={`${articleId}-toc`}
+          role="navigation"
+          aria-label="Tabela de Conteúdo"
+          sx={{
+            position: 'absolute',
+            right: 0,
+            top: '100%',
+            marginTop: '8px',
+            zIndex: 99,
+            bg: 'canvas.default',
+            border: '1px solid',
+            borderColor: 'border.default',
+            borderRadius: 2,
+            boxShadow: 'elevated',
+            maxHeight: '60vh',
+            overflow: 'auto',
+            p: 2,
+            minWidth: 300,
+            width: 'min(420px, 90vw)',
+          }}>
+          {/* Filter input */}
+          <Box sx={{ mb: 2 }}>
+            <TextInput
+              contrast
+              placeholder="Filtrar títulos"
+              value={filterTerm}
+              onChange={(e) => setFilterTerm(e.target?.value ?? e)}
+              sx={{ width: '100%', px: 2 }}
+            />
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Text as="div" sx={{ fontWeight: 'bold', fontSize: 1, mb: 1 }}>
+              {String(articleId || '').split('-')[0]}
+            </Text>
+          </Box>
+
+          <Box as="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            {filteredHeadings.map((h) => (
+              <Box
+                as="li"
+                key={h.id}
+                sx={{
+                  pl: (h.level - 1) * 3,
+                  mb: 2,
+                }}>
+                <Link
+                  href={`#${h.id}`}
+                  onClick={(ev) => {
+                    ev.preventDefault();
+                    const el = document.getElementById(h.id);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setOpen(false);
+                    if (history && history.replaceState) history.replaceState(null, '', `#${h.id}`);
+                  }}
+                  sx={{
+                    fontSize: 1,
+                    color: activeId === h.id ? 'fg.default' : 'fg.muted',
+                    fontWeight: activeId === h.id ? 'bold' : 'normal',
+                  }}>
+                  {h.text}
+                </Link>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
 }
