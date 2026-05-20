@@ -27,6 +27,7 @@ export { default as Tooltip } from '@/Tooltip';
 export { default as Turnstile } from '@/Turnstile';
 export { default as UserHeader } from '@/UserHeader';
 export { default as UserList } from '@/UserList';
+export { default as Notifications } from '@/Notification';
 export {
   ActionList,
   ActionMenu,
@@ -54,6 +55,8 @@ export {
   Truncate,
   useConfirm,
   useTheme,
+  NotificationsProvider,
+  NotificationMenu,
 } from '@tabnews/ui';
 
 export { Header as PrimerHeader, Link as PrimerLink } from '@tabnews/ui/primer';
