@@ -16,18 +16,35 @@ const consoleLevels = {
 const dataset = 'test-dataset';
 const token = 'test-token';
 
+vi.spyOn(global, 'fetch');
+
+function parseIngestEvents(call) {
+  return call[1].body
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+function mockOkResponse() {
+  return {
+    ok: true,
+    status: 200,
+    body: {
+      cancel: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+}
+
+async function flushUntilIngest() {
+  await vi.waitUntil(() => {
+    logger.flush();
+    return fetch.mock.calls.length >= 1;
+  });
+}
+
+let logger;
+
 describe('infra/logger', () => {
-  const mocks = vi.hoisted(() => ({
-    axiomIngest: vi.fn(),
-  }));
-
-  vi.mock('@axiomhq/js', () => ({
-    Axiom: vi.fn().mockImplementation(() => ({
-      ingest: mocks.axiomIngest,
-      flush: vi.fn().mockResolvedValue(),
-    })),
-  }));
-
   let stdoutSpy;
   const consoleSpy = {};
 
@@ -43,11 +60,10 @@ describe('infra/logger', () => {
     });
   });
 
-  let logger;
-
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
+    fetch.mockResolvedValue(mockOkResponse());
     logger = await import('..').then((m) => m.getLogger).then((getLogger) => getLogger());
   });
 
@@ -73,7 +89,7 @@ describe('infra/logger', () => {
         expect(consoleSpy[level]).toHaveBeenCalledWith('logger.' + level);
       });
 
-      expect(mocks.axiomIngest).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
     });
 
     it('should ignore "info" level', () => {
@@ -126,7 +142,7 @@ describe('infra/logger', () => {
           );
         });
 
-        expect(mocks.axiomIngest).not.toHaveBeenCalled();
+        expect(fetch).not.toHaveBeenCalled();
       });
     });
   });
@@ -156,7 +172,7 @@ describe('infra/logger', () => {
         );
       });
 
-      expect(mocks.axiomIngest).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
     });
 
     it('should ignore dev levels', async () => {
@@ -179,13 +195,11 @@ describe('infra/logger', () => {
     it('should log production levels', async () => {
       productionLevels.forEach((level) => logger[level]('logger.' + level));
 
-      await vi.waitUntil(() => mocks.axiomIngest.mock.calls.length === productionLevels.length);
+      await flushUntilIngest();
 
+      const events = parseIngestEvents(fetch.mock.calls[0]);
       productionLevels.forEach((level) => {
-        expect(mocks.axiomIngest).toHaveBeenCalledWith(
-          dataset,
-          expect.objectContaining({ level, msg: 'logger.' + level }),
-        );
+        expect(events).toContainEqual(expect.objectContaining({ level, msg: 'logger.' + level }));
       });
     });
 
@@ -193,7 +207,7 @@ describe('infra/logger', () => {
       onlyDevLevels.forEach((level) => logger[level]('logger.' + level));
 
       await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(mocks.axiomIngest).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
     });
 
     it('should not throw error on flush', () => {
@@ -208,8 +222,8 @@ describe('infra/logger', () => {
 
       logger.info('logger.info');
 
-      await vi.waitUntil(() => mocks.axiomIngest.mock.calls.length === 1);
-      expect(mocks.axiomIngest).toHaveBeenCalledWith(dataset, expect.objectContaining({ key: 'value' }));
+      await flushUntilIngest();
+      expect(parseIngestEvents(fetch.mock.calls[0])).toContainEqual(expect.objectContaining({ key: 'value' }));
     });
 
     it('should pass redact options to pino', async () => {
@@ -218,8 +232,8 @@ describe('infra/logger', () => {
 
       logger.info({ key: 'value' });
 
-      await vi.waitUntil(() => mocks.axiomIngest.mock.calls.length === 1);
-      expect(mocks.axiomIngest).toHaveBeenCalledWith(dataset, expect.objectContaining({ key: '[Redacted]' }));
+      await flushUntilIngest();
+      expect(parseIngestEvents(fetch.mock.calls[0])).toContainEqual(expect.objectContaining({ key: '[Redacted]' }));
     });
   });
 });

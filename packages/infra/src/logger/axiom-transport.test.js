@@ -2,32 +2,39 @@ import { noop } from 'packages/helpers';
 
 const mocks = vi.hoisted(() => {
   const waitUntil = vi.fn().mockImplementation((promise) => promise);
-  const ingest = vi.fn();
-  const flush = vi.fn().mockResolvedValue();
-  const Axiom = vi.fn().mockImplementation(() => ({
-    ingest,
-    flush,
-  }));
 
   return {
-    ingest,
-    flush,
-    Axiom,
     waitUntil,
   };
 });
-
-vi.mock('@axiomhq/js', () => ({
-  Axiom: mocks.Axiom,
-}));
 
 vi.mock('@vercel/functions', () => ({
   waitUntil: mocks.waitUntil,
 }));
 
+vi.spyOn(global, 'fetch');
+
+function parseIngestEvents(call) {
+  return call[1].body
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+function mockOkResponse() {
+  return {
+    ok: true,
+    status: 200,
+    body: {
+      cancel: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+}
+
 describe('axiomTransport', () => {
   const dataset = 'test-dataset';
   const token = 'test-token';
+  const url = 'https://api.axiom.co';
 
   let axiomTransport, consoleErrorSpy;
 
@@ -40,6 +47,7 @@ describe('axiomTransport', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    fetch.mockResolvedValue(mockOkResponse());
   });
 
   afterAll(() => {
@@ -78,8 +86,26 @@ describe('axiomTransport', () => {
 
       await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 30, msg: 'test log' }) + '\n');
 
-      await vi.waitUntil(() => mocks.ingest.mock.calls.length === 1);
-      expect(mocks.ingest).toHaveBeenCalledWith(dataset, expect.objectContaining({ level: 'info', msg: 'test log' }));
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
+
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(fetch).toHaveBeenCalledWith(
+        `${url}/v1/datasets/${dataset}/ingest`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-ndjson',
+            Authorization: `Bearer ${token}`,
+          },
+          keepalive: true,
+          signal: expect.any(AbortSignal),
+          body: expect.any(String),
+        }),
+      );
+      expect(parseIngestEvents(fetch.mock.calls[0])).toStrictEqual([
+        expect.objectContaining({ level: 'info', msg: 'test log' }),
+      ]);
     });
 
     it('should ingest logs in chunks', async () => {
@@ -93,8 +119,13 @@ describe('axiomTransport', () => {
       await transport.write(part2);
       await transport.write('\n');
 
-      await vi.waitUntil(() => mocks.ingest.mock.calls.length === 1);
-      expect(mocks.ingest).toHaveBeenCalledWith(dataset, expect.objectContaining({ level: 'info', msg: 'test log' }));
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
+
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(parseIngestEvents(fetch.mock.calls[0])).toStrictEqual([
+        expect.objectContaining({ level: 'info', msg: 'test log' }),
+      ]);
     });
 
     it('should flush without logs', async () => {
@@ -102,8 +133,8 @@ describe('axiomTransport', () => {
 
       await transport.flush();
 
-      expect(mocks.waitUntil).toHaveBeenCalledWith(mocks.flush());
-      expect(mocks.waitUntil).toHaveBeenCalledOnce();
+      expect(fetch).not.toHaveBeenCalled();
+      expect(mocks.waitUntil).not.toHaveBeenCalled();
     });
 
     it('should flush with logs', async () => {
@@ -112,26 +143,23 @@ describe('axiomTransport', () => {
       await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 40, msg: 'test log 1' }) + '\n');
       await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 50, msg: 'test log 2' }) + '\n');
 
-      await vi.waitUntil(() => mocks.ingest.mock.calls.length === 2);
-      await transport.flush();
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
 
-      expect(mocks.ingest).toHaveBeenCalledWith(dataset, expect.objectContaining({ level: 'warn', msg: 'test log 1' }));
-      expect(mocks.ingest).toHaveBeenCalledWith(
-        dataset,
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(parseIngestEvents(fetch.mock.calls[0])).toStrictEqual([
+        expect.objectContaining({ level: 'warn', msg: 'test log 1' }),
         expect.objectContaining({ level: 'error', msg: 'test log 2' }),
-      );
-
-      expect(mocks.waitUntil).toHaveBeenCalledWith(mocks.flush());
-      expect(mocks.waitUntil).toHaveBeenCalledOnce();
+      ]);
     });
 
     it('should not ingest invalid logs', async () => {
       const transport = axiomTransport({ dataset, token });
 
-      transport.write('invalid chunk \n');
+      await transport.write('invalid chunk \n');
+      transport.flush();
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(mocks.ingest).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
       expect(mocks.waitUntil).not.toHaveBeenCalled();
     });
 
@@ -147,57 +175,113 @@ describe('axiomTransport', () => {
       await transport.write('\n');
       await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 60, msg: 'test log 3' }) + '\n');
 
-      await transport.flush();
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
 
-      await vi.waitUntil(() => mocks.ingest.mock.calls.length === 3);
-      expect(mocks.ingest).toHaveBeenCalledWith(
-        dataset,
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(parseIngestEvents(fetch.mock.calls[0])).toStrictEqual([
         expect.objectContaining({ level: 'trace', msg: 'test log 1' }),
-      );
-      expect(mocks.ingest).toHaveBeenCalledWith(
-        dataset,
         expect.objectContaining({ level: 'debug', msg: 'test log 2' }),
-      );
-      expect(mocks.ingest).toHaveBeenCalledWith(
-        dataset,
         expect.objectContaining({ level: 'fatal', msg: 'test log 3' }),
-      );
-      expect(mocks.waitUntil).toHaveBeenCalledWith(mocks.flush());
-      expect(mocks.waitUntil).toHaveBeenCalledTimes(2);
+      ]);
     });
 
-    it('should continue logging even if an error occurs with Axiom', async () => {
-      const error = new Error('test error');
+    it('should flush in batches when exceeding max batch size', async () => {
+      const transport = axiomTransport({ dataset, token });
 
-      mocks.Axiom.mockImplementationOnce(({ onError }) => ({
-        ingest: mocks.ingest.mockImplementationOnce(() => onError(error)),
-        flush: mocks.flush,
-      }));
+      for (let i = 0; i < 1001; i++) {
+        transport.write(JSON.stringify({ time: new Date().toISOString(), level: 30, msg: `log ${i}` }) + '\n');
+      }
+
+      await vi.waitUntil(() => fetch.mock.calls.length >= 1);
+      expect(fetch).toHaveBeenCalledOnce();
+      expect(parseIngestEvents(fetch.mock.calls[0])).toHaveLength(1000);
+
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length >= 2);
+
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(parseIngestEvents(fetch.mock.calls[1])).toHaveLength(1);
+    });
+
+    it('should log error with duration when ingest fails with network error', async () => {
+      const fetchError = new Error('network failure');
+      fetch.mockRejectedValueOnce(fetchError);
 
       const transport = axiomTransport({ dataset, token });
 
+      await transport.write(
+        JSON.stringify({ time: new Date().toISOString(), level: 'silent', msg: 'test log 1' }) + '\n',
+      );
       transport.flush();
-      transport.write(JSON.stringify({ time: new Date().toISOString(), level: 'silent', msg: 'test log 1' }) + '\n');
-      await vi.waitUntil(() => mocks.ingest.mock.calls.length === 1);
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
+      await vi.waitUntil(() => consoleErrorSpy.mock.calls.length >= 1);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error sending logs to Axiom:\n', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/^Error sending logs to Axiom \(1 events, after \d+ms\):\n$/),
+        fetchError,
+      );
+    });
 
-      transport.write(JSON.stringify({ time: new Date().toISOString(), level: 70, msg: 'test log 2' }) + '\n');
-      await vi.waitUntil(() => mocks.ingest.mock.calls.length === 2);
+    it('should log error with duration when ingest responds with non-ok status', async () => {
+      fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        body: { cancel: vi.fn().mockResolvedValue(undefined) },
+      });
 
-      expect(mocks.ingest).toHaveBeenCalledWith(
-        dataset,
+      const transport = axiomTransport({ dataset, token });
+
+      await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 30, msg: 'test log' }) + '\n');
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
+      await vi.waitUntil(() => consoleErrorSpy.mock.calls.length >= 1);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringMatching(/^Error sending logs to Axiom \(1 events, after \d+ms\):\n$/),
+        expect.objectContaining({ message: 'Axiom ingest failed with status 503' }),
+      );
+    });
+
+    it('should continue logging even if an error occurs with Axiom', async () => {
+      fetch.mockRejectedValueOnce(new Error('first error'));
+
+      const transport = axiomTransport({ dataset, token });
+
+      await transport.write(
+        JSON.stringify({ time: new Date().toISOString(), level: 'silent', msg: 'test log 1' }) + '\n',
+      );
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
+
+      await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 70, msg: 'test log 2' }) + '\n');
+      transport.flush();
+      await vi.waitUntil(() => fetch.mock.calls.length === 2);
+
+      expect(parseIngestEvents(fetch.mock.calls[0])).toStrictEqual([
         expect.objectContaining({ level: 'silent', msg: 'test log 1' }),
-      );
-      expect(mocks.ingest).toHaveBeenCalledWith(
-        dataset,
+      ]);
+      expect(parseIngestEvents(fetch.mock.calls[1])).toStrictEqual([
         expect.objectContaining({ level: 'silent', msg: 'test log 2' }),
-      );
+      ]);
+    });
+
+    it('should cancel response body to release connection', async () => {
+      const cancelSpy = vi.fn().mockResolvedValue(undefined);
+      fetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        body: { cancel: cancelSpy },
+      });
+
+      const transport = axiomTransport({ dataset, token });
+
+      await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 30, msg: 'test log' }) + '\n');
 
       transport.flush();
+      await vi.waitUntil(() => cancelSpy.mock.calls.length === 1);
 
-      expect(mocks.waitUntil).toHaveBeenCalledWith(mocks.flush());
-      expect(mocks.waitUntil).toHaveBeenCalledTimes(3);
+      expect(cancelSpy).toHaveBeenCalledOnce();
     });
   });
 });

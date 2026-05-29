@@ -1,21 +1,24 @@
-// Inspired by `@axiomhq/pino`, but compatible with `waitUntil` from `@vercel/functions`
-import { Axiom } from '@axiomhq/js';
+import { noop } from '@tabnews/helpers';
 import { waitUntil } from '@vercel/functions';
 import build from 'pino-abstract-transport';
+
+const INGEST_TIMEOUT_MS = 20_000;
+const DEFAULT_AXIOM_URL = 'https://api.axiom.co';
 
 export function axiomTransport({
   dataset = process.env.AXIOM_DATASET,
   token = process.env.AXIOM_TOKEN,
-  url = process.env.AXIOM_URL,
+  url = process.env.AXIOM_URL || DEFAULT_AXIOM_URL,
 } = {}) {
   if (!process?.versions?.node || !dataset || !token) return;
 
+  const pendingEvents = [];
+  const pendingIngests = [];
+  const MAX_BATCH_SIZE = 1000;
   let parsedCount = 0;
   let ingestedCount = 0;
   let waitingFlush = false;
   let resolve, reject;
-
-  const axiom = new Axiom({ dataset, token, url, onError });
 
   const transport = build(
     async function (source) {
@@ -39,11 +42,6 @@ export function axiomTransport({
 
   return transport;
 
-  function onError(err) {
-    rejectPendingPromise(err);
-    console.error('Error sending logs to Axiom:\n', err);
-  }
-
   function parseLine(line) {
     const value = JSON.parse(line);
     parsedCount++;
@@ -51,24 +49,66 @@ export function axiomTransport({
   }
 
   function ingestLogs(event) {
-    axiom.ingest(dataset, event);
+    pendingEvents.push(event);
     ingestedCount++;
 
     if (waitingFlush) {
       flushPendingLogs();
+    } else if (pendingEvents.length >= MAX_BATCH_SIZE) {
+      pendingIngests.push(ingest(pendingEvents.splice(0, pendingEvents.length)));
     }
   }
 
   function flushPendingLogs() {
-    if (ingestedCount === 0 || parsedCount > ingestedCount) {
+    if (parsedCount > ingestedCount) {
       waitingFlush = true;
       ensurePendingPromise();
       return;
     }
 
     waitingFlush = false;
-    waitUntil(axiom.flush());
-    resolvePendingPromise();
+
+    const events = pendingEvents.splice(0, pendingEvents.length);
+    const allIngests = pendingIngests.splice(0);
+    if (events.length > 0) allIngests.push(ingest(events));
+
+    if (allIngests.length > 0) {
+      ensurePendingPromise();
+      Promise.all(allIngests).then(resolvePendingPromise, rejectPendingPromise);
+    } else {
+      resolvePendingPromise();
+    }
+  }
+
+  async function ingest(events) {
+    const start = Date.now();
+    const body = events.map((event) => JSON.stringify(event)).join('\n');
+
+    try {
+      const response = await fetch(`${url}/v1/datasets/${dataset}/ingest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          Authorization: `Bearer ${token}`,
+        },
+        body,
+        signal: AbortSignal.timeout(INGEST_TIMEOUT_MS),
+        keepalive: true,
+      });
+
+      response.body?.cancel().catch(noop);
+
+      if (!response.ok) {
+        onError(new Error(`Axiom ingest failed with status ${response.status}`), events.length, Date.now() - start);
+      }
+    } catch (err) {
+      onError(err, events.length, Date.now() - start);
+    }
+  }
+
+  function onError(err, eventCount, durationMs) {
+    rejectPendingPromise(err);
+    console.error(`Error sending logs to Axiom (${eventCount} events, after ${durationMs}ms):\n`, err);
   }
 
   function ensurePendingPromise() {
