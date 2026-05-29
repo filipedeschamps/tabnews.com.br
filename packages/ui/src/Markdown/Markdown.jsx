@@ -65,6 +65,8 @@ export function MarkdownViewer({
   areLinksTrusted,
   clobberPrefix,
   copyAnchorLink,
+  footnoteBackLabel = 'Voltar ao conteúdo',
+  footnoteLabel = 'Notas de rodapé',
   shouldAddNofollow,
   ...props
 }) {
@@ -88,7 +90,7 @@ export function MarkdownViewer({
   return (
     <ByteMdViewer
       sanitize={sanitize({ clobberPrefix })}
-      remarkRehype={{ clobberPrefix }}
+      remarkRehype={{ clobberPrefix, footnoteBackLabel, footnoteLabel }}
       plugins={bytemdPluginList}
       value={value}
       {...props}
@@ -100,6 +102,8 @@ export function MarkdownEditor({
   areLinksTrusted,
   clobberPrefix,
   editorConfig = {},
+  footnoteBackLabel = 'Voltar ao conteúdo',
+  footnoteLabel = 'Notas de rodapé',
   initialHeight = '30vh',
   isInvalid,
   mode = 'split', // 'tab'
@@ -132,7 +136,7 @@ export function MarkdownEditor({
         locale={byteMDLocale}
         sanitize={sanitize({ clobberPrefix })}
         editorConfig={{ autocapitalize: 'sentences', inputStyle: 'contenteditable', spellcheck: true, ...editorConfig }}
-        remarkRehype={{ clobberPrefix }}
+        remarkRehype={{ clobberPrefix, footnoteBackLabel, footnoteLabel }}
         {...props}
       />
       <EditorStyles height={initialHeight} mode={mode} />
