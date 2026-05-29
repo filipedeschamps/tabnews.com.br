@@ -7,12 +7,36 @@ const searchURL = process.env.NEXT_PUBLIC_SEARCH_URL + process.env.NEXT_PUBLIC_S
 
 export default function useSearchBox() {
   const [isOpen, setIsOpen] = useState(false);
-  const buttonRef = useRef();
+  const returnFocusRef = useRef();
 
   function onClickSearchButton(e) {
-    buttonRef.current = e.target;
+    returnFocusRef.current = e.target;
     setIsOpen(true);
   }
+
+  useEffect(() => {
+    const TYPING_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
+
+    function handleKeyDown(event) {
+      if (event.key !== '/') return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+      const activeElement = document.activeElement;
+      const isTyping = TYPING_TAGS.includes(activeElement?.tagName) || activeElement?.isContentEditable;
+
+      if (isTyping) return;
+
+      event.preventDefault();
+      returnFocusRef.current = activeElement;
+      setIsOpen(true);
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   function SearchIconButton({ sx, ...props }) {
     return (
@@ -101,8 +125,8 @@ export default function useSearchBox() {
 
     return (
       <Overlay
-        returnFocusRef={buttonRef}
-        ignoreClickRefs={[suggestionsRef, buttonRef]}
+        returnFocusRef={returnFocusRef}
+        ignoreClickRefs={[suggestionsRef, returnFocusRef]}
         onEscape={handleClose}
         onClickOutside={handleClose}
         aria-labelledby="Pesquisar com o Google"
