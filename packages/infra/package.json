@@ -19,8 +19,8 @@
   "dependencies": {
     "@tabnews/helpers": "*",
     "@vercel/functions": "2.1.0",
-    "pino": "9.7.0",
-    "pino-abstract-transport": "2.0.0"
+    "pino": "10.3.1",
+    "pino-abstract-transport": "3.0.0"
   },
   "author": "TabNews",
   "repository": {
