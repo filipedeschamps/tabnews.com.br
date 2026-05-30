@@ -11,8 +11,11 @@ if (typeof document !== 'undefined') {
   // first fail).
 
   // `screen` is bound to `document.body` at import. Rebind it to the live body.
+  // Also restore the React act() flag, which rendering async Server Components
+  // (e.g. PrimerRoot) leaves unset and would otherwise leak into later files.
   beforeEach(() => {
     Object.assign(screen, getQueriesForElement(document.body));
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   });
 
   // `userEvent` captures `globalThis.document` at import. Inject the live one so
