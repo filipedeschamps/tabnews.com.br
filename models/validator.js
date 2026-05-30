@@ -200,6 +200,12 @@ const schemas = {
     });
   },
 
+  totp_token: function () {
+    return Joi.object({
+      totp_token: Joi.string().length(6).when('$required.totp_token', { is: 'required', then: Joi.required() }),
+    });
+  },
+
   session_id: function () {
     return Joi.object({
       session_id: Joi.string()
@@ -640,6 +646,7 @@ const schemas = {
           'moderation:unblock_contents:text_child',
           'reward:user:tabcoins',
           'system:update:tabcoins',
+          'totp:start_setup',
         )
         .messages({
           'any.only': '{#label} não aceita o valor "{#value}".',
@@ -665,6 +672,10 @@ const schemas = {
             username: Joi.object({
               old: Joi.string().required(),
               new: Joi.string().required(),
+            }),
+            totp_enabled: Joi.object({
+              old: Joi.boolean().required(),
+              new: Joi.boolean().required(),
             }),
           }),
         },

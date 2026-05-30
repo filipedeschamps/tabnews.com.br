@@ -353,6 +353,116 @@ describe('models/event', () => {
     });
   });
 
+  describe('TOTP', () => {
+    test('Create "totp:start_setup"', async () => {
+      const requestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await requestBuilder.buildUser();
+
+      await requestBuilder.post(`/${defaultUser.username}/totp`);
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'totp:start_setup',
+        originator_user_id: defaultUser.id,
+        originator_ip: '127.0.0.1',
+        created_at: lastEvent.created_at,
+        metadata: null,
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "update:user" for TOTP enabled', async () => {
+      const requestBuilder = new RequestBuilder('/api/v1/users');
+      const defaultUser = await requestBuilder.buildUser();
+      const userTotp = await orchestrator.createTemporaryTotp(defaultUser);
+
+      await requestBuilder.patch(`/${defaultUser.username}/totp`, {
+        totp_token: userTotp.generate(),
+      });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'update:user',
+        originator_user_id: defaultUser.id,
+        originator_ip: '127.0.0.1',
+        created_at: lastEvent.created_at,
+        metadata: {
+          id: defaultUser.id,
+          updatedFields: ['totp_secret'],
+          totp_enabled: {
+            old: false,
+            new: true,
+          },
+        },
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+    });
+
+    test('Create "update:user" for TOTP disabled', async () => {
+      const defaultUser = await orchestrator.createUser({ password: 'validPassword' });
+      await orchestrator.activateUser(defaultUser);
+      const createdUserSession = await orchestrator.createSession(defaultUser);
+      const userTotp = await orchestrator.enableTotp(defaultUser);
+
+      await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}/totp`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${createdUserSession.token}`,
+        },
+        body: JSON.stringify({
+          totp_token: userTotp.generate(),
+          password: 'validPassword',
+        }),
+      });
+
+      const lastEvent = await orchestrator.getLastEvent();
+
+      expect(lastEvent).toStrictEqual({
+        id: lastEvent.id,
+        type: 'update:user',
+        originator_user_id: defaultUser.id,
+        originator_ip: '127.0.0.1',
+        created_at: lastEvent.created_at,
+        metadata: {
+          id: defaultUser.id,
+          updatedFields: ['totp_secret'],
+          totp_enabled: {
+            old: true,
+            new: false,
+          },
+        },
+      });
+
+      expect(uuidVersion(lastEvent.id)).toBe(4);
+      expect(Date.parse(lastEvent.created_at)).not.toBeNaN();
+
+      // Second time should not create a new event
+      await fetch(`${orchestrator.webserverUrl}/api/v1/users/${defaultUser.username}/totp`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `session_id=${createdUserSession.token}`,
+        },
+        body: JSON.stringify({
+          totp_token: '000000',
+          password: 'validPassword',
+        }),
+      });
+
+      const lastEvent2 = await orchestrator.getLastEvent();
+      expect(lastEvent2).toStrictEqual(lastEvent);
+    });
+  });
+
   describe('Privileged user', () => {
     test('Create "update:user" event', async () => {
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
