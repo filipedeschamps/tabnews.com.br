@@ -29,7 +29,7 @@ export default defineConfig({
         test: {
           name: 'ui',
           environment: 'jsdom',
-          include: ['**/interface/**/*.{test,spec}.{js,ts}'],
+          include: ['**/interface/**/*.{test,spec}.{js,jsx,ts,tsx}'],
           exclude: ['packages/**', ...defaultExclude],
         },
       },
@@ -38,7 +38,7 @@ export default defineConfig({
         test: {
           name: 'packages',
           environment: 'jsdom',
-          include: ['packages/**/*.{test,spec}.{js,ts}'],
+          include: ['packages/**/*.{test,spec}.{js,jsx,ts,tsx}'],
           isolate: true,
         },
       },

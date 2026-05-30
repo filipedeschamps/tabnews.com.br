@@ -4,7 +4,7 @@ import { act } from 'react';
 
 import { GoToTopButton } from './GoToTopButton';
 
-const IntersectionObserver = global.IntersectionObserver;
+const originalIntersectionObserver = global.IntersectionObserver;
 let lastObserver = null;
 
 const MockIntersectionObserver = vi.fn((callback) => {
@@ -16,15 +16,14 @@ const MockIntersectionObserver = vi.fn((callback) => {
   return lastObserver;
 });
 
-global.IntersectionObserver = MockIntersectionObserver;
-
-afterEach(() => {
-  lastObserver = null;
-  MockIntersectionObserver.mockClear();
+beforeEach(() => {
+  global.IntersectionObserver = MockIntersectionObserver;
 });
 
-afterAll(() => {
-  global.IntersectionObserver = IntersectionObserver;
+afterEach(() => {
+  global.IntersectionObserver = originalIntersectionObserver;
+  lastObserver = null;
+  MockIntersectionObserver.mockClear();
 });
 
 describe('ui', () => {
