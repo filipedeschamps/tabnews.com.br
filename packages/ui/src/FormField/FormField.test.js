@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import React from 'react';
 
@@ -175,7 +175,9 @@ describe('ui', () => {
         const passwordInput = getByLabelText('Test Label');
         expect(passwordInput).not.toHaveFocus();
 
-        inputRef.current.focus();
+        act(() => {
+          inputRef.current.focus();
+        });
         expect(passwordInput).toHaveFocus();
       });
     });
@@ -220,7 +222,9 @@ describe('ui', () => {
           const inputElement = getByRole('textbox');
           expect(inputElement).not.toHaveFocus();
 
-          inputRef.current.focus();
+          act(() => {
+            inputRef.current.focus();
+          });
           expect(inputElement).toHaveFocus();
         });
       });
