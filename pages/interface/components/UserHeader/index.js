@@ -1,6 +1,9 @@
 import { Box, CounterLabel, Heading, TabNav, TabNavLink } from '@/TabNewsUI';
+import useUser from 'pages/interface/hooks/useUser';
 
 export default function UserHeader({ username, children, rootContentCount, childContentCount, adContentCount }) {
+  const { user } = useUser();
+
   return (
     <>
       <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
@@ -36,6 +39,16 @@ export default function UserHeader({ username, children, rootContentCount, child
           }}>
           Classificados {!!adContentCount && <CounterLabel>{adContentCount.toLocaleString('pt-BR')}</CounterLabel>}
         </TabNavLink>
+
+        {user && user.username === username && (
+          <TabNavLink
+            href={{
+              pathname: '/[username]/conteudos-salvos/[page]',
+              query: { username, page: 1 },
+            }}>
+            Conteúdos salvos
+          </TabNavLink>
+        )}
       </TabNav>
     </>
   );
