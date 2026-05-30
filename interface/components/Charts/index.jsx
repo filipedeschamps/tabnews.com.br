@@ -12,7 +12,7 @@ export function BarChart({ title, data, yDataKey, name, fill = '#2da44e', xDataK
     <div>
       <h2>{title}</h2>
       <div className={classes.ChartArea}>
-        <ResponsiveContainer>
+        <ResponsiveContainer initialDimension={{ width: 0, height: 140 }}>
           <RechartsBarChart height={400} data={data}>
             <XAxis dataKey={xDataKey} tick={{ fontSize: 10 }} />
             <Tooltip contentStyle={{ backgroundColor: colors.canvas.default }} />

@@ -1,4 +1,4 @@
-import { Text as ReactEmailText } from '@react-email/components';
+import { Text as ReactEmailText } from 'react-email';
 
 export const Text = ({ children, style }) => {
   return <ReactEmailText style={{ ...defaultStyle, ...style }}>{children}</ReactEmailText>;

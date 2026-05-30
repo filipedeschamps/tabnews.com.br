@@ -77,7 +77,7 @@ async function create(user) {
 async function sendEmailToUser(user, tokenId) {
   const recoverPageEndpoint = getRecoverPageEndpoint(tokenId);
 
-  const { html, text } = RecoveryEmail({
+  const { html, text } = await RecoveryEmail({
     username: user.username,
     recoveryLink: recoverPageEndpoint,
   });

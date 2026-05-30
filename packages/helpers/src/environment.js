@@ -1,10 +1,8 @@
-const { NEXT_PHASE, NEXT_PUBLIC_VERCEL_ENV, VERCEL } = process.env;
+export const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
 
-export const isBuildTime = NEXT_PHASE === 'phase-production-build';
+export const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
 
-export const isProduction = NEXT_PUBLIC_VERCEL_ENV === 'production';
-
-export const isServerlessRuntime = !!VERCEL;
+export const isServerlessRuntime = !!process.env.VERCEL;
 
 export const isEdgeRuntime = typeof globalThis.EdgeRuntime !== 'undefined';
 

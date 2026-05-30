@@ -28,7 +28,9 @@ export const trustedDomains = [webserverDomain, ...externalTrustedDomains.filter
  * @returns {string} The resolved base URL.
  */
 export function getBaseUrl() {
-  const { NEXT_PUBLIC_VERCEL_URL, NEXT_PUBLIC_WEBSERVER_HOST, NEXT_PUBLIC_WEBSERVER_PORT } = process.env;
+  const NEXT_PUBLIC_VERCEL_URL = process.env.NEXT_PUBLIC_VERCEL_URL;
+  const NEXT_PUBLIC_WEBSERVER_HOST = process.env.NEXT_PUBLIC_WEBSERVER_HOST;
+  const NEXT_PUBLIC_WEBSERVER_PORT = process.env.NEXT_PUBLIC_WEBSERVER_PORT;
 
   const protocol = isServerlessRuntime ? 'https' : 'http';
 

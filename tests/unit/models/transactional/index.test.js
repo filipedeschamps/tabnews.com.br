@@ -8,28 +8,28 @@ import {
 
 describe('Transactional model', () => {
   describe('Email layouts', () => {
-    it('Activation', () => {
+    it('Activation', async () => {
       const username = 'User Test';
       const activationLink = 'https://tabnews.com.br/cadastro/ativar/TOKEN_ID';
 
-      const { html, text } = ActivationEmail({ username, activationLink });
+      const { html, text } = await ActivationEmail({ username, activationLink });
 
       expect(html).toMatchSnapshot();
       expect(text).toMatchSnapshot();
     });
 
-    it('Confirmation', () => {
+    it('Confirmation', async () => {
       const username = 'User Test';
       const confirmationLink = 'https://tabnews.com.br/perfil/confirmar-email/TOKEN_ID';
 
-      const { html, text } = ConfirmationEmail({ username, confirmationLink });
+      const { html, text } = await ConfirmationEmail({ username, confirmationLink });
 
       expect(html).toMatchSnapshot();
       expect(text).toMatchSnapshot();
     });
 
-    it('Firewall', () => {
-      const { html, text } = FirewallEmail({
+    it('Firewall', async () => {
+      const { html, text } = await FirewallEmail({
         username: 'User',
         sideEffectLine:
           'Identificamos a criação de muitas publicações em um curto período, então a sua publicação "Título da publicação" foi removida.',
@@ -40,22 +40,22 @@ describe('Transactional model', () => {
       expect(text).toMatchSnapshot();
     });
 
-    it('Notification', () => {
+    it('Notification', async () => {
       const username = 'User Test';
       const bodyReplyLine = '"User2" respondeu à sua publicação "Título publicação".';
       const contentLink = 'https://tabnews.com.br/user2/titulo-publicacao';
 
-      const { html, text } = NotificationEmail({ username, bodyReplyLine, contentLink });
+      const { html, text } = await NotificationEmail({ username, bodyReplyLine, contentLink });
 
       expect(html).toMatchSnapshot();
       expect(text).toMatchSnapshot();
     });
 
-    it('Recovery', () => {
+    it('Recovery', async () => {
       const username = 'User Test';
       const recoveryLink = 'https://tabnews.com.br/perfil/confirmar-email/TOKEN_ID';
 
-      const { html, text } = RecoveryEmail({ username, recoveryLink });
+      const { html, text } = await RecoveryEmail({ username, recoveryLink });
 
       expect(html).toMatchSnapshot();
       expect(text).toMatchSnapshot();

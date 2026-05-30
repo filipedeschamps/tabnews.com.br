@@ -25,7 +25,7 @@ async function create(user) {
 async function sendEmailToUser(user, tokenId) {
   const activationPageEndpoint = getActivationPageEndpoint(tokenId);
 
-  const { html, text } = ActivationEmail({
+  const { html, text } = await ActivationEmail({
     username: user.username,
     activationLink: activationPageEndpoint,
   });

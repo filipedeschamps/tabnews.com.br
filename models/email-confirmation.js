@@ -32,7 +32,7 @@ async function create(userId, newEmail, options) {
 async function sendEmailToUser(user, newEmail, tokenId) {
   const emailConfirmationPageEndpoint = getEmailConfirmationPageEndpoint(tokenId);
 
-  const { html, text } = ConfirmationEmail({
+  const { html, text } = await ConfirmationEmail({
     username: user.username,
     confirmationLink: emailConfirmationPageEndpoint,
   });
