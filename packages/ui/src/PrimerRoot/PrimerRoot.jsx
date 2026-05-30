@@ -7,10 +7,24 @@ import { COLOR_MODE_COOKIE } from '../constants/public';
 import { KatexLoader } from '../KatexLoader/KatexLoader';
 import { StyledComponentsRegistry } from '../SCRegistry/SCRegistry';
 
-export async function PrimerRoot({ children, colorMode, defaultColorMode, headChildren, htmlProps, lang, ...props }) {
-  const cookieStore = await cookies();
-  const cachedColorMode = await cookieStore.get(COLOR_MODE_COOKIE);
-  const ssrColorMode = (colorMode || cachedColorMode?.value || defaultColorMode) === 'dark' ? 'dark' : 'light';
+export async function PrimerRoot({
+  children,
+  colorMode,
+  defaultColorMode = 'light',
+  headChildren = null,
+  htmlProps = {},
+  lang,
+  ...props
+}) {
+  let ssrColorMode;
+
+  if (colorMode) {
+    ssrColorMode = colorMode === 'dark' ? 'dark' : 'light';
+  } else {
+    const cookieStore = await cookies();
+    const cachedColorMode = await cookieStore.get(COLOR_MODE_COOKIE);
+    ssrColorMode = (cachedColorMode?.value || defaultColorMode) === 'dark' ? 'dark' : 'light';
+  }
 
   return (
     <html lang={lang} suppressHydrationWarning data-color-mode={ssrColorMode} {...htmlProps}>
