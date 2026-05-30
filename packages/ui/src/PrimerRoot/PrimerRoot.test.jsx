@@ -34,6 +34,7 @@ describe('ui', () => {
 
     beforeEach(() => {
       vi.clearAllMocks();
+      mockCookieStore.get.mockReset().mockResolvedValue(null);
       cookies.mockReturnValue(mockCookieStore);
     });
 
