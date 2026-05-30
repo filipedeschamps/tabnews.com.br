@@ -18,7 +18,8 @@ export function axiomTransport({
   let parsedCount = 0;
   let ingestedCount = 0;
   let waitingFlush = false;
-  let resolve, reject;
+  let pendingPromise = null;
+  let resolve;
 
   const transport = build(
     async function (source) {
@@ -62,8 +63,7 @@ export function axiomTransport({
   function flushPendingLogs() {
     if (parsedCount > ingestedCount) {
       waitingFlush = true;
-      ensurePendingPromise();
-      return;
+      return ensurePendingPromise();
     }
 
     waitingFlush = false;
@@ -73,11 +73,13 @@ export function axiomTransport({
     if (events.length > 0) allIngests.push(ingest(events));
 
     if (allIngests.length > 0) {
-      ensurePendingPromise();
-      Promise.all(allIngests).then(resolvePendingPromise, rejectPendingPromise);
-    } else {
-      resolvePendingPromise();
+      const promise = ensurePendingPromise();
+      Promise.all(allIngests).then(resolvePendingPromise, resolvePendingPromise);
+      return promise;
     }
+
+    resolvePendingPromise();
+    return Promise.resolve();
   }
 
   async function ingest(events) {
@@ -107,34 +109,25 @@ export function axiomTransport({
   }
 
   function onError(err, eventCount, durationMs) {
-    rejectPendingPromise(err);
     console.error(`Error sending logs to Axiom (${eventCount} events, after ${durationMs}ms):\n`, err);
   }
 
   function ensurePendingPromise() {
     if (!resolve) {
-      waitUntil(
-        new Promise((res, rej) => {
-          resolve = res;
-          reject = rej;
-        }),
-      );
+      pendingPromise = new Promise((res) => {
+        resolve = res;
+      });
+      waitUntil(pendingPromise);
     }
+
+    return pendingPromise;
   }
 
   function resolvePendingPromise() {
     if (resolve) {
       resolve();
       resolve = null;
-      reject = null;
-    }
-  }
-
-  function rejectPendingPromise(err) {
-    if (reject) {
-      reject(err);
-      resolve = null;
-      reject = null;
+      pendingPromise = null;
     }
   }
 }

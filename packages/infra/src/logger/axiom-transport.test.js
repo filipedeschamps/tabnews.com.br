@@ -186,6 +186,40 @@ describe('axiomTransport', () => {
       ]);
     });
 
+    it('should resolve the flush promise only after the ingest settles', async () => {
+      let resolveFetch;
+      fetch.mockImplementationOnce(
+        () =>
+          new Promise((res) => {
+            resolveFetch = () => res(mockOkResponse());
+          }),
+      );
+
+      const transport = axiomTransport({ dataset, token });
+
+      await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 30, msg: 'test log' }) + '\n');
+
+      let flushed = false;
+      const flushPromise = Promise.resolve(transport.flush()).then(() => (flushed = true));
+
+      await vi.waitUntil(() => fetch.mock.calls.length === 1);
+      expect(flushed).toBe(false);
+
+      resolveFetch();
+      await flushPromise;
+      expect(flushed).toBe(true);
+    });
+
+    it('should resolve the flush promise even when the ingest fails', async () => {
+      fetch.mockRejectedValueOnce(new Error('network failure'));
+
+      const transport = axiomTransport({ dataset, token });
+
+      await transport.write(JSON.stringify({ time: new Date().toISOString(), level: 30, msg: 'test log' }) + '\n');
+
+      await expect(transport.flush()).resolves.toBeUndefined();
+    });
+
     it('should flush in batches when exceeding max batch size', async () => {
       const transport = axiomTransport({ dataset, token });
 
