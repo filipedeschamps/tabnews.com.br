@@ -9,6 +9,7 @@ import {
   HeaderLink,
   NavItem,
   NavList,
+  Notifications,
   PrimerHeader,
   TabCashCount,
   TabCoinCount,
@@ -109,6 +110,7 @@ export default function HeaderComponent() {
 
       {user && (
         <>
+          <Notifications user={user} />
           {!isScreenSmall && (
             <PrimerHeader.Item sx={{ m: 2 }}>
               <Tooltip text="Publicar novo conteúdo" direction="s">

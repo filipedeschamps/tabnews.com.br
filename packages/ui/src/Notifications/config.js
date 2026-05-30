@@ -17,11 +17,11 @@ const DEFAULT_CONFIG = {
   notifications: [],
   setMenuOpen: () => {},
   labels: {
-    notifications: 'Notifications',
-    close: 'Close',
-    empty: 'No notifications available',
-    loading: 'Loading...',
-    openActionsMenu: 'Open menu',
+    notifications: 'Notificações',
+    close: 'Fechar',
+    empty: 'Sem notificações',
+    loading: 'Carregando...',
+    openActionsMenu: 'Abrir menu',
     getBellLabel,
   },
   selectors: {
@@ -33,13 +33,13 @@ const DEFAULT_CONFIG = {
 function getBellLabel(count) {
   switch (true) {
     case count === 0:
-      return 'No unread notifications';
+      return 'Sem notificações não lidas';
     case count === 1:
-      return '1 unread notification';
+      return '1 notificação não lida';
     case count > 1:
-      return `${count} unread notifications`;
+      return `${count} notificações não lidas`;
     default:
-      return 'Notifications';
+      return 'Notificações';
   }
 }
 
