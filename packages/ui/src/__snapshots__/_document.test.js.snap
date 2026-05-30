@@ -10,11 +10,21 @@ exports[`ui > _document > renders correctly 1`] = `
       data-testid="Next Head"
     >
       <link
+        as="style"
         crossorigin="anonymous"
         href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
         integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP"
-        rel="stylesheet"
+        rel="preload"
       />
+      <script>
+        
+            var katexLink = document.currentScript.previousElementSibling;
+            katexLink.onload = function () {
+              this.onload = null;
+              this.rel = 'stylesheet';
+            };
+          
+      </script>
     </head>
     <body>
       <main

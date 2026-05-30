@@ -2,6 +2,8 @@ import NextDocument, { Head, Html, Main, NextScript } from 'next/document.js';
 import Script from 'next/script.js';
 import { ServerStyleSheet } from 'styled-components';
 
+import { KatexLoader } from './KatexLoader/KatexLoader';
+
 // Script related to `AutoThemeProvider`
 export const noFlashScript = `if (['auto','night','dark','day','light'].includes(localStorage.getItem('colorMode')))
 document.documentElement.setAttribute('data-no-flash', true)`;
@@ -53,12 +55,7 @@ export class Document extends Doc {
       <Html {...htmlProps}>
         <Head>
           {headChildren}
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
-            integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP"
-            crossOrigin="anonymous"
-          />
+          <KatexLoader />
         </Head>
         <body>
           <Main />
