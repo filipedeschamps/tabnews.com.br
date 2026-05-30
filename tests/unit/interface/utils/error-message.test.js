@@ -1,4 +1,4 @@
-import { createErrorMessage } from 'pages/interface';
+import { createErrorMessage } from 'interface';
 
 describe('createErrorMessage', () => {
   it('should return default error message when responseBody is null', () => {
