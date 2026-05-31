@@ -6,6 +6,7 @@
   "private": true,
   "type": "module",
   "main": "src/index.js",
+  "sideEffects": false,
   "files": [
     "src",
     "!src/**/*.test.js"

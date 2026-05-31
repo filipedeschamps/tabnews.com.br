@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "types": ["vitest/globals"],
     "paths": {
-      "@/*": ["pages/interface/components/*"]
+      "@/*": ["interface/components/*"]
     }
   }
 }

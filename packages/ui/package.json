@@ -5,6 +5,9 @@
   "license": "MIT",
   "private": true,
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": "./src/index.js",
     "./document": "./src/_document.jsx",
