@@ -1,0 +1,21 @@
+.Wrapper {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: var(--base-size-24);
+}
+
+.Icon {
+  margin-bottom: 1rem;
+}
+
+.Title {
+  font-size: var(--text-title-size-medium);
+}
+
+.Action {
+  margin-top: 1rem;
+}

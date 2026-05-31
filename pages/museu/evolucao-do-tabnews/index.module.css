@@ -1,0 +1,14 @@
+.Author {
+  display: flex;
+  flex-direction: column;
+}
+
+.AuthorLine {
+  margin-bottom: var(--base-size-16);
+  font-size: var(--text-body-size-medium);
+}
+
+.Address {
+  display: inline;
+  font-style: normal;
+}

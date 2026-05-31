@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
 import {
-  Box,
   Button,
   ButtonWithLoader,
   CharacterCount,
@@ -19,6 +18,8 @@ import {
 } from '@/TabNewsUI';
 import { createErrorMessage, suggestEmail, useUser } from 'interface';
 
+import classes from './index.module.css';
+
 export default function EditProfile() {
   return (
     <DefaultLayout
@@ -28,7 +29,7 @@ export default function EditProfile() {
         description:
           'Edite seu perfil no TabNews: nome de usuário, descrição, notificações e outras dados da sua conta.',
       }}>
-      <Heading as="h1" sx={{ mb: 3 }}>
+      <Heading as="h1" className={classes.Heading}>
         Editar Perfil
       </Heading>
       <EditProfileForm />
@@ -195,7 +196,7 @@ function EditProfileForm() {
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit} onChange={clearMessages}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className={classes.Fields}>
         <FormControl id="username" required>
           <FormControl.Label>Nome de usuário</FormControl.Label>
           <TextInput
@@ -207,7 +208,7 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             contrast
-            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            className={classes.TextInput}
             onChange={() => setShowUsernameCaption(true)}
           />
           {showUsernameCaption && (
@@ -238,20 +239,20 @@ function EditProfileForm() {
             spellCheck={false}
             block={true}
             contrast
-            sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+            className={classes.TextInput}
           />
           {errorObject?.key === 'email' && errorObject.type !== 'typo' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
           {errorObject?.key === 'email' && errorObject.type === 'typo' && (
             <FormControl.Validation variant="error">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box>Você quis dizer:</Box>
-                <Box>
+              <div className={classes.EmailSuggestion}>
+                <div>Você quis dizer:</div>
+                <div>
                   <Button
                     variant="invisible"
                     size="small"
-                    sx={{ color: 'accent.fg', p: 1 }}
+                    className={classes.EmailSuggestionButton}
                     onClick={(event) => {
                       event.preventDefault();
                       clearMessages();
@@ -259,8 +260,8 @@ function EditProfileForm() {
                     }}>
                     {errorObject.suggestion.split('@')[0]}@<u>{errorObject.suggestion.split('@')[1]}</u>
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </FormControl.Validation>
           )}
         </FormControl>
@@ -278,19 +279,19 @@ function EditProfileForm() {
             clobberPrefix={`${user?.username}-content-`}
           />
 
-          <Box sx={{ display: 'flex', width: '100%' }}>
+          <div className={classes.CharacterCountRow}>
             {errorObject?.key === 'description' && errorObject.type === 'string.max' && (
               <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
             )}
 
             <CharacterCount maxLength={DESCRIPTION_MAX_LENGTH} value={description} />
-          </Box>
+          </div>
         </FormControl>
 
-        <FormControl id="notifications" sx={{ gap: 2, alignItems: 'center' }}>
+        <FormControl id="notifications" className={classes.NotificationsControl}>
           <FormControl.Label>Receber notificações por email</FormControl.Label>
 
-          <Checkbox sx={{ display: 'flex' }} ref={notificationsRef} name="notifications" />
+          <Checkbox className={classes.Checkbox} ref={notificationsRef} name="notifications" />
 
           {errorObject?.key === 'notifications' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
@@ -299,22 +300,27 @@ function EditProfileForm() {
 
         <FormControl id="password">
           <FormControl.Label>Senha</FormControl.Label>
-          <Link href="/cadastro/recuperar" sx={{ fontSize: 0 }}>
+          <Link href="/cadastro/recuperar" className={classes.PasswordLink}>
             Utilize o fluxo de recuperação de senha →
           </Link>
         </FormControl>
 
-        <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
+        <Text className={classes.RequiredText}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
 
         {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.text}</Flash>}
 
         <FormControl>
           <FormControl.Label visuallyHidden>Salvar</FormControl.Label>
-          <ButtonWithLoader variant="primary" size="large" type="submit" sx={{ width: '100%' }} isLoading={isLoading}>
+          <ButtonWithLoader
+            variant="primary"
+            size="large"
+            type="submit"
+            className={classes.SubmitButton}
+            isLoading={isLoading}>
             Salvar
           </ButtonWithLoader>
         </FormControl>
-      </Box>
+      </div>
     </form>
   );
 }

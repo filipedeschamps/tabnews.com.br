@@ -1,11 +1,11 @@
 import { isTrustedDomain } from '@tabnews/helpers';
+import clsx from 'clsx';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   ActionList,
   ActionMenu,
-  Box,
   BranchName,
   Button,
   ButtonWithLoader,
@@ -30,6 +30,8 @@ import {
 import { KebabHorizontalIcon, LinkIcon, PencilIcon, ShareIcon, TrashIcon } from '@/TabNewsUI/icons';
 import webserver from 'infra/webserver';
 import { createErrorMessage, isValidJsonString, processNdJsonStream, useUser } from 'interface';
+
+import classes from './index.module.css';
 
 const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
   'e.g. Nova versão do Python é anunciada com melhorias de desempenho',
@@ -104,8 +106,8 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   return (
-    <Box sx={{ position: 'relative', minWidth: '28px' }}>
-      <Box sx={{ position: 'absolute', right: 0 }}>
+    <div className={classes.OptionsMenuWrapper}>
+      <div className={classes.OptionsMenuAnchor}>
         {/* I've wrapped ActionMenu with this additional divs, to stop content from vertically
         flickering after this menu appears, because without `position: absolute` it increases the row height */}
         <ActionMenu>
@@ -130,8 +132,8 @@ function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -176,45 +178,25 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   const isOptionsMenuVisible = user?.id === contentObject.owner_id || user?.features?.includes('update:content:others');
 
   return (
-    <Box
-      as="article"
+    <article
       id={`${contentObject.owner_username}-${contentObject.slug}`}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-        width: '100%',
-        borderWidth: viewFrame ? 1 : 0,
-        p: viewFrame ? 4 : 0,
-        borderRadius: '6px',
-        borderColor: 'border.default',
-        borderStyle: 'solid',
-        wordBreak: 'break-word',
-      }}>
-      <Box>
-        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} sx={{ mb: 4 }} />}
+      className={clsx(classes.Article, viewFrame && classes.ArticleFramed)}>
+      <div>
+        {globalErrorMessage && <ErrorMessage {...globalErrorMessage} className={classes.HeaderError} />}
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              whiteSpace: 'nowrap',
-              gap: 1,
-              color: 'fg.muted',
-            }}>
-            <BranchName as="address" sx={{ fontStyle: 'normal', pt: 1 }}>
+        <div className={classes.HeaderRow}>
+          <div className={classes.Meta}>
+            <BranchName as="address" className={classes.Address}>
               <Link href={`/${contentObject.owner_username}`}>{contentObject.owner_username}</Link>
             </BranchName>
             <LabelGroup>
               {isPageRootOwner && (
-                <Tooltip text="Autor do conteúdo principal da página" direction="n" sx={{ position: 'absolute' }}>
+                <Tooltip text="Autor do conteúdo principal da página" direction="n" position="absolute">
                   <Label>Autor</Label>
                 </Tooltip>
               )}
               {contentObject.type === 'ad' && (
-                <Tooltip text="Patrocinado com TabCash" direction="n" sx={{ position: 'absolute' }}>
+                <Tooltip text="Patrocinado com TabCash" direction="n" position="absolute">
                   <Label variant="success">Patrocinado</Label>
                 </Tooltip>
               )}
@@ -228,27 +210,27 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
             <Link
               href={`/${contentObject.owner_username}/${contentObject.slug}`}
               prefetch={false}
-              sx={{ fontSize: 0, color: 'fg.muted' }}>
-              <PastTime direction="n" date={contentObject.published_at} sx={{ position: 'absolute' }} />
+              className={classes.PublishedAtLink}>
+              <PastTime direction="n" date={contentObject.published_at} position="absolute" />
             </Link>
-          </Box>
+          </div>
           {isOptionsMenuVisible && (
             <ViewModeOptionsMenu onComponentModeChange={setComponentMode} onDelete={handleClickDelete} />
           )}
-        </Box>
+        </div>
 
         {!contentObject.parent_id && contentObject.title && (
-          <Heading sx={{ overflow: 'auto', wordWrap: 'break-word' }} as="h1">
+          <Heading className={classes.Title} as="h1">
             {contentObject.title}
           </Heading>
         )}
-      </Box>
-      <Box sx={{ overflow: 'hidden' }}>
+      </div>
+      <div className={classes.ViewerWrapper}>
         <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />
-      </Box>
+      </div>
       {contentObject.source_url && (
-        <Box>
-          <Text as="p" fontWeight="bold" sx={{ wordBreak: 'break-all' }}>
+        <div>
+          <Text as="p" fontWeight="bold" className={classes.SourceText}>
             <LinkIcon size={16} /> Fonte:{' '}
             <Link
               href={contentObject.source_url}
@@ -256,9 +238,9 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
               {contentObject.source_url}
             </Link>
           </Text>
-        </Box>
+        </div>
       )}
-    </Box>
+    </article>
   );
 }
 
@@ -489,9 +471,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 
   return (
-    <Box sx={{ mb: 4, width: '100%' }}>
+    <div className={classes.EditForm}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }} noValidate>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className={classes.EditFields}>
           {globalErrorMessage && <ErrorMessage {...globalErrorMessage} />}
 
           {!contentObject?.parent_id && (
@@ -499,7 +481,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               <FormControl.Label>Título</FormControl.Label>
               <TextInput
                 contrast
-                sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+                className={classes.TextInput}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
                 name="title"
@@ -532,19 +514,19 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             />
 
             {!contentObject?.parent_id && (newData.body?.startsWith('# ') || newData.body?.startsWith('<h1>')) && (
-              <Flash variant="warning" sx={{ mt: 2 }}>
+              <Flash variant="warning" className={classes.BodyDicaFlash}>
                 <strong>⚠️ Dica de formatação:</strong> O título da publicação já é renderizado como título principal
                 (H1). Recomendamos usar <code>##</code> (H2) para subtítulos no corpo do texto.
               </Flash>
             )}
 
-            <Box sx={{ display: 'flex', width: '100%' }}>
+            <div className={classes.BodyFooter}>
               {errorObject?.key === 'body' && (
                 <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
               )}
 
               <CharacterCount maxLength={BODY_MAX_LENGTH} value={newData.body} />
-            </Box>
+            </div>
           </FormControl>
 
           {!contentObject?.parent_id && (
@@ -552,7 +534,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               <FormControl.Label>Fonte</FormControl.Label>
               <TextInput
                 contrast
-                sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+                className={classes.TextInput}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
                 name="source_url"
@@ -585,16 +567,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           )}
 
           {!contentObject?.parent_id && (
-            <Text sx={{ fontSize: 1 }}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
+            <Text className={classes.RequiredFieldsNote}>
+              Os campos marcados com um asterisco (*) são obrigatórios.
+            </Text>
           )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <div className={classes.EditActions}>
             {contentObject && (
               <Button
                 variant="invisible"
                 type="button"
                 disabled={isPosting}
-                sx={{ marginRight: 3, fontSize: 1, fontWeight: 'normal', cursor: 'pointer', color: 'fg.muted' }}
+                className={classes.CancelButton}
                 onClick={handleCancel}>
                 Cancelar
               </Button>
@@ -602,10 +586,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <ButtonWithLoader variant="primary" type="submit" isLoading={isPosting}>
               {contentObject?.id ? 'Atualizar' : 'Publicar'}
             </ButtonWithLoader>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </form>
-    </Box>
+    </div>
   );
 }
 
@@ -662,39 +646,24 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" sx={{ position: 'absolute' }}>
+    <div className={classes.CompactWrapper}>
+      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
         <Button onClick={handleClick}>Responder</Button>
       </Tooltip>
-      <Tooltip
-        text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`}
-        direction="n"
-        sx={{ position: 'absolute' }}>
+      <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
         <Button onClick={handleShare}>
-          {isLinkCopied ? <Text sx={{ color: 'fg.muted' }}>Link copiado!</Text> : <ShareIcon size={16} />}
+          {isLinkCopied ? <Text className={classes.LinkCopiedText}>Link copiado!</Text> : <ShareIcon size={16} />}
         </Button>
       </Tooltip>
-    </Box>
+    </div>
   );
 }
 
 function DeletedMode({ viewFrame }) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 2,
-        width: '100%',
-        borderWidth: viewFrame ? 1 : 0,
-        p: viewFrame ? 2 : 0,
-        borderRadius: '6px',
-        borderColor: 'border.default',
-        borderStyle: 'solid',
-      }}>
-      <Box sx={{ color: 'fg.muted', textAlign: 'center' }}>Conteúdo excluído</Box>
-    </Box>
+    <div className={clsx(classes.DeletedWrapper, viewFrame && classes.DeletedWrapperFramed)}>
+      <div className={classes.DeletedText}>Conteúdo excluído</div>
+    </div>
   );
 }
 
@@ -707,7 +676,7 @@ function ErrorMessage({ error, omitErrorId, ...props }) {
       {createErrorMessage(error, { omitErrorId: omitErrorId || isErrorWithReadMore })}
 
       {isErrorWithReadMore && (
-        <Text sx={{ display: 'block', mt: 1 }}>
+        <Text className={classes.ReadMoreText}>
           Para mais informações, leia:{' '}
           <Link href="/faq#erro-nova-publicacao">Não consigo criar novas publicações. O que fazer?</Link>
         </Text>

@@ -1,0 +1,13 @@
+.Wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.Grid {
+  display: grid;
+}
+
+.Truncate {
+  max-width: 170px;
+}

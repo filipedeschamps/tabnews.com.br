@@ -1,7 +1,10 @@
+import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
-import { ActionList, Box, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
+import { ActionList, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
 import { SearchIcon, XCircleFillIcon } from '@/TabNewsUI/icons';
+
+import classes from './index.module.css';
 
 const searchURL = process.env.NEXT_PUBLIC_SEARCH_URL + process.env.NEXT_PUBLIC_SEARCH_ID;
 
@@ -38,25 +41,13 @@ export default function useSearchBox() {
     };
   }, []);
 
-  function SearchIconButton({ sx, ...props }) {
+  function SearchIconButton({ className, ...props }) {
     return (
       <IconButton
         aria-label="Pesquisar"
         onClick={onClickSearchButton}
         variant="invisible"
-        sx={{
-          display: ['flex', , 'none'],
-          px: '7px',
-          color: 'header.logo',
-          '&:hover': {
-            color: 'header.text',
-            backgroundColor: 'transparent',
-          },
-          '&:focus-visible': {
-            outline: '2px solid #FFF',
-          },
-          ...sx,
-        }}
+        className={clsx(classes.SearchIconButton, className)}
         icon={SearchIcon}
         size="small"
         {...props}
@@ -64,24 +55,12 @@ export default function useSearchBox() {
     );
   }
 
-  function SearchBarButton({ sx, ...props }) {
+  function SearchBarButton({ className, ...props }) {
     return (
       <Button
         onClick={onClickSearchButton}
         alignContent="flex-start"
-        sx={{
-          display: ['none', , 'flex'],
-          width: [, , '200px', '300px'],
-          px: '13px',
-          color: 'checks.inputPlaceholderText',
-          backgroundColor: 'headerSearch.bg',
-          borderColor: 'headerSearch.border',
-          cursor: 'text',
-          '&:focus-visible': {
-            outline: '2px solid #FFF !important',
-          },
-          ...sx,
-        }}
+        className={clsx(classes.SearchBarButton, className)}
         leadingVisual={SearchIcon}
         {...props}>
         Pesquisar
@@ -133,35 +112,17 @@ export default function useSearchBox() {
         top={32}
         left={'50vw'}
         anchorSide="inside-center"
-        sx={{
-          display: 'flex',
-          position: 'relative',
-          flexDirection: 'column',
-          width: '90vw',
-          maxWidth: '900px',
-          maxHeight: ['95vh', '90vh'],
-          mx: '1px',
-          overflow: 'hidden',
-          borderStyle: 'solid',
-          borderWidth: '1px',
-          borderColor: 'border.default',
-          backgroundColor: '#FFF',
-          transform: 'translateX(-50%)',
-        }}>
-        <Box sx={isLoading ? { height: '138px' } : { overflowY: 'auto', minHeight: '138px' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', p: '13px', pb: '0' }}>
-            <Heading sx={{ flex: 1, textAlign: 'center', fontSize: 3, color: '#444444' }}>
-              Pesquisar com o Google
-            </Heading>
+        className={classes.Overlay}>
+        <div className={isLoading ? classes.ScrollAreaLoading : classes.ScrollArea}>
+          <div className={classes.Header}>
+            <Heading className={classes.Title}>Pesquisar com o Google</Heading>
             <IconButton icon={XCircleFillIcon} variant="invisible" onClick={handleClose} />
-          </Box>
+          </div>
 
           <GoogleBox onInputRender={onInputRender} onSuggestionsRender={onSuggestionsRender} />
 
-          <Box sx={{ display: 'flex', justifyContent: 'center', height: '26px', pt: '20px' }}>
-            {isLoading && <Spinner size="medium" />}
-          </Box>
-        </Box>
+          <div className={classes.SpinnerWrapper}>{isLoading && <Spinner size="medium" />}</div>
+        </div>
 
         <style jsx global>{`
           .gsc-input-box {

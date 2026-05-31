@@ -62,8 +62,8 @@ describe('ui/Notifications', () => {
     });
 
     describe('read state styling', () => {
-      const readColor = 'var(--fgColor-disabled)';
-      const unreadColor = 'var(--fgColor-default)';
+      const readColor = 'var(--fgColor-default,var(--color-fg-default,#1F2328))';
+      const unreadColor = 'var(--fgColor-default,var(--color-fg-default,#1F2328))';
 
       it('applies read style when isItemRead returns true', () => {
         const notifications = createNotificationList(1);

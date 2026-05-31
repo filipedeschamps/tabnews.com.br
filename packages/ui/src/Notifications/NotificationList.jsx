@@ -1,8 +1,9 @@
 'use client';
 import { KebabHorizontalIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, Box, IconButton } from '@primer/react';
+import { ActionList, ActionMenu, IconButton } from '@primer/react';
 import { createElement, isValidElement, useRef, useState } from 'react';
 
+import classes from './NotificationList.module.css';
 import { useNotifications } from './Provider';
 
 /**
@@ -22,9 +23,9 @@ export function NotificationList() {
 
   if (!notifications?.length && !isLoading) {
     return (
-      <Box sx={{ m: 3, textAlign: 'center' }}>
+      <div className={classes.Empty}>
         <span>{labels.empty}</span>
-      </Box>
+      </div>
     );
   }
 
@@ -36,9 +37,9 @@ export function NotificationList() {
 
       {isLoading && (
         <ActionList.Item disabled loading>
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <div className={classes.Loading}>
             <span>{labels.loading}</span>
-          </Box>
+          </div>
         </ActionList.Item>
       )}
     </ActionList>
@@ -58,13 +59,12 @@ function NotificationItem({ item }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuAnchorRef = useRef();
   const isNotificationRead = isItemRead?.(item);
-  const color = isNotificationRead ? 'var(--fgColor-disabled)' : 'var(--fgColor-default)';
   const primaryAction = actions[0];
 
   return (
     <ActionList.Item
       id={`notification-${item.id}`}
-      sx={{ color }}
+      className={isNotificationRead ? classes.ItemRead : classes.ItemUnread}
       onSelect={(e) => {
         if (isEventFromTrailingButton(e, item.id, selectors)) return;
         onItemSelect?.(item);
@@ -74,7 +74,7 @@ function NotificationItem({ item }) {
       {item.title}
 
       <ActionList.Description variant="block">
-        <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.body}</Box>
+        <div className={classes.Description}>{item.body}</div>
       </ActionList.Description>
 
       {actions.length === 1 && (

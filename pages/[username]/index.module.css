@@ -1,0 +1,113 @@
+.MainFlash {
+  width: 100%;
+  margin-bottom: var(--base-size-24);
+}
+
+.StatsRow {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  word-break: break-word;
+  flex-wrap: wrap;
+  gap: var(--base-size-8);
+  margin-bottom: var(--base-size-8);
+}
+
+.StatsGroup {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--base-size-8);
+}
+
+.PastTimeWrapper {
+  margin-left: var(--base-size-4);
+}
+
+.DescriptionHeader {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: var(--base-size-4);
+  /* This is the button height, so it doesn't flick when the button is rendered */
+  min-height: 32px;
+}
+
+.DescriptionTitle {
+  font-size: var(--text-body-size-medium);
+  font-weight: var(--base-text-weight-semibold);
+  margin-top: auto;
+  padding-bottom: var(--base-size-4);
+}
+
+.EditDescriptionButton {
+  color: var(--fgColor-accent);
+}
+
+.DescriptionViewer {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  width: 100%;
+  padding: var(--base-size-16);
+  overflow: hidden;
+}
+
+.CreateDescriptionButton {
+  margin-inline: auto;
+  margin-top: var(--base-size-4);
+}
+
+.DescriptionFlash {
+  width: 100%;
+  margin-top: var(--base-size-16);
+}
+
+.BoldText {
+  font-weight: var(--base-text-weight-semibold);
+}
+
+.Form {
+  width: 100%;
+}
+
+.FormLabel {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: var(--base-size-4);
+  min-height: 32px;
+}
+
+.CharacterCountRow {
+  display: flex;
+  width: 100%;
+}
+
+.FormFlash {
+  margin-top: var(--base-size-16);
+}
+
+.FormActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--base-size-16);
+  margin-top: var(--base-size-16);
+}
+
+.CancelButton {
+  font-weight: var(--base-text-weight-normal);
+  color: var(--fgColor-muted);
+}
+
+.FeaturesGroup {
+  display: flex;
+  align-self: center;
+}
+
+.OptionsButton {
+  margin-left: auto;
+  padding-inline: var(--base-size-4);
+  align-self: center;
+}

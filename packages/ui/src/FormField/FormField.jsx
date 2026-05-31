@@ -1,8 +1,11 @@
 'use client';
 import { AlertFillIcon, EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
-import { Button, Checkbox, FormControl, Select, Text, TextInput } from '@primer/react';
+import { Button, Checkbox, FormControl, Select, TextInput } from '@primer/react';
 import { Tooltip } from '@primer/react/next';
+import clsx from 'clsx';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+
+import classes from './FormField.module.css';
 
 const defaultProps = {
   block: true,
@@ -15,15 +18,7 @@ const textInputProps = {
   autoCorrect: 'off',
   autoCapitalize: 'off',
   spellCheck: false,
-  sx: {
-    px: 2,
-    '&:focus-within': {
-      backgroundColor: 'canvas.default',
-    },
-    '> input': {
-      px: 1,
-    },
-  },
+  className: classes.Input,
 };
 
 export const FormField = forwardRef(
@@ -31,6 +26,7 @@ export const FormField = forwardRef(
     {
       caption,
       checked,
+      className,
       error,
       hidden,
       inputMode,
@@ -40,7 +36,6 @@ export const FormField = forwardRef(
       options,
       required,
       suggestion,
-      sx,
       type,
       ...props
     },
@@ -112,13 +107,13 @@ export const FormField = forwardRef(
         if (props.onBlur) props.onBlur(e);
       };
 
-      inputProps.sx = { ...textInputProps.sx, pr: 0 };
+      inputProps.className = clsx(classes.Input, classes.InputPassword);
     }
 
     const isCheckbox = typeof checked === 'boolean';
 
     return (
-      <FormControl id={name} required={required} sx={{ minHeight: '86px', ...sx }}>
+      <FormControl id={name} required={required} className={clsx(classes.Control, className)}>
         <FormControl.Label>{label}</FormControl.Label>
         {caption && <FormControl.Caption>{caption}</FormControl.Caption>}
         {error && !suggestion?.value && !options && !isCheckbox && (
@@ -130,7 +125,7 @@ export const FormField = forwardRef(
         {!options && !isCheckbox && <TextInput type={type} {...textInputProps} {...inputProps} />}
 
         {options && (
-          <Select {...defaultProps} sx={{ py: 0 }} {...inputProps}>
+          <Select {...defaultProps} className={classes.Select} {...inputProps}>
             {options.map((option) => (
               <Select.Option key={option.value} {...option}>
                 {option.label}
@@ -157,28 +152,16 @@ export function Suggestion({ suggestion }) {
   if (!suggestion?.value) return null;
 
   return (
-    <Text
-      sx={{
-        display: 'inline-flex',
-        flexWrap: 'wrap',
-        wordBreak: 'break-word',
-        fontSize: '12px',
-        lineHeight: '14px',
-        fontWeight: 'bold',
-        columnGap: 1,
-        mt: 0,
-        alignItems: 'center',
-        color: 'attention.fg',
-      }}>
+    <span className={classes.Suggestion}>
       <AlertFillIcon size={12} />
       <span>{suggestion.label ?? 'Você quis dizer'}</span>
 
       <TooltippedButton
         tooltip={suggestion.tooltip || 'Aceitar sugestão'}
         onClick={suggestion.onClick}
-        color="success.fg">
+        colorClass={classes.TooltippedButtonSuccess}>
         <span>{suggestion.pre}</span>
-        <Text sx={{ textDecoration: 'underline' }}>{suggestion.mid}</Text>
+        <span className={classes.SuggestionUnderline}>{suggestion.mid}</span>
         <span>{suggestion.post}</span>
       </TooltippedButton>
 
@@ -188,33 +171,23 @@ export function Suggestion({ suggestion }) {
         <TooltippedButton
           tooltip={suggestion.ignoreTooltip || 'Ignorar sugestão'}
           onClick={suggestion.ignoreClick}
-          color="accent.fg"
-          sx={{ flex: 1 }}>
+          colorClass={classes.TooltippedButtonAccent}
+          className={classes.TooltippedButtonGrow}>
           {suggestion.ignoreLabel || 'Ignorar'}
         </TooltippedButton>
       )}
-    </Text>
+    </span>
   );
 }
 
-function TooltippedButton({ children, color, direction = 'nw', sx, tooltip, ...props }) {
+function TooltippedButton({ children, className, colorClass, direction = 'nw', tooltip, ...props }) {
   return (
     <Tooltip text={tooltip} direction={direction}>
       <Button
         variant="invisible"
         size="small"
         labelWrap={true}
-        sx={{
-          color,
-          my: '-4px',
-          px: 0,
-          textAlign: 'start',
-          '> *': { justifyContent: 'end' },
-          ':hover': {
-            bg: 'transparent',
-          },
-          ...sx,
-        }}
+        className={clsx(classes.TooltippedButton, colorClass, className)}
         {...props}>
         {children}
       </Button>
@@ -226,15 +199,8 @@ function WarningMessage({ message }) {
   if (!message) return null;
 
   return (
-    <Text
-      sx={{
-        wordBreak: 'break-word',
-        fontSize: '12px',
-        lineHeight: '14px',
-        fontWeight: 'bold',
-        color: 'attention.fg',
-      }}>
+    <span className={classes.Warning}>
       <AlertFillIcon size={12} /> {message}
-    </Text>
+    </span>
   );
 }

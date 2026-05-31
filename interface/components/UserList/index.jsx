@@ -1,4 +1,6 @@
-import { Box, Label, Link, Pagination, PastTime, SkeletonLoader, Text } from '@/TabNewsUI';
+import { Label, Link, Pagination, PastTime, SkeletonLoader, Text } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function UserListPaginated({ userList, pagination }) {
   const listNumberStart = pagination.perPage * (pagination.currentPage - 1) + 1;
@@ -18,21 +20,11 @@ export default function UserListPaginated({ userList, pagination }) {
 
 function UserList({ userList, listNumberStart }) {
   return (
-    <Box
-      as="ol"
-      sx={{
-        display: 'grid',
-        gap: '0.5rem',
-        gridTemplateColumns: 'min-content minmax(0, 1fr)',
-        padding: 0,
-        margin: 0,
-      }}
-      key={`user-list-${listNumberStart}`}
-      start={listNumberStart}>
+    <ol className={classes.List} key={`user-list-${listNumberStart}`} start={listNumberStart}>
       {userList.map((userObject) => (
         <UserListItem key={userObject.id} user={userObject} />
       ))}
-    </Box>
+    </ol>
   );
 }
 
@@ -46,70 +38,28 @@ function UserListItem({ user }) {
   }
 
   return (
-    <Box
-      as="li"
-      sx={{
-        display: 'contents',
-        ':before': {
-          content: 'counter(list-item) "."',
-          counterIncrement: 'list-item',
-          fontWeight: 'semibold',
-          width: 'min-content',
-          marginLeft: 'auto',
-        },
-      }}>
-      <Box>
-        <Box sx={{ wordBreak: 'break-word' }}>
-          <Link
-            sx={{
-              fontWeight: 'semibold',
-              ':link': {
-                color: 'fg.default',
-              },
-              ':visited': {
-                color: 'fg.subtle',
-              },
-            }}
-            href={`/${user.username}`}>
+    <li className={classes.Item}>
+      <div>
+        <div className={classes.Username}>
+          <Link className={classes.Link} href={`/${user.username}`}>
             {user.username}
             {user.features.includes('nuked') && (
-              <Label variant="danger" sx={{ ml: 1 }}>
+              <Label variant="danger" className={classes.NukedLabel}>
                 nuked
               </Label>
             )}
           </Link>
-        </Box>
-        {user.description && (
-          <Text
-            sx={{
-              display: 'block',
-              overflow: 'auto',
-              wordWrap: 'break-word',
-              fontWeight: 'normal',
-              fontStyle: 'italic',
-              fontSize: 1,
-            }}>
-            {user.description}
-          </Text>
-        )}
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 1,
-            gridTemplateColumns:
-              'max-content max-content max-content max-content minmax(20px, max-content) max-content max-content',
-            fontSize: 0,
-            whiteSpace: 'nowrap',
-            color: 'neutral.emphasis',
-          }}>
+        </div>
+        {user.description && <Text className={classes.Description}>{user.description}</Text>}
+        <div className={classes.Metadata}>
           <PastTime formatText={formatUpdatedAt} direction="ne" date={user.updated_at} />
           {' · '}
           <Text>{getTabCoinsText(user.tabcoins)}</Text>
           {' · '}
           <Text>{user.tabcash} tabcash</Text>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </li>
   );
 }
 

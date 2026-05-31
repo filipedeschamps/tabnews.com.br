@@ -1,8 +1,10 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
+import { Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
 import { createErrorMessage, useUser } from 'interface';
+
+import classes from './token.module.css';
 
 export default function ConfirmEmail() {
   const router = useRouter();
@@ -63,13 +65,13 @@ export default function ConfirmEmail() {
     <>
       {isSuccess && <Confetti />}
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirmar alteração de email' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+        <div className={classes.Wrapper}>
           {isLoading ? (
             <Flash variant="default">Verificando Token de Alteração de Email...</Flash>
           ) : (
             <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
           )}
-        </Box>
+        </div>
       </DefaultLayout>
     </>
   );

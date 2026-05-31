@@ -1,0 +1,53 @@
+.Heading {
+  margin-bottom: var(--base-size-16);
+}
+
+.Fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-16);
+}
+
+.TextInput {
+  padding-inline: var(--base-size-8);
+}
+
+.TextInput:focus-within {
+  background-color: var(--bgColor-default);
+}
+
+.EmailSuggestion {
+  display: flex;
+  align-items: center;
+}
+
+.EmailSuggestionButton {
+  color: var(--fgColor-accent);
+  padding: var(--base-size-4);
+}
+
+.CharacterCountRow {
+  display: flex;
+  width: 100%;
+}
+
+.NotificationsControl {
+  gap: var(--base-size-8);
+  align-items: center;
+}
+
+.Checkbox {
+  display: flex;
+}
+
+.PasswordLink {
+  font-size: var(--text-body-size-small);
+}
+
+.RequiredText {
+  font-size: var(--text-body-size-medium);
+}
+
+.SubmitButton {
+  width: 100%;
+}

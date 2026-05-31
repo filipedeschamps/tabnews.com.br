@@ -1,8 +1,10 @@
 'use client';
 import { BellIcon, XIcon } from '@primer/octicons-react';
-import { AnchoredOverlay, Box, Heading, IconButton, Text } from '@primer/react';
+import { AnchoredOverlay, Heading, IconButton, Text } from '@primer/react';
+import clsx from 'clsx';
 
 import { NotificationList } from './NotificationList';
+import classes from './NotificationMenu.module.css';
 import { useNotifications } from './Provider';
 
 /**
@@ -48,27 +50,20 @@ export function NotificationMenu({ topBar, sectionIntro, footer, buttonProps, ov
           variant="invisible"
           {...anchorProps}
           {...buttonProps}
-          sx={{
-            color: count === 0 ? 'bg.disabled' : 'fg.onEmphasis',
-            '&:hover': {
-              color: 'header.text',
-              backgroundColor: 'transparent',
-            },
-            ...buttonProps?.sx,
-          }}
+          className={clsx(classes.AnchorButton, count === 0 && classes.AnchorButtonEmpty, buttonProps?.className)}
         />
       )}
       overlayProps={{
         role: 'dialog',
         ...overlayProps,
-        sx: { display: 'flex', flexDirection: 'column', maxHeight: '90vh', ...overlayProps?.sx },
+        className: clsx(classes.Overlay, overlayProps?.className),
       }}>
       <HeaderWithClose labels={labels} onClose={onClose} topBar={topBar} />
-      <Box sx={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+      <div className={classes.Body}>
         {sectionIntro}
         <NotificationList />
         {footer}
-      </Box>
+      </div>
     </AnchoredOverlay>
   );
 }
@@ -82,26 +77,16 @@ export function NotificationMenu({ topBar, sectionIntro, footer, buttonProps, ov
  */
 function IconWithBadge({ count }) {
   return (
-    <Box sx={{ position: 'relative' }}>
+    <div className={classes.BadgeWrapper}>
       <BellIcon />
       {count > 0 && (
-        <Box
-          data-testid="notification-badge"
-          sx={{
-            display: 'flex',
-            position: 'absolute',
-            left: '47%',
-            bottom: '50%',
-            borderRadius: '3px',
-            backgroundColor: 'danger.emphasis',
-            padding: '0 0.2em',
-          }}>
+        <div data-testid="notification-badge" className={classes.Badge}>
           <Text fontSize="0.8em" color="fg.onEmphasis">
             {count > 99 ? '99+' : count}
           </Text>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -116,30 +101,22 @@ function IconWithBadge({ count }) {
  */
 function HeaderWithClose({ labels, onClose, topBar }) {
   return (
-    <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'border.default' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-          textAlign: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
+    <div className={classes.Header}>
+      <div className={classes.HeaderTitleWrapper}>
         {topBar || (
-          <Heading as="h2" sx={{ fontSize: 4 }}>
+          <Heading as="h2" className={classes.HeaderTitle}>
             {labels.notifications}
           </Heading>
         )}
-      </Box>
+      </div>
 
       <IconButton
         variant="invisible"
         icon={XIcon}
         onClick={onClose}
         aria-label={labels.close}
-        sx={{ color: 'fg.subtle', m: 2 }}
+        className={classes.CloseButton}
       />
-    </Box>
+    </div>
   );
 }

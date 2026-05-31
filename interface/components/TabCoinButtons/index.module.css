@@ -1,0 +1,35 @@
+.Wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.CreditButton {
+  color: var(--fgColor-muted);
+  line-height: 18px;
+}
+
+.DebitButton {
+  color: var(--fgColor-muted);
+  line-height: 18px;
+  margin-bottom: var(--base-size-8);
+}
+
+.Balance {
+  width: 100%;
+  text-align: center;
+  font-size: var(--text-body-size-small);
+  font-weight: var(--base-text-weight-semibold);
+  margin-block: var(--base-size-8);
+  padding-block: var(--base-size-4);
+  color: var(--fgColor-accent);
+}
+
+.DisabledWrapper {
+  display: flex;
+  flex-direction: column;
+  color: var(--borderColor-muted);
+  margin-top: var(--base-size-4);
+  margin-bottom: var(--base-size-8);
+  gap: var(--base-size-24);
+}

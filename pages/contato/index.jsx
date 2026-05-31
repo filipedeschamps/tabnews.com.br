@@ -1,4 +1,4 @@
-import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const body = `Leia com atenção qual a melhor forma de entrar em contato:
@@ -32,10 +32,10 @@ export default function Page() {
         description:
           'Entre em contato com a equipe do TabNews para reportar problemas, sugerir melhorias ou tirar dúvidas sobre a plataforma.',
       }}>
-      <Box>
+      <div>
         <Heading as="h1">Contato</Heading>
         <Viewer value={body} clobberPrefix="" copyAnchorLink={false} />
-      </Box>
+      </div>
     </DefaultLayout>
   );
 }

@@ -1,34 +1,29 @@
 import { GoToTopButton } from '@tabnews/ui';
 
-import { Box, Footer, Header } from '@/TabNewsUI';
+import { Footer, Header } from '@/TabNewsUI';
 import { Head } from 'interface';
 
+import classes from './index.module.css';
+
+const containerMaxWidth = {
+  small: '544px',
+  medium: '768px',
+  large: '1012px',
+  xlarge: '1280px',
+};
+
 export default function DefaultLayout({ children, containerWidth = 'large', metadata }) {
+  const maxWidth = containerMaxWidth[containerWidth] ?? containerWidth;
+
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: 'canvas.default' }}>
+    <div className={classes.Wrapper}>
       {metadata && <Head metadata={metadata} />}
       <Header />
-      <Box
-        as="main"
-        maxWidth={containerWidth}
-        sx={{
-          marginX: 'auto',
-          display: 'flex',
-          flexWrap: 'wrap',
-          padding: [2, null, null, 4],
-          paddingTop: [3, null, null, 4],
-        }}>
+      <main className={classes.Main} style={{ maxWidth }}>
         {children}
-      </Box>
-      <Footer
-        maxWidth={containerWidth}
-        sx={{
-          marginX: 'auto',
-          paddingX: [2, null, null, 4],
-          paddingTop: 3,
-        }}
-      />
+      </main>
+      <Footer className={classes.Footer} style={{ maxWidth }} />
       <GoToTopButton target="header" />
-    </Box>
+    </div>
   );
 }

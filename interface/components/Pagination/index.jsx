@@ -1,21 +1,14 @@
-import { Box, Link, Text } from '@/TabNewsUI';
+import { Link, Text } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/TabNewsUI/icons';
+
+import classes from './index.module.css';
 
 export default function Pagination({ previousPage, nextPage, basePath }) {
   const previousPageUrl = `${basePath}/${previousPage}`;
   const nextPageUrl = `${basePath}/${nextPage}`;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        width: '100%',
-        justifyContent: 'center',
-        whiteSpace: 'nowrap',
-        gap: 4,
-        m: 4,
-        mb: 2,
-      }}>
+    <div className={classes.Wrapper}>
       {previousPage ? (
         <Link href={previousPageUrl} scroll={false}>
           <ChevronLeftIcon size={16} />
@@ -39,6 +32,6 @@ export default function Pagination({ previousPage, nextPage, basePath }) {
           <ChevronRightIcon size={16} />
         </Text>
       )}
-    </Box>
+    </div>
   );
 }

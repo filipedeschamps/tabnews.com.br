@@ -1,0 +1,21 @@
+.Wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: var(--base-size-96);
+}
+
+.Heading {
+  text-align: center;
+  margin-bottom: var(--base-size-8);
+}
+
+.Email {
+  width: 100%;
+  text-align: center;
+  overflow-wrap: break-word;
+  font-weight: var(--base-text-weight-semibold);
+  font-size: 1.25rem;
+  margin-bottom: var(--base-size-24);
+}

@@ -9,10 +9,12 @@ import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
-import { Box, useTheme } from '@primer/react';
+import { useTheme } from '@primer/react';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
+import clsx from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import classes from './Markdown.module.css';
 import {
   anchorHeadersPlugin,
   copyAnchorLinkPlugin,
@@ -129,7 +131,7 @@ export function MarkdownEditor({
   }, []);
 
   return (
-    <Box sx={{ width: '100%' }} ref={editorRef} className={isInvalid ? 'is-invalid' : ''}>
+    <div className={clsx(classes.Editor, isInvalid && 'is-invalid')} ref={editorRef}>
       <ByteMdEditor
         plugins={bytemdPluginList}
         mode={mode}
@@ -140,7 +142,7 @@ export function MarkdownEditor({
         {...props}
       />
       <EditorStyles height={initialHeight} mode={mode} />
-    </Box>
+    </div>
   );
 }
 

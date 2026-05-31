@@ -3,9 +3,11 @@ import useSWR from 'swr';
 
 import { BarChart } from '@/Charts';
 import Graph from '@/Graph';
-import { Box, DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Label, LabelGroup, Truncate } from '@/TabNewsUI';
 import { useUser } from 'interface';
 import analytics from 'models/analytics.js';
+
+import classes from './index.module.css';
 
 export default function Page({ usersCreated, rootContentPublished, childContentPublished, votesGraph, votesTaken }) {
   const { user } = useUser();
@@ -36,7 +38,7 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
         description:
           'Estatísticas e status do TabNews: cadastros, publicações, respostas, qualificações e dados técnicos do site.',
       }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <div className={classes.Wrapper}>
         <Heading as="h1">Estatísticas e Status do Site</Heading>
 
         <BarChart title="Novos cadastros" data={usersCreated} yDataKey="cadastros" />
@@ -49,24 +51,24 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
 
         <Graph title={`Rede de qualificações (últimas ${votesAmount})`} data={votes.votesGraph} />
 
-        <Box>
+        <div>
           <h2>Banco de Dados</h2>
 
           {!statusObjectIsLoading && (
-            <Box sx={{ display: 'grid' }}>
-              <Box>
+            <div className={classes.Grid}>
+              <div>
                 Status:{' '}
                 <Label variant={statusObject?.dependencies.database.status ? 'success' : 'danger'}>
                   {statusObject?.dependencies.database.status}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Conexões disponíveis:{' '}
                 <Label variant={statusObject?.dependencies.database.max_connections > 70 ? 'success' : 'danger'}>
                   {statusObject?.dependencies.database.max_connections}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Conexões abertas:{' '}
                 <Label
                   variant={
@@ -77,8 +79,8 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
                   }>
                   {statusObject?.dependencies.database.opened_connections}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Latência:{' '}
                 <LabelGroup>
                   <Label variant={statusObject?.dependencies.database.latency.first_query < 200 ? 'success' : 'danger'}>
@@ -92,85 +94,85 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
                     {`${Math.round(statusObject?.dependencies.database.latency.third_query)}ms`}
                   </Label>
                 </LabelGroup>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Versão do PostgreSQL:{' '}
                 <Label variant={statusObject?.dependencies.database.version ? 'success' : 'danger'}>
                   {statusObject?.dependencies.database.version}
                 </Label>
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
-        </Box>
+        </div>
 
-        <Box>
+        <div>
           <h2>Servidor Web</h2>
 
           {!statusObjectIsLoading && (
-            <Box sx={{ display: 'grid' }}>
-              <Box>
+            <div className={classes.Grid}>
+              <div>
                 Status:{' '}
                 <Label variant={statusObject?.dependencies.webserver.status ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.status}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Provedor:{' '}
                 <Label variant={statusObject?.dependencies.webserver.provider ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.provider}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Ambiente:{' '}
                 <Label variant={statusObject?.dependencies.webserver.environment ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.environment}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Região na AWS:{' '}
                 <Label variant={statusObject?.dependencies.webserver.aws_region ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.aws_region}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Região na Vercel:{' '}
                 <Label variant={statusObject?.dependencies.webserver.vercel_region ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.vercel_region}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Timezone:{' '}
                 <Label variant={statusObject?.dependencies.webserver.timezone ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.timezone}
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Autor do último commit:{' '}
                 <Label variant={statusObject?.dependencies.webserver.last_commit_author ? 'success' : 'danger'}>
-                  <Truncate inline expandable sx={{ maxWidth: '170px' }}>
+                  <Truncate inline expandable className={classes.Truncate}>
                     {statusObject?.dependencies.webserver.last_commit_author}
                   </Truncate>
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 SHA do commit:{' '}
                 <Label variant={statusObject?.dependencies.webserver.last_commit_message_sha ? 'success' : 'danger'}>
-                  <Truncate inline expandable sx={{ maxWidth: '170px' }}>
+                  <Truncate inline expandable className={classes.Truncate}>
                     {statusObject?.dependencies.webserver.last_commit_message_sha}
                   </Truncate>
                 </Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 Versão do Node.js:{' '}
                 <Label variant={statusObject?.dependencies.webserver.version ? 'success' : 'danger'}>
                   {statusObject?.dependencies.webserver.version}
                 </Label>
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
-        </Box>
+        </div>
 
-        <Box>
+        <div>
           <h2>Contribuidores</h2>
 
           <a href="https://github.com/filipedeschamps/tabnews.com.br/graphs/contributors">
@@ -182,8 +184,8 @@ export default function Page({ usersCreated, rootContentPublished, childContentP
               />
             </picture>
           </a>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </DefaultLayout>
   );
 }

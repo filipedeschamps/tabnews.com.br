@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 
 import { Text } from '@/TabNewsUI';
 
+import classes from './index.module.css';
+
 export default function ReadTime({ text, ...props }) {
   const readTimeInMinutes = useMemo(() => {
     const wpm = 260;
@@ -10,7 +12,7 @@ export default function ReadTime({ text, ...props }) {
   }, [text]);
 
   return (
-    <Text sx={{ fontSize: 0, color: 'fg.muted' }} {...props}>
+    <Text className={classes.Text} {...props}>
       {readTimeInMinutes}
     </Text>
   );

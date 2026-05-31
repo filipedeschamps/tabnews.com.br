@@ -1,0 +1,21 @@
+.Heading {
+  margin-bottom: var(--base-size-16);
+}
+
+.Flash {
+  margin-top: var(--base-size-16);
+}
+
+.Submit {
+  width: 100%;
+  margin-top: var(--base-size-16);
+}
+
+.Links {
+  margin-top: var(--base-size-40);
+  width: 100%;
+  text-align: center;
+  font-size: var(--text-body-size-medium);
+  display: flex;
+  flex-direction: column;
+}

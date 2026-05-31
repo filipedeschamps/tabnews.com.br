@@ -1,0 +1,32 @@
+.Overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid grey;
+  z-index: 1;
+}
+
+.MessageWrapper {
+  position: relative;
+  height: 50vh;
+}
+
+.Message {
+  color: white;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  bottom: var(--base-size-24);
+  font-size: var(--text-body-size-large);
+  font-weight: var(--base-text-weight-semibold);
+}
+
+.Widget {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,4 @@
+.Text {
+  font-size: var(--text-body-size-small);
+  color: var(--fgColor-muted);
+}

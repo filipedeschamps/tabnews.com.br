@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
 import { createErrorMessage } from 'interface';
 
+import classes from './index.module.css';
+
 const formConfig = {
   username,
   email,
@@ -23,7 +25,7 @@ export default function Register() {
         description:
           'Crie sua conta no TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
       }}>
-      <Heading as="h1" sx={{ mb: 3 }}>
+      <Heading as="h1" className={classes.Heading}>
         Cadastro
       </Heading>
 
@@ -96,7 +98,7 @@ function SignUpForm() {
       <FormField {...getFieldProps('password')} autoComplete="new-password" />
       <FormField
         {...getFieldProps('termsAccepted')}
-        sx={{ minHeight: 'auto' }}
+        className={classes.TermsField}
         label={
           <Text fontSize="1">
             Li e estou de acordo com os
@@ -106,7 +108,7 @@ function SignUpForm() {
       />
 
       {globalErrorMessage && (
-        <Flash variant="danger" sx={{ mt: 3 }}>
+        <Flash variant="danger" className={classes.Flash}>
           {globalErrorMessage}
         </Flash>
       )}
@@ -115,7 +117,7 @@ function SignUpForm() {
         variant="primary"
         size="large"
         type="submit"
-        sx={{ width: '100%', mt: 3 }}
+        className={classes.Submit}
         disabled={!state.termsAccepted.checked}
         isLoading={state.loading.value}>
         Criar cadastro

@@ -1,8 +1,10 @@
 import { TabNav, TabNavLink } from '@/TabNewsUI';
 
+import classes from './index.module.css';
+
 export default function RecentTabNav() {
   return (
-    <TabNav sx={{ width: '100%', mb: 3 }}>
+    <TabNav className={classes.Nav}>
       <TabNavLink
         href={{
           pathname: '/recentes/pagina/[page]',

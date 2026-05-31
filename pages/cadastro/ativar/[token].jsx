@@ -1,8 +1,10 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-import { Box, Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
+import { Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
 import { createErrorMessage } from 'interface';
+
+import classes from './token.module.css';
 
 export default function ActiveUser() {
   const router = useRouter();
@@ -59,13 +61,13 @@ export default function ActiveUser() {
     <>
       {isSuccess && <Confetti />}
       <DefaultLayout containerWidth="medium" metadata={{ title: 'Ativar cadastro' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+        <div className={classes.Wrapper}>
           {isLoading ? (
             <Flash variant="default">Verificando Token de Ativação...</Flash>
           ) : (
             <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
           )}
-        </Box>
+        </div>
       </DefaultLayout>
     </>
   );

@@ -1,0 +1,149 @@
+.RootContentRow {
+  width: 100%;
+  display: flex;
+}
+
+.TabCoinColumn {
+  padding-right: var(--base-size-8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.RootDivider {
+  border-width: 0;
+  border-right-width: 1px;
+  border-color: var(--borderColor-default);
+  border-style: dotted;
+  width: 50%;
+  height: 100%;
+  min-height: 8px;
+}
+
+.RootContentBody {
+  width: 100%;
+  margin-top: 0;
+  padding-left: 1px;
+  overflow: auto;
+}
+
+.RootContentBodyNoTitle {
+  margin-top: 9px;
+}
+
+.ReplyBoxWrapper {
+  width: 100%;
+}
+
+.ReplyBox {
+  border-radius: 6px;
+  border-width: 1px;
+  border-color: var(--borderColor-default);
+  border-style: solid;
+  margin-top: var(--base-size-24);
+  margin-bottom: var(--base-size-16);
+  padding: var(--base-size-24);
+  word-wrap: break-word;
+}
+
+.InReplyTo {
+  font-size: var(--text-body-size-medium);
+  margin-bottom: var(--base-size-8);
+  display: flex;
+  flex-direction: row;
+}
+
+.InReplyToIcon {
+  text-align: center;
+  padding-inline: 6px;
+}
+
+@media (min-width: 1012px) {
+  .InReplyToIcon {
+    padding-right: 13px;
+  }
+}
+
+.ChildRow {
+  width: 100%;
+  word-wrap: break-word;
+  display: flex;
+  margin-top: var(--base-size-16);
+}
+
+.ChildTabCoinColumn {
+  margin-right: var(--base-size-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 28px;
+}
+
+.CollapseHandle.CollapseHandle {
+  cursor: pointer;
+  width: 80%;
+  height: 100%;
+  min-height: 24px;
+  display: flex;
+  justify-content: center;
+  margin-top: var(--base-size-4);
+  margin-inline: 10%;
+}
+
+.CollapseHandle:hover div {
+  display: block;
+  border-left-width: 1px;
+  border-color: var(--borderColor-danger-emphasis);
+  border-style: dashed;
+}
+
+.CollapseHandle:hover svg {
+  background-color: var(--bgColor-default);
+}
+
+.FoldIconWrapper {
+  display: none;
+  position: relative;
+  width: 0%;
+  left: -7px;
+  color: var(--fgColor-danger);
+  border-style: hidden !important;
+}
+
+.ChildDivider {
+  border-width: 0;
+  border-right-width: 1px;
+  border-left-width: 0;
+  border-color: var(--borderColor-default);
+  border-style: dotted;
+  width: 0;
+  transition: border 0.1s cubic-bezier(1, 1, 1, 0);
+}
+
+.ChildContentColumn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 9px;
+  padding-left: 1px;
+  overflow: auto;
+}
+
+.ChildCompactRow {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+}
+
+.ChildCompactRowPublished {
+  margin-top: var(--base-size-24);
+}
+
+.ExpandButton {
+  color: var(--fgColor-accent);
+}
+
+.AdBanner {
+  margin-left: var(--base-size-32);
+  padding-left: var(--base-size-4);
+}

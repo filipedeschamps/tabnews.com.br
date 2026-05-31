@@ -1,53 +1,19 @@
-import { Box, Link } from '@/TabNewsUI';
+import { Link } from '@/TabNewsUI';
 import { CgTab } from '@/TabNewsUI/icons';
+
+import classes from './index.module.css';
 
 export default function Footer(props) {
   return (
-    <Box as="footer" {...props}>
-      <Box
-        fontSize={1}
-        sx={{
-          borderColor: 'border.default',
-          borderTopStyle: 'solid',
-          borderTopWidth: 1,
-          width: '100%',
-          paddingX: 2,
-          paddingY: [4, null, null, 5],
-          display: 'flex',
-          justifyContent: 'center',
-          flexWrap: 'wrap-reverse',
-          gap: 3,
-        }}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 1,
-            color: 'fg.subtle',
-          }}>
-          <Link
-            sx={{
-              color: 'fg.subtle',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            href="/"
-            aria-label="Voltar para a página inicial">
+    <footer {...props}>
+      <div className={classes.Container}>
+        <div className={classes.Copyright}>
+          <Link className={classes.HomeLink} href="/" aria-label="Voltar para a página inicial">
             <CgTab size={26} />
           </Link>
           &copy; {new Date().getFullYear()} TabNews
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: [3, null, 4, 5],
-            paddingX: [2, null, null, 5],
-            flexWrap: 'wrap',
-          }}>
+        </div>
+        <div className={classes.Links}>
           {/* Ordered alphabetically. */}
           <Link href="/contato">Contato</Link>
           <Link href="/faq">FAQ</Link>
@@ -60,8 +26,8 @@ export default function Footer(props) {
           <Link href="/status">Status</Link>
           <Link href="/termos-de-uso">Termos de Uso</Link>
           <Link href="https://curso.dev">curso.dev</Link>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </footer>
   );
 }

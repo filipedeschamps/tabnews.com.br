@@ -1,0 +1,15 @@
+.Wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Spinner {
+  display: flex;
+  margin-right: 8px;
+  transition: all 500ms ease;
+}
+
+.Content {
+  transition: transform 500ms ease;
+}

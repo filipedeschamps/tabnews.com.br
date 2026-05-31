@@ -1,16 +1,18 @@
-import { Box, CounterLabel, Heading, TabNav, TabNavLink } from '@/TabNewsUI';
+import { CounterLabel, Heading, TabNav, TabNavLink } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function UserHeader({ username, children, rootContentCount, childContentCount, adContentCount }) {
   return (
     <>
-      <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-        <Heading as="h1" sx={{ wordBreak: 'break-word' }}>
+      <div className={classes.Header}>
+        <Heading as="h1" className={classes.Title}>
           {username}
         </Heading>
         {children}
-      </Box>
+      </div>
 
-      <TabNav sx={{ width: '100%', mb: 3 }}>
+      <TabNav className={classes.Nav}>
         <TabNavLink href={`/${username}`}>Perfil</TabNavLink>
 
         <TabNavLink

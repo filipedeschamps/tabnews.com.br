@@ -1,0 +1,25 @@
+.Empty {
+  margin: var(--base-size-16);
+  text-align: center;
+}
+
+.Loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.ItemRead {
+  color: var(--fgColor-disabled);
+}
+
+.ItemUnread {
+  color: var(--fgColor-default);
+}
+
+.Description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

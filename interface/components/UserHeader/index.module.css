@@ -1,0 +1,16 @@
+.Header {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--base-size-8);
+  margin-bottom: var(--base-size-16);
+}
+
+.Title {
+  word-break: break-word;
+}
+
+.Nav {
+  width: 100%;
+  margin-bottom: var(--base-size-16);
+}
