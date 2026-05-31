@@ -6,6 +6,7 @@ export { NotificationList, NotificationMenu, NotificationsProvider, useNotificat
 export { PrimerRoot } from './PrimerRoot/PrimerRoot';
 export { StyledComponentsRegistry } from './SCRegistry/SCRegistry';
 export * from './ThemeProvider';
+export * from './UnderlineNav';
 export {
   ActionList,
   ActionMenu,
@@ -34,4 +35,4 @@ export {
   useConfirm,
   useTheme,
 } from '@primer/react';
-export { TabNav, Tooltip as TooltipV1 } from '@primer/react/deprecated';
+export { Tooltip as TooltipV1 } from '@primer/react/deprecated';

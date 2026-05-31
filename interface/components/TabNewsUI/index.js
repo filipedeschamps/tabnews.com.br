@@ -8,7 +8,7 @@ export { default as DefaultLayout } from '@/DefaultLayout';
 export { default as EmptyState } from '@/EmptyState';
 export { default as Footer } from '@/Footer';
 export { default as Header } from '@/Header';
-export { HeaderLink, Link, NavItem, default as NextLink, TabNavLink } from '@/Link';
+export { HeaderLink, Link, NavItem, default as NextLink, UnderlineNav, UnderlineNavItem } from '@/Link';
 export { Editor, default as Viewer } from '@/Markdown';
 export { default as Pagination } from '@/Pagination';
 export { default as PastTime } from '@/PastTime';
@@ -36,7 +36,6 @@ export {
   BranchName,
   Button,
   Checkbox,
-  CounterLabel,
   Flash,
   FormControl,
   Heading,
@@ -47,7 +46,6 @@ export {
   Overlay,
   SegmentedControl,
   Spinner,
-  TabNav,
   Text,
   TextInput,
   TooltipV1,
