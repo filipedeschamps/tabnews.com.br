@@ -1,6 +1,5 @@
 import NextDocument, { Head, Html, Main, NextScript } from 'next/document.js';
 import Script from 'next/script.js';
-import { ServerStyleSheet } from 'styled-components';
 
 import { KatexLoader } from './KatexLoader/KatexLoader';
 
@@ -28,26 +27,6 @@ export function configureDocument({ htmlProps = {}, headChildren } = {}) {
 const Doc = NextDocument?.default ?? NextDocument;
 
 export class Document extends Doc {
-  static async getInitialProps(ctx) {
-    const sheet = new ServerStyleSheet();
-    const originalRenderPage = ctx.renderPage;
-
-    try {
-      ctx.renderPage = () =>
-        originalRenderPage({
-          enhanceApp: (App) => (props) => sheet.collectStyles(<App {...props} />),
-        });
-
-      const initialProps = await Doc.getInitialProps(ctx);
-      return {
-        ...initialProps,
-        styles: [initialProps.styles, sheet.getStyleElement()],
-      };
-    } finally {
-      sheet.seal();
-    }
-  }
-
   render() {
     const { htmlProps, headChildren } = documentConfig;
 

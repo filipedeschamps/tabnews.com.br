@@ -32,7 +32,6 @@ export {
   ActionMenu,
   AnchoredOverlay,
   AutoThemeProvider,
-  Box,
   BranchName,
   Button,
   Checkbox,

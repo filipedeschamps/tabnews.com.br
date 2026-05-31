@@ -33,7 +33,7 @@ describe('ui', () => {
       const styleTag = container.querySelector('style');
 
       expect(child.innerHTML).toBe('Night Content');
-      expect(child.parentElement.dataset.colorMode).toBe('dark');
+      expect(child.closest('[data-color-mode]').dataset.colorMode).toBe('dark');
 
       expect(styleTag).not.toBeNull();
       expect(styleTag.getAttribute('jsx')).toBe('true');
@@ -64,7 +64,7 @@ describe('ui', () => {
       const styleTag = container.querySelector('style');
 
       expect(child.innerHTML).toBe('Day Content');
-      expect(child.parentElement.dataset.colorMode).toBe('light');
+      expect(child.closest('[data-color-mode]').dataset.colorMode).toBe('light');
 
       expect(styleTag).not.toBeNull();
       expect(styleTag.getAttribute('global')).toBe('true');

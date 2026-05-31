@@ -6,7 +6,7 @@ config();
 
 export default defineConfig({
   test: {
-    server: { deps: { inline: ['@tabnews/ui'] } },
+    server: { deps: { inline: ['@tabnews/ui', '@primer/react'] } },
     isolate: false,
     setupFiles: ['tests/setup.js'],
     workspace: [

@@ -4,14 +4,12 @@ export * from './FormField';
 export * from './GoToTopButton';
 export { NotificationList, NotificationMenu, NotificationsProvider, useNotifications } from './Notifications';
 export { PrimerRoot } from './PrimerRoot/PrimerRoot';
-export { StyledComponentsRegistry } from './SCRegistry/SCRegistry';
 export * from './ThemeProvider';
 export * from './UnderlineNav';
 export {
   ActionList,
   ActionMenu,
   AnchoredOverlay,
-  Box,
   BranchName,
   Button,
   Checkbox,

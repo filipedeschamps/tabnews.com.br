@@ -14,7 +14,6 @@ module.exports = {
     ignoreDuringBuilds: true,
   },
   compiler: {
-    styledComponents: true,
     styledJsx: true,
   },
   redirects() {

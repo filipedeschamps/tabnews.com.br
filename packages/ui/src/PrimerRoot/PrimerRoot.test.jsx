@@ -18,10 +18,6 @@ vi.mock('../AutoThemeProvider/AutoThemeProvider.jsx', () => ({
   ),
 }));
 
-vi.mock('../SCRegistry/SCRegistry.jsx', () => ({
-  StyledComponentsRegistry: ({ children }) => <div data-testid="styled-components-registry">{children}</div>,
-}));
-
 describe('ui', () => {
   describe('PrimerRoot', () => {
     const mockCookieStore = {
@@ -61,11 +57,9 @@ describe('ui', () => {
     it('renders with proper component hierarchy', async () => {
       const { getByTestId } = await renderServerComponent(PrimerRoot, defaultProps);
 
-      const styledComponentsRegistry = getByTestId('styled-components-registry');
       const autoThemeProvider = getByTestId('auto-theme-provider');
       const children = getByTestId('test-children');
 
-      expect(styledComponentsRegistry).toContainElement(autoThemeProvider);
       expect(autoThemeProvider).toContainElement(children);
     });
 

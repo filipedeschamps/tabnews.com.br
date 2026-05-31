@@ -29,31 +29,6 @@ document.documentElement.setAttribute('data-no-flash', true)`,
       expect(container).toMatchSnapshot();
     });
 
-    it('should properly include styled-components styles in "initialProps"', async () => {
-      const ctx = {
-        defaultGetInitialProps: hoisted.getInitialProps,
-        renderPage: hoisted.renderPage,
-      };
-
-      const initialProps = await Document.getInitialProps(ctx);
-
-      expect(initialProps).toStrictEqual({
-        // eslint-disable-next-line react/jsx-key
-        styles: [undefined, <style>Styled Components Styles</style>],
-      });
-
-      expect(hoisted.ServerStyleSheet).toHaveBeenCalledOnce();
-      expect(hoisted.getStyleElement).toHaveBeenCalledOnce();
-      expect(hoisted.seal).toHaveBeenCalledOnce();
-
-      expect(hoisted.renderPage).not.toBe(ctx.renderPage);
-      expect(hoisted.renderPage).not.toHaveBeenCalledOnce();
-      ctx.renderPage();
-      expect(hoisted.renderPage).toHaveBeenCalledOnce();
-
-      expect(hoisted.collectStyles).toHaveBeenCalledOnce();
-    });
-
     it('should pass the correct props to the Html component', () => {
       configureDocument({
         htmlProps: {
@@ -87,26 +62,8 @@ document.documentElement.setAttribute('data-no-flash', true)`,
 const hoisted = vi.hoisted(() => {
   const nextScriptDefault = vi.fn((props) => <script {...props} />);
 
-  const collectStyles = vi.fn();
-  const getStyleElement = vi.fn(() => <style>Styled Components Styles</style>);
-  const seal = vi.fn();
-  const ServerStyleSheet = vi.fn(() => ({
-    collectStyles,
-    getStyleElement,
-    seal,
-  }));
-
-  const renderPage = vi.fn((App) => collectStyles(App));
-  const getInitialProps = vi.fn(() => ({}));
-
   return {
     nextScriptDefault,
-    ServerStyleSheet,
-    collectStyles,
-    getStyleElement,
-    seal,
-    renderPage,
-    getInitialProps,
   };
 });
 
@@ -124,7 +81,6 @@ vi.mock('next/document', () => ({
 }));
 
 vi.mock('next/script', () => ({ default: hoisted.nextScriptDefault }));
-vi.mock('styled-components', () => ({ ServerStyleSheet: hoisted.ServerStyleSheet }));
 
 function renderOnMockRoot(ui, options) {
   const mockRoot = document.createElement('mockroot');
