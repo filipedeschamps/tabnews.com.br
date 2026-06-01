@@ -1,4 +1,4 @@
-import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const faqContent = [
@@ -158,10 +158,10 @@ Após o fechamento da falha, o TabNews se compromete em criar um Postmortem púb
         description:
           'Perguntas frequentes sobre o funcionamento do TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
       }}>
-      <Box sx={{ width: '100%' }}>
+      <div>
         <Heading as="h1">FAQ - Perguntas Frequentes</Heading>
         <Viewer areLinksTrusted value={content} clobberPrefix="" />
-      </Box>
+      </div>
     </DefaultLayout>
   );
 }

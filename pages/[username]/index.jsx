@@ -5,7 +5,6 @@ import useSWR from 'swr';
 import {
   ActionList,
   ActionMenu,
-  Box,
   Button,
   ButtonWithLoader,
   CharacterCount,
@@ -21,7 +20,6 @@ import {
   PastTime,
   TabCashCount,
   TabCoinCount,
-  Text,
   useConfirm,
   UserHeader,
   Viewer,
@@ -34,6 +32,8 @@ import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown';
 import user from 'models/user.js';
 import validator from 'models/validator.js';
+
+import classes from './index.module.css';
 
 export default function Page({ userFound: userFoundFallback, metadata }) {
   const {
@@ -79,7 +79,7 @@ function UserProfile({ userFound, onUpdate }) {
   return (
     <>
       {globalMessageObject?.position === 'main' && (
-        <Flash variant={globalMessageObject.type} sx={{ width: '100%', mb: 4 }}>
+        <Flash variant={globalMessageObject.type} className={classes.MainFlash}>
           {globalMessageObject.text}
         </Flash>
       )}
@@ -96,62 +96,37 @@ function UserProfile({ userFound, onUpdate }) {
         />
       </UserHeader>
 
-      <Box
-        sx={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'end',
-          wordBreak: 'break-word',
-          flexWrap: 'wrap',
-          gap: 2,
-          mb: 2,
-        }}>
-        <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+      <div className={classes.StatsRow}>
+        <div className={classes.StatsGroup}>
           {userFound.tabcoins !== undefined && <TabCoinCount amount={userFound.tabcoins} mode="full" />}
 
           {userFound.tabcash !== undefined && <TabCashCount amount={userFound.tabcash} mode="full" />}
 
-          <Box sx={{ ml: 1 }}>
+          <div className={classes.PastTimeWrapper}>
             <PastTime date={userFound.created_at} formatText={(date) => `Membro há ${date}`} direction="ne" />
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
 
       {userFound.description && !isEditingDescription && (
         <>
-          <Box
-            sx={{
-              display: 'flex',
-              width: '100%',
-              justifyContent: 'space-between',
-              mb: 1,
-              minHeight: '32px', // This is the button height, so it doesn't flick when the button is rendered
-            }}>
-            <Text sx={{ fontSize: 1, fontWeight: 'bold', mt: 'auto', pb: 1 }}>Descrição</Text>
+          <div className={classes.DescriptionHeader}>
+            <span className={classes.DescriptionTitle}>Descrição</span>
             {canUpdateDescription && (
-              <Button variant="invisible" sx={{ color: 'accent.fg' }} onClick={handleEditDescription}>
+              <Button variant="invisible" className={classes.EditDescriptionButton} onClick={handleEditDescription}>
                 Editar descrição
               </Button>
             )}
-          </Box>
+          </div>
 
-          <Box
-            sx={{
-              borderWidth: 1,
-              borderStyle: 'solid',
-              borderColor: 'border.default',
-              borderRadius: 2,
-              width: '100%',
-              p: 3,
-              overflow: 'hidden',
-            }}>
+          <div className={classes.DescriptionViewer}>
             <Viewer value={userFound.description} clobberPrefix={`${userFound.username}-content-`} />
-          </Box>
+          </div>
         </>
       )}
 
       {!userFound.description && canUpdateDescription && !isEditingDescription && (
-        <Button sx={{ mx: 'auto', mt: 1 }} onClick={handleEditDescription}>
+        <Button className={classes.CreateDescriptionButton} onClick={handleEditDescription}>
           Criar descrição
         </Button>
       )}
@@ -168,7 +143,7 @@ function UserProfile({ userFound, onUpdate }) {
       )}
 
       {!isEditingDescription && globalMessageObject?.position === 'description' && (
-        <Flash variant={globalMessageObject.type} sx={{ width: '100%', mt: 3 }}>
+        <Flash variant={globalMessageObject.type} className={classes.DescriptionFlash}>
           {globalMessageObject.text}
         </Flash>
       )}
@@ -208,10 +183,10 @@ function DescriptionForm({
       ? await confirm({
           title: 'Tem certeza que deseja salvar as alterações?',
           content: (
-            <Text>
-              Você está editando a descrição do usuário &quot;<Text sx={{ fontWeight: 'bold' }}>{user.username}</Text>
+            <span>
+              Você está editando a descrição do usuário &quot;<span className={classes.BoldText}>{user.username}</span>
               &quot;.
-            </Text>
+            </span>
           ),
           cancelButtonContent: 'Cancelar',
           confirmButtonContent: 'Sim',
@@ -304,12 +279,10 @@ function DescriptionForm({
   }
 
   return (
-    <Box as="form" sx={{ width: '100%' }} onSubmit={handleSubmit}>
+    <form className={classes.Form} onSubmit={handleSubmit}>
       <FormControl id="description">
         {/* Label styled similar to the "read" view so it is in the same position */}
-        <FormControl.Label sx={{ display: 'flex', alignItems: 'flex-end', pb: 1, minHeight: '32px' }}>
-          Descrição
-        </FormControl.Label>
+        <FormControl.Label className={classes.FormLabel}>Descrição</FormControl.Label>
         <Editor
           isInvalid={errorObject?.key === 'description' || description.length > DESCRIPTION_MAX_LENGTH}
           value={description}
@@ -318,27 +291,27 @@ function DescriptionForm({
           clobberPrefix={`${user.username}-content-`}
         />
 
-        <Box sx={{ display: 'flex', width: '100%' }}>
+        <div className={classes.CharacterCountRow}>
           {errorObject?.key === 'description' && (
             <FormControl.Validation variant="error">{errorObject.message}</FormControl.Validation>
           )}
 
           <CharacterCount maxLength={DESCRIPTION_MAX_LENGTH} value={description} />
-        </Box>
+        </div>
       </FormControl>
 
       {globalMessageObject?.position === 'description' && (
-        <Flash variant={globalMessageObject.type} sx={{ mt: 3 }}>
+        <Flash variant={globalMessageObject.type} className={classes.FormFlash}>
           {globalMessageObject.text}
         </Flash>
       )}
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, mt: 3 }}>
+      <div className={classes.FormActions}>
         <Button
           variant="invisible"
           type="button"
           disabled={isPosting}
-          sx={{ fontWeight: 'normal', color: 'fg.muted' }}
+          className={classes.CancelButton}
           onClick={handleCancel}>
           Cancelar
         </Button>
@@ -346,8 +319,8 @@ function DescriptionForm({
         <ButtonWithLoader variant="primary" type="submit" isLoading={isPosting}>
           Salvar
         </ButtonWithLoader>
-      </Box>
-    </Box>
+      </div>
+    </form>
   );
 }
 
@@ -355,7 +328,7 @@ function UserFeatures({ userFound }) {
   if (!userFound?.features?.length) return null;
 
   return (
-    <LabelGroup sx={{ display: 'flex', alignSelf: 'center' }}>
+    <LabelGroup className={classes.FeaturesGroup}>
       {userFound.features.includes('nuked') && <Label variant="danger">nuked</Label>}
     </LabelGroup>
   );
@@ -422,7 +395,7 @@ function OptionsMenu({ canUpdate, isAuthenticatedUser, onNuke, setGlobalMessageO
     <ActionMenu>
       <ActionMenu.Anchor>
         <IconButton
-          sx={{ ml: 'auto', px: 1, alignSelf: 'center' }}
+          className={classes.OptionsButton}
           size="small"
           icon={KebabHorizontalIcon}
           aria-label="Editar usuário"

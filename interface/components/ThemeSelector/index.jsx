@@ -1,7 +1,11 @@
-import { Box, Button, SegmentedControl, useTheme } from '@/TabNewsUI';
+import clsx from 'clsx';
+
+import { Button, SegmentedControl, useTheme } from '@/TabNewsUI';
 import { MoonIcon, SunIcon } from '@/TabNewsUI/icons';
 
-export default function ThemeSelector({ onSelect, sx, ...props }) {
+import classes from './index.module.css';
+
+export default function ThemeSelector({ onSelect, as: As = 'div', className, sx, ...props }) {
   const { colorMode, setColorMode } = useTheme();
 
   const handleChangeColorMode = (index) => {
@@ -12,7 +16,7 @@ export default function ThemeSelector({ onSelect, sx, ...props }) {
   };
 
   return (
-    <Box sx={{ maxWidth: '160px', mx: 'auto', color: 'accent.emphasis', ...sx }} {...props}>
+    <As className={clsx(classes.Wrapper, className)} {...props}>
       <SegmentedControl
         aria-label="Seletor de tema: claro, automático ou escuro"
         size="small"
@@ -34,7 +38,7 @@ export default function ThemeSelector({ onSelect, sx, ...props }) {
           size="small"
         />
       </SegmentedControl>
-    </Box>
+    </As>
   );
 }
 
@@ -53,18 +57,7 @@ export function ThemeSwitcher({ ...props }) {
       aria-label='Alternar tema entre "claro" e "escuro"'
       onClick={handleSwitchMode}
       variant="invisible"
-      sx={{
-        color: isLight ? '#e7dfc3' : '#ecdc0f99',
-        '&:hover': {
-          color: isLight ? '#e7dfc370' : '#ecdc0f',
-          backgroundColor: 'transparent',
-        },
-        '&:focus-visible': {
-          outline: '2px solid #FFF',
-        },
-        px: '7px',
-        pb: '3px',
-      }}
+      className={clsx(classes.Switcher, isLight ? classes.SwitcherLight : classes.SwitcherDark)}
       {...props}>
       {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
     </Button>

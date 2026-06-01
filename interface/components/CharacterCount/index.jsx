@@ -1,16 +1,13 @@
-import { Text } from '@tabnews/ui';
+import clsx from 'clsx';
+
+import classes from './index.module.css';
 
 export default function CharacterCount({ maxLength, value }) {
+  const exceeded = value.length > maxLength;
+
   return (
-    <Text
-      sx={{
-        ml: 'auto',
-        fontSize: 0,
-        pl: 1,
-        color: value.length > maxLength ? 'danger.fg' : undefined,
-        fontWeight: value.length > maxLength ? 'bold' : undefined,
-      }}>
+    <span className={clsx(classes.Text, exceeded && classes.Exceeded)}>
       {value.length}/{maxLength}
-    </Text>
+    </span>
   );
 }

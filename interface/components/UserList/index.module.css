@@ -1,0 +1,59 @@
+.List {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: min-content minmax(0, 1fr);
+  padding: 0;
+  margin: 0;
+}
+
+.Item {
+  display: contents;
+}
+
+.Item::before {
+  content: counter(list-item) '.';
+  counter-increment: list-item;
+  font-weight: var(--base-text-weight-semibold);
+  width: min-content;
+  margin-left: auto;
+}
+
+.Username {
+  word-break: break-word;
+}
+
+.Link {
+  font-weight: 500;
+}
+
+.Link:link {
+  color: var(--fgColor-default);
+}
+
+.Link:visited {
+  color: var(--fgColor-muted);
+}
+
+.NukedLabel {
+  margin-left: var(--base-size-4);
+}
+
+.Description {
+  display: block;
+  overflow: auto;
+  word-wrap: break-word;
+  font-weight: var(--base-text-weight-normal);
+  font-style: italic;
+  font-size: var(--text-body-size-medium);
+}
+
+.Metadata {
+  display: grid;
+  gap: var(--base-size-4);
+  grid-template-columns:
+    max-content max-content max-content max-content minmax(20px, max-content) max-content
+    max-content;
+  font-size: var(--text-body-size-small);
+  white-space: nowrap;
+  color: var(--fgColor-muted);
+}

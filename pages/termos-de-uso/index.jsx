@@ -1,4 +1,4 @@
-import { Box, DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Viewer } from '@/TabNewsUI';
 
 export default function Page() {
   const body = `Ao utilizar o TabNews você está de acordo com os seguintes termos:
@@ -49,10 +49,10 @@ export default function Page() {
         description:
           'Leia os Termos de Uso do TabNews e conheça nossas diretrizes sobre privacidade, conduta e conteúdos de valor concreto para quem trabalha com tecnologia.',
       }}>
-      <Box>
+      <div>
         <Heading as="h1">Termos de Uso</Heading>
         <Viewer areLinksTrusted value={body} clobberPrefix="" />
-      </Box>
+      </div>
     </DefaultLayout>
   );
 }

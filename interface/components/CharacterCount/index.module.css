@@ -1,0 +1,10 @@
+.Text {
+  margin-left: auto;
+  font-size: var(--text-body-size-small);
+  padding-left: var(--base-size-4);
+}
+
+.Exceeded {
+  color: var(--fgColor-danger);
+  font-weight: var(--base-text-weight-semibold);
+}

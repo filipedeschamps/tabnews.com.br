@@ -1,0 +1,159 @@
+/* ViewModeOptionsMenu */
+.OptionsMenuWrapper {
+  position: relative;
+  min-width: 28px;
+}
+
+.OptionsMenuAnchor {
+  position: absolute;
+  right: 0;
+}
+
+/* ViewMode */
+.Article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-4);
+  width: 100%;
+  border-width: 0;
+  padding: 0;
+  border-radius: 6px;
+  border-color: var(--borderColor-default);
+  border-style: solid;
+  word-break: break-word;
+}
+
+.ArticleFramed {
+  border-width: 1px;
+  padding: var(--base-size-24);
+}
+
+.HeaderError {
+  margin-bottom: var(--base-size-24);
+}
+
+.HeaderRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.Meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  white-space: nowrap;
+  gap: var(--base-size-4);
+  color: var(--fgColor-muted);
+}
+
+.Address {
+  font-style: normal;
+  padding-top: var(--base-size-4);
+}
+
+.PublishedAtLink {
+  font-size: var(--text-body-size-small);
+  color: var(--fgColor-muted);
+}
+
+.Title {
+  overflow: auto;
+  word-wrap: break-word;
+}
+
+.ViewerWrapper {
+  overflow: hidden;
+}
+
+.SourceText {
+  word-break: break-all;
+  font-weight: var(--base-text-weight-semibold);
+}
+
+/* EditMode */
+.EditForm {
+  margin-bottom: var(--base-size-24);
+  width: 100%;
+}
+
+.EditFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-16);
+}
+
+.TextInput {
+  padding-inline: var(--base-size-8);
+}
+
+.TextInput:focus-within {
+  background-color: var(--bgColor-default);
+}
+
+.BodyDicaFlash {
+  margin-top: var(--base-size-8);
+}
+
+.BodyFooter {
+  display: flex;
+  width: 100%;
+}
+
+.RequiredFieldsNote {
+  font-size: var(--text-body-size-medium);
+}
+
+.EditActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.CancelButton {
+  margin-right: var(--base-size-16);
+  font-size: var(--text-body-size-medium);
+  font-weight: var(--base-text-weight-normal);
+  cursor: pointer;
+  color: var(--fgColor-muted);
+}
+
+/* CompactMode */
+.CompactWrapper {
+  display: flex;
+  gap: var(--base-size-8);
+  flex-wrap: wrap;
+}
+
+.LinkCopiedText {
+  color: var(--fgColor-muted);
+}
+
+/* DeletedMode */
+.DeletedWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--base-size-8);
+  width: 100%;
+  border-width: 0;
+  padding: 0;
+  border-radius: 6px;
+  border-color: var(--borderColor-default);
+  border-style: solid;
+}
+
+.DeletedWrapperFramed {
+  border-width: 1px;
+  padding: var(--base-size-8);
+}
+
+.DeletedText {
+  color: var(--fgColor-muted);
+  text-align: center;
+}
+
+/* ErrorMessage */
+.ReadMoreText {
+  display: block;
+  margin-top: var(--base-size-4);
+}

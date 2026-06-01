@@ -1,42 +1,47 @@
-import { Box, CounterLabel, Heading, TabNav, TabNavLink } from '@/TabNewsUI';
+import { Heading, UnderlineNav, UnderlineNavItem } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function UserHeader({ username, children, rootContentCount, childContentCount, adContentCount }) {
   return (
     <>
-      <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-        <Heading as="h1" sx={{ wordBreak: 'break-word' }}>
+      <div className={classes.Header}>
+        <Heading as="h1" className={classes.Title}>
           {username}
         </Heading>
         {children}
-      </Box>
+      </div>
 
-      <TabNav sx={{ width: '100%', mb: 3 }}>
-        <TabNavLink href={`/${username}`}>Perfil</TabNavLink>
+      <UnderlineNav aria-label={`Conteúdos de ${username}`} className={classes.Nav}>
+        <UnderlineNavItem href={`/${username}`}>Perfil</UnderlineNavItem>
 
-        <TabNavLink
+        <UnderlineNavItem
           href={{
             pathname: '/[username]/conteudos/[page]',
             query: { username, page: 1 },
-          }}>
-          Publicações {!!rootContentCount && <CounterLabel>{rootContentCount.toLocaleString('pt-BR')}</CounterLabel>}
-        </TabNavLink>
+          }}
+          counter={rootContentCount ? rootContentCount.toLocaleString('pt-BR') : undefined}>
+          Publicações
+        </UnderlineNavItem>
 
-        <TabNavLink
+        <UnderlineNavItem
           href={{
             pathname: '/[username]/comentarios/[page]',
             query: { username, page: 1 },
-          }}>
-          Comentários {!!childContentCount && <CounterLabel>{childContentCount.toLocaleString('pt-BR')}</CounterLabel>}
-        </TabNavLink>
+          }}
+          counter={childContentCount ? childContentCount.toLocaleString('pt-BR') : undefined}>
+          Comentários
+        </UnderlineNavItem>
 
-        <TabNavLink
+        <UnderlineNavItem
           href={{
             pathname: '/[username]/classificados/[page]',
             query: { username, page: 1 },
-          }}>
-          Classificados {!!adContentCount && <CounterLabel>{adContentCount.toLocaleString('pt-BR')}</CounterLabel>}
-        </TabNavLink>
-      </TabNav>
+          }}
+          counter={adContentCount ? adContentCount.toLocaleString('pt-BR') : undefined}>
+          Classificados
+        </UnderlineNavItem>
+      </UnderlineNav>
     </>
   );
 }

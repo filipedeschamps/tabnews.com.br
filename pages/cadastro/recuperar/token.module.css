@@ -1,0 +1,12 @@
+.Heading {
+  margin-bottom: var(--base-size-16);
+}
+
+.Flash {
+  margin-top: var(--base-size-16);
+}
+
+.Submit {
+  width: 100%;
+  margin-top: var(--base-size-16);
+}

@@ -1,36 +1,38 @@
-import { TabNav, TabNavLink } from '@/TabNewsUI';
+import { UnderlineNav, UnderlineNavItem } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function RecentTabNav() {
   return (
-    <TabNav sx={{ width: '100%', mb: 3 }}>
-      <TabNavLink
+    <UnderlineNav aria-label="Conteúdos recentes" className={classes.Nav}>
+      <UnderlineNavItem
         href={{
           pathname: '/recentes/pagina/[page]',
           query: { page: 1 },
         }}>
         Publicações
-      </TabNavLink>
-      <TabNavLink
+      </UnderlineNavItem>
+      <UnderlineNavItem
         href={{
           pathname: '/recentes/comentarios/[page]',
           query: { page: 1 },
         }}>
         Comentários
-      </TabNavLink>
-      <TabNavLink
+      </UnderlineNavItem>
+      <UnderlineNavItem
         href={{
           pathname: '/recentes/classificados/[page]',
           query: { page: 1 },
         }}>
         Classificados
-      </TabNavLink>
-      <TabNavLink
+      </UnderlineNavItem>
+      <UnderlineNavItem
         href={{
           pathname: '/recentes/todos/[page]',
           query: { page: 1 },
         }}>
         Todos
-      </TabNavLink>
-    </TabNav>
+      </UnderlineNavItem>
+    </UnderlineNav>
   );
 }

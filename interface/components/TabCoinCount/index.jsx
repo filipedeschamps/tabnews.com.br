@@ -1,7 +1,11 @@
-import { Box, Text, Tooltip } from '@/TabNewsUI';
+import clsx from 'clsx';
+
+import { Tooltip } from '@/TabNewsUI';
 import { SquareFillIcon } from '@/TabNewsUI/icons';
 
-export default function TabCoinCount({ amount, direction, mode = 'tooltip', sx }) {
+import classes from './index.module.css';
+
+export default function TabCoinCount({ amount, direction, mode = 'tooltip', className }) {
   const modes = {
     tooltip: {
       iconLabel: 'TabCoins',
@@ -17,10 +21,10 @@ export default function TabCoinCount({ amount, direction, mode = 'tooltip', sx }
   const { iconLabel, iconSize, text } = modes[mode];
 
   const content = (
-    <Box sx={{ display: 'flex', textWrap: 'nowrap', alignItems: 'center', ...sx }}>
+    <div className={clsx(classes.Wrapper, className)}>
       <SquareFillIcon aria-label={iconLabel} fill="#0969da" size={iconSize} />
-      <Text>{text}</Text>
-    </Box>
+      <span>{text}</span>
+    </div>
   );
 
   if (mode === 'full') {

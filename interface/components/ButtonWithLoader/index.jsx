@@ -1,22 +1,20 @@
-import { Box, Button, Spinner } from '@/TabNewsUI';
+import { Button, Spinner } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 function SpinnerWrapper({ children, isLoading }) {
   const scaleValue = isLoading ? 1 : 0;
   const transformValue = isLoading ? 'translateX(0)' : 'translateX(-12px)';
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          marginRight: '8px',
-          transform: `scale(${scaleValue})`,
-          transition: 'all 500ms ease',
-        }}>
+    <div className={classes.Wrapper}>
+      <div className={classes.Spinner} style={{ transform: `scale(${scaleValue})` }}>
         <Spinner size="small" />
-      </Box>
-      <Box sx={{ transform: transformValue, transition: 'transform 500ms ease' }}>{children}</Box>
-    </Box>
+      </div>
+      <div className={classes.Content} style={{ transform: transformValue }}>
+        {children}
+      </div>
+    </div>
   );
 }
 

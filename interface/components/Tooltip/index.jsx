@@ -1,45 +1,22 @@
-import { Box, TooltipV1 } from '@/TabNewsUI';
+import clsx from 'clsx';
 
-const gap = '2px';
+import { TooltipV1 } from '@/TabNewsUI';
 
-const replaceMargin = {
-  '&.tooltipped-s, &.tooltipped-se, &.tooltipped-sw': {
-    '&::after': {
-      marginTop: gap,
-    },
-  },
-  '&.tooltipped-e, &.tooltipped-se, &.tooltipped-ne': {
-    '&::after': {
-      marginLeft: gap,
-    },
-  },
-  '&.tooltipped-n, &.tooltipped-ne, &.tooltipped-nw': {
-    '&::after': {
-      marginBottom: gap,
-    },
-  },
-  '&.tooltipped-w, &.tooltipped-sw, &.tooltipped-nw': {
-    '&::after': {
-      marginRight: gap,
-    },
-  },
-};
+import classes from './index.module.css';
 
-export default function Tooltip({ children, sx, ...props }) {
-  const { position, ...sxRest } = sx || {};
-
+export default function Tooltip({ children, className, position, ...props }) {
   if (position === 'absolute')
     return (
-      <Box sx={{ display: 'inline-flex' }}>
-        <Box sx={{ ...sxRest, visibility: 'hidden' }}>{children}</Box>
-        <TooltipV1 sx={{ ...replaceMargin, ...sx }} {...props}>
+      <div className={classes.AbsoluteWrapper}>
+        <div className={clsx(classes.Hidden, className)}>{children}</div>
+        <TooltipV1 className={clsx(classes.Tooltip, classes.Absolute, className)} {...props}>
           {children}
         </TooltipV1>
-      </Box>
+      </div>
     );
 
   return (
-    <TooltipV1 sx={{ ...replaceMargin, ...sx }} {...props}>
+    <TooltipV1 className={clsx(classes.Tooltip, className)} {...props}>
       {children}
     </TooltipV1>
   );

@@ -1,8 +1,10 @@
 import Script from 'next/script';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Box, Text, useConfirm } from '@/TabNewsUI';
+import { useConfirm } from '@/TabNewsUI';
 import webserver from 'infra/webserver';
+
+import classes from './index.module.css';
 
 const BLOCKED_RESPONSE_MESSAGE = 'Requisição bloqueada pelo Firewall.';
 const BLOCKED_RESPONSE_ACTION = 'Verifique seu equipamento e os dados enviados.';
@@ -73,43 +75,13 @@ export default function Turnstile() {
   }, [confirm]);
 
   return (
-    <Box
-      sx={{
-        display: isInteractive ? 'block' : 'none',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        border: '1px solid grey',
-        zIndex: '1',
-      }}
-      onClick={handleCancel}>
-      <Box sx={{ position: 'relative', height: '50vh' }}>
-        <Text
-          sx={{
-            color: 'white',
-            position: 'absolute',
-            textAlign: 'center',
-            width: '100%',
-            fontSize: 2,
-            fontWeight: 'bold',
-            bottom: 4,
-          }}>
-          Executando verificação de segurança...
-        </Text>
-      </Box>
-      <Box
-        ref={widgetRef}
-        sx={{
-          display: 'flex',
-          flexWrap: 'nowrap',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}></Box>
+    <div className={classes.Overlay} style={{ display: isInteractive ? 'block' : 'none' }} onClick={handleCancel}>
+      <div className={classes.MessageWrapper}>
+        <span className={classes.Message}>Executando verificação de segurança...</span>
+      </div>
+      <div ref={widgetRef} className={classes.Widget}></div>
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit" />
-    </Box>
+    </div>
   );
 }
 

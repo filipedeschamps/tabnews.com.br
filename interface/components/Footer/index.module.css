@@ -1,0 +1,59 @@
+.Container {
+  width: 100%;
+  border-color: var(--borderColor-default);
+  border-top-style: solid;
+  border-top-width: 1px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap-reverse;
+  gap: var(--base-size-16);
+  padding-inline: var(--base-size-8);
+  padding-block: var(--base-size-24);
+  font-size: var(--text-body-size-medium);
+}
+
+@media (min-width: 1012px) {
+  .Container {
+    padding-top: var(--base-size-32);
+    padding-bottom: var(--base-size-32);
+  }
+}
+
+.Copyright {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--base-size-4);
+  color: var(--fgColor-muted);
+}
+
+.HomeLink {
+  color: var(--fgColor-muted);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--base-size-16);
+  padding-left: var(--base-size-8);
+  padding-right: var(--base-size-8);
+}
+
+@media (min-width: 768px) {
+  .Links {
+    gap: var(--base-size-24);
+  }
+}
+
+@media (min-width: 1012px) {
+  .Links {
+    gap: var(--base-size-32);
+    padding-left: var(--base-size-32);
+    padding-right: var(--base-size-32);
+  }
+}

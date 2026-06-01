@@ -1,0 +1,13 @@
+.Wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  white-space: nowrap;
+  gap: var(--stack-gap-spacious);
+  margin: var(--base-size-24);
+  margin-bottom: var(--base-size-8);
+}
+
+.Muted {
+  color: var(--fgColor-muted);
+}

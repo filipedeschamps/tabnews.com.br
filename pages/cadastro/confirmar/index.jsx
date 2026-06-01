@@ -1,6 +1,8 @@
 import { useState } from 'react';
 
-import { Box, DefaultLayout, Heading, Text } from '@/TabNewsUI';
+import { DefaultLayout, Heading } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function ConfirmSignup() {
   const [email] = useState(() => {
@@ -12,25 +14,15 @@ export default function ConfirmSignup() {
 
   return (
     <DefaultLayout containerWidth="medium" metadata={{ title: 'Confirme seu email' }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
-        <Heading as="h1" sx={{ textAlign: 'center', mb: 2 }}>
+      <div className={classes.Wrapper}>
+        <Heading as="h1" className={classes.Heading}>
           Confira seu e-mail:
         </Heading>
-        <Text
-          sx={{
-            width: '100%',
-            textAlign: 'center',
-            overflowWrap: 'break-word',
-            fontWeight: 'bold',
-            fontSize: '1.25rem',
-            mb: 4,
-          }}>
-          {email}
-        </Text>
-        <Text>
+        <span className={classes.Email}>{email}</span>
+        <span>
           Caso o e-mail esteja disponível, você receberá um link para confirmar seu cadastro e ativar a sua conta.
-        </Text>
-      </Box>
+        </span>
+      </div>
     </DefaultLayout>
   );
 }

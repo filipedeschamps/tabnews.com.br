@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { ButtonWithLoader, DefaultLayout, Flash, Heading } from '@/TabNewsUI';
 import { createErrorMessage } from 'interface';
 
+import classes from './token.module.css';
+
 const formConfig = {
   passwordConfirmable,
   passwordConfirmation,
@@ -15,7 +17,7 @@ const formConfig = {
 export default function RecoverPassword() {
   return (
     <DefaultLayout containerWidth="small" metadata={{ title: 'Recuperação de Senha' }}>
-      <Heading as="h1" sx={{ mb: 3 }}>
+      <Heading as="h1" className={classes.Heading}>
         Defina uma nova senha
       </Heading>
 
@@ -85,7 +87,7 @@ function RecoverPasswordForm() {
       <FormField {...getFieldProps('passwordConfirmation')} />
 
       {globalErrorMessage && (
-        <Flash variant="danger" sx={{ mt: 3 }}>
+        <Flash variant="danger" className={classes.Flash}>
           {globalErrorMessage}
         </Flash>
       )}
@@ -94,7 +96,7 @@ function RecoverPasswordForm() {
         variant="primary"
         size="large"
         type="submit"
-        sx={{ width: '100%', mt: 3 }}
+        className={classes.Submit}
         isLoading={state.loading.value}>
         Alterar senha
       </ButtonWithLoader>

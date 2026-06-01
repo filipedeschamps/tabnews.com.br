@@ -2,15 +2,19 @@
 
 import { ChevronUpIcon } from '@primer/octicons-react';
 import { IconButton } from '@primer/react';
+import clsx from 'clsx';
 import { useEffect, useState } from 'react';
+
+import classes from './GoToTopButton.module.css';
 
 /**
  * A button that appears after scrolling past a target element and scrolls the page back to top.
  *
  * @param {Object} props
  * @param {string|HTMLElement} [props.target] CSS selector string or HTMLElement to observe.
+ * @param {string} [props.className] Additional class names to merge with the button's own styles.
  */
-export function GoToTopButton({ target }) {
+export function GoToTopButton({ target, className }) {
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
@@ -46,24 +50,14 @@ export function GoToTopButton({ target }) {
   }
 
   return (
-    <>
-      <IconButton
-        variant="invisible"
-        aria-label="Retornar ao topo"
-        icon={ChevronUpIcon}
-        size="large"
-        className="go-to-top-button"
-        onClick={scrollToTop}
-        tooltipDirection="nw"
-      />
-      <style jsx="true" global="true">{`
-        .go-to-top-button {
-          position: fixed;
-          right: 0;
-          bottom: 0;
-          margin: 16px;
-        }
-      `}</style>
-    </>
+    <IconButton
+      variant="invisible"
+      aria-label="Retornar ao topo"
+      icon={ChevronUpIcon}
+      size="large"
+      className={clsx(classes.Button, className)}
+      onClick={scrollToTop}
+      tooltipDirection="nw"
+    />
   );
 }

@@ -3,9 +3,11 @@ import { useRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
 
-import { Box, IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
+import { IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage, useUser } from 'interface';
+
+import classes from './index.module.css';
 
 export default function TabCoinButtons({ content }) {
   if (content?.status !== 'published') {
@@ -97,34 +99,21 @@ function ActiveButtons({ content }) {
   const isInAction = isPosting || isAnimatingCredit || isAnimatingDebit;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}>
+    <div className={classes.Wrapper}>
       <Tooltip text="Achei relevante" direction="ne">
         <IconButton
           variant="invisible"
           aria-label="Creditar TabCoin"
           icon={ChevronUpIcon}
           size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px' }}
+          className={classes.CreditButton}
           onClick={() => transactTabCoin('credit')}
           disabled={isInAction}
         />
       </Tooltip>
       <TabCoinBalanceTooltip
         direction="ne"
-        sx={{
-          width: '100%',
-          textAlign: 'center',
-          fontSize: 0,
-          fontWeight: 'bold',
-          my: 2,
-          py: 1,
-          color: 'accent.emphasis',
-        }}
+        className={classes.Balance}
         credit={contentObject.tabcoins_credit}
         debit={contentObject.tabcoins_debit}>
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
@@ -136,20 +125,20 @@ function ActiveButtons({ content }) {
           aria-label="Debitar TabCoin"
           icon={ChevronDownIcon}
           size="small"
-          sx={{ color: 'fg.subtle', lineHeight: '18px', mb: 2 }}
+          className={classes.DebitButton}
           onClick={() => transactTabCoin('debit')}
           disabled={isInAction}
         />
       </Tooltip>
-    </Box>
+    </div>
   );
 }
 
 function DisabledButtons() {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', color: 'border.muted', mt: 1, gap: 4, mb: 2 }}>
+    <div className={classes.DisabledWrapper}>
       <ChevronUpIcon />
       <ChevronDownIcon />
-    </Box>
+    </div>
   );
 }

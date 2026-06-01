@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 import { AutoThemeProvider } from '../AutoThemeProvider/AutoThemeProvider';
 import { COLOR_MODE_COOKIE } from '../constants/public';
 import { KatexLoader } from '../KatexLoader/KatexLoader';
-import { StyledComponentsRegistry } from '../SCRegistry/SCRegistry';
 
 export async function PrimerRoot({
   children,
@@ -33,11 +32,9 @@ export async function PrimerRoot({
         <KatexLoader />
       </head>
       <body data-light-theme="light" data-dark-theme="dark">
-        <StyledComponentsRegistry>
-          <AutoThemeProvider defaultColorMode={ssrColorMode} noFlash={false} preventSSRMismatch {...props}>
-            {children}
-          </AutoThemeProvider>
-        </StyledComponentsRegistry>
+        <AutoThemeProvider defaultColorMode={ssrColorMode} noFlash={false} preventSSRMismatch {...props}>
+          {children}
+        </AutoThemeProvider>
       </body>
     </html>
   );

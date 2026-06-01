@@ -1,0 +1,34 @@
+.Wrapper {
+  max-width: 160px;
+  margin-inline: auto;
+  color: var(--bgColor-accent-emphasis);
+}
+
+.Switcher {
+  padding-inline: 7px;
+  padding-bottom: 3px;
+}
+
+.Switcher:focus-visible {
+  outline: 2px solid #fff;
+}
+
+.Switcher:hover {
+  background-color: transparent;
+}
+
+.SwitcherLight {
+  color: #e7dfc3;
+}
+
+.SwitcherLight:hover {
+  color: #e7dfc370;
+}
+
+.SwitcherDark {
+  color: #ecdc0f99;
+}
+
+.SwitcherDark:hover {
+  color: #ecdc0f;
+}

@@ -1,14 +1,16 @@
-import { Box, DefaultLayout, Heading, Link, Text } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Link } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function ConfirmRecoverPassword() {
   return (
     <DefaultLayout containerWidth="medium" metadata={{ title: 'Nova senha definida com sucesso!' }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', mt: 10 }}>
+      <div className={classes.Wrapper}>
         <Heading as="h1">Nova senha definida com sucesso!</Heading>
-        <Text>
+        <span>
           Agora você pode fazer o <Link href="/login">Login</Link> utilizando esta nova senha.
-        </Text>
-      </Box>
+        </span>
+      </div>
     </DefaultLayout>
   );
 }

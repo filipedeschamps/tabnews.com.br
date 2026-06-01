@@ -1,0 +1,31 @@
+.Wrapper {
+  min-height: 100vh;
+  background-color: var(--bgColor-default);
+}
+
+.Main {
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  padding: var(--base-size-8);
+  padding-top: var(--base-size-16);
+}
+
+@media (min-width: 1012px) {
+  .Main {
+    padding: var(--base-size-24);
+    padding-top: var(--base-size-24);
+  }
+}
+
+.Footer {
+  margin-inline: auto;
+  padding-top: var(--base-size-16);
+  padding-inline: var(--base-size-8);
+}
+
+@media (min-width: 1012px) {
+  .Footer {
+    padding-inline: var(--base-size-24);
+  }
+}

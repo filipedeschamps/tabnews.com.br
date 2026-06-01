@@ -1,0 +1,41 @@
+/* As regras abaixo precisam vencer as do `TooltipV1` (@primer/react), que é um
+ * styled-component injetado em runtime — depois dos CSS Modules. Como o Primer
+ * usa a mesma especificidade, um seletor de igual peso perderia pelo source
+ * order. Por isso dobramos a classe local (`.Tooltip.Tooltip`) para elevar a
+ * especificidade acima da do Primer sem recorrer a `!important`. */
+
+.Tooltip.Tooltip:global(.tooltipped-s)::after,
+.Tooltip.Tooltip:global(.tooltipped-se)::after,
+.Tooltip.Tooltip:global(.tooltipped-sw)::after {
+  margin-top: 2px;
+}
+
+.Tooltip.Tooltip:global(.tooltipped-e)::after,
+.Tooltip.Tooltip:global(.tooltipped-se)::after,
+.Tooltip.Tooltip:global(.tooltipped-ne)::after {
+  margin-left: 2px;
+}
+
+.Tooltip.Tooltip:global(.tooltipped-n)::after,
+.Tooltip.Tooltip:global(.tooltipped-ne)::after,
+.Tooltip.Tooltip:global(.tooltipped-nw)::after {
+  margin-bottom: 2px;
+}
+
+.Tooltip.Tooltip:global(.tooltipped-w)::after,
+.Tooltip.Tooltip:global(.tooltipped-sw)::after,
+.Tooltip.Tooltip:global(.tooltipped-nw)::after {
+  margin-right: 2px;
+}
+
+.AbsoluteWrapper {
+  display: inline-flex;
+}
+
+.Tooltip.Absolute {
+  position: absolute;
+}
+
+.Hidden {
+  visibility: hidden;
+}

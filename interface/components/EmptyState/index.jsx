@@ -1,28 +1,21 @@
-import { Box, Button, Heading, Text } from '@/TabNewsUI';
+import { Button, Heading } from '@/TabNewsUI';
 import { PlusIcon } from '@/TabNewsUI/icons';
+
+import classes from './index.module.css';
 
 export default function EmptyState(props) {
   const { title, description, action, icon: Icon, isLoading } = props;
   if (isLoading) return null;
   return (
-    <Box
-      sx={{
-        margin: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        p: 4,
-      }}>
-      {Icon && <Icon size={40} sx={{ marginBottom: '1rem' }} />}
-      <Heading sx={{ fontSize: 3 }}>{title}</Heading>
-      {description && <Text>{description}</Text>}
+    <div className={classes.Wrapper}>
+      {Icon && <Icon size={40} className={classes.Icon} />}
+      <Heading className={classes.Title}>{title}</Heading>
+      {description && <span>{description}</span>}
       {action && (
-        <Button sx={{ marginTop: '1rem' }} leadingVisual={PlusIcon} onClick={action.onClick}>
+        <Button className={classes.Action} leadingVisual={PlusIcon} onClick={action.onClick}>
           {action.text}
         </Button>
       )}
-    </Box>
+    </div>
   );
 }

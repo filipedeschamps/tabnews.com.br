@@ -1,44 +1,22 @@
 import Image from 'next/image';
 
-import { Box, DefaultLayout, Link } from '@/TabNewsUI';
+import { DefaultLayout, Link } from '@/TabNewsUI';
 import botSleepyFaceDarkTransparent from 'public/brand/bot-sleepy-face-dark-transparent.svg';
+
+import classes from './404.module.css';
 
 export default function Custom404() {
   return (
     <DefaultLayout metadata={{ title: '404 - Página não encontrada' }}>
-      <Box
-        sx={{
-          height: 'calc(90vh - 64px)',
-          width: '100%',
-          display: 'flex',
-          alignContent: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-        }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', alignContent: 'center' }}>
-          <Image
-            src={botSleepyFaceDarkTransparent.src}
-            height={100}
-            width={100}
-            sx={{ opacity: '0.7' }}
-            alt="Ícone do Bot triste"
-          />
-          <Box
-            sx={{
-              height: '80px',
-              margin: '10px',
-              borderWidth: 0,
-              borderLeftWidth: 1,
-              borderColor: 'border.muted',
-              borderStyle: 'solid',
-              paddingRight: '10px',
-            }}></Box>
+      <div className={classes.Wrapper}>
+        <div className={classes.Content}>
+          <Image src={botSleepyFaceDarkTransparent.src} height={100} width={100} alt="Ícone do Bot triste" />
+          <div className={classes.Divider}></div>
           <h1>404</h1>
-        </Box>
+        </div>
         <h2>Página não encontrada</h2>
         <Link href="/">Retornar à tela inicial</Link>
-      </Box>
+      </div>
     </DefaultLayout>
   );
 }

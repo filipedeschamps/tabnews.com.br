@@ -1,0 +1,22 @@
+.Heading {
+  margin-bottom: var(--base-size-16);
+}
+
+.Wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-16);
+}
+
+.Input {
+  padding-left: var(--base-size-8);
+  padding-right: var(--base-size-8);
+}
+
+.Input:focus-within {
+  background-color: var(--bgColor-default);
+}
+
+.Submit {
+  width: 100%;
+}

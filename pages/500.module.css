@@ -1,0 +1,25 @@
+.Wrapper {
+  height: calc(90vh - 64px);
+  width: 100%;
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.Content {
+  display: flex;
+  align-items: center;
+  align-content: center;
+}
+
+.Divider {
+  height: 80px;
+  margin: 10px;
+  border-width: 0;
+  border-left-width: 1px;
+  border-color: var(--borderColor-muted);
+  border-style: solid;
+  padding-right: 10px;
+}

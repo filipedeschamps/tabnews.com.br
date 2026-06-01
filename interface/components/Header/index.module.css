@@ -1,0 +1,114 @@
+.Wrapper {
+  min-width: max-content;
+  overflow: visible;
+  padding-inline: var(--base-size-8);
+}
+
+@media (min-width: 1012px) {
+  .Wrapper {
+    padding-inline: var(--base-size-16);
+  }
+}
+
+.Nav {
+  display: flex;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.ItemFlush {
+  margin-right: 0;
+}
+
+.Brand {
+  margin-left: var(--base-size-8);
+  display: none;
+}
+
+@media (min-width: 544px) {
+  .Brand {
+    display: block;
+  }
+}
+
+.NavLink {
+  margin-left: var(--base-size-16);
+}
+
+.ActiveLink {
+  margin-left: var(--base-size-16);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.SearchItem {
+  margin-left: var(--base-size-16);
+  margin-right: var(--base-size-4);
+}
+
+@media (min-width: 768px) {
+  .SearchItem {
+    margin-right: var(--base-size-16);
+  }
+}
+
+.ItemMr1 {
+  margin-right: var(--base-size-4);
+}
+
+.ItemMl2 {
+  margin-left: var(--base-size-8);
+}
+
+.ItemM2 {
+  margin: var(--base-size-8);
+}
+
+.TabCoin {
+  margin-right: 0;
+  font-size: var(--text-body-size-small);
+  font-weight: var(--base-text-weight-semibold);
+}
+
+@media (min-width: 544px) {
+  .TabCoin {
+    margin-right: var(--base-size-8);
+  }
+}
+
+.TabCash {
+  margin-right: var(--base-size-8);
+  font-size: var(--text-body-size-small);
+  font-weight: var(--base-text-weight-semibold);
+}
+
+.MenuButton {
+  padding-inline: 0;
+  margin-inline: var(--base-size-4);
+  color: var(--header-fgColor-logo);
+}
+
+.MenuButton:hover {
+  color: var(--header-fgColor-default);
+  background-color: transparent;
+}
+
+.MenuButton:focus-visible {
+  outline: 2px solid #fff;
+}
+
+.ThemeSelector {
+  list-style: none;
+}
+
+.TabCoinCount {
+  color: var(--fgColor-onEmphasis);
+  padding-left: var(--base-size-8);
+  padding-right: var(--base-size-4);
+}
+
+.TabCashCount {
+  color: var(--fgColor-onEmphasis);
+  padding-right: var(--base-size-4);
+}

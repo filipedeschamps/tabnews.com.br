@@ -1,0 +1,33 @@
+.Wrapper {
+  display: grid;
+}
+
+.Link {
+  overflow: auto;
+  font-weight: 500;
+  word-wrap: break-word;
+}
+
+.Link:link,
+.Link:visited {
+  color: var(--fgColor-success);
+}
+
+.Title {
+  word-break: break-word;
+  margin-right: var(--base-size-4);
+}
+
+.Sponsor {
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: var(--text-body-size-small);
+  color: var(--fgColor-muted);
+}
+
+.SponsorLink {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fgColor-muted);
+  margin-right: var(--base-size-8);
+}

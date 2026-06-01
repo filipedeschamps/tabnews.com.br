@@ -1,22 +1,11 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Network } from 'vis-network';
 
-import {
-  AnchoredOverlay,
-  Box,
-  Button,
-  Checkbox,
-  FormControl,
-  IconButton,
-  Link,
-  Spinner,
-  Text,
-  useTheme,
-} from '@/TabNewsUI';
+import { AnchoredOverlay, Button, Checkbox, FormControl, IconButton, Link, Spinner, useTheme } from '@/TabNewsUI';
 import { FaPause, FaPlay } from '@/TabNewsUI/icons';
 import useUser from 'interface/hooks/useUser';
 
-const border = '2px solid rgba(102, 102, 102, .5)'; // To be consistent with Charts style
+import classes from './index.module.css';
 
 function Graph({ title, data, simulationTimeout = 200 }) {
   const containerRef = useRef(null);
@@ -137,26 +126,19 @@ function Graph({ title, data, simulationTimeout = 200 }) {
   }, [config, isSelected, network, simulationTimeout]);
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+    <div>
+      <div className={classes.Header}>
         <h2>{title}</h2>
         <Menu config={config} setConfig={setConfig} />
-      </Box>
-      <Box border={border} borderRadius={6} overflow="hidden">
-        <Box
-          ref={containerRef}
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          width="100%"
-          height="70vh"
-          borderBottom={border}>
+      </div>
+      <div className={classes.Frame}>
+        <div ref={containerRef} className={classes.GraphContainer}>
           <Spinner size="large" />
-        </Box>
+        </div>
         <StatusBar status={status} />
         <Legend />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -309,19 +291,19 @@ function getStatusProps(event, network) {
 
 function StatusBar({ status }) {
   return (
-    <Box display="flex" minHeight={30} justifyContent="center" borderBottom={border} flexWrap="wrap">
+    <div className={classes.StatusBar}>
       <DefaultStatusMessage status={status} />
       <UserSelected userSelected={status?.userSelected} />
       <JoinSharedNetworks {...status} />
       <JoinInteractions {...status} />
-    </Box>
+    </div>
   );
 }
 
 function DefaultStatusMessage({ status }) {
   if (status) return null;
 
-  return <Text>Selecione um nó ou aresta</Text>;
+  return <span>Selecione um nó ou aresta</span>;
 }
 
 function UserSelected({ userSelected }) {
@@ -336,13 +318,13 @@ function JoinSharedNetworks({ userSelected, positives, negatives, shared }) {
   return shared.map((sharedFrom, i) => {
     return (
       <Fragment key={i}>
-        {userSelected ? <Text>compartilha sua rede</Text> : <Text>Rede compartilhada</Text>}
-        {sharedFrom.size === 1 && <Text>&nbsp;com&nbsp;</Text>}
-        {sharedFrom.size > 1 && <Text>&nbsp;entre&nbsp;</Text>}
+        {userSelected ? <span>compartilha sua rede</span> : <span>Rede compartilhada</span>}
+        {sharedFrom.size === 1 && <span>&nbsp;com&nbsp;</span>}
+        {sharedFrom.size > 1 && <span>&nbsp;entre&nbsp;</span>}
         <JoinLinksWithCommaOrAnd paths={[...sharedFrom]} />
-        {i + 2 < shared.length && <Text>,&nbsp;</Text>}
-        {i + 2 === shared.length && <Text>&nbsp;e&nbsp;</Text>}
-        {i + 1 === shared.length && !!(positives || negatives) && <Text>&nbsp;|&nbsp;</Text>}
+        {i + 2 < shared.length && <span>,&nbsp;</span>}
+        {i + 2 === shared.length && <span>&nbsp;e&nbsp;</span>}
+        {i + 1 === shared.length && !!(positives || negatives) && <span>&nbsp;|&nbsp;</span>}
       </Fragment>
     );
   });
@@ -355,8 +337,8 @@ function JoinLinksWithCommaOrAnd({ paths }) {
     <Link key={path + i} href={`/${path}`}>
       {path}
     </Link>,
-    i + 2 < paths.length && <Text key={i}>,&nbsp;</Text>,
-    i + 2 == paths.length && <Text key={i}>&nbsp;e&nbsp;</Text>,
+    i + 2 < paths.length && <span key={i}>,&nbsp;</span>,
+    i + 2 == paths.length && <span key={i}>&nbsp;e&nbsp;</span>,
   ]);
 }
 
@@ -366,15 +348,15 @@ function JoinInteractions({ positives, positiveVoteUsers, negatives, negativeVot
   return (
     <>
       {positives > 0 && (
-        <Text>{`➔ +${positives} TabCoin${positives > 1 ? 's' : ''}${
+        <span>{`➔ +${positives} TabCoin${positives > 1 ? 's' : ''}${
           positiveVoteUsers.length > 0 ? ' com\xA0' : ''
-        }`}</Text>
+        }`}</span>
       )}
       <JoinLinksWithCommaOrAnd paths={positiveVoteUsers} />
       {negatives > 0 && (
-        <Text>{`${positives > 0 ? ' ' : ''}➔ -${negatives} TabCoin${negatives > 1 ? 's' : ''}${
+        <span>{`${positives > 0 ? ' ' : ''}➔ -${negatives} TabCoin${negatives > 1 ? 's' : ''}${
           negativeVoteUsers.length > 0 ? ' com\xA0' : ''
-        }`}</Text>
+        }`}</span>
       )}
       <JoinLinksWithCommaOrAnd paths={negativeVoteUsers} />
     </>
@@ -386,7 +368,7 @@ function Menu({ config, setConfig }) {
   const { user } = useUser();
 
   return (
-    <Box sx={{ display: 'flex', gap: 2 }}>
+    <div className={classes.Menu}>
       {user?.features?.includes('update:content:others') && (
         <AnchoredOverlay
           renderAnchor={(anchorProps) => <Button {...anchorProps}>Filtros</Button>}
@@ -403,7 +385,7 @@ function Menu({ config, setConfig }) {
               padding: 12,
               gap: 8,
             }}>
-            <FormControl layout="horizontal" sx={{ alignItems: 'center', gap: 2 }}>
+            <FormControl layout="horizontal" className={classes.FormControl}>
               <FormControl.Label htmlFor="Edges">Votos computados</FormControl.Label>
               <input
                 type="number"
@@ -419,7 +401,7 @@ function Menu({ config, setConfig }) {
               />
             </FormControl>
 
-            <FormControl layout="horizontal" sx={{ alignItems: 'center', gap: 2 }}>
+            <FormControl layout="horizontal" className={classes.FormControl}>
               <FormControl.Label htmlFor="UserVotes">Votos por usuário (mín.)</FormControl.Label>
               <input
                 type="number"
@@ -430,7 +412,7 @@ function Menu({ config, setConfig }) {
               />
             </FormControl>
 
-            <FormControl layout="horizontal" sx={{ alignItems: 'center', gap: 2 }}>
+            <FormControl layout="horizontal" className={classes.FormControl}>
               <FormControl.Label htmlFor="EdgeVotes">Votos por aresta (mín.)</FormControl.Label>
               <input
                 type="number"
@@ -441,12 +423,12 @@ function Menu({ config, setConfig }) {
               />
             </FormControl>
 
-            <FormControl sx={{ alignItems: 'center', gap: 2, pl: '34px' }}>
+            <FormControl className={classes.FormControlCheckbox}>
               <Checkbox checked={config.nuked} onClick={(e) => setConfig({ ...config, nuked: e.target.checked })} />
               <FormControl.Label>Usuários Banidos ❌</FormControl.Label>
             </FormControl>
 
-            <FormControl sx={{ alignItems: 'center', gap: 2, pl: '34px' }}>
+            <FormControl className={classes.FormControlCheckbox}>
               <Checkbox checked={config.network} onClick={(e) => setConfig({ ...config, network: e.target.checked })} />
               <FormControl.Label>Redes Compartilhadas 🌐</FormControl.Label>
             </FormControl>
@@ -457,16 +439,16 @@ function Menu({ config, setConfig }) {
         onClick={() => setConfig({ ...config, physics: !config.physics })}
         icon={config.physics ? FaPause : FaPlay}
       />
-    </Box>
+    </div>
   );
 }
 
 function Legend() {
   return (
-    <Box display="flex" minHeight={30} justifyContent="space-around" alignItems="center" flexWrap="wrap">
-      <Box>👤 Usuários Ativos</Box>
-      <Box>❌ Usuários Banidos</Box>
-      <Box>🌐 Redes Compartilhadas</Box>
-    </Box>
+    <div className={classes.Legend}>
+      <div>👤 Usuários Ativos</div>
+      <div>❌ Usuários Banidos</div>
+      <div>🌐 Redes Compartilhadas</div>
+    </div>
   );
 }

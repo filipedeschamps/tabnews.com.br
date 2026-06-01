@@ -1,0 +1,74 @@
+.Control {
+  min-height: 86px;
+}
+
+.Input {
+  padding-inline: var(--base-size-8);
+}
+
+.Input:focus-within {
+  background-color: var(--bgColor-default);
+}
+
+.Input > input {
+  padding-inline: var(--base-size-4);
+}
+
+.InputPassword {
+  padding-right: 0;
+}
+
+.Select {
+  padding-block: 0;
+}
+
+.Suggestion {
+  display: inline-flex;
+  flex-wrap: wrap;
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: var(--base-text-weight-semibold);
+  column-gap: var(--base-size-4);
+  margin-top: 0;
+  align-items: center;
+  color: var(--fgColor-attention);
+}
+
+.SuggestionUnderline {
+  text-decoration: underline;
+}
+
+.TooltippedButton {
+  margin-block: -4px;
+  padding-inline: 0;
+  text-align: start;
+}
+
+.TooltippedButton > * {
+  justify-content: flex-end;
+}
+
+.TooltippedButton:hover {
+  background-color: transparent;
+}
+
+.TooltippedButtonSuccess {
+  color: var(--fgColor-success);
+}
+
+.TooltippedButtonAccent {
+  color: var(--fgColor-accent);
+}
+
+.TooltippedButtonGrow {
+  flex: 1;
+}
+
+.Warning {
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: var(--base-text-weight-semibold);
+  color: var(--fgColor-attention);
+}

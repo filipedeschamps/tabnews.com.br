@@ -1,10 +1,10 @@
+import clsx from 'clsx';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
 import {
   ActionList,
   ActionMenu,
-  Box,
   Button,
   HeaderLink,
   NavItem,
@@ -29,6 +29,8 @@ import {
 } from '@/TabNewsUI/icons';
 import { useMediaQuery, useUser } from 'interface';
 
+import classes from './index.module.css';
+
 export default function HeaderComponent() {
   const isScreenSmall = useMediaQuery('(max-width: 440px)');
   const { user, isLoading, logout } = useUser();
@@ -43,40 +45,36 @@ export default function HeaderComponent() {
         ? asPath
         : `/login?redirect=${asPath}`;
 
-  const activeLinkStyle = {
-    textDecoration: 'underline',
-    textUnderlineOffset: 6,
-    ml: 3,
-  };
-
   const canListUsers = user?.features.includes('read:user:list');
 
   return (
-    <PrimerHeader as="header" id="header" sx={{ minWidth: 'max-content', px: [2, null, null, 3], overflow: 'visible' }}>
+    <PrimerHeader as="header" id="header" className={classes.Wrapper}>
       <SearchBoxOverlay />
-      <Box as="nav" sx={{ display: 'flex', flex: 1, margin: 0, padding: 0 }}>
-        <PrimerHeader.Item sx={{ mr: 0 }}>
+      <nav className={classes.Nav}>
+        <PrimerHeader.Item className={classes.ItemFlush}>
           <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
             <CgTab size={32} />
 
-            <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
+            <div className={classes.Brand}>TabNews</div>
 
-            <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>Relevantes</Box>
+            <div className={asPath === '/' || asPath.startsWith('/pagina') ? classes.ActiveLink : classes.NavLink}>
+              Relevantes
+            </div>
           </HeaderLink>
         </PrimerHeader.Item>
 
-        <PrimerHeader.Item full sx={{ mr: 0 }}>
+        <PrimerHeader.Item full className={classes.ItemFlush}>
           <HeaderLink
             href="/recentes/pagina/1"
             aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
-            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
+            className={asPath.startsWith('/recentes') ? classes.ActiveLink : classes.NavLink}>
             Recentes
           </HeaderLink>
         </PrimerHeader.Item>
-      </Box>
+      </nav>
 
       {!isLoading && !(isScreenSmall && user) && (
-        <PrimerHeader.Item sx={{ ml: 3, mr: [1, , 3] }}>
+        <PrimerHeader.Item className={classes.SearchItem}>
           <SearchBarButton />
           <SearchIconButton />
         </PrimerHeader.Item>
@@ -84,23 +82,23 @@ export default function HeaderComponent() {
 
       {!isLoading && !user && (
         <>
-          <PrimerHeader.Item sx={{ mr: 1 }}>
+          <PrimerHeader.Item className={classes.ItemMr1}>
             <ThemeSwitcher />
           </PrimerHeader.Item>
 
           {!isScreenSmall && (
             <>
-              <PrimerHeader.Item sx={{ ml: 2 }}>
+              <PrimerHeader.Item className={classes.ItemMl2}>
                 <HeaderLink href={loginUrl}>Login</HeaderLink>
               </PrimerHeader.Item>
-              <PrimerHeader.Item sx={{ mr: 1 }}>
+              <PrimerHeader.Item className={classes.ItemMr1}>
                 <HeaderLink href="/cadastro">Cadastrar</HeaderLink>
               </PrimerHeader.Item>
             </>
           )}
 
           {isScreenSmall && (
-            <PrimerHeader.Item sx={{ ml: 2, mr: 1 }}>
+            <PrimerHeader.Item className={clsx(classes.ItemMl2, classes.ItemMr1)}>
               <HeaderLink href={loginUrl}>Entrar</HeaderLink>
             </PrimerHeader.Item>
           )}
@@ -110,7 +108,7 @@ export default function HeaderComponent() {
       {user && (
         <>
           {!isScreenSmall && (
-            <PrimerHeader.Item sx={{ m: 2 }}>
+            <PrimerHeader.Item className={classes.ItemM2}>
               <Tooltip text="Publicar novo conteúdo" direction="s">
                 <HeaderLink href="/publicar">
                   <PlusIcon />
@@ -119,40 +117,21 @@ export default function HeaderComponent() {
             </PrimerHeader.Item>
           )}
 
-          <PrimerHeader.Item
-            sx={{
-              mr: [0, 2],
-              fontSize: 0,
-              fontWeight: 'bold',
-            }}>
-            <TabCoinCount amount={user.tabcoins} sx={{ color: 'fg.onEmphasis', pl: 2, pr: 1 }} />
+          <PrimerHeader.Item className={classes.TabCoin}>
+            <TabCoinCount amount={user.tabcoins} className={classes.TabCoinCount} />
           </PrimerHeader.Item>
 
-          <PrimerHeader.Item
-            sx={{
-              mr: 2,
-              fontSize: 0,
-              fontWeight: 'bold',
-            }}>
-            <TabCashCount amount={user.tabcash} sx={{ color: 'fg.onEmphasis', pr: 1 }} />
+          <PrimerHeader.Item className={classes.TabCash}>
+            <TabCashCount amount={user.tabcash} className={classes.TabCashCount} />
           </PrimerHeader.Item>
 
-          <PrimerHeader.Item sx={{ mr: 0 }}>
+          <PrimerHeader.Item className={classes.ItemFlush}>
             <ActionMenu open={isOpenMenu} onOpenChange={setIsOpenMenu}>
               <ActionMenu.Anchor>
                 <Button
                   aria-label="Abrir o menu"
                   variant="invisible"
-                  sx={{
-                    px: 0,
-                    mx: 1,
-                    color: 'header.logo',
-                    '&:hover': {
-                      color: 'header.text',
-                      backgroundColor: 'transparent',
-                    },
-                    '&:focus-visible': { outline: '2px solid #FFF' },
-                  }}
+                  className={classes.MenuButton}
                   style={{ background: 'transparent' }}>
                   <ThreeBarsIcon size={24} />
                 </Button>
@@ -209,7 +188,12 @@ export default function HeaderComponent() {
                     </>
                   )}
 
-                  <ThemeSelector onSelect={() => setIsOpenMenu(false)} as="li" role="none" sx={{ listStyle: 'none' }} />
+                  <ThemeSelector
+                    onSelect={() => setIsOpenMenu(false)}
+                    as="li"
+                    role="none"
+                    className={classes.ThemeSelector}
+                  />
                   <ActionList.Divider />
 
                   <ActionList.Item variant="danger" onSelect={logout}>

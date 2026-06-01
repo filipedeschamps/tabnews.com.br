@@ -1,0 +1,106 @@
+.SearchIconButton {
+  display: flex;
+  padding-inline: 7px;
+  color: var(--header-fgColor-logo);
+}
+
+@media (min-width: 768px) {
+  .SearchIconButton {
+    display: none;
+  }
+}
+
+.SearchIconButton:hover {
+  color: var(--header-fgColor-default);
+  background-color: transparent;
+}
+
+.SearchIconButton:focus-visible {
+  outline: 2px solid #fff;
+}
+
+.SearchBarButton {
+  display: none;
+  padding-inline: 13px;
+  color: #8c959f;
+  background-color: var(--headerSearch-bgColor);
+  border-color: var(--headerSearch-borderColor);
+  cursor: text;
+  text-align: left;
+}
+
+.SearchBarButton:hover {
+  color: #8c959f;
+  background-color: var(--headerSearch-bgColor);
+  border-color: var(--headerSearch-borderColor);
+}
+
+@media (min-width: 768px) {
+  .SearchBarButton {
+    display: flex;
+    width: 200px;
+  }
+}
+
+@media (min-width: 1012px) {
+  .SearchBarButton {
+    width: 300px;
+  }
+}
+
+.SearchBarButton:focus-visible {
+  outline: 2px solid #fff !important;
+}
+
+.Overlay {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  width: 90vw;
+  max-width: 900px;
+  max-height: 95vh;
+  margin-left: 1px;
+  margin-right: 1px;
+  overflow: hidden;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--borderColor-default);
+  background-color: #fff;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 544px) {
+  .Overlay {
+    max-height: 90vh;
+  }
+}
+
+.ScrollAreaLoading {
+  height: 138px;
+}
+
+.ScrollArea {
+  overflow-y: auto;
+  min-height: 138px;
+}
+
+.Header {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px;
+  padding-bottom: 0;
+}
+
+.Title {
+  flex: 1;
+  text-align: center;
+  font-size: var(--text-title-size-medium);
+  color: #444444;
+}
+
+.SpinnerWrapper {
+  display: flex;
+  justify-content: center;
+  height: 26px;
+  padding-top: 20px;
+}

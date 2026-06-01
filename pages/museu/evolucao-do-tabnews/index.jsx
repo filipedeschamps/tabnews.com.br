@@ -1,4 +1,6 @@
-import { Box, DefaultLayout, Heading, Link, Text, Viewer } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Link, Viewer } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function Page() {
   const body = `Muitas pessoas conheceram o TabNews após o [vídeo de lançamento oficial no YouTube](https://www.youtube.com/watch?v=bYBVCxVwrdY), no dia 21/12/2022. Nesta página você encontrará a história anterior. Verá como foi que o TabNews surgiu e evoluiu, quais foram as ideias iniciais, quem participou do processo, quanto tempo levou e até onde conseguiu chegar no momento do lançamento oficial.
@@ -232,21 +234,21 @@ export default function Page() {
 
   return (
     <DefaultLayout metadata={{ title: 'A Evolução do TabNews — da Concepção ao Lançamento' }}>
-      <Box as="article">
+      <article>
         <Heading as="h1">A Evolução do TabNews — da Concepção ao Lançamento</Heading>
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ mb: 3, fontSize: 1 }}>
-            <Box as="address" sx={{ display: 'inline', fontStyle: 'normal' }}>
-              <Text>Autor: </Text>
+        <div className={classes.Author}>
+          <div className={classes.AuthorLine}>
+            <address className={classes.Address}>
+              <span>Autor: </span>
               <Link href="https://github.com/gabrielsozinho">Gabriel Sozinho</Link>
-            </Box>
+            </address>
             {' · '}
-            <Text>Revisor: </Text>
+            <span>Revisor: </span>
             <Link href="https://github.com/rafatcb">Rafael Tavares</Link>
-          </Box>
-        </Box>
+          </div>
+        </div>
         <Viewer areLinksTrusted value={body} clobberPrefix="" />
-      </Box>
+      </article>
     </DefaultLayout>
   );
 }

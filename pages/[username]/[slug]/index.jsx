@@ -1,10 +1,11 @@
 import { findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
 import { useTreeCollapse } from '@tabnews/hooks';
+import clsx from 'clsx';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-import { AdBanner, Box, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
+import { AdBanner, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
 import { CommentDiscussionIcon, CommentIcon, FoldIcon, UnfoldIcon } from '@/TabNewsUI/icons';
 import { NotFoundError, ValidationError } from 'errors';
 import webserver from 'infra/webserver.js';
@@ -12,6 +13,8 @@ import authorization from 'models/authorization.js';
 import content from 'models/content.js';
 import removeMarkdown from 'models/remove-markdown.js';
 import user from 'models/user.js';
+
+import classes from './index.module.css';
 
 const initialRenderIntent = 100;
 const renderIncrement = 50;
@@ -85,49 +88,19 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
       <DefaultLayout metadata={contentMetadata}>
         <InReplyToLinks content={contentFound} parentContent={parentContentFound} rootContent={rootContentFound} />
 
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-          }}>
-          <Box
-            sx={{
-              pr: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}>
+        <div className={classes.RootContentRow}>
+          <div className={classes.TabCoinColumn}>
             <TabCoinButtons key={contentFound.id} content={contentFound} />
-            <Box
-              sx={{
-                borderWidth: 0,
-                borderRightWidth: 1,
-                borderColor: 'btn.activeBorder',
-                borderStyle: 'dotted',
-                width: '50%',
-                height: '100%',
-                minHeight: '8px',
-              }}
-            />
-          </Box>
+            <div className={classes.RootDivider} />
+          </div>
 
-          <Box sx={{ width: '100%', mt: contentFound.title ? 0 : '9px', pl: '1px', overflow: 'auto' }}>
+          <div className={clsx(classes.RootContentBody, !contentFound.title && classes.RootContentBodyNoTitle)}>
             <Content key={contentFound.id} content={contentFound} mode="view" />
-          </Box>
-        </Box>
+          </div>
+        </div>
 
-        <Box sx={{ width: '100%' }}>
-          <Box
-            sx={{
-              borderRadius: '6px',
-              borderWidth: 1,
-              borderColor: 'border.default',
-              borderStyle: 'solid',
-              mt: 4,
-              mb: 3,
-              p: 4,
-              wordWrap: 'break-word',
-            }}>
+        <div className={classes.ReplyBoxWrapper}>
+          <div className={classes.ReplyBox}>
             <Content
               key={contentFound.id}
               content={{
@@ -139,9 +112,9 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
               rootContent={rootContentFound || contentFound}
               mode="compact"
             />
-          </Box>
+          </div>
 
-          <AdBanner ad={adsFound[0]} isLoading={isLoadingAd} sx={{ ml: 5, pl: 1 }} />
+          <AdBanner ad={adsFound[0]} isLoading={isLoadingAd} className={classes.AdBanner} />
 
           <RenderChildrenTree
             key={contentFound.id}
@@ -151,7 +124,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
             renderIntent={initialRenderIntent}
             rootContent={rootContentFound || contentFound}
           />
-        </Box>
+        </div>
       </DefaultLayout>
     </>
   );
@@ -164,16 +137,11 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
         [root]->[child]->[child]
       */}
       {content.parent_id && parentContent.id === rootContent.id && (
-        <Box sx={{ fontSize: 1, mb: 2, display: 'flex', flexDirection: 'row' }}>
-          <Box
-            sx={{
-              textAlign: 'center',
-              pl: ['6px', null, null, '6px'],
-              pr: ['6px', null, null, '13px'],
-            }}>
+        <div className={classes.InReplyTo}>
+          <div className={classes.InReplyToIcon}>
             <CommentIcon verticalAlign="middle" size="small" />
-          </Box>
-          <Box>
+          </div>
+          <div>
             Em resposta a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
@@ -185,24 +153,19 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
                 <strong>[Não disponível]</strong>
               </Tooltip>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/*                   ↱ You are here
         [root]->[child]->[child]
       */}
       {content.parent_id && parentContent.id !== rootContent.id && (
-        <Box sx={{ fontSize: 1, mb: 2, display: 'flex', flexDirection: 'row' }}>
-          <Box
-            sx={{
-              textAlign: 'center',
-              pl: ['6px', null, null, '6px'],
-              pr: ['6px', null, null, '13px'],
-            }}>
+        <div className={classes.InReplyTo}>
+          <div className={classes.InReplyToIcon}>
             <CommentDiscussionIcon verticalAlign="middle" size="small" />
-          </Box>
-          <Box>
+          </div>
+          <div>
             Respondendo a{' '}
             {parentContent.status === 'published' && (
               <Link href={`/${parentContent.owner_username}/${parentContent.slug}`}>
@@ -225,8 +188,8 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
                 <strong>[Não disponível]</strong>
               </Tooltip>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
     </>
   );
@@ -252,88 +215,35 @@ function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, ren
     if (!isPublished && !children_deep_count) return null;
 
     return (
-      <Box
-        sx={{
-          width: '100%',
-          wordWrap: 'break-word',
-          display: 'flex',
-          mt: 3,
-        }}
-        key={id}>
+      <div className={classes.ChildRow} key={id}>
         {expandedSize ? (
           <>
-            <Box
-              sx={{
-                mr: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                minWidth: '28px',
-              }}>
+            <div className={classes.ChildTabCoinColumn}>
               <TabCoinButtons content={child} />
               <Tooltip
                 direction="ne"
                 text={`Ocultar resposta${plural}`}
                 role="button"
                 onClick={() => handleCollapse(id)}
-                sx={{
-                  cursor: 'pointer',
-                  width: '80%',
-                  height: '100%',
-                  minHeight: '24px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  mt: 1,
-                  mx: '10%',
-                  '&:hover': {
-                    div: {
-                      display: 'block',
-                      borderLeftWidth: 1,
-                      borderColor: 'btn.danger.hoverBg',
-                      borderStyle: 'dashed',
-                    },
-                    svg: {
-                      backgroundColor: 'canvas.default',
-                    },
-                  },
-                }}>
-                <Box
-                  sx={{
-                    display: 'none',
-                    position: 'relative',
-                    width: '0%',
-                    left: '-7px',
-                    color: 'btn.danger.hoverBg',
-                    borderStyle: 'hidden!important',
-                  }}>
+                className={classes.CollapseHandle}>
+                <div className={classes.FoldIconWrapper}>
                   <FoldIcon />
-                </Box>
-                <Box
-                  sx={{
-                    borderWidth: 0,
-                    borderRightWidth: 1,
-                    borderLeftWidth: 0,
-                    borderColor: 'btn.activeBorder',
-                    borderStyle: 'dotted',
-                    width: 0,
-                    transition: 'border 0.1s cubic-bezier(1,1,1,0)',
-                  }}
-                />
+                </div>
+                <div className={classes.ChildDivider} />
               </Tooltip>
-            </Box>
+            </div>
 
-            <Box
-              sx={{ display: 'flex', flexDirection: 'column', width: '100%', mt: '9px', pl: '1px', overflow: 'auto' }}>
+            <div className={classes.ChildContentColumn}>
               {isPublished && <Content content={child} isPageRootOwner={isPageRootOwner} mode="view" />}
 
-              <Box sx={{ display: 'flex', flex: 1, mt: isPublished ? 4 : 0, alignItems: 'end' }}>
+              <div className={clsx(classes.ChildCompactRow, isPublished && classes.ChildCompactRowPublished)}>
                 <Content
                   content={{ owner_id, owner_username, parent_id: id, slug }}
                   mode={isPublished ? 'compact' : 'deleted'}
                   rootContent={rootContent}
                   viewFrame={true}
                 />
-              </Box>
+              </div>
 
               {children_deep_count > 0 && (
                 <RenderChildrenTree
@@ -344,15 +254,15 @@ function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, ren
                   rootContent={rootContent}
                 />
               )}
-            </Box>
+            </div>
           </>
         ) : (
-          <Button onClick={() => handleExpand(id)} variant="invisible" sx={{ color: 'accent.fg' }}>
+          <Button onClick={() => handleExpand(id)} variant="invisible" className={classes.ExpandButton}>
             <UnfoldIcon /> {`Ver mais ${labelShowMore} resposta${plural}`}
             {labelShowMore != collapsedSize && ` (${collapsedSize} ocultas)`}
           </Button>
         )}
-      </Box>
+      </div>
     );
   });
 }

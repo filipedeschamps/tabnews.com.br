@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { Box, ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
+import { ButtonWithLoader, DefaultLayout, Flash, FormControl, Heading, TextInput } from '@/TabNewsUI';
 import { createErrorMessage, useUser } from 'interface';
+
+import classes from './index.module.css';
 
 export default function RecoverPassword() {
   return (
@@ -12,7 +14,7 @@ export default function RecoverPassword() {
         description:
           'Recupere sua senha do TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
       }}>
-      <Heading as="h1" sx={{ mb: 3 }}>
+      <Heading as="h1" className={classes.Heading}>
         Recuperação de senha
       </Heading>
 
@@ -114,7 +116,7 @@ function RecoverPasswordForm() {
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className={classes.Wrapper}>
         {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.message}</Flash>}
 
         {user?.features.includes('create:recovery_token:username') && (
@@ -128,7 +130,7 @@ function RecoverPasswordForm() {
             <FormControl.Label>Digite seu e-mail ou o nome de usuário da pessoa que deseja ajudar</FormControl.Label>
             <TextInput
               contrast
-              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              className={classes.Input}
               ref={userInputRef}
               onChange={clearErrors}
               name="userInput"
@@ -155,7 +157,7 @@ function RecoverPasswordForm() {
             <FormControl.Label>Digite seu e-mail</FormControl.Label>
             <TextInput
               contrast
-              sx={{ px: 2, '&:focus-within': { backgroundColor: 'canvas.default' } }}
+              className={classes.Input}
               ref={userInputRef}
               onChange={clearErrors}
               name="userInput"
@@ -177,11 +179,16 @@ function RecoverPasswordForm() {
 
         <FormControl>
           <FormControl.Label visuallyHidden>Recuperar</FormControl.Label>
-          <ButtonWithLoader variant="primary" size="large" type="submit" sx={{ width: '100%' }} isLoading={isLoading}>
+          <ButtonWithLoader
+            variant="primary"
+            size="large"
+            type="submit"
+            className={classes.Submit}
+            isLoading={isLoading}>
             Recuperar
           </ButtonWithLoader>
         </FormControl>
-      </Box>
+      </div>
     </form>
   );
 }

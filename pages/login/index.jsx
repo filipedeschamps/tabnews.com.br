@@ -4,8 +4,10 @@ import { FormField } from '@tabnews/ui';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
-import { Box, ButtonWithLoader, DefaultLayout, Flash, Heading, Link, Text } from '@/TabNewsUI';
+import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
 import { createErrorMessage, useUser } from 'interface';
+
+import classes from './index.module.css';
 
 const formConfig = {
   email,
@@ -39,7 +41,7 @@ export default function Login() {
           'Entrar no TabNews - Plataforma de conteúdos com valor concreto para quem trabalha com tecnologia.',
         canonical: '/login',
       }}>
-      <Heading as="h1" sx={{ mb: 3 }}>
+      <Heading as="h1" className={classes.Heading}>
         Login
       </Heading>
       <LoginForm />
@@ -108,7 +110,7 @@ function LoginForm() {
       <FormField {...getFieldProps('password')} />
 
       {globalErrorMessage && (
-        <Flash variant="danger" sx={{ mt: 3 }}>
+        <Flash variant="danger" className={classes.Flash}>
           {globalErrorMessage}
         </Flash>
       )}
@@ -117,19 +119,19 @@ function LoginForm() {
         variant="primary"
         size="large"
         type="submit"
-        sx={{ width: '100%', mt: 3 }}
+        className={classes.Submit}
         isLoading={state.loading.value}>
         Login
       </ButtonWithLoader>
 
-      <Box sx={{ mt: 6, width: '100%', textAlign: 'center', fontSize: 1 }} display="flex" flexDirection="column">
-        <Text>
+      <div className={classes.Links}>
+        <span>
           Novo no TabNews? <Link href="/cadastro">Crie sua conta aqui.</Link>
-        </Text>
-        <Text>
+        </span>
+        <span>
           Esqueceu sua senha? <Link href="/cadastro/recuperar">Clique aqui.</Link>
-        </Text>
-      </Box>
+        </span>
+      </div>
     </form>
   );
 }

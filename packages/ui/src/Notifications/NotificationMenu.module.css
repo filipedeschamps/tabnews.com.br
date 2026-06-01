@@ -1,0 +1,66 @@
+.AnchorButton {
+  color: var(--fgColor-onEmphasis);
+}
+
+.AnchorButtonEmpty {
+  color: var(--bgColor-disabled);
+}
+
+.AnchorButton:hover {
+  color: var(--header-fgColor-default);
+  background-color: transparent;
+}
+
+.Overlay {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.Body {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.BadgeWrapper {
+  position: relative;
+}
+
+.Badge {
+  display: flex;
+  position: absolute;
+  left: 47%;
+  bottom: 50%;
+  border-radius: 3px;
+  background-color: var(--bgColor-danger-emphasis);
+  padding: 0 0.2em;
+}
+
+.BadgeCount {
+  font-size: 0.8em;
+  color: var(--fgColor-onEmphasis);
+}
+
+.Header {
+  display: flex;
+  border-bottom: 1px solid var(--borderColor-default);
+}
+
+.HeaderTitle {
+  font-size: var(--base-size-24);
+}
+
+.HeaderTitleWrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.CloseButton {
+  color: var(--fgColor-muted);
+  margin: var(--base-size-8);
+}

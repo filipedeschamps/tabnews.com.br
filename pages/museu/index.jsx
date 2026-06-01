@@ -1,4 +1,6 @@
-import { Box, DefaultLayout, PrimerLink, Text } from '@/TabNewsUI';
+import { DefaultLayout, PrimerLink } from '@/TabNewsUI';
+
+import classes from './index.module.css';
 
 export default function Page() {
   return (
@@ -7,25 +9,25 @@ export default function Page() {
         title: 'Museu',
         description: 'Esta página é humilde, porém traz coisas muito importantes da história do TabNews.',
       }}>
-      <Box>
-        <Text as="h1">Museu TabNews</Text>
-        <Text as="p">
+      <div className={classes.Wrapper}>
+        <h1>Museu TabNews</h1>
+        <p>
           Esta página é humilde, porém traz coisas <strong>muito importantes</strong> da história do TabNews.
-        </Text>
+        </p>
 
-        <Text as="h2">Artigo</Text>
-        <Box as="ul">
+        <h2>Artigo</h2>
+        <ul>
           <li>
             <PrimerLink href="/museu/evolucao-do-tabnews">
               A Evolução do TabNews — da Concepção ao Lançamento
             </PrimerLink>{' '}
             feito por <PrimerLink href="https://github.com/gabrielsozinho">Gabriel Sozinho</PrimerLink>
           </li>
-        </Box>
+        </ul>
 
-        <Text as="h2">Primeiras interfaces e Provas de Conceito (POC)</Text>
+        <h2>Primeiras interfaces e Provas de Conceito (POC)</h2>
 
-        <Box as="ul">
+        <ul>
           <li>
             <PrimerLink href="/museu/init.html">Primeira Home Oficial (Init)</PrimerLink> feito pelos Membros da Turma
           </li>
@@ -97,8 +99,8 @@ export default function Page() {
             <PrimerLink href="/museu/post-02.html">Post POC #02</PrimerLink> feito por{' '}
             <PrimerLink href="https://github.com/pscruzzz">Pedro Cruz</PrimerLink>
           </li>
-        </Box>
-      </Box>
+        </ul>
+      </div>
     </DefaultLayout>
   );
 }

@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { NotificationList } from '.';
 import { getConfig } from './config';
 import { focusSiblingIfRemoved } from './NotificationList';
+import classes from './NotificationList.module.css';
 import {
   createMockAction,
   createMockNotification,
@@ -62,8 +63,7 @@ describe('ui/Notifications', () => {
     });
 
     describe('read state styling', () => {
-      const readColor = 'var(--fgColor-disabled)';
-      const unreadColor = 'var(--fgColor-default)';
+      const itemOf = (el) => el.closest('li');
 
       it('applies read style when isItemRead returns true', () => {
         const notifications = createNotificationList(1);
@@ -71,10 +71,7 @@ describe('ui/Notifications', () => {
 
         const { getByText } = renderWithContext(<NotificationList />, { notifications, isItemRead });
 
-        const item = getByText(/Notification/);
-        const computedColor = getComputedStyle(item).color;
-
-        expect(computedColor).toBe(readColor);
+        expect(itemOf(getByText(/Notification/)).className).toContain(classes.ItemRead);
       });
 
       it('applies unread style when isItemRead returns false', () => {
@@ -83,10 +80,7 @@ describe('ui/Notifications', () => {
 
         const { getByText } = renderWithContext(<NotificationList />, { notifications, isItemRead });
 
-        const item = getByText(/Notification/);
-        const computedColor = getComputedStyle(item).color;
-
-        expect(computedColor).toBe(unreadColor);
+        expect(itemOf(getByText(/Notification/)).className).toContain(classes.ItemUnread);
       });
 
       it('applies default color when isItemRead is not provided', () => {
@@ -94,10 +88,7 @@ describe('ui/Notifications', () => {
 
         const { getByText } = renderWithContext(<NotificationList />, { notifications });
 
-        const item = getByText(/Notification/);
-        const computedColor = getComputedStyle(item).color;
-
-        expect(computedColor).toBe(unreadColor);
+        expect(itemOf(getByText(/Notification/)).className).toContain(classes.ItemUnread);
       });
 
       it('applies read style when isItemRead returns different values for each notification', () => {
@@ -107,13 +98,9 @@ describe('ui/Notifications', () => {
 
         const { getByText } = renderWithContext(<NotificationList />, { notifications, isItemRead });
 
-        const readItem = getByText(/Notification 1/);
-        const unreadItem = getByText(/Notification 2/);
-        const anotherUnreadItem = getByText(/Notification 3/);
-
-        expect(getComputedStyle(readItem).color).toBe(readColor);
-        expect(getComputedStyle(unreadItem).color).toBe(unreadColor);
-        expect(getComputedStyle(anotherUnreadItem).color).toBe(unreadColor);
+        expect(itemOf(getByText(/Notification 1/)).className).toContain(classes.ItemRead);
+        expect(itemOf(getByText(/Notification 2/)).className).toContain(classes.ItemUnread);
+        expect(itemOf(getByText(/Notification 3/)).className).toContain(classes.ItemUnread);
         expect(isItemRead).toHaveBeenCalledTimes(3);
 
         notifications.forEach((notification, i) => {
@@ -164,20 +151,23 @@ describe('ui/Notifications', () => {
         expect(onItemSelect).toHaveBeenCalledWith(notifications[0]);
       });
 
-      it('calls onItemSelect with keyboard interaction', () => {
+      it('calls onItemSelect with keyboard interaction', async () => {
+        const user = userEvent.setup();
         const notifications = createNotificationList(1);
         const onItemSelect = vi.fn();
         renderWithContext(<NotificationList />, { notifications, onItemSelect });
-        const item = screen.getByText(/Notification/);
 
-        fireEvent.keyPress(item, { key: 'Enter', code: 'Enter', charCode: 13 });
+        const item = screen.getByRole('button');
+        item.focus();
+
+        await user.keyboard('{Enter}');
         expect(onItemSelect).toHaveBeenCalledWith(notifications[0]);
         expect(onItemSelect).toHaveBeenCalledTimes(1);
 
-        fireEvent.keyPress(item, { key: 'Escape', code: 'Escape', charCode: 27 });
+        await user.keyboard('{Escape}');
         expect(onItemSelect).toHaveBeenCalledTimes(1); // Escape should not trigger onItemSelect
 
-        fireEvent.keyPress(item, { key: ' ', code: 'Space', charCode: 32 });
+        await user.keyboard(' ');
         expect(onItemSelect).toHaveBeenCalledWith(notifications[0]);
         expect(onItemSelect).toHaveBeenCalledTimes(2);
       });
@@ -221,7 +211,7 @@ describe('ui/Notifications', () => {
           onItemSelect,
         });
 
-        fireEvent.click(screen.getByRole('button'));
+        fireEvent.click(screen.getByRole('button', { name: getConfig().labels.openActionsMenu }));
         fireEvent.click(screen.getByText('Secondary'));
 
         expect(action.onClick).toHaveBeenCalledWith(notifications[0]);

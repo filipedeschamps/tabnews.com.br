@@ -2,8 +2,10 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
-import { Box, Content, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
+import { Content, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
 import { useUser } from 'interface';
+
+import classes from './index.module.css';
 
 export default function Post() {
   const router = useRouter();
@@ -29,7 +31,7 @@ export default function Post() {
           'Publicar novo conteúdo no TabNews - artigos, tutoriais, indicações, curiosidades, ferramentas e outros assuntos relacionados a tecnologia.',
       }}>
       {contents?.length === 0 && (
-        <Box sx={{ width: '100%', mb: 3 }}>
+        <div className={classes.FlashWrapper}>
           <Flash variant="warning">
             ⚠ Atenção: Pedimos encarecidamente que{' '}
             <Link href="https://www.tabnews.com.br/filipedeschamps/tentando-construir-um-pedaco-de-internet-mais-massa">
@@ -37,10 +39,10 @@ export default function Post() {
             </Link>{' '}
             de fazer sua primeira publicação.
           </Flash>
-        </Box>
+        </div>
       )}
 
-      <Heading as="h1" sx={{ mb: 3 }}>
+      <Heading as="h1" className={classes.Heading}>
         Publicar novo conteúdo
       </Heading>
       <Content mode="edit" />
