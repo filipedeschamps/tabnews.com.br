@@ -1,5 +1,5 @@
 import { email, password, useForm, username } from '@tabnews/forms';
-import { FormField, Text } from '@tabnews/ui';
+import { FormField } from '@tabnews/ui';
 import { useRouter } from 'next/router';
 
 import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
@@ -100,10 +100,10 @@ function SignUpForm() {
         {...getFieldProps('termsAccepted')}
         className={classes.TermsField}
         label={
-          <Text fontSize="1">
+          <span className={classes.TermsText}>
             Li e estou de acordo com os
             <Link href="/termos-de-uso"> Termos de Uso.</Link>
-          </Text>
+          </span>
         }
       />
 

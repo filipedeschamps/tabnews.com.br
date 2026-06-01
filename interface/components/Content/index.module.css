@@ -67,6 +67,7 @@
 
 .SourceText {
   word-break: break-all;
+  font-weight: var(--base-text-weight-semibold);
 }
 
 /* EditMode */

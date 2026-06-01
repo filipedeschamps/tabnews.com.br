@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-import { Link, SkeletonLoader, Text, Tooltip } from '@/TabNewsUI';
+import { Link, SkeletonLoader, Tooltip } from '@/TabNewsUI';
 import { LinkExternalIcon } from '@/TabNewsUI/icons';
 
 import classes from './index.module.css';
@@ -35,21 +35,21 @@ export default function AdBanner({ ad: newAd, isLoading, className, ...props }) 
     <aside {...props} className={clsx(classes.Wrapper, className)}>
       <div>
         <Link className={classes.Link} href={link} rel={isTrustedDomain(link) ? undefined : 'nofollow'}>
-          <Text className={classes.Title}>
+          <span className={classes.Title}>
             {title} {domain}
-          </Text>
+          </span>
           {isAdToExternalLink && <LinkExternalIcon verticalAlign="middle" />}
         </Link>
       </div>
 
-      <Text className={classes.Sponsor}>
+      <span className={classes.Sponsor}>
         Contribuindo com{' '}
         <Tooltip text={`Autor: ${ad.owner_username}`} direction="nw" position="absolute">
           <Link className={classes.SponsorLink} href={`/${ad.owner_username}`}>
             {ad.owner_username}
           </Link>
         </Tooltip>
-      </Text>
+      </span>
     </aside>
   );
 }

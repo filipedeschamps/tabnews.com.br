@@ -12,7 +12,6 @@ import {
   FormControl,
   Heading,
   Link,
-  Text,
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
@@ -305,7 +304,7 @@ function EditProfileForm() {
           </Link>
         </FormControl>
 
-        <Text className={classes.RequiredText}>Os campos marcados com um asterisco (*) são obrigatórios.</Text>
+        <span className={classes.RequiredText}>Os campos marcados com um asterisco (*) são obrigatórios.</span>
 
         {globalMessageObject && <Flash variant={globalMessageObject.type}>{globalMessageObject.text}</Flash>}
 

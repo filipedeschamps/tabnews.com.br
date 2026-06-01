@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { DefaultLayout, Heading, Text } from '@/TabNewsUI';
+import { DefaultLayout, Heading } from '@/TabNewsUI';
 
 import classes from './index.module.css';
 
@@ -18,10 +18,10 @@ export default function ConfirmSignup() {
         <Heading as="h1" className={classes.Heading}>
           Confira seu e-mail:
         </Heading>
-        <Text className={classes.Email}>{email}</Text>
-        <Text>
+        <span className={classes.Email}>{email}</span>
+        <span>
           Caso o e-mail esteja disponível, você receberá um link para confirmar seu cadastro e ativar a sua conta.
-        </Text>
+        </span>
       </div>
     </DefaultLayout>
   );

@@ -6,6 +6,10 @@
   min-height: auto;
 }
 
+.TermsText {
+  font-size: var(--text-body-size-medium);
+}
+
 .Flash {
   margin-top: var(--base-size-16);
 }

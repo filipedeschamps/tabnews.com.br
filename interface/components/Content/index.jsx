@@ -21,7 +21,6 @@ import {
   Link,
   PastTime,
   ReadTime,
-  Text,
   TextInput,
   Tooltip,
   useConfirm,
@@ -230,14 +229,14 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
       </div>
       {contentObject.source_url && (
         <div>
-          <Text as="p" fontWeight="bold" className={classes.SourceText}>
+          <p className={classes.SourceText}>
             <LinkIcon size={16} /> Fonte:{' '}
             <Link
               href={contentObject.source_url}
               rel={isTrustedDomain(contentObject.source_url) ? undefined : 'nofollow'}>
               {contentObject.source_url}
             </Link>
-          </Text>
+          </p>
         </div>
       )}
     </article>
@@ -567,9 +566,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           )}
 
           {!contentObject?.parent_id && (
-            <Text className={classes.RequiredFieldsNote}>
+            <span className={classes.RequiredFieldsNote}>
               Os campos marcados com um asterisco (*) são obrigatórios.
-            </Text>
+            </span>
           )}
 
           <div className={classes.EditActions}>
@@ -652,7 +651,7 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
       </Tooltip>
       <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
         <Button onClick={handleShare}>
-          {isLinkCopied ? <Text className={classes.LinkCopiedText}>Link copiado!</Text> : <ShareIcon size={16} />}
+          {isLinkCopied ? <span className={classes.LinkCopiedText}>Link copiado!</span> : <ShareIcon size={16} />}
         </Button>
       </Tooltip>
     </div>
@@ -676,10 +675,10 @@ function ErrorMessage({ error, omitErrorId, ...props }) {
       {createErrorMessage(error, { omitErrorId: omitErrorId || isErrorWithReadMore })}
 
       {isErrorWithReadMore && (
-        <Text className={classes.ReadMoreText}>
+        <span className={classes.ReadMoreText}>
           Para mais informações, leia:{' '}
           <Link href="/faq#erro-nova-publicacao">Não consigo criar novas publicações. O que fazer?</Link>
-        </Text>
+        </span>
       )}
     </Flash>
   );

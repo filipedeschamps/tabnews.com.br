@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import { Text, Tooltip } from '@/TabNewsUI';
+import { Tooltip } from '@/TabNewsUI';
 import { SquareFillIcon } from '@/TabNewsUI/icons';
 
 import classes from './index.module.css';
@@ -23,7 +23,7 @@ export default function TabCashCount({ amount, direction, mode = 'tooltip', clas
   const content = (
     <div className={clsx(classes.Wrapper, className)}>
       <SquareFillIcon aria-label={iconLabel} fill="#2da44e" size={iconSize} />
-      <Text>{text}</Text>
+      <span>{text}</span>
     </div>
   );
 

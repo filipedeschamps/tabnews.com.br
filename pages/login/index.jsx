@@ -4,7 +4,7 @@ import { FormField } from '@tabnews/ui';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
-import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link, Text } from '@/TabNewsUI';
+import { ButtonWithLoader, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
 import { createErrorMessage, useUser } from 'interface';
 
 import classes from './index.module.css';
@@ -125,12 +125,12 @@ function LoginForm() {
       </ButtonWithLoader>
 
       <div className={classes.Links}>
-        <Text>
+        <span>
           Novo no TabNews? <Link href="/cadastro">Crie sua conta aqui.</Link>
-        </Text>
-        <Text>
+        </span>
+        <span>
           Esqueceu sua senha? <Link href="/cadastro/recuperar">Clique aqui.</Link>
-        </Text>
+        </span>
       </div>
     </form>
   );

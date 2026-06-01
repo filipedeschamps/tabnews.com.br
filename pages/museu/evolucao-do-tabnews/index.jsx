@@ -1,4 +1,4 @@
-import { DefaultLayout, Heading, Link, Text, Viewer } from '@/TabNewsUI';
+import { DefaultLayout, Heading, Link, Viewer } from '@/TabNewsUI';
 
 import classes from './index.module.css';
 
@@ -239,11 +239,11 @@ export default function Page() {
         <div className={classes.Author}>
           <div className={classes.AuthorLine}>
             <address className={classes.Address}>
-              <Text>Autor: </Text>
+              <span>Autor: </span>
               <Link href="https://github.com/gabrielsozinho">Gabriel Sozinho</Link>
             </address>
             {' · '}
-            <Text>Revisor: </Text>
+            <span>Revisor: </span>
             <Link href="https://github.com/rafatcb">Rafael Tavares</Link>
           </div>
         </div>

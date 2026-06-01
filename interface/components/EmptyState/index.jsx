@@ -1,4 +1,4 @@
-import { Button, Heading, Text } from '@/TabNewsUI';
+import { Button, Heading } from '@/TabNewsUI';
 import { PlusIcon } from '@/TabNewsUI/icons';
 
 import classes from './index.module.css';
@@ -10,7 +10,7 @@ export default function EmptyState(props) {
     <div className={classes.Wrapper}>
       {Icon && <Icon size={40} className={classes.Icon} />}
       <Heading className={classes.Title}>{title}</Heading>
-      {description && <Text>{description}</Text>}
+      {description && <span>{description}</span>}
       {action && (
         <Button className={classes.Action} leadingVisual={PlusIcon} onClick={action.onClick}>
           {action.text}

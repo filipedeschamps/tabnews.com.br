@@ -1,6 +1,6 @@
 'use client';
 import { BellIcon, XIcon } from '@primer/octicons-react';
-import { AnchoredOverlay, Heading, IconButton, Text } from '@primer/react';
+import { AnchoredOverlay, Heading, IconButton } from '@primer/react';
 import clsx from 'clsx';
 
 import { NotificationList } from './NotificationList';
@@ -81,9 +81,7 @@ function IconWithBadge({ count }) {
       <BellIcon />
       {count > 0 && (
         <div data-testid="notification-badge" className={classes.Badge}>
-          <Text fontSize="0.8em" color="fg.onEmphasis">
-            {count > 99 ? '99+' : count}
-          </Text>
+          <span className={classes.BadgeCount}>{count > 99 ? '99+' : count}</span>
         </div>
       )}
     </div>

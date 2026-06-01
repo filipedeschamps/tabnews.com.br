@@ -7,3 +7,7 @@
   margin: var(--base-size-24);
   margin-bottom: var(--base-size-8);
 }
+
+.Muted {
+  color: var(--fgColor-muted);
+}

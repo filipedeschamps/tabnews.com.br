@@ -1,4 +1,4 @@
-import { Label, Link, Pagination, PastTime, SkeletonLoader, Text } from '@/TabNewsUI';
+import { Label, Link, Pagination, PastTime, SkeletonLoader } from '@/TabNewsUI';
 
 import classes from './index.module.css';
 
@@ -50,13 +50,13 @@ function UserListItem({ user }) {
             )}
           </Link>
         </div>
-        {user.description && <Text className={classes.Description}>{user.description}</Text>}
+        {user.description && <span className={classes.Description}>{user.description}</span>}
         <div className={classes.Metadata}>
           <PastTime formatText={formatUpdatedAt} direction="ne" date={user.updated_at} />
           {' · '}
-          <Text>{getTabCoinsText(user.tabcoins)}</Text>
+          <span>{getTabCoinsText(user.tabcoins)}</span>
           {' · '}
-          <Text>{user.tabcash} tabcash</Text>
+          <span>{user.tabcash} tabcash</span>
         </div>
       </div>
     </li>

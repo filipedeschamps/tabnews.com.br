@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Network } from 'vis-network';
 
-import { AnchoredOverlay, Button, Checkbox, FormControl, IconButton, Link, Spinner, Text, useTheme } from '@/TabNewsUI';
+import { AnchoredOverlay, Button, Checkbox, FormControl, IconButton, Link, Spinner, useTheme } from '@/TabNewsUI';
 import { FaPause, FaPlay } from '@/TabNewsUI/icons';
 import useUser from 'interface/hooks/useUser';
 
@@ -303,7 +303,7 @@ function StatusBar({ status }) {
 function DefaultStatusMessage({ status }) {
   if (status) return null;
 
-  return <Text>Selecione um nó ou aresta</Text>;
+  return <span>Selecione um nó ou aresta</span>;
 }
 
 function UserSelected({ userSelected }) {
@@ -318,13 +318,13 @@ function JoinSharedNetworks({ userSelected, positives, negatives, shared }) {
   return shared.map((sharedFrom, i) => {
     return (
       <Fragment key={i}>
-        {userSelected ? <Text>compartilha sua rede</Text> : <Text>Rede compartilhada</Text>}
-        {sharedFrom.size === 1 && <Text>&nbsp;com&nbsp;</Text>}
-        {sharedFrom.size > 1 && <Text>&nbsp;entre&nbsp;</Text>}
+        {userSelected ? <span>compartilha sua rede</span> : <span>Rede compartilhada</span>}
+        {sharedFrom.size === 1 && <span>&nbsp;com&nbsp;</span>}
+        {sharedFrom.size > 1 && <span>&nbsp;entre&nbsp;</span>}
         <JoinLinksWithCommaOrAnd paths={[...sharedFrom]} />
-        {i + 2 < shared.length && <Text>,&nbsp;</Text>}
-        {i + 2 === shared.length && <Text>&nbsp;e&nbsp;</Text>}
-        {i + 1 === shared.length && !!(positives || negatives) && <Text>&nbsp;|&nbsp;</Text>}
+        {i + 2 < shared.length && <span>,&nbsp;</span>}
+        {i + 2 === shared.length && <span>&nbsp;e&nbsp;</span>}
+        {i + 1 === shared.length && !!(positives || negatives) && <span>&nbsp;|&nbsp;</span>}
       </Fragment>
     );
   });
@@ -337,8 +337,8 @@ function JoinLinksWithCommaOrAnd({ paths }) {
     <Link key={path + i} href={`/${path}`}>
       {path}
     </Link>,
-    i + 2 < paths.length && <Text key={i}>,&nbsp;</Text>,
-    i + 2 == paths.length && <Text key={i}>&nbsp;e&nbsp;</Text>,
+    i + 2 < paths.length && <span key={i}>,&nbsp;</span>,
+    i + 2 == paths.length && <span key={i}>&nbsp;e&nbsp;</span>,
   ]);
 }
 
@@ -348,15 +348,15 @@ function JoinInteractions({ positives, positiveVoteUsers, negatives, negativeVot
   return (
     <>
       {positives > 0 && (
-        <Text>{`➔ +${positives} TabCoin${positives > 1 ? 's' : ''}${
+        <span>{`➔ +${positives} TabCoin${positives > 1 ? 's' : ''}${
           positiveVoteUsers.length > 0 ? ' com\xA0' : ''
-        }`}</Text>
+        }`}</span>
       )}
       <JoinLinksWithCommaOrAnd paths={positiveVoteUsers} />
       {negatives > 0 && (
-        <Text>{`${positives > 0 ? ' ' : ''}➔ -${negatives} TabCoin${negatives > 1 ? 's' : ''}${
+        <span>{`${positives > 0 ? ' ' : ''}➔ -${negatives} TabCoin${negatives > 1 ? 's' : ''}${
           negativeVoteUsers.length > 0 ? ' com\xA0' : ''
-        }`}</Text>
+        }`}</span>
       )}
       <JoinLinksWithCommaOrAnd paths={negativeVoteUsers} />
     </>

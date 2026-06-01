@@ -20,7 +20,6 @@ import {
   PastTime,
   TabCashCount,
   TabCoinCount,
-  Text,
   useConfirm,
   UserHeader,
   Viewer,
@@ -112,7 +111,7 @@ function UserProfile({ userFound, onUpdate }) {
       {userFound.description && !isEditingDescription && (
         <>
           <div className={classes.DescriptionHeader}>
-            <Text className={classes.DescriptionTitle}>Descrição</Text>
+            <span className={classes.DescriptionTitle}>Descrição</span>
             {canUpdateDescription && (
               <Button variant="invisible" className={classes.EditDescriptionButton} onClick={handleEditDescription}>
                 Editar descrição
@@ -184,10 +183,10 @@ function DescriptionForm({
       ? await confirm({
           title: 'Tem certeza que deseja salvar as alterações?',
           content: (
-            <Text>
-              Você está editando a descrição do usuário &quot;<Text className={classes.BoldText}>{user.username}</Text>
+            <span>
+              Você está editando a descrição do usuário &quot;<span className={classes.BoldText}>{user.username}</span>
               &quot;.
-            </Text>
+            </span>
           ),
           cancelButtonContent: 'Cancelar',
           confirmButtonContent: 'Sim',

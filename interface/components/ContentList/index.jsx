@@ -1,4 +1,4 @@
-import { AdBanner, EmptyState, Link, Pagination, PastTime, TabCoinBalanceTooltip, Text, Tooltip } from '@/TabNewsUI';
+import { AdBanner, EmptyState, Link, Pagination, PastTime, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
 import { CommentIcon } from '@/TabNewsUI/icons';
 
 import classes from './index.module.css';
@@ -55,7 +55,7 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
             </div>
             <div className={classes.Metadata}>
               {contentObject.type === 'ad' ? (
-                <Text className={classes.SponsoredText}>Patrocinado</Text>
+                <span className={classes.SponsoredText}>Patrocinado</span>
               ) : (
                 <TabCoinBalanceTooltip
                   direction="ne"
@@ -65,21 +65,21 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
                 </TabCoinBalanceTooltip>
               )}
               {' · '}
-              <Text>
+              <span>
                 <ChildrenDeepCountText count={contentObject.children_deep_count} />
-              </Text>
+              </span>
               {' · '}
               <Tooltip text={`Autor: ${contentObject.owner_username}`}>
-                <Text as="address" className={classes.Author}>
+                <address className={classes.Author}>
                   <Link className={classes.AuthorLink} href={`/${contentObject.owner_username}`}>
                     {contentObject.owner_username}
                   </Link>
-                </Text>
+                </address>
               </Tooltip>
               {' · '}
-              <Text>
+              <span>
                 <PastTime direction="nw" date={contentObject.published_at} />
-              </Text>
+              </span>
             </div>
           </article>
         </li>

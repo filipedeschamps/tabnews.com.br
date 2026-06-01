@@ -37,6 +37,11 @@
   padding: 0 0.2em;
 }
 
+.BadgeCount {
+  font-size: 0.8em;
+  color: var(--fgColor-onEmphasis);
+}
+
 .Header {
   display: flex;
   border-bottom: 1px solid var(--borderColor-default);

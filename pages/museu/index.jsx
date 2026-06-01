@@ -1,4 +1,4 @@
-import { DefaultLayout, PrimerLink, Text } from '@/TabNewsUI';
+import { DefaultLayout, PrimerLink } from '@/TabNewsUI';
 
 import classes from './index.module.css';
 
@@ -10,12 +10,12 @@ export default function Page() {
         description: 'Esta página é humilde, porém traz coisas muito importantes da história do TabNews.',
       }}>
       <div className={classes.Wrapper}>
-        <Text as="h1">Museu TabNews</Text>
-        <Text as="p">
+        <h1>Museu TabNews</h1>
+        <p>
           Esta página é humilde, porém traz coisas <strong>muito importantes</strong> da história do TabNews.
-        </Text>
+        </p>
 
-        <Text as="h2">Artigo</Text>
+        <h2>Artigo</h2>
         <ul>
           <li>
             <PrimerLink href="/museu/evolucao-do-tabnews">
@@ -25,7 +25,7 @@ export default function Page() {
           </li>
         </ul>
 
-        <Text as="h2">Primeiras interfaces e Provas de Conceito (POC)</Text>
+        <h2>Primeiras interfaces e Provas de Conceito (POC)</h2>
 
         <ul>
           <li>

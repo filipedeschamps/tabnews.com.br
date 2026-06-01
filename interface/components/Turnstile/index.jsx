@@ -1,7 +1,7 @@
 import Script from 'next/script';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Text, useConfirm } from '@/TabNewsUI';
+import { useConfirm } from '@/TabNewsUI';
 import webserver from 'infra/webserver';
 
 import classes from './index.module.css';
@@ -77,7 +77,7 @@ export default function Turnstile() {
   return (
     <div className={classes.Overlay} style={{ display: isInteractive ? 'block' : 'none' }} onClick={handleCancel}>
       <div className={classes.MessageWrapper}>
-        <Text className={classes.Message}>Executando verificação de segurança...</Text>
+        <span className={classes.Message}>Executando verificação de segurança...</span>
       </div>
       <div ref={widgetRef} className={classes.Widget}></div>
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit" />

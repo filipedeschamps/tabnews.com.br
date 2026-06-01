@@ -1,4 +1,4 @@
-import { Link, Text } from '@/TabNewsUI';
+import { Link } from '@/TabNewsUI';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/TabNewsUI/icons';
 
 import classes from './index.module.css';
@@ -15,10 +15,10 @@ export default function Pagination({ previousPage, nextPage, basePath }) {
           Anterior
         </Link>
       ) : (
-        <Text color="fg.muted">
+        <span className={classes.Muted}>
           <ChevronLeftIcon size={16} />
           Anterior
-        </Text>
+        </span>
       )}
 
       {nextPage ? (
@@ -27,10 +27,10 @@ export default function Pagination({ previousPage, nextPage, basePath }) {
           <ChevronRightIcon size={16} />
         </Link>
       ) : (
-        <Text color="fg.muted">
+        <span className={classes.Muted}>
           Próximo
           <ChevronRightIcon size={16} />
-        </Text>
+        </span>
       )}
     </div>
   );
