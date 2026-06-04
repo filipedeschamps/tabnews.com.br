@@ -98,7 +98,7 @@
     "pre-commit": "lint-staged"
   },
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
   "name": "tabnews.com.br",
   "description": "Conteúdos para quem vive de programação e tecnologia.",
