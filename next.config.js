@@ -10,9 +10,6 @@ module.exports = {
   experimental: {
     scrollRestoration: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   compiler: {
     styledJsx: true,
   },

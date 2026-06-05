@@ -46,7 +46,7 @@ async function sendReplyEmailToParentUser(createdContent) {
       rootContent: secureRootContent,
     });
 
-    const { html, text } = NotificationEmail({
+    const { html, text } = await NotificationEmail({
       username: parentContentUser.username,
       bodyReplyLine: bodyReplyLine,
       contentLink: childContentUrl,
@@ -83,7 +83,7 @@ function getContentUrl({ owner_username, slug }) {
 }
 
 async function sendUserDisabled({ eventId, user }) {
-  const { html, text } = FirewallEmail({
+  const { html, text } = await FirewallEmail({
     sideEffectLine: 'Identificamos a criação de muitos usuários em um curto período, então a sua conta foi desativada.',
     eventId: eventId,
     username: user.username,
@@ -105,7 +105,7 @@ async function sendContentDeletedToUser({ contents, eventId, userId }) {
 
   const userToNotify = await user.findOneById(userId);
 
-  const { html, text } = FirewallEmail({
+  const { html, text } = await FirewallEmail({
     sideEffectLine: deletedContentLine,
     eventId: eventId,
     username: userToNotify.username,

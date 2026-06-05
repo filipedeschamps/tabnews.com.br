@@ -8,14 +8,17 @@ describe('ui', () => {
     it('renders correctly', () => {
       const { container, getByTestId } = renderOnMockRoot(<Document />);
 
-      const bodyTag = container.querySelector('body');
-      expect(bodyTag).toBeDefined();
-      expect(bodyTag.innerHTML).toContain('<main');
+      expect(container.innerHTML).toContain('<main');
 
-      expect(getByTestId('Next Html')).toBeDefined();
-      expect(getByTestId('Next Head')).toBeDefined();
+      expect(document.querySelector('[data-testid="Next Html"]')).not.toBeNull();
+      expect(document.querySelector('[data-testid="Next Head"]')).not.toBeNull();
       expect(getByTestId('Next App Content')).toBeDefined();
       expect(getByTestId('Next Scripts')).toBeDefined();
+
+      const katexLink = document.head.querySelector('link[href*="katex"]');
+      expect(katexLink).not.toBeNull();
+      expect(katexLink.getAttribute('rel')).toBe('preload');
+      expect(document.head.innerHTML).toContain('katexLink');
 
       expect(hoisted.nextScriptDefault).toHaveBeenCalledOnce();
 
@@ -37,10 +40,10 @@ document.documentElement.setAttribute('data-no-flash', true)`,
         },
       });
 
-      const { getByTestId } = renderOnMockRoot(<Document />);
-      const htmlTag = getByTestId('Next Html');
+      renderOnMockRoot(<Document />);
+      const htmlTag = document.querySelector('[data-testid="Next Html"]');
 
-      expect(htmlTag).toBeDefined();
+      expect(htmlTag).not.toBeNull();
       expect(htmlTag.getAttribute('lang')).toBe('pt');
       expect(htmlTag.getAttribute('data-color-mode')).toBe('dark');
     });
@@ -50,10 +53,10 @@ document.documentElement.setAttribute('data-no-flash', true)`,
         headChildren: <meta name="description" content="Test" />,
       });
 
-      const { getByTestId } = renderOnMockRoot(<Document />);
-      const headTag = getByTestId('Next Head');
+      renderOnMockRoot(<Document />);
+      const headTag = document.querySelector('[data-testid="Next Head"]');
 
-      expect(headTag).toBeDefined();
+      expect(headTag).not.toBeNull();
       expect(headTag.innerHTML).toContain('<meta name="description" content="Test">');
     });
   });
@@ -97,7 +100,7 @@ function renderOnMockRoot(ui, options) {
 function suppressDOMNestingWarnings(callback) {
   const originalError = console.error;
   console.error = (...args) => {
-    if (args[0].includes('cannot appear as a child of') && args[1] === '<html>' && args[2] === 'mockroot') {
+    if (typeof args[0] === 'string' && /cannot (appear as|be) a child of/.test(args[0])) {
       return;
     }
     originalError.call(console, ...args);

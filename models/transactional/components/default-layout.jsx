@@ -1,4 +1,4 @@
-import { Body, Container, Head, Heading, Html, Img, Preview, Text } from '@react-email/components';
+import { Body, Container, Head, Heading, Html, Img, Preview, Text } from 'react-email';
 
 export const DefaultLayoutText = ({ username, content }) => {
   return `Olá, ${username}!
@@ -16,7 +16,7 @@ export const DefaultLayout = ({ username, previewText, children }) => (
     <Preview>{previewText}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Olá, {username}!</Heading>
+        <Heading style={h1}>{`Olá, ${username}!`}</Heading>
 
         {children}
 

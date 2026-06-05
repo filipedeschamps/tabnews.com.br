@@ -1,4 +1,4 @@
-import { Link as ReactEmailLink } from '@react-email/components';
+import { Link as ReactEmailLink } from 'react-email';
 
 import { Text } from './text';
 
