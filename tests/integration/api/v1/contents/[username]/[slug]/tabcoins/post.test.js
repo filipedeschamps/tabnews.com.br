@@ -693,14 +693,9 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toBe(1);
     });
 
-    // This tests are being temporarily skipped because of the new feature of not allowing
-    // to credit/debit four times the same content. This feature is just a temporary test
-    // to a more sophisticated feature that will be implemented in the future.
-
-    // eslint-disable-next-line vitest/no-disabled-tests
-    test.skip('With 100 simultaneous posts, but enough TabCoins for 6', async () => {
+    test('With 100 simultaneous posts from the same user, but enough TabCoins for 3', async () => {
       const timesToFetch = 100;
-      const timesSuccessfully = 6;
+      const timesSuccessfully = 3;
 
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
@@ -721,55 +716,46 @@ describe('POST /api/v1/contents/tabcoins', () => {
         amount: 2 * timesSuccessfully,
       });
 
-      const postTabCoinsPromises = Array(timesToFetch)
-        .fill()
-        .map(() => tabcoinsRequestBuilder.post({ transaction_type: 'credit' }));
-
-      const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
-
-      const postTabCoinsResponsesBody = postTabCoinsResponses.map(({ responseBody }) => responseBody);
-
-      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(({ response }) => response.status);
-
-      const successPostIndexes = [postTabCoinsResponsesStatus.indexOf(201)];
-
-      for (let i = 0; i < timesSuccessfully; i++) {
-        successPostIndexes.push(postTabCoinsResponsesStatus.indexOf(201, successPostIndexes[i] + 1));
-        expect(successPostIndexes[i]).not.toBe(-1);
-        expect(postTabCoinsResponsesStatus[successPostIndexes[i]]).toBe(201);
-        expect(postTabCoinsResponsesBody).toContainEqual({
-          tabcoins: 2 + i,
-        });
-      }
-
-      expect(successPostIndexes[timesSuccessfully]).toBe(-1);
-
-      successPostIndexes.splice(-1, 1);
-      successPostIndexes.reverse();
-
-      successPostIndexes.forEach((idx) => {
-        postTabCoinsResponsesStatus.splice(idx, 1);
-        postTabCoinsResponsesBody.splice(idx, 1);
-      });
-
-      postTabCoinsResponsesStatus.forEach((status) => expect.soft(status).toBe(422));
-
-      postTabCoinsResponsesBody.forEach((responseBody) =>
-        expect(responseBody).toStrictEqual({
-          name: 'UnprocessableEntityError',
-          message: 'Não foi possível adicionar TabCoins nesta publicação.',
-          action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
-          status_code: 422,
-          error_id: responseBody.error_id,
-          request_id: responseBody.request_id,
-          error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
-        }),
+      const postTabCoinsResponses = await Promise.all(
+        Array.from({ length: timesToFetch }, () => tabcoinsRequestBuilder.post({ transaction_type: 'credit' })),
       );
+
+      const successfulResponsesStatus = postTabCoinsResponses
+        .map(({ response }) => response.status)
+        .filter((status) => status === 201);
+
+      expect(successfulResponsesStatus).toHaveLength(timesSuccessfully);
+
+      postTabCoinsResponses
+        .filter(({ response }) => response.status !== 201)
+        .forEach(({ response, responseBody }) => {
+          if (response.status === 400) {
+            expect(responseBody).toStrictEqual({
+              name: 'ValidationError',
+              message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+              action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+              status_code: 400,
+              error_id: responseBody.error_id,
+              request_id: responseBody.request_id,
+            });
+          } else {
+            expect.soft(response.status).toBe(422);
+            expect(responseBody).toStrictEqual({
+              name: 'UnprocessableEntityError',
+              message: 'Não foi possível adicionar TabCoins nesta publicação.',
+              action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
+              status_code: 422,
+              error_id: responseBody.error_id,
+              request_id: responseBody.request_id,
+              error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+            });
+          }
+        });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
       const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(firstUserResponseBody.tabcoins).toBe(2 + timesSuccessfully);
+      expect(firstUserResponseBody.tabcoins).toBe(timesSuccessfully);
       expect(firstUserResponseBody.tabcash).toBe(0);
 
       const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
@@ -779,9 +765,9 @@ describe('POST /api/v1/contents/tabcoins', () => {
     });
 
     // eslint-disable-next-line vitest/no-disabled-tests
-    test.skip('With 100 simultaneous posts, enough TabCoins for 90, no db resources, but only responses 201 or 422', async () => {
-      const timesToFetch = 100;
-      const timesSuccessfully = 90;
+    test.skip('With 10 simultaneous posts from the same user, and enough TabCoins for more than the rate limit', async () => {
+      const timesToFetch = 10;
+      const rateLimit = 3;
 
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
@@ -799,30 +785,144 @@ describe('POST /api/v1/contents/tabcoins', () => {
       await orchestrator.createBalance({
         balanceType: 'user:tabcoin',
         recipientId: secondUser.id,
-        amount: 2 * timesSuccessfully,
+        amount: 2 * timesToFetch,
       });
 
-      const postTabCoinsPromises = Array(timesToFetch)
-        .fill()
-        .map(() => tabcoinsRequestBuilder.post({ transaction_type: 'credit' }));
+      const postTabCoinsResponses = await Promise.all(
+        Array.from({ length: timesToFetch }, () => tabcoinsRequestBuilder.post({ transaction_type: 'credit' })),
+      );
 
-      const postTabCoinsResponses = await Promise.all(postTabCoinsPromises);
+      const successfulResponsesStatus = postTabCoinsResponses
+        .map(({ response }) => response.status)
+        .filter((status) => status === 201);
 
-      const postTabCoinsResponsesBody = postTabCoinsResponses.map(({ responseBody }) => responseBody);
+      expect(successfulResponsesStatus).toHaveLength(rateLimit);
 
-      const postTabCoinsResponsesStatus = postTabCoinsResponses.map(({ response }) => response.status);
+      postTabCoinsResponses
+        .filter(({ response }) => response.status !== 201)
+        .forEach(({ response, responseBody }) => {
+          if (response.status === 400) {
+            expect(responseBody).toStrictEqual({
+              name: 'ValidationError',
+              message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+              action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+              status_code: 400,
+              error_id: responseBody.error_id,
+              request_id: responseBody.request_id,
+            });
+          } else {
+            expect.soft(response.status).toBe(422);
+            expect(responseBody).toStrictEqual({
+              name: 'UnprocessableEntityError',
+              message: 'Muitos votos ao mesmo tempo.',
+              action: 'Tente realizar esta operação mais tarde.',
+              status_code: 422,
+              error_id: responseBody.error_id,
+              request_id: responseBody.request_id,
+              error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
+            });
+          }
+        });
 
-      expect([201, 422]).toStrictEqual(expect.arrayContaining(postTabCoinsResponsesStatus));
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
 
-      expect(postTabCoinsResponsesBody).toContainEqual(
-        expect.objectContaining({
+      expect(firstUserResponseBody.tabcoins).toBe(rateLimit);
+      expect(firstUserResponseBody.tabcash).toBe(0);
+
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+      expect(secondUserResponseBody.tabcoins).toBe(2 * timesToFetch - 2 * rateLimit);
+      expect(secondUserResponseBody.tabcash).toBe(rateLimit);
+    });
+
+    test('With 100 simultaneous posts from different users and IPs, but only responses 201 or 422', async () => {
+      const timesToFetch = 100;
+
+      const firstUser = await orchestrator.createUser();
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const tabcoinsUrl = `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`;
+
+      const requestBuilders = await Promise.all(
+        Array.from({ length: timesToFetch }, async (_, index) => {
+          const requestBuilder = new RequestBuilder(tabcoinsUrl);
+          const voter = await requestBuilder.buildUser();
+          requestBuilder.buildHeaders({ 'x-forwarded-for': `10.0.${Math.floor(index / 256)}.${index % 256}` });
+
+          await orchestrator.createBalance({
+            balanceType: 'user:tabcoin',
+            recipientId: voter.id,
+            amount: 2,
+          });
+
+          return requestBuilder;
+        }),
+      );
+
+      const postTabCoinsResponses = await Promise.all(
+        requestBuilders.map((requestBuilder) => requestBuilder.post({ transaction_type: 'credit' })),
+      );
+
+      const blockedResponses = postTabCoinsResponses.filter(({ response }) => response.status !== 201);
+
+      expect(blockedResponses.length).toBeGreaterThan(0);
+
+      blockedResponses.forEach(({ response, responseBody }) => {
+        expect.soft(response.status).toBe(422);
+        expect(responseBody).toStrictEqual({
           name: 'UnprocessableEntityError',
           message: 'Muitos votos ao mesmo tempo.',
           action: 'Tente realizar esta operação mais tarde.',
           status_code: 422,
+          error_id: responseBody.error_id,
+          request_id: responseBody.request_id,
           error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
+        });
+      });
+    });
+
+    test('With simultaneous posts on different contents from different users (should not block each other)', async () => {
+      const timesToFetch = 10;
+
+      const requestBuilders = await Promise.all(
+        Array.from({ length: timesToFetch }, async (_, index) => {
+          const contentOwner = await orchestrator.createUser();
+          const content = await orchestrator.createContent({
+            owner_id: contentOwner.id,
+            title: `Content ${index}`,
+            body: 'Body',
+            status: 'published',
+          });
+
+          const requestBuilder = new RequestBuilder(
+            `/api/v1/contents/${contentOwner.username}/${content.slug}/tabcoins`,
+          );
+          const voter = await requestBuilder.buildUser();
+          requestBuilder.buildHeaders({ 'x-forwarded-for': `10.0.0.${index + 1}` });
+
+          await orchestrator.createBalance({
+            balanceType: 'user:tabcoin',
+            recipientId: voter.id,
+            amount: 2,
+          });
+
+          return requestBuilder;
         }),
       );
+
+      const postTabCoinsResponses = await Promise.all(
+        requestBuilders.map((requestBuilder) => requestBuilder.post({ transaction_type: 'credit' })),
+      );
+
+      const statuses = postTabCoinsResponses.map(({ response }) => response.status);
+
+      expect(statuses).toStrictEqual(Array(timesToFetch).fill(201));
     });
   });
 });
