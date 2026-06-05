@@ -1,13 +1,13 @@
 import logger from 'infra/logger';
 import removeMarkdown from 'models/remove-markdown';
 
-describe('remove-markdown model', () => {
-  vi.mock('infra/logger', () => ({
-    default: {
-      error: vi.fn(),
-    },
-  }));
+vi.mock('infra/logger', () => ({
+  default: {
+    error: vi.fn(),
+  },
+}));
 
+describe('remove-markdown model', () => {
   describe('customRemoveMarkdown', () => {
     it('should remove markdown and return a single line by default', () => {
       const input = '# Heading\n\nThis is **bold** text.';
