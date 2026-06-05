@@ -69,7 +69,7 @@ async function postHandler(request, response) {
 
   // TODO: Refactor firewall.js to accept other parameters such as content.id
   // and move this function to there.
-  await canIpUpdateContentTabCoins(request.context.clientIp, contentFound.id);
+  await canUpdateContentTabCoins(request.context.clientIp, userTryingToPost.id, contentFound.id);
 
   let currentContentTabCoinsBalance;
 
@@ -152,25 +152,25 @@ async function postHandler(request, response) {
   return response.status(201).json(secureOutputValues);
 }
 
-async function canIpUpdateContentTabCoins(clientIp, contentId) {
+async function canUpdateContentTabCoins(clientIp, userId, contentId) {
   const results = await database.query({
     text: `
       SELECT
-        count(*)
+        count(*) FILTER (WHERE originator_ip = $1) AS ip_count,
+        count(*) FILTER (WHERE originator_user_id = $2) AS user_count
       FROM
         events
       WHERE
         type = 'update:content:tabcoins'
-        AND originator_ip = $1
-        AND metadata->>'content_id' = $2
+        AND metadata->>'content_id' = $3
         AND created_at > NOW() - INTERVAL '72 hours'
       ;`,
-    values: [clientIp, contentId],
+    values: [clientIp, userId, contentId],
   });
 
-  const pass = results.rows[0].count > 2 ? false : true;
+  const { ip_count, user_count } = results.rows[0];
 
-  if (!pass) {
+  if (ip_count > 2 || user_count > 2) {
     throw new ValidationError({
       message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
       action: 'Esta operação não poderá ser repetida dentro de 72 horas.',

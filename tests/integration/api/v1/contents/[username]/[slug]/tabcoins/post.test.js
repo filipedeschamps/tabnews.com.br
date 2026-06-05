@@ -334,6 +334,224 @@ describe('POST /api/v1/contents/tabcoins', () => {
       expect(secondUserResponseBody.tabcash).toBe(3);
     });
 
+    test('With "transaction_type" set to "credit" four times from the same user but different IPs (should be blocked)', async () => {
+      const firstUser = await orchestrator.createUser();
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 8,
+      });
+
+      // ROUND 1 OF CREDIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.1' });
+      const { response: postTabCoinsResponse1 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
+
+      expect.soft(postTabCoinsResponse1.status).toBe(201);
+
+      const event1 = await orchestrator.getLastEvent();
+      expect(event1.originator_ip).toBe('200.0.0.1');
+
+      // ROUND 2 OF CREDIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.2' });
+      const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
+
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
+
+      const event2 = await orchestrator.getLastEvent();
+      expect(event2.originator_ip).toBe('200.0.0.2');
+
+      // ROUND 3 OF CREDIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.3' });
+      const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'credit',
+      });
+
+      expect.soft(postTabCoinsResponse3.status).toBe(201);
+
+      const event3 = await orchestrator.getLastEvent();
+      expect(event3.originator_ip).toBe('200.0.0.3');
+
+      // ROUND 4 OF CREDIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.4' });
+      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'credit',
+        });
+
+      expect.soft(postTabCoinsResponse4.status).toBe(400);
+      expect(postTabCoinsResponse4Body).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+        action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+        status_code: 400,
+        error_id: postTabCoinsResponse4Body.error_id,
+        request_id: postTabCoinsResponse4Body.request_id,
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+      expect(firstUserResponseBody.tabcoins).toBe(3);
+      expect(firstUserResponseBody.tabcash).toBe(0);
+
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+      expect(secondUserResponseBody.tabcoins).toBe(2);
+      expect(secondUserResponseBody.tabcash).toBe(3);
+    });
+
+    test('With "transaction_type" set to "debit" four times from the same user but different IPs (should be blocked)', async () => {
+      const firstUser = await orchestrator.createUser();
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+      const secondUser = await tabcoinsRequestBuilder.buildUser();
+
+      await orchestrator.createBalance({
+        balanceType: 'user:tabcoin',
+        recipientId: secondUser.id,
+        amount: 8,
+      });
+
+      // ROUND 1 OF DEBIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.1' });
+      const { response: postTabCoinsResponse1 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'debit',
+      });
+
+      expect.soft(postTabCoinsResponse1.status).toBe(201);
+
+      const event1 = await orchestrator.getLastEvent();
+      expect(event1.originator_ip).toBe('200.0.0.1');
+
+      // ROUND 2 OF DEBIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.2' });
+      const { response: postTabCoinsResponse2 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'debit',
+      });
+
+      expect.soft(postTabCoinsResponse2.status).toBe(201);
+
+      const event2 = await orchestrator.getLastEvent();
+      expect(event2.originator_ip).toBe('200.0.0.2');
+
+      // ROUND 3 OF DEBIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.3' });
+      const { response: postTabCoinsResponse3 } = await tabcoinsRequestBuilder.post({
+        transaction_type: 'debit',
+      });
+
+      expect.soft(postTabCoinsResponse3.status).toBe(201);
+
+      const event3 = await orchestrator.getLastEvent();
+      expect(event3.originator_ip).toBe('200.0.0.3');
+
+      // ROUND 4 OF DEBIT
+      tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': '200.0.0.4' });
+      const { response: postTabCoinsResponse4, responseBody: postTabCoinsResponse4Body } =
+        await tabcoinsRequestBuilder.post({
+          transaction_type: 'debit',
+        });
+
+      expect.soft(postTabCoinsResponse4.status).toBe(400);
+      expect(postTabCoinsResponse4Body).toStrictEqual({
+        name: 'ValidationError',
+        message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+        action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+        status_code: 400,
+        error_id: postTabCoinsResponse4Body.error_id,
+        request_id: postTabCoinsResponse4Body.request_id,
+      });
+
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+      expect(firstUserResponseBody.tabcoins).toBe(-3);
+      expect(firstUserResponseBody.tabcash).toBe(0);
+
+      const { responseBody: secondUserResponseBody } = await usersRequestBuilder.get(`/${secondUser.username}`);
+
+      expect(secondUserResponseBody.tabcoins).toBe(2);
+      expect(secondUserResponseBody.tabcash).toBe(3);
+    });
+
+    test('With "transaction_type" set to "credit" four times from different users and different IPs (should not be blocked)', async () => {
+      const firstUser = await orchestrator.createUser();
+      const firstUserContent = await orchestrator.createContent({
+        owner_id: firstUser.id,
+        title: 'Root',
+        body: 'Body',
+        status: 'published',
+      });
+
+      const tabcoinsRequestBuilder = new RequestBuilder(
+        `/api/v1/contents/${firstUser.username}/${firstUserContent.slug}/tabcoins`,
+      );
+
+      const voterIps = ['200.0.0.1', '200.0.0.2', '200.0.0.3', '200.0.0.4'];
+      const usersRequestBuilder = new RequestBuilder('/api/v1/users');
+
+      for (const [index, ip] of voterIps.entries()) {
+        const voter = await tabcoinsRequestBuilder.buildUser();
+
+        await orchestrator.createBalance({
+          balanceType: 'user:tabcoin',
+          recipientId: voter.id,
+          amount: 2,
+        });
+
+        tabcoinsRequestBuilder.buildHeaders({ 'x-forwarded-for': ip });
+
+        const { response: postTabCoinsResponse, responseBody: postTabCoinsResponseBody } =
+          await tabcoinsRequestBuilder.post({
+            transaction_type: 'credit',
+          });
+
+        expect.soft(postTabCoinsResponse.status).toBe(201);
+        expect(postTabCoinsResponseBody).toStrictEqual({
+          tabcoins: index + 1,
+          tabcoins_credit: index + 1,
+          tabcoins_debit: 0,
+        });
+
+        const createdEvent = await orchestrator.getLastEvent();
+        expect(createdEvent.originator_ip).toBe(ip);
+
+        const { responseBody: voterResponseBody } = await usersRequestBuilder.get(`/${voter.username}`);
+
+        expect(voterResponseBody.tabcoins).toBe(0);
+        expect(voterResponseBody.tabcash).toBe(1);
+      }
+
+      const { responseBody: firstUserResponseBody } = await usersRequestBuilder.get(`/${firstUser.username}`);
+
+      expect(firstUserResponseBody.tabcoins).toBe(4);
+      expect(firstUserResponseBody.tabcash).toBe(0);
+    });
+
     test('With "transaction_type" set to "debit" twice to make content "tabcoins" negative', async () => {
       const firstUser = await orchestrator.createUser();
       const firstUserContent = await orchestrator.createContent({
