@@ -10,20 +10,20 @@ vi.mock('@primer/react', () => ({
   useTheme: vi.fn().mockImplementation(() => ({ resolvedColorMode: 'light' })),
 }));
 
+vi.mock('../ThemeProvider', () => ({
+  ThemeProvider: ({ children, colorMode, ...props }) => (
+    <div data-testid="ThemeProvider" data-test-colormode={colorMode} {...props}>
+      {children}
+    </div>
+  ),
+}));
+
 describe('ui', () => {
   beforeEach(() => {
     document.cookie = `${COLOR_MODE_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   });
 
   describe('AutoThemeProvider', () => {
-    vi.mock('../ThemeProvider', () => ({
-      ThemeProvider: ({ children, colorMode, ...props }) => (
-        <div data-testid="ThemeProvider" data-test-colormode={colorMode} {...props}>
-          {children}
-        </div>
-      ),
-    }));
-
     afterEach(() => localStorage.clear());
 
     it('renders children correctly', () => {

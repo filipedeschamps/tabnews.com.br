@@ -40,6 +40,7 @@ if (typeof document !== 'undefined') {
   };
 
   // jsdom doesn't implement matchMedia, which @primer/react's useMedia hook relies on.
+  window.matchMedia ??= () => {};
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
     matches: false,
     media: query,

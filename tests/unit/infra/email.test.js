@@ -8,11 +8,13 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('resend', () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: {
-      send: mocks.resendSendMail,
-    },
-  })),
+  Resend: vi.fn().mockImplementation(function () {
+    return {
+      emails: {
+        send: mocks.resendSendMail,
+      },
+    };
+  }),
 }));
 
 vi.mock('nodemailer', () => ({

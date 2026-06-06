@@ -9,7 +9,7 @@ export default defineConfig({
     server: { deps: { inline: ['@tabnews/ui', '@primer/react'] } },
     isolate: false,
     setupFiles: ['tests/setup.js'],
-    workspace: [
+    projects: [
       {
         extends: true,
         test: {
@@ -21,6 +21,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'unit',
+          isolate: true,
           exclude: ['**/integration/**', '**/interface/**', 'packages/**', ...defaultExclude],
         },
       },
