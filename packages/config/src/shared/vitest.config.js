@@ -17,6 +17,7 @@ export default function createConfig(customConfig) {
           loader: 'jsx',
           include: /.*\.jsx?$/,
           exclude: [],
+          jsx: 'automatic',
         },
       },
       customConfig,

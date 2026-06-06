@@ -39,6 +39,11 @@ if (typeof document !== 'undefined') {
     }),
   };
 
+  // jsdom doesn't implement `adoptedStyleSheets`, which @primer/react's Tooltip reaches
+  // through @oddbird/popover-polyfill — it spreads `root.adoptedStyleSheets`
+  // (`[sheet, ...root.adoptedStyleSheets]`), which throws when the value is undefined.
+  document.adoptedStyleSheets ??= [];
+
   // jsdom doesn't implement matchMedia, which @primer/react's useMedia hook relies on.
   window.matchMedia ??= () => {};
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
