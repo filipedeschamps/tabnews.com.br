@@ -37,14 +37,14 @@
   },
   "dependencies": {
     "@eslint/js": "9.26.0",
-    "@next/eslint-plugin-next": "15.3.2",
+    "@next/eslint-plugin-next": "16.2.6",
     "@tabnews/eslint-plugin-primer-react": "6.2.0-experimental.1",
     "@vitejs/plugin-react": "4.4.1",
     "@vitest/coverage-v8": "4.1.7",
     "@vitest/eslint-plugin": "1.1.44",
     "commander": "13.1.0",
-    "dotenv": "16.5.0",
-    "dotenv-expand": "12.0.2",
+    "dotenv": "17.4.2",
+    "dotenv-expand": "13.0.0",
     "eslint": "9.26.0",
     "eslint-config-prettier": "10.1.5",
     "eslint-import-resolver-typescript": "4.3.4",
@@ -52,7 +52,7 @@
     "eslint-plugin-prettier": "5.4.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
-    "globals": "16.1.0",
+    "globals": "17.6.0",
     "jsdom": "26.1.0",
     "prettier": "3.5.3",
     "typescript-eslint": "8.32.0",
@@ -60,12 +60,12 @@
     "vitest": "4.1.7"
   },
   "devDependencies": {
-    "@commitlint/cli": "19.8.1",
-    "@commitlint/config-conventional": "19.8.1",
+    "@commitlint/cli": "21.0.2",
+    "@commitlint/config-conventional": "21.0.2",
     "commitizen": "4.3.1",
     "cz-conventional-changelog": "3.3.0",
     "husky": "9.1.7",
-    "lint-staged": "15.5.2"
+    "lint-staged": "17.0.6"
   },
   "author": "Turma do TabNews",
   "repository": {

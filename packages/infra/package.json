@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@tabnews/helpers": "*",
-    "@vercel/functions": "2.1.0",
+    "@vercel/functions": "3.6.1",
     "pino": "10.3.1",
     "pino-abstract-transport": "3.0.0"
   },
