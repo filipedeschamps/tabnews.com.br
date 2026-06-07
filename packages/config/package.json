@@ -38,7 +38,6 @@
   "dependencies": {
     "@eslint/js": "9.26.0",
     "@next/eslint-plugin-next": "16.2.6",
-    "@tabnews/eslint-plugin-primer-react": "6.2.0-experimental.1",
     "@vitejs/plugin-react": "6.0.2",
     "@vitest/coverage-v8": "4.1.7",
     "@vitest/eslint-plugin": "1.1.44",
@@ -48,8 +47,10 @@
     "eslint": "9.26.0",
     "eslint-config-prettier": "10.1.5",
     "eslint-import-resolver-typescript": "4.3.4",
+    "eslint-plugin-github": "6.0.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-prettier": "5.4.0",
+    "eslint-plugin-primer-react": "8.6.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "globals": "17.6.0",
