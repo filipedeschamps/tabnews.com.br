@@ -5,35 +5,21 @@
   "license": "MIT",
   "private": true,
   "type": "module",
-  "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js",
     "./eslint": "./src/shared/eslint.config.cjs",
     "./lint-staged": "./src/shared/lint-staged.cjs",
     "./package.json": "./package.json",
     "./prettier": "./src/shared/prettier.config.cjs",
     "./vitest": "./src/shared/vitest.config.js"
   },
-  "bin": {
-    "tn": "bin/tn.js"
-  },
   "files": [
     "src"
   ],
   "scripts": {
-    "tn": "tn",
-    "test": "tn test",
-    "test:run": "tn test run",
+    "test": "vitest --root ../.. watch --passWithNoTests \"$PWD\"",
+    "test:run": "vitest --root ../.. run --passWithNoTests \"$PWD\"",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
-    "format": "eslint --fix . && prettier --write .",
-    "commit": "cz",
-    "prepare": "husky",
-    "pre-commit": "lint-staged"
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
+    "format": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
     "@eslint/js": "9.39.4",
@@ -41,9 +27,6 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitest/coverage-v8": "4.1.7",
     "@vitest/eslint-plugin": "1.6.18",
-    "commander": "13.1.0",
-    "dotenv": "17.4.2",
-    "dotenv-expand": "13.0.0",
     "eslint": "9.39.4",
     "eslint-config-prettier": "10.1.8",
     "eslint-import-resolver-typescript": "4.4.4",
@@ -60,14 +43,6 @@
     "vite-tsconfig-paths": "6.1.1",
     "vitest": "4.1.7"
   },
-  "devDependencies": {
-    "@commitlint/cli": "21.0.2",
-    "@commitlint/config-conventional": "21.0.2",
-    "commitizen": "4.3.1",
-    "cz-conventional-changelog": "3.3.0",
-    "husky": "9.1.7",
-    "lint-staged": "17.0.7"
-  },
   "author": "Turma do TabNews",
   "repository": {
     "type": "git",
@@ -75,7 +50,6 @@
     "directory": "packages/config"
   },
   "keywords": [
-    "cli",
     "config",
     "tabnews"
   ]

@@ -11,8 +11,8 @@
     "!src/**/*.test.js"
   ],
   "scripts": {
-    "test": "tn test",
-    "test:run": "tn test run",
+    "test": "vitest --root ../.. watch \"$PWD\"",
+    "test:run": "vitest --root ../.. run \"$PWD\"",
     "lint": "eslint . && prettier --check .",
     "format": "eslint --fix . && prettier --write ."
   },
