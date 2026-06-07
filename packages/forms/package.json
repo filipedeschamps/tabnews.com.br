@@ -1,6 +1,6 @@
 {
   "name": "@tabnews/forms",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "TabNews useForm hook and form validators",
   "license": "MIT",
   "private": true,
