@@ -1,5 +1,5 @@
 import { isTrustedDomain } from '@tabnews/helpers';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 

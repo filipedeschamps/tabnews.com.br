@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
 import { ActionList, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';

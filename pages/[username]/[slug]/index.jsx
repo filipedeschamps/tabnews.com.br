@@ -1,6 +1,6 @@
 import { findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
 import { useTreeCollapse } from '@tabnews/hooks';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';

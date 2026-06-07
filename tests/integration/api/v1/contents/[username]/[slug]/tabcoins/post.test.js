@@ -729,27 +729,29 @@ describe('POST /api/v1/contents/tabcoins', () => {
       postTabCoinsResponses
         .filter(({ response }) => response.status !== 201)
         .forEach(({ response, responseBody }) => {
-          if (response.status === 400) {
-            expect(responseBody).toStrictEqual({
-              name: 'ValidationError',
-              message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
-              action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
-              status_code: 400,
-              error_id: responseBody.error_id,
-              request_id: responseBody.request_id,
-            });
-          } else {
-            expect.soft(response.status).toBe(422);
-            expect(responseBody).toStrictEqual({
-              name: 'UnprocessableEntityError',
-              message: 'Não foi possível adicionar TabCoins nesta publicação.',
-              action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
-              status_code: 422,
-              error_id: responseBody.error_id,
-              request_id: responseBody.request_id,
-              error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
-            });
-          }
+          expect([400, 422]).toContain(response.status);
+
+          const expectedBody =
+            response.status === 400
+              ? {
+                  name: 'ValidationError',
+                  message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+                  action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+                  status_code: 400,
+                  error_id: responseBody.error_id,
+                  request_id: responseBody.request_id,
+                }
+              : {
+                  name: 'UnprocessableEntityError',
+                  message: 'Não foi possível adicionar TabCoins nesta publicação.',
+                  action: 'Você precisa de pelo menos 2 TabCoins para realizar esta ação.',
+                  status_code: 422,
+                  error_id: responseBody.error_id,
+                  request_id: responseBody.request_id,
+                  error_location_code: 'MODEL:BALANCE:RATE_CONTENT:NOT_ENOUGH',
+                };
+
+          expect(responseBody).toStrictEqual(expectedBody);
         });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');
@@ -801,27 +803,29 @@ describe('POST /api/v1/contents/tabcoins', () => {
       postTabCoinsResponses
         .filter(({ response }) => response.status !== 201)
         .forEach(({ response, responseBody }) => {
-          if (response.status === 400) {
-            expect(responseBody).toStrictEqual({
-              name: 'ValidationError',
-              message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
-              action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
-              status_code: 400,
-              error_id: responseBody.error_id,
-              request_id: responseBody.request_id,
-            });
-          } else {
-            expect.soft(response.status).toBe(422);
-            expect(responseBody).toStrictEqual({
-              name: 'UnprocessableEntityError',
-              message: 'Muitos votos ao mesmo tempo.',
-              action: 'Tente realizar esta operação mais tarde.',
-              status_code: 422,
-              error_id: responseBody.error_id,
-              request_id: responseBody.request_id,
-              error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
-            });
-          }
+          expect([400, 422]).toContain(response.status);
+
+          const expectedBody =
+            response.status === 400
+              ? {
+                  name: 'ValidationError',
+                  message: 'Você está tentando qualificar muitas vezes o mesmo conteúdo.',
+                  action: 'Esta operação não poderá ser repetida dentro de 72 horas.',
+                  status_code: 400,
+                  error_id: responseBody.error_id,
+                  request_id: responseBody.request_id,
+                }
+              : {
+                  name: 'UnprocessableEntityError',
+                  message: 'Muitos votos ao mesmo tempo.',
+                  action: 'Tente realizar esta operação mais tarde.',
+                  status_code: 422,
+                  error_id: responseBody.error_id,
+                  request_id: responseBody.request_id,
+                  error_location_code: 'CONTROLLER:CONTENT:TABCOINS:SERIALIZATION_FAILURE',
+                };
+
+          expect(responseBody).toStrictEqual(expectedBody);
         });
 
       const usersRequestBuilder = new RequestBuilder('/api/v1/users');

@@ -2,7 +2,7 @@
 import { AlertFillIcon, EyeClosedIcon, EyeIcon } from '@primer/octicons-react';
 import { Button, Checkbox, FormControl, Select, TextInput } from '@primer/react';
 import { Tooltip } from '@primer/react/next';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 
 import classes from './FormField.module.css';

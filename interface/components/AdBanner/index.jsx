@@ -1,5 +1,5 @@
 import { getDomain, isExternalLink, isTrustedDomain, truncate } from '@tabnews/helpers';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
