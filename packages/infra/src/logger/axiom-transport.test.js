@@ -1,4 +1,4 @@
-import { noop } from 'packages/helpers';
+import { noop } from '@tabnews/helpers';
 
 const mocks = vi.hoisted(() => {
   const waitUntil = vi.fn().mockImplementation((promise) => promise);
