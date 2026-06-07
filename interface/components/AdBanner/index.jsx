@@ -1,5 +1,5 @@
 import { getDomain, isExternalLink, isTrustedDomain, truncate } from '@tabnews/helpers';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +14,7 @@ export default function AdBanner({ ad: newAd, isLoading, className, ...props }) 
 
   useEffect(() => {
     if (newAd && !ad) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAd(newAd);
     }
   }, [router.asPath, newAd, ad]);

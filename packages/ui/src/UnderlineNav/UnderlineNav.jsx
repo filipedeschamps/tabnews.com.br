@@ -1,7 +1,7 @@
 'use client';
 
 import { UnderlineNav as PrimerUnderlineNav } from '@primer/react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useEffect, useRef } from 'react';
 
 import classes from './UnderlineNav.module.css';

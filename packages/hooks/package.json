@@ -1,6 +1,6 @@
 {
   "name": "@tabnews/hooks",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "TabNews Hooks",
   "license": "MIT",
   "private": true,
@@ -12,8 +12,8 @@
     "!src/**/*.test.js"
   ],
   "scripts": {
-    "test": "tn test",
-    "test:run": "tn test run",
+    "test": "vitest --root ../.. watch \"$PWD\"",
+    "test:run": "vitest --root ../.. run \"$PWD\"",
     "lint": "eslint . && prettier --check .",
     "format": "eslint --fix . && prettier --write ."
   },

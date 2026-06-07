@@ -1,7 +1,7 @@
 'use client';
 import { BellIcon, XIcon } from '@primer/octicons-react';
 import { AnchoredOverlay, Heading, IconButton } from '@primer/react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { NotificationList } from './NotificationList';
 import classes from './NotificationMenu.module.css';

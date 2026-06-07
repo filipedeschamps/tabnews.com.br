@@ -2,7 +2,7 @@
 
 import { ChevronUpIcon } from '@primer/octicons-react';
 import { IconButton } from '@primer/react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useEffect, useState } from 'react';
 
 import classes from './GoToTopButton.module.css';

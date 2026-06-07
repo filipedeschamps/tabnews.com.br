@@ -1,4 +1,4 @@
-import { noop } from 'packages/helpers';
+import { noop } from '@tabnews/helpers';
 
 const productionLevels = ['info', 'warn', 'error', 'fatal'];
 const devLevels = ['trace', 'debug', 'warn', 'error', 'fatal'];

@@ -1,4 +1,4 @@
-import { noop } from 'packages/helpers';
+import { noop } from '@tabnews/helpers';
 
 import { cep } from '.';
 import { format, getAddress, onValidChange, prepare, validateOnBlurAndSubmit } from './cep';

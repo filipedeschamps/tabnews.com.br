@@ -1,4 +1,4 @@
-import { noop } from 'packages/helpers';
+import { noop } from '@tabnews/helpers';
 
 const mocks = vi.hoisted(() => {
   const waitUntil = vi.fn().mockImplementation((promise) => promise);
@@ -89,8 +89,7 @@ describe('axiomTransport', () => {
       transport.flush();
       await vi.waitUntil(() => fetch.mock.calls.length === 1);
 
-      expect(fetch).toHaveBeenCalledOnce();
-      expect(fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledExactlyOnceWith(
         `${url}/v1/datasets/${dataset}/ingest`,
         expect.objectContaining({
           method: 'POST',

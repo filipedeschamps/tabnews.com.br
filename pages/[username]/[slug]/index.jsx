@@ -1,6 +1,6 @@
 import { findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
 import { useTreeCollapse } from '@tabnews/hooks';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { getStaticPropsRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -38,6 +38,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }

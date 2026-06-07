@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { Button, SegmentedControl, useTheme } from '@/TabNewsUI';
 import { MoonIcon, SunIcon } from '@/TabNewsUI/icons';

@@ -6,17 +6,20 @@ export default function createConfig(customConfig) {
   return defineConfig(
     deepMerge(
       {
-        plugins: [react(), tsconfigPaths()],
+        // Vite 8's native `resolve.tsconfigPaths` only reads `tsconfig.json`,
+        // but this project uses `jsconfig.json` (it's plain JS), so we keep the
+        // plugin for `baseUrl` resolution. Renaming it dodges Vite's "use the
+        // native option instead" deprecation warning, which can't be silenced
+        // otherwise and doesn't apply to us.
+        plugins: [react(), { ...tsconfigPaths(), name: 'tsconfig-paths' }],
         test: {
           globals: true,
           fileParallelism: false,
           testTimeout: 60_000,
           hookTimeout: 30_000,
         },
-        esbuild: {
-          loader: 'jsx',
-          include: /.*\.jsx?$/,
-          exclude: [],
+        oxc: {
+          lang: 'jsx',
         },
       },
       customConfig,

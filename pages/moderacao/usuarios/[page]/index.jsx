@@ -57,6 +57,7 @@ export default function UsersPage() {
     }
 
     if (linkHeader && newPagination.currentPage !== pagination.currentPage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPagination(newPagination);
     }
   }, [headers, page, pagination.currentPage, router, shouldFetch, userListFound.length]);

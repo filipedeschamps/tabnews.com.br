@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
 import { Tooltip } from '@/TabNewsUI';
 import { SquareFillIcon } from '@/TabNewsUI/icons';

@@ -18,6 +18,7 @@ export default function PastTime({ date, formatText, ...props }) {
   const [tooltipLabel, setTooltipLabel] = useState(formatTooltipLabel(date, true));
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTooltipLabel(formatTooltipLabel(date));
   }, [date]);
 

@@ -2,7 +2,7 @@ import defineConfig from '@tabnews/config/vitest';
 import { config } from 'dotenv';
 import { defaultExclude } from 'vitest/config';
 
-config();
+config({ quiet: true });
 
 export default defineConfig({
   test: {

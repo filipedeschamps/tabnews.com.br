@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
