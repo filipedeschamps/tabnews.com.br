@@ -63,7 +63,6 @@ Aceita arquivos de variáveis de ambiente da mesma forma que o [Next.js](https:/
 De acordo com o comando em execução, as variáveis de ambiente correspondentes serão carregadas a partir dos seguintes arquivos, se existirem:
 
 - Sempre carregadas:
-
   - `.env` (variáveis padrão)
   - `.env.local` (variáveis locais)
 

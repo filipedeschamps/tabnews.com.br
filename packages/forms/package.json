@@ -20,7 +20,7 @@
   "dependencies": {
     "@tabnews/helpers": "*",
     "@tabnews/hooks": "*",
-    "validation-br": "^1.5.2"
+    "validation-br": "^1.6.4"
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^19.0.0"
