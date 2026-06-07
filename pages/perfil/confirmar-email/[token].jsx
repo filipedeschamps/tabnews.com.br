@@ -57,6 +57,7 @@ export default function ConfirmEmail() {
 
   useEffect(() => {
     if (token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleEmailConfirmation(token, fetchUser);
     }
   }, [fetchUser, token]);

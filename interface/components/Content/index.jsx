@@ -50,10 +50,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
   const { user } = useUser();
 
   useEffect(() => {
-    setComponentMode(mode);
-  }, [mode]);
-
-  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setContentObject((contentObject) => {
       return { ...contentObject, ...content };
     });
@@ -73,6 +70,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
     if (user && contentObject?.owner_id === user.id) {
       const localStorageContent = localStorage.getItem(localStorageKey);
       if (isValidJsonString(localStorageContent)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setComponentMode('edit');
       }
     }
@@ -271,6 +269,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
       return JSON.parse(data);
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNewData((data) => loadLocalStorage(data));
 
     function onFocus() {

@@ -79,6 +79,7 @@ export function MarkdownViewer({
   useEffect(() => {
     let timeout;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue((value) => {
       timeout = setTimeout(() => setValue(value));
       return value + '\n\u0160';
@@ -87,6 +88,7 @@ export function MarkdownViewer({
     return () => clearTimeout(timeout);
   }, [bytemdPluginList]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setValue(_value), [_value]);
 
   return (

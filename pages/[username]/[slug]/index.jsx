@@ -38,6 +38,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
     const justPublishedNewRootContent = localStorage.getItem('justPublishedNewRootContent');
 
     if (justPublishedNewRootContent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowConfetti(true);
       localStorage.removeItem('justPublishedNewRootContent');
     }

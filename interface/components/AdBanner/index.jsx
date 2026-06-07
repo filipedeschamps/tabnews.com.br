@@ -14,6 +14,7 @@ export default function AdBanner({ ad: newAd, isLoading, className, ...props }) 
 
   useEffect(() => {
     if (newAd && !ad) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAd(newAd);
     }
   }, [router.asPath, newAd, ad]);

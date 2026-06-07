@@ -80,6 +80,7 @@ export const FormField = forwardRef(
         detectCapsLock(event);
       }
 
+      /* eslint-disable react-hooks/refs */
       inputProps.type = isPasswordVisible ? 'text' : 'password';
 
       inputProps.trailingVisual = inputProps.trailingVisual || (
@@ -107,6 +108,7 @@ export const FormField = forwardRef(
       };
 
       inputProps.className = clsx(classes.Input, classes.InputPassword);
+      /* eslint-enable react-hooks/refs */
     }
 
     const isCheckbox = typeof checked === 'boolean';
