@@ -1,6 +1,6 @@
 'use client';
 import { KebabHorizontalIcon } from '@primer/octicons-react';
-import { ActionList, ActionMenu, IconButton } from '@primer/react';
+import { ActionList, ActionMenu } from '@primer/react';
 import { createElement, isValidElement, useRef, useState } from 'react';
 
 import classes from './NotificationList.module.css';
@@ -87,26 +87,26 @@ function NotificationItem({ item }) {
       )}
 
       {actions.length > 1 && (
-        <ActionList.TrailingVisual>
-          <IconButton
-            ref={menuAnchorRef}
-            icon={KebabHorizontalIcon}
-            variant="invisible"
-            aria-label={labels.openActionsMenu}
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenuOpen(!menuOpen);
-            }}
-          />
+        <ActionList.TrailingAction
+          ref={menuAnchorRef}
+          {...{ [selectors.notificationTrailingAction]: '' }}
+          label={labels.openActionsMenu}
+          icon={KebabHorizontalIcon}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen(!menuOpen);
+          }}
+        />
+      )}
 
-          <CustomActionMenu
-            actions={actions}
-            anchorRef={menuAnchorRef}
-            notification={item}
-            open={menuOpen}
-            setOpen={setMenuOpen}
-          />
-        </ActionList.TrailingVisual>
+      {actions.length > 1 && (
+        <CustomActionMenu
+          actions={actions}
+          anchorRef={menuAnchorRef}
+          notification={item}
+          open={menuOpen}
+          setOpen={setMenuOpen}
+        />
       )}
     </ActionList.Item>
   );

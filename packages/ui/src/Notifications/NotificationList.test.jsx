@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 
 import { NotificationList } from '.';
@@ -454,15 +454,15 @@ describe('ui/Notifications', () => {
 
           expect(trailingAction).toBeInTheDocument();
 
-          await act(async () => {
-            trailingAction.focus();
-            await user.keyboard('{ }');
-          });
+          trailingAction.focus();
+          await user.keyboard('{ }');
 
-          const targetButton = screen.getByText('Target Action');
+          const targetButton = await screen.findByText('Target Action');
           fireEvent.keyPress(targetButton, { key: 'Enter', code: 'Enter', charCode: 13 });
 
-          expect(targetAction.onClick).toHaveBeenCalledWith(notifications[2]);
+          await waitFor(() => {
+            expect(targetAction.onClick).toHaveBeenCalledWith(notifications[2]);
+          });
           expect(firstAction.onClick).not.toHaveBeenCalled();
         });
 
