@@ -206,7 +206,6 @@ function EditProfileForm() {
             autoCapitalize="none"
             spellCheck={false}
             block={true}
-            contrast
             className={classes.TextInput}
             onChange={() => setShowUsernameCaption(true)}
           />
@@ -237,7 +236,6 @@ function EditProfileForm() {
             autoCapitalize="none"
             spellCheck={false}
             block={true}
-            contrast
             className={classes.TextInput}
           />
           {errorObject?.key === 'email' && errorObject.type !== 'typo' && (

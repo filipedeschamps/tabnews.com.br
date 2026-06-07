@@ -9,7 +9,6 @@ import classes from './FormField.module.css';
 
 const defaultProps = {
   block: true,
-  contrast: true,
   size: 'large',
 };
 

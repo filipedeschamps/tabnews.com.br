@@ -479,7 +479,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <FormControl id="title" required>
               <FormControl.Label>Título</FormControl.Label>
               <TextInput
-                contrast
                 className={classes.TextInput}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}
@@ -532,7 +531,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             <FormControl id="source_url">
               <FormControl.Label>Fonte</FormControl.Label>
               <TextInput
-                contrast
                 className={classes.TextInput}
                 onChange={handleChange}
                 onKeyDown={onKeyDown}

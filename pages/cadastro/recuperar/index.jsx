@@ -129,7 +129,6 @@ function RecoverPasswordForm() {
           <FormControl id="userInput">
             <FormControl.Label>Digite seu e-mail ou o nome de usuário da pessoa que deseja ajudar</FormControl.Label>
             <TextInput
-              contrast
               className={classes.Input}
               ref={userInputRef}
               onChange={clearErrors}
@@ -156,7 +155,6 @@ function RecoverPasswordForm() {
           <FormControl id="userInput">
             <FormControl.Label>Digite seu e-mail</FormControl.Label>
             <TextInput
-              contrast
               className={classes.Input}
               ref={userInputRef}
               onChange={clearErrors}
