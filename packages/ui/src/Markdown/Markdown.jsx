@@ -20,6 +20,7 @@ import {
   copyAnchorLinkPlugin,
   copyCodeToClipboardPlugin,
   externalLinksPlugin,
+  imageUploadPlugin,
   removeDuplicateClobberPrefix,
 } from './plugins';
 import { EditorStyles } from './styles';
@@ -34,6 +35,7 @@ const bytemdPluginBaseList = [
   breaksPlugin(),
   gemojiPlugin(),
   copyCodeToClipboardPlugin(),
+  imageUploadPlugin(), // Plugin de upload de imagem
 ];
 
 function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow, copyAnchorLink }) {
