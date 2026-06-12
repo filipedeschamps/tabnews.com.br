@@ -4,6 +4,7 @@ import slug from 'slug';
 
 import { ForbiddenError, UnprocessableEntityError, ValidationError } from 'errors';
 import database from 'infra/database.js';
+import { Ranker } from 'lib/ranker';
 import balance from 'models/balance.js';
 import pagination from 'models/pagination.js';
 import prestige from 'models/prestige';
@@ -15,6 +16,7 @@ async function findAll(values = {}, options = {}) {
   values = validateValues(values);
   await replaceOwnerUsernameWithOwnerId(values);
 
+  const ranker = new Ranker();
   const query = {
     values: [],
   };
@@ -33,6 +35,30 @@ async function findAll(values = {}, options = {}) {
     const relevantResults = await database.query(query, { transaction: options.transaction });
 
     return relevantResults.rows;
+  }
+
+  if (options.strategy === 'relevant_global_v2') {
+    const candidateLimit = options.candidateLimit ?? 300;
+    const candidateOffset = 0;
+    const timeWindow = options.timeWindow ?? '7 days';
+
+    const rankedQuery = {
+      text: queries.recentContent,
+      values: [candidateLimit, candidateOffset, timeWindow],
+    };
+
+    const { rows } = await database.query(rankedQuery, { transaction: options.transaction });
+
+    const ranked = ranker.execute(rows);
+
+    if (values.count) {
+      return [{ total_rows: ranked.length }];
+    }
+
+    const offset = options.offset ?? 0;
+    const limit = options.limit ?? 50;
+
+    return ranked.slice(offset, offset + limit);
   }
 
   const selectClause = buildSelectClause(values);
@@ -198,6 +224,7 @@ async function findWithStrategy(options = {}) {
     new: getNew,
     old: getOld,
     relevant: getRelevant,
+    relevant_v2: getRelevantV2,
   };
 
   return await strategies[options.strategy](options);
@@ -241,6 +268,25 @@ async function findWithStrategy(options = {}) {
       results.rows = rankContentListByRelevance(contentList);
     }
 
+    values.total_rows = results.rows[0]?.total_rows;
+    results.pagination = await getPagination(values, options);
+
+    return results;
+  }
+
+  async function getRelevantV2(values = {}) {
+    const results = {};
+    const options = {};
+
+    if (!values.where?.owner_username && values.where?.parent_id === null) {
+      options.strategy = 'relevant_global_v2';
+      options.limit = values.per_page;
+      options.offset = (values.page - 1) * values.per_page;
+    }
+
+    const contentList = await findAll(values, options);
+
+    results.rows = contentList;
     values.total_rows = results.rows[0]?.total_rows;
     results.pagination = await getPagination(values, options);
 
@@ -300,7 +346,7 @@ async function create(postedContent, options = {}) {
         parent AS (
           SELECT
             owner_id,
-            CASE 
+            CASE
               WHEN id IS NULL THEN ARRAY[]::uuid[]
               ELSE ARRAY_APPEND(path, id)
             END AS child_path
@@ -769,7 +815,7 @@ async function confirmFirewallStatus(contentIds, options) {
           id = ANY ($1)
         RETURNING
           *)
-      
+
       SELECT
         updated_contents.*,
         tabcoins_count.total_balance as tabcoins,
@@ -810,7 +856,7 @@ async function undoFirewallStatus(contentIds, options) {
         RETURNING
           *
       )
-  
+
       SELECT
         updated_contents.*,
         tabcoins_count.total_balance as tabcoins,

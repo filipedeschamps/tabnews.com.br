@@ -176,7 +176,19 @@ const rankedContent = `
             FROM contents as all_contents
             WHERE all_contents.path @> ARRAY[ranked.id]
                 AND all_contents.status = 'published'
-        ) as children_deep_count
+        ) as children_deep_count,
+        (
+            SELECT child_contents.body
+            FROM contents as child_contents
+            LEFT JOIN LATERAL get_content_balance_credit_debit(child_contents.id) child_tabcoins ON true
+            WHERE
+                child_contents.parent_id = ranked.id
+                AND child_contents.status = 'published'
+            ORDER BY
+                child_tabcoins.total_balance DESC,
+                child_contents.published_at DESC
+            LIMIT 1
+        ) as top_comment_body
         FROM ranked
         INNER JOIN
           contents ON contents.id = ranked.id
@@ -187,6 +199,132 @@ const rankedContent = `
             published_at DESC;
 `;
 
+const recentContent = `
+WITH root_contents AS (
+    SELECT
+        c.id,
+        c.owner_id,
+        c.slug,
+        c.title,
+        c.status,
+        c.source_url,
+        c.created_at,
+        c.updated_at,
+        c.published_at,
+        LENGTH(c.body) AS post_length
+    FROM contents c
+    WHERE
+        c.parent_id IS NULL
+        AND c.status = 'published'
+        AND c.type != 'ad'
+        AND c.published_at > NOW() - $3::interval
+),
+
+tabcoin_stats AS (
+    SELECT
+        rc.id,
+        balance.total_balance AS tabcoins,
+        balance.total_credit AS upvotes,
+        balance.total_debit AS downvotes
+    FROM root_contents rc
+    LEFT JOIN LATERAL get_content_balance_credit_debit(rc.id) balance ON true
+),
+
+/*
+  Uma única varredura da subárvore de comentários produz todas as métricas de
+  discussão. Usa COUNT(child.id) (e não COUNT(*)) para que posts sem comentários
+  fiquem com 0 no LEFT JOIN, em vez de serem inflados para 1.
+*/
+comment_stats AS (
+    SELECT
+        root.id AS root_id,
+
+        COUNT(child.id) AS comment_count,
+
+        COUNT(DISTINCT child.owner_id) AS unique_commenters,
+
+        COALESCE(AVG(LENGTH(child.body)), 0) AS avg_comment_length,
+
+        COALESCE(AVG(array_length(child.path, 1)), 0) AS avg_comment_children,
+
+        COUNT(child.id) FILTER (
+            WHERE child.published_at > NOW() - INTERVAL '24 hours'
+        ) AS recent_comments,
+
+        COUNT(child.id) AS children_deep_count
+
+    FROM root_contents root
+    LEFT JOIN contents child
+        ON child.path[1] = root.id
+        AND child.parent_id IS NOT NULL
+        AND child.status = 'published'
+    GROUP BY root.id
+),
+
+top_comment AS (
+    SELECT DISTINCT ON (c.parent_id)
+        c.parent_id AS root_id,
+        c.body
+    FROM contents c
+    LEFT JOIN LATERAL get_content_balance_credit_debit(c.id) balance ON true
+    WHERE
+        c.parent_id IN (SELECT id FROM root_contents)
+        AND c.status = 'published'
+    ORDER BY
+        c.parent_id,
+        balance.total_balance DESC,
+        c.published_at DESC
+)
+
+SELECT
+    rc.id,
+    rc.owner_id,
+    rc.slug,
+    rc.title,
+    rc.status,
+    rc.source_url,
+    rc.created_at,
+    rc.updated_at,
+    rc.published_at,
+
+    COUNT(*) OVER()::INTEGER AS total_rows,
+
+    rc.post_length,
+
+    ts.tabcoins,
+    ts.upvotes,
+    -- Downvotes ficam gravados como débitos negativos (amount = -1 por voto),
+    -- então a magnitude positiva é -total_debit. O GREATEST mantém o piso em 0.
+    GREATEST(-ts.downvotes, 0) AS downvotes,
+
+    cs.comment_count,
+    cs.unique_commenters,
+    cs.avg_comment_length,
+    cs.avg_comment_children,
+
+    0 AS recent_votes,
+    cs.recent_comments,
+
+    cs.children_deep_count,
+
+    tc.body AS top_comment_body,
+
+    users.username AS owner_username
+
+FROM root_contents rc
+
+LEFT JOIN tabcoin_stats ts ON ts.id = rc.id
+LEFT JOIN comment_stats cs ON cs.root_id = rc.id
+LEFT JOIN top_comment tc ON tc.root_id = rc.id
+
+INNER JOIN users ON users.id = rc.owner_id
+
+ORDER BY rc.published_at DESC
+LIMIT $1
+OFFSET $2;
+`;
+
 export default Object.freeze({
   rankedContent,
+  recentContent,
 });

@@ -3,6 +3,7 @@ import {
   Box,
   EmptyState,
   Link,
+  NewPublicationBanner,
   Pagination,
   PastTime,
   TabCoinBalanceTooltip,
@@ -21,13 +22,18 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
           as="ol"
           sx={{
             display: 'grid',
-            gap: '0.5rem',
+            gap: '0.8rem',
             gridTemplateColumns: 'min-content minmax(0, 1fr)',
             padding: 0,
             margin: 0,
           }}
           key={`content-list-${listNumberStart}`}
           start={listNumberStart}>
+          {paginationBasePath === '/pagina' && pagination.currentPage === 1 && !pagination.previousPage && (
+            <Box as="li" sx={{ display: 'block', gridColumnStart: 2, '::marker': 'none' }}>
+              <NewPublicationBanner />
+            </Box>
+          )}
           {ad && (
             <Box as="li" sx={{ display: 'block', gridColumnStart: 2, '::marker': 'none' }}>
               <AdBanner ad={ad} />
@@ -47,8 +53,14 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
   );
 
   function RenderItems() {
-    function ChildrenDeepCountText({ count }) {
-      return count > 1 ? `${count} comentários` : `${count} comentário`;
+    function ChildrenDeepCountText({ count, isParent, contentObject }) {
+      const visualCount = isParent ? count : contentObject.children_deep_count > 1 ? count - 1 : 0;
+
+      const countPrefix = visualCount > 1 ? 'mais' : '';
+      const countSufix = visualCount > 1 ? 'comentários' : 'comentário';
+
+      if (visualCount === 0) return 'sem mais comentários';
+      else return `${countPrefix} ${visualCount} ${countSufix}`;
     }
 
     function TabCoinsText({ count }) {
@@ -59,15 +71,13 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
       return (
         <Box
           key={contentObject.id}
-          as="li"
           sx={{
             display: 'contents',
             ':before': {
               content: 'counter(list-item) "."',
               counterIncrement: 'list-item',
               fontWeight: 'semibold',
-              width: 'min-content',
-              marginLeft: 'auto',
+              marginLeft: 5,
             },
           }}>
           <Box as="article">
@@ -98,9 +108,33 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
                 </Link>
               )}
             </Box>
+            {!contentObject.parent_id && contentObject.children_deep_count > 0 && contentObject.top_comment_body && (
+              <Box
+                sx={{
+                  fontSize: 0,
+                  marginTop: 1,
+                  paddingLeft: 2,
+                  marginLeft: 1,
+                  color: 'neutral.emphasis',
+                  borderColor: 'neutral.emphasis',
+                  borderLeft: '1px solid',
+                  flexDirection: 'column',
+                }}>
+                <Link
+                  sx={{ wordWrap: 'break-word', fontStyle: 'italic', fontWeight: 'normal', color: 'fg.subtle' }}
+                  href={`/${contentObject.owner_username}/${contentObject.slug}`}>
+                  <CommentIcon verticalAlign="middle" size={11} />
+                  {` "${contentObject.top_comment_body.slice(0, 250) ?? contentObject.body.slice(0, 250) ?? ''}..."`}
+                </Link>
+              </Box>
+            )}
             <Box
               sx={{
                 display: 'grid',
+                marginTop:
+                  !contentObject.parent_id && contentObject.children_deep_count > 0 && contentObject.top_comment_body
+                    ? 1
+                    : 0,
                 gap: 1,
                 gridTemplateColumns:
                   'max-content max-content max-content max-content minmax(20px, max-content) max-content max-content',
@@ -120,9 +154,14 @@ export default function ContentList({ ad, contentList: list, pagination, paginat
               )}
               {' · '}
               <Text>
-                <ChildrenDeepCountText count={contentObject.children_deep_count} />
+                <ChildrenDeepCountText
+                  count={contentObject.children_deep_count}
+                  isParent={Boolean(contentObject.parent_id)}
+                  contentObject={contentObject}
+                />
               </Text>
               {' · '}
+
               <Tooltip text={`Autor: ${contentObject.owner_username}`}>
                 <Text as="address" sx={{ fontStyle: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   <Link sx={{ color: 'neutral.emphasis' }} href={`/${contentObject.owner_username}`}>

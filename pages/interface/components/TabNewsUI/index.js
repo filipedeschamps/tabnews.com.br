@@ -1,4 +1,5 @@
 export { default as AdBanner } from '@/AdBanner';
+export { default as NewPublicationBanner } from '@/NewPublicationBanner';
 export { default as ButtonWithLoader } from '@/ButtonWithLoader';
 export { default as CharacterCount } from '@/CharacterCount';
 export { default as Confetti } from '@/Confetti';

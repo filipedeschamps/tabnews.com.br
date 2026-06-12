@@ -22,6 +22,7 @@ export {
   PencilIcon,
   PersonIcon,
   PlusIcon,
+  PlusCircleIcon,
   SearchIcon,
   SignOutIcon,
   ShareIcon,

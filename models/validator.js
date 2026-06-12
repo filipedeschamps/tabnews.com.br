@@ -511,6 +511,16 @@ const schemas = {
     });
   },
 
+  top_comment_body: function () {
+    return Joi.object({
+      top_comment_body: Joi.string().when('$required.top_comment_body', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(null),
+      }),
+    });
+  },
+
   content: function () {
     let contentSchema = Joi.object({
       children: Joi.array().optional().items(Joi.link('#content')),
@@ -526,6 +536,7 @@ const schemas = {
       'slug',
       'title',
       'body',
+      'top_comment_body',
       'status',
       'content_type',
       'source_url',

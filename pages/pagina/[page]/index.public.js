@@ -44,11 +44,13 @@ export const getStaticProps = getStaticPropsRevalidate(async (context) => {
   }
 
   const results = await content.findWithStrategy({
-    strategy: 'relevant',
+    strategy: 'relevant_global_v2',
     where: {
       parent_id: null,
       status: 'published',
     },
+    timeWindow: '7 days',
+    candidateLimit: 500,
     page: context.params.page,
     per_page: context.params.per_page,
   });

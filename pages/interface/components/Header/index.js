@@ -52,31 +52,53 @@ export default function HeaderComponent() {
   const canListUsers = user?.features.includes('read:user:list');
 
   return (
-    <PrimerHeader as="header" id="header" sx={{ minWidth: 'max-content', px: [2, null, null, 3], overflow: 'visible' }}>
+    <PrimerHeader
+      as="header"
+      id="header"
+      sx={{ minWidth: 'max-content', px: [2, null, null, 3], overflow: 'visible', position: 'relative' }}>
       <SearchBoxOverlay />
-      <Box as="nav" sx={{ display: 'flex', flex: 1, margin: 0, padding: 0 }}>
-        <PrimerHeader.Item sx={{ mr: 0 }}>
-          <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
-            <CgTab size={32} />
+      {
+        <Box as="nav" sx={{ display: 'flex', alignItems: 'center', flex: 1, margin: 0, padding: 0 }}>
+          <PrimerHeader.Item sx={{ mr: 0 }}>
+            <HeaderLink href="/" aria-label="Página inicial Relevantes" aria-current={asPath === '/' ? 'page' : false}>
+              <CgTab size={32} />
 
-            <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
+              <Box sx={{ ml: 2, display: ['none', 'block'] }}>TabNews</Box>
+            </HeaderLink>
+          </PrimerHeader.Item>
 
-            <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>Relevantes</Box>
-          </HeaderLink>
-        </PrimerHeader.Item>
+          <Box as="nav" sx={{ display: 'flex', alignItems: 'center', margin: 0, padding: 0, ml: 2 }}>
+            <PrimerHeader.Item sx={{ mr: 0 }}>
+              <HeaderLink
+                href="/"
+                aria-label="Página inicial Relevantes"
+                aria-current={asPath === '/' ? 'page' : false}>
+                <Box sx={asPath === '/' || asPath.startsWith('/pagina') ? activeLinkStyle : { ml: 3 }}>Relevantes</Box>
+              </HeaderLink>
+            </PrimerHeader.Item>
 
-        <PrimerHeader.Item full sx={{ mr: 0 }}>
-          <HeaderLink
-            href="/recentes/pagina/1"
-            aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
-            sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
-            Recentes
-          </HeaderLink>
-        </PrimerHeader.Item>
-      </Box>
+            <PrimerHeader.Item full sx={{ mr: 0 }}>
+              <HeaderLink
+                href="/recentes/pagina/1"
+                aria-current={asPath === '/recentes/pagina/1' ? 'page' : false}
+                sx={asPath.startsWith('/recentes') ? activeLinkStyle : { ml: 3 }}>
+                Recentes
+              </HeaderLink>
+            </PrimerHeader.Item>
+          </Box>
+        </Box>
+      }
 
       {!isLoading && !(isScreenSmall && user) && (
-        <PrimerHeader.Item sx={{ ml: 3, mr: [1, , 3] }}>
+        <PrimerHeader.Item
+          sx={{
+            ml: 3,
+            mr: [1, , 3],
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+          }}>
           <SearchBarButton />
           <SearchIconButton />
         </PrimerHeader.Item>

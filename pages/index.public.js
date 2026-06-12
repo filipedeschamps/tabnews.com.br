@@ -32,7 +32,7 @@ export const getStaticProps = getStaticPropsRevalidate(async () => {
   const params = validator({}, { per_page: 'optional' });
 
   const results = await content.findWithStrategy({
-    strategy: 'relevant',
+    strategy: 'relevant_v2',
     where: {
       parent_id: null,
       status: 'published',
