@@ -271,6 +271,14 @@ function filterOutput(user, feature, output) {
     ).ad_list;
   }
 
+  if (feature === 'read:notifications:list') {
+    filteredOutputValues = output.map((notification) => {
+      return validator(notification, {
+        notification: 'required',
+      });
+    });
+  }
+
   // Force the clean up of "undefined" values
   return JSON.parse(JSON.stringify(filteredOutputValues));
 }
