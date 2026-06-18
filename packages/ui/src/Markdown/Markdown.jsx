@@ -75,11 +75,16 @@ export function MarkdownViewer({
   clobberPrefix = clobberPrefix?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, copyAnchorLink, shouldAddNofollow });
   const [value, setValue] = useState(_value);
+  const hasMounted = useRef(false);
 
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
     let timeout;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue((value) => {
       timeout = setTimeout(() => setValue(value));
       return value + '\n\u0160';
