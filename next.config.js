@@ -58,6 +58,10 @@ module.exports = {
         source: '/recentes/rss',
         destination: '/api/v1/contents/rss',
       },
+      {
+        source: '/relevantes/rss',
+        destination: '/api/v1/contents/rss?strategy=relevant',
+      },
     ];
   },
   headers() {
