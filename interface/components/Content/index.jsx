@@ -391,8 +391,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               return;
             }
 
-            setContentObject(responseBody);
-            setComponentMode('view');
+            router.push(router.asPath);
           };
         }
 
