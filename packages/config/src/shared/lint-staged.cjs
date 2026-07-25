@@ -1,5 +1,5 @@
 const defaultConfig = {
-  '*.{js,mjs,cjs,jsx}': (stagedFiles) => [
+  '*.{js,mjs,cjs,jsx,ts,tsx}': (stagedFiles) => [
     `eslint --fix --max-warnings 0 ${stagedFiles.join(' ')}`,
     `prettier --write ${stagedFiles.join(' ')}`,
   ],
