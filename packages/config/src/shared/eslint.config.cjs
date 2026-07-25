@@ -168,6 +168,6 @@ module.exports = defineConfig([
     },
   },
   {
-    ignores: ['**/.next/**', '**/__snapshots__/*', '**/coverage/**', '**/dist/*'],
+    ignores: ['**/.next/**', '**/.vercel/**', '**/__snapshots__/*', '**/coverage/**', '**/dist/*'],
   },
 ]);
