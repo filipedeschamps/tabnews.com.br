@@ -4,7 +4,7 @@ import { NotFoundError } from 'errors';
 import cacheControl from 'models/cache-control';
 import content from 'models/content.js';
 import controller from 'models/controller';
-import thumbnail from 'models/thumbnail.js';
+import thumbnail from 'models/thumbnail.jsx';
 import validator from 'models/validator.js';
 
 export default createRouter()

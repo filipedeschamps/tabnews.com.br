@@ -18,9 +18,6 @@ export default function createConfig(customConfig) {
           testTimeout: 60_000,
           hookTimeout: 30_000,
         },
-        oxc: {
-          lang: 'jsx',
-        },
       },
       customConfig,
     ),
