@@ -122,6 +122,7 @@ module.exports = defineConfig([
       'no-control-regex': 0,
       'no-sparse-arrays': 0,
       'prefer-const': 'warn',
+      'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
       'react/jsx-no-useless-fragment': ['warn', { allowExpressions: true }],
       'react/no-unstable-nested-components': 'error',
       'react/react-in-jsx-scope': 0,
@@ -167,6 +168,6 @@ module.exports = defineConfig([
     },
   },
   {
-    ignores: ['**/.next/**', '**/__snapshots__/*', '**/coverage/**', '**/dist/*'],
+    ignores: ['**/.next/**', '**/.vercel/**', '**/__snapshots__/*', '**/coverage/**', '**/dist/*'],
   },
 ]);
