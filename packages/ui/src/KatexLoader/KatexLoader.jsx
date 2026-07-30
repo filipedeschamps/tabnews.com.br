@@ -1,7 +1,10 @@
+const KATEX_LINK_ID = 'katex-css';
+
 export function KatexLoader() {
   return (
     <>
       <link
+        id={KATEX_LINK_ID}
         rel="preload"
         href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
         as="style"
@@ -11,11 +14,13 @@ export function KatexLoader() {
       <script
         dangerouslySetInnerHTML={{
           __html: `
-            var katexLink = document.currentScript.previousElementSibling;
-            katexLink.onload = function () {
-              this.onload = null;
-              this.rel = 'stylesheet';
-            };
+            var katexLink = document.getElementById('${KATEX_LINK_ID}');
+            if (katexLink) {
+              katexLink.onload = function () {
+                this.onload = null;
+                this.rel = 'stylesheet';
+              };
+            }
           `,
         }}
       />
