@@ -20,6 +20,7 @@ import {
   copyAnchorLinkPlugin,
   copyCodeToClipboardPlugin,
   externalLinksPlugin,
+  katexStylesheetPlugin,
   removeDuplicateClobberPrefix,
 } from './plugins';
 import { EditorStyles } from './styles';
@@ -31,6 +32,7 @@ const bytemdPluginBaseList = [
     locale: mathLocale,
     katexOptions: { output: 'html' },
   }),
+  katexStylesheetPlugin(),
   breaksPlugin(),
   gemojiPlugin(),
   copyCodeToClipboardPlugin(),

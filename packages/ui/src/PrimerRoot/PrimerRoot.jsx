@@ -4,7 +4,6 @@ import { cookies } from 'next/headers';
 
 import { AutoThemeProvider } from '../AutoThemeProvider/AutoThemeProvider';
 import { COLOR_MODE_COOKIE } from '../constants/public';
-import { KatexLoader } from '../KatexLoader/KatexLoader';
 
 export async function PrimerRoot({
   children,
@@ -27,10 +26,7 @@ export async function PrimerRoot({
 
   return (
     <html lang={lang} suppressHydrationWarning data-color-mode={ssrColorMode} {...htmlProps}>
-      <head>
-        {headChildren}
-        <KatexLoader />
-      </head>
+      <head>{headChildren}</head>
       <body data-light-theme="light" data-dark-theme="dark">
         <AutoThemeProvider defaultColorMode={ssrColorMode} noFlash={false} preventSSRMismatch {...props}>
           {children}
