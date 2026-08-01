@@ -1,8 +1,15 @@
 import { preinit } from 'react-dom';
 
-const KATEX_STYLESHEET = {
-  href: 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css',
+// The version must match the installed `katex`, otherwise the stylesheet and the rendered markup can
+// disagree. `katex-stylesheet.test.jsx` fails when they drift apart.
+export const KATEX_VERSION = '0.16.22';
+
+// The `integrity` has to be recalculated on every version bump, otherwise the browser blocks the
+// stylesheet. `katex-stylesheet.test.jsx` fails when it does not match the installed file.
+export const DEFAULT_STYLESHEET = {
+  href: `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/katex.min.css`,
   integrity: 'sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP',
+  crossOrigin: 'anonymous',
 };
 
 // Added by `remark-math`, through `@bytemd/plugin-math`.
@@ -39,18 +46,25 @@ function hasMath(tree) {
  * asynchronously (it dynamically imports `katex`), so the `katex` class names are not in the DOM yet
  * when the `viewerEffect` of the next plugin runs. Requesting the stylesheet while the tree is being
  * built also starts the download during SSR, before the math is painted.
+ * @param {Object} [options]
+ * @param {string} [options.href] - Where to load the stylesheet from. Defaults to jsDelivr, with
+ * `integrity`. A custom value is assumed to be served by the application itself, so no subresource
+ * integrity is used. The KaTeX fonts are resolved relative to this URL, which means a `fonts`
+ * directory has to sit next to the stylesheet.
  * @returns {import('bytemd').BytemdPlugin}
  */
-export function katexStylesheetPlugin() {
+export function katexStylesheetPlugin({ href } = {}) {
+  const stylesheet = href ? { href } : DEFAULT_STYLESHEET;
+
   return {
     rehype: (processor) =>
       processor.use(() => (tree) => {
         if (!hasMath(tree)) return;
 
-        preinit(KATEX_STYLESHEET.href, {
+        preinit(stylesheet.href, {
           as: 'style',
-          integrity: KATEX_STYLESHEET.integrity,
-          crossOrigin: 'anonymous',
+          integrity: stylesheet.integrity,
+          crossOrigin: stylesheet.crossOrigin,
         });
       }),
   };
