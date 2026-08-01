@@ -20,6 +20,7 @@ import {
   copyAnchorLinkPlugin,
   copyCodeToClipboardPlugin,
   externalLinksPlugin,
+  katexStylesheetPlugin,
   removeDuplicateClobberPrefix,
 } from './plugins';
 import { EditorStyles } from './styles';
@@ -36,13 +37,14 @@ const bytemdPluginBaseList = [
   copyCodeToClipboardPlugin(),
 ];
 
-function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow, copyAnchorLink }) {
+function usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow, copyAnchorLink }) {
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
     const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
     const pluginList = [
       ...bytemdPluginBaseList,
+      katexStylesheetPlugin({ href: katexStylesheetHref }),
       mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme }),
       anchorHeadersPlugin({ prefix: clobberPrefix ?? 'user-content-' }),
       removeDuplicateClobberPrefix({ clobberPrefix }),
@@ -57,7 +59,7 @@ function usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow, copyAnc
     }
 
     return pluginList;
-  }, [areLinksTrusted, clobberPrefix, colorScheme, copyAnchorLink, shouldAddNofollow]);
+  }, [areLinksTrusted, clobberPrefix, colorScheme, copyAnchorLink, katexStylesheetHref, shouldAddNofollow]);
 
   return plugins;
 }
@@ -69,11 +71,18 @@ export function MarkdownViewer({
   copyAnchorLink,
   footnoteBackLabel = 'Voltar ao conteúdo',
   footnoteLabel = 'Notas de rodapé',
+  katexStylesheetHref,
   shouldAddNofollow,
   ...props
 }) {
   clobberPrefix = clobberPrefix?.toLowerCase();
-  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, copyAnchorLink, shouldAddNofollow });
+  const bytemdPluginList = usePlugins({
+    areLinksTrusted,
+    clobberPrefix,
+    copyAnchorLink,
+    katexStylesheetHref,
+    shouldAddNofollow,
+  });
   const [value, setValue] = useState(_value);
 
   useEffect(() => {
@@ -110,13 +119,14 @@ export function MarkdownEditor({
   footnoteLabel = 'Notas de rodapé',
   initialHeight = '30vh',
   isInvalid,
+  katexStylesheetHref,
   mode = 'split', // 'tab'
   onKeyDown,
   shouldAddNofollow,
   ...props
 }) {
   clobberPrefix = clobberPrefix?.toLowerCase();
-  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, shouldAddNofollow });
+  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow });
   const editorRef = useRef();
 
   useEffect(() => {

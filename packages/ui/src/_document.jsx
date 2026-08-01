@@ -1,8 +1,6 @@
 import NextDocument, { Head, Html, Main, NextScript } from 'next/document.js';
 import Script from 'next/script.js';
 
-import { KatexLoader } from './KatexLoader/KatexLoader';
-
 // Script related to `AutoThemeProvider`
 export const noFlashScript = `if (['auto','night','dark','day','light'].includes(localStorage.getItem('colorMode')))
 document.documentElement.setAttribute('data-no-flash', true)`;
@@ -32,10 +30,7 @@ export class Document extends Doc {
 
     return (
       <Html {...htmlProps}>
-        <Head>
-          {headChildren}
-          <KatexLoader />
-        </Head>
+        <Head>{headChildren}</Head>
         <body>
           <Main />
           <Script id="theme" strategy="beforeInteractive">
