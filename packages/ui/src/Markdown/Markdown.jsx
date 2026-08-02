@@ -6,7 +6,6 @@ import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
 import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
 import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import { Editor as ByteMdEditor } from '@bytemd/react';
 import { useTheme } from '@primer/react';
@@ -23,6 +22,7 @@ import {
   katexMathPlugin,
   katexRawGuardPlugin,
   katexStylesheetPlugin,
+  mermaidPlugin,
   removeDuplicateClobberPrefix,
 } from './plugins';
 import { EditorStyles } from './styles';

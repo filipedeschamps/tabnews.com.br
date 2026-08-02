@@ -4,4 +4,5 @@ export * from './copy-code-to-clipboard';
 export * from './external-links';
 export * from './katex-math';
 export * from './katex-stylesheet';
+export * from './mermaid';
 export * from './remove-duplicate-clobber-prefix';
