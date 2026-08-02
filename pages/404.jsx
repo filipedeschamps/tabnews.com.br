@@ -10,7 +10,13 @@ export default function Custom404() {
     <DefaultLayout metadata={{ title: '404 - Página não encontrada' }}>
       <div className={classes.Wrapper}>
         <div className={classes.Content}>
-          <Image src={botSleepyFaceDarkTransparent.src} height={100} width={100} alt="Ícone do Bot triste" />
+          <Image
+            src={botSleepyFaceDarkTransparent.src}
+            height={100}
+            width={100}
+            alt="Ícone do Bot triste"
+            loading="eager"
+          />
           <div className={classes.Divider}></div>
           <h1>404</h1>
         </div>
