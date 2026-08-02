@@ -6,7 +6,6 @@ import gfmLocale from '@bytemd/plugin-gfm/locales/pt_BR.json';
 import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
 import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
-import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
 import { Editor as ByteMdEditor } from '@bytemd/react';
 import { useTheme } from '@primer/react';
@@ -23,6 +22,7 @@ import {
   katexMathPlugin,
   katexRawGuardPlugin,
   katexStylesheetPlugin,
+  mermaidPlugin,
   removeDuplicateClobberPrefix,
 } from './plugins';
 import { EditorStyles } from './styles';
@@ -31,6 +31,30 @@ import { Viewer } from './Viewer';
 // Shared, so that a formula comes out the same whether the server or the client rendered it. The
 // MathML is what a screen reader reads, since the visual markup is `aria-hidden`.
 const katexOptions = { output: 'htmlAndMathml' };
+
+// The `default` theme of mermaid derives every pie slice from a hue rotation of its cream
+// `primaryColor`, so all twelve come out as pastels of very high lightness — which an HDR screen
+// washes out to white. These are the `--display-*-bgColor-emphasis` of Primer, whose medium tone
+// keeps the dark label of the slice legible under the 0.7 opacity mermaid paints them with. The
+// eleventh is the only departure from the scale: its teal is hard to tell apart from the cyan of the
+// seventh, so it takes the indigo instead.
+// https://primer.style/product/ui-patterns/data-visualization/
+const mermaidLightPieColors = Object.fromEntries(
+  [
+    '#006edb',
+    '#866e04',
+    '#ce2c85',
+    '#2c8141',
+    '#894ceb',
+    '#b8500f',
+    '#007b94',
+    '#df0c24',
+    '#527a29',
+    '#856d4c',
+    '#5a61e7',
+    '#9d615c',
+  ].map((color, index) => [`pie${index + 1}`, color]),
+);
 
 const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
@@ -55,13 +79,17 @@ export function usePlugins({
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
-    const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
+    const isDarkTheme = colorScheme === 'dark';
     const pluginList = [
       ...bytemdPluginBaseList,
       ...(shouldRenderMath
         ? [katexStylesheetPlugin({ href: katexStylesheetHref }), katexMathPlugin({ katexOptions })]
         : []),
-      mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme }),
+      mermaidPlugin({
+        locale: mermaidLocale,
+        theme: isDarkTheme ? 'dark' : 'default',
+        themeVariables: isDarkTheme ? {} : mermaidLightPieColors,
+      }),
       anchorHeadersPlugin({ prefix: clobberPrefix ?? 'user-content-' }),
       removeDuplicateClobberPrefix({ clobberPrefix }),
     ];

@@ -9,13 +9,13 @@ import { MarkdownViewer } from './Markdown';
 const value = 'Um $x^2$ inline';
 const valueWithDiagram = `${value}\n\n\`\`\`mermaid\ngraph TD\nA-->B\n\`\`\``;
 
-// Stands in for `@bytemd/plugin-mermaid`, which collects its code blocks synchronously and only
-// replaces them after awaiting the `mermaid` import.
+// Stands in for `mermaidPlugin`, which collects its code blocks synchronously and only replaces
+// them after awaiting the `mermaid` import.
 const diagramRuns = [];
 
 function mockMermaidPlugin() {
-  vi.doMock('@bytemd/plugin-mermaid', () => ({
-    default: ({ theme }) => ({
+  vi.doMock('./plugins/mermaid', () => ({
+    mermaidPlugin: ({ theme }) => ({
       viewerEffect({ markdownBody }) {
         const elements = markdownBody.querySelectorAll('pre>code.language-mermaid');
 
@@ -54,7 +54,7 @@ describe('ui', () => {
     afterEach(() => {
       vi.restoreAllMocks();
       vi.doUnmock('./plugins/katex-math.server');
-      vi.doUnmock('@bytemd/plugin-mermaid');
+      vi.doUnmock('./plugins/mermaid');
       vi.resetModules();
     });
 
