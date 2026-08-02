@@ -8,11 +8,11 @@ import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
 import mermaidPlugin from '@bytemd/plugin-mermaid';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
-import { Editor as ByteMdEditor, Viewer as ByteMdViewer } from '@bytemd/react';
+import { Editor as ByteMdEditor } from '@bytemd/react';
 import { useTheme } from '@primer/react';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import { clsx } from 'clsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import classes from './Markdown.module.css';
 import {
@@ -20,31 +20,47 @@ import {
   copyAnchorLinkPlugin,
   copyCodeToClipboardPlugin,
   externalLinksPlugin,
+  katexMathPlugin,
+  katexRawGuardPlugin,
   katexStylesheetPlugin,
   removeDuplicateClobberPrefix,
 } from './plugins';
 import { EditorStyles } from './styles';
+import { Viewer } from './Viewer';
+
+// Shared, so that a formula comes out the same whether the server or the client rendered it. The
+// MathML is what a screen reader reads, since the visual markup is `aria-hidden`.
+const katexOptions = { output: 'htmlAndMathml' };
 
 const bytemdPluginBaseList = [
   gfmPlugin({ locale: gfmLocale }),
   highlightSsrPlugin(),
   mathPlugin({
     locale: mathLocale,
-    katexOptions: { output: 'html' },
+    katexOptions,
   }),
   breaksPlugin(),
   gemojiPlugin(),
   copyCodeToClipboardPlugin(),
 ];
 
-function usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow, copyAnchorLink }) {
+export function usePlugins({
+  areLinksTrusted,
+  clobberPrefix,
+  copyAnchorLink,
+  katexStylesheetHref,
+  shouldAddNofollow,
+  shouldRenderMath = true,
+}) {
   const { colorScheme } = useTheme();
 
   const plugins = useMemo(() => {
     const mermaidTheme = colorScheme === 'dark' ? 'dark' : 'default';
     const pluginList = [
       ...bytemdPluginBaseList,
-      katexStylesheetPlugin({ href: katexStylesheetHref }),
+      ...(shouldRenderMath
+        ? [katexStylesheetPlugin({ href: katexStylesheetHref }), katexMathPlugin({ katexOptions })]
+        : []),
       mermaidPlugin({ locale: mermaidLocale, theme: mermaidTheme }),
       anchorHeadersPlugin({ prefix: clobberPrefix ?? 'user-content-' }),
       removeDuplicateClobberPrefix({ clobberPrefix }),
@@ -58,52 +74,56 @@ function usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shoul
       pluginList.push(externalLinksPlugin({ shouldAddNofollow }));
     }
 
+    if (shouldRenderMath) {
+      pluginList.push(katexRawGuardPlugin());
+    }
+
     return pluginList;
-  }, [areLinksTrusted, clobberPrefix, colorScheme, copyAnchorLink, katexStylesheetHref, shouldAddNofollow]);
+  }, [
+    areLinksTrusted,
+    clobberPrefix,
+    colorScheme,
+    copyAnchorLink,
+    katexStylesheetHref,
+    shouldAddNofollow,
+    shouldRenderMath,
+  ]);
 
   return plugins;
 }
 
 export function MarkdownViewer({
-  value: _value,
+  value,
   areLinksTrusted,
-  clobberPrefix,
+  clobberPrefix: clobberPrefixProp,
   copyAnchorLink,
   footnoteBackLabel = 'Voltar ao conteúdo',
   footnoteLabel = 'Notas de rodapé',
   katexStylesheetHref,
   shouldAddNofollow,
+  shouldRenderMath,
   ...props
 }) {
-  clobberPrefix = clobberPrefix?.toLowerCase();
+  const clobberPrefix = clobberPrefixProp?.toLowerCase();
   const bytemdPluginList = usePlugins({
     areLinksTrusted,
     clobberPrefix,
     copyAnchorLink,
     katexStylesheetHref,
     shouldAddNofollow,
+    shouldRenderMath,
   });
-  const [value, setValue] = useState(_value);
-
-  useEffect(() => {
-    let timeout;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setValue((value) => {
-      timeout = setTimeout(() => setValue(value));
-      return value + '\n\u0160';
-    });
-
-    return () => clearTimeout(timeout);
-  }, [bytemdPluginList]);
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => setValue(_value), [_value]);
+  const sanitizeSchema = useMemo(() => sanitize({ clobberPrefix }), [clobberPrefix]);
+  const remarkRehypeOptions = useMemo(
+    () => ({ clobberPrefix, footnoteBackLabel, footnoteLabel }),
+    [clobberPrefix, footnoteBackLabel, footnoteLabel],
+  );
 
   return (
-    <ByteMdViewer
-      sanitize={sanitize({ clobberPrefix })}
-      remarkRehype={{ clobberPrefix, footnoteBackLabel, footnoteLabel }}
+    <Viewer
+      clobberPrefix={clobberPrefix}
+      sanitize={sanitizeSchema}
+      remarkRehype={remarkRehypeOptions}
       plugins={bytemdPluginList}
       value={value}
       {...props}
@@ -113,7 +133,7 @@ export function MarkdownViewer({
 
 export function MarkdownEditor({
   areLinksTrusted,
-  clobberPrefix,
+  clobberPrefix: clobberPrefixProp,
   editorConfig = {},
   footnoteBackLabel = 'Voltar ao conteúdo',
   footnoteLabel = 'Notas de rodapé',
@@ -125,7 +145,7 @@ export function MarkdownEditor({
   shouldAddNofollow,
   ...props
 }) {
-  clobberPrefix = clobberPrefix?.toLowerCase();
+  const clobberPrefix = clobberPrefixProp?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow });
   const editorRef = useRef();
 
