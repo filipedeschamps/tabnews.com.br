@@ -15,6 +15,9 @@
     "./primer": "./src/primer-react.js",
     "./css": "./src/ui.css"
   },
+  "browser": {
+    "./src/Markdown/plugins/katex-math.server.js": "./src/Markdown/plugins/katex-math.browser.js"
+  },
   "scripts": {
     "test": "vitest --root ../.. watch \"$PWD\"",
     "test:run": "vitest --root ../.. run \"$PWD\"",
