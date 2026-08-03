@@ -204,6 +204,7 @@ function EditProfileForm() {
             size="large"
             autoCorrect="off"
             autoCapitalize="none"
+            autoFocus
             spellCheck={false}
             block={true}
             className={classes.TextInput}
