@@ -51,6 +51,9 @@ if (typeof document !== 'undefined') {
     disconnect() {}
   };
 
+  // jsdom doesn't implement scrollTo, which bytemd syncs the scroll of its two panes with.
+  Element.prototype.scrollTo ??= () => {};
+
   // jsdom doesn't implement matchMedia, which @primer/react's useMedia hook relies on.
   window.matchMedia ??= () => {};
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({

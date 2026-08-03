@@ -34,6 +34,7 @@
     "@bytemd/react": "^1.22.0",
     "@primer/octicons-react": "^19.28.0",
     "@primer/react": "^38.26.0",
+    "bytemd": "^1.22.0",
     "clsx": "^2.1.1",
     "katex": "0.16.22",
     "mermaid": "^10.9.6",
