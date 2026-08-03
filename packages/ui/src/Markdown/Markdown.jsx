@@ -7,12 +7,12 @@ import highlightSsrPlugin from '@bytemd/plugin-highlight-ssr';
 import mathPlugin from '@bytemd/plugin-math';
 import mathLocale from '@bytemd/plugin-math/locales/pt_BR.json';
 import mermaidLocale from '@bytemd/plugin-mermaid/locales/pt_BR.json';
-import { Editor as ByteMdEditor } from '@bytemd/react';
 import { useTheme } from '@primer/react';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import { clsx } from 'clsx';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { ByteMdEditor } from './ByteMdEditor';
 import classes from './Markdown.module.css';
 import {
   anchorHeadersPlugin,
