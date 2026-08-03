@@ -161,6 +161,7 @@ export function MarkdownViewer({
 
 export function MarkdownEditor({
   areLinksTrusted,
+  autoFocus = false,
   clobberPrefix: clobberPrefixProp,
   editorConfig = {},
   footnoteBackLabel = 'Voltar ao conteúdo',
@@ -214,7 +215,13 @@ export function MarkdownEditor({
         mode={mode}
         locale={byteMDLocale}
         sanitize={sanitize({ clobberPrefix })}
-        editorConfig={{ autocapitalize: 'sentences', inputStyle: 'contenteditable', spellcheck: true, ...editorConfig }}
+        editorConfig={{
+          autofocus: autoFocus,
+          autocapitalize: 'sentences',
+          inputStyle: 'contenteditable',
+          spellcheck: true,
+          ...editorConfig,
+        }}
         remarkRehype={{ clobberPrefix, footnoteBackLabel, footnoteLabel }}
         {...props}
       />
