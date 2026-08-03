@@ -11,7 +11,7 @@ import { Editor as ByteMdEditor } from '@bytemd/react';
 import { useTheme } from '@primer/react';
 import byteMDLocale from 'bytemd/locales/pt_BR.json';
 import { clsx } from 'clsx';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import classes from './Markdown.module.css';
 import {
@@ -176,6 +176,11 @@ export function MarkdownEditor({
   const clobberPrefix = clobberPrefixProp?.toLowerCase();
   const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow });
   const editorRef = useRef();
+  // The write-only layout is ours until the reader picks a pane in the toolbar. bytemd only leaves
+  // the split on its own when `activeTab` becomes `'write'`, and it focuses the editor whenever
+  // that happens — which drags the page to whichever comment box is halfway down it. The other
+  // modes already open in a single pane.
+  const [isWriteOnly, setIsWriteOnly] = useState(mode === 'split');
 
   useEffect(() => {
     const editorElement = editorRef.current;
@@ -184,14 +189,26 @@ export function MarkdownEditor({
   }, [onKeyDown]);
 
   useEffect(() => {
-    editorRef.current
-      ?.getElementsByClassName('bytemd-toolbar-right')[0]
-      ?.querySelector('[bytemd-tippy-path="2"]')
-      ?.click();
+    const editorPane = editorRef.current?.querySelector('.bytemd-editor');
+
+    if (!editorPane) return;
+
+    // Every layout bytemd computes for the split gives each pane half of the width, so an inline
+    // style without it means the reader has chosen, and from there on the panes are bytemd's again.
+    const observer = new MutationObserver(() => {
+      if (editorPane.style.cssText.includes('50%')) return;
+
+      observer.disconnect();
+      setIsWriteOnly(false);
+    });
+
+    observer.observe(editorPane, { attributeFilter: ['style'] });
+
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <div className={clsx(classes.Editor, isInvalid && 'is-invalid')} ref={editorRef}>
+    <div className={clsx(classes.Editor, isInvalid && 'is-invalid', isWriteOnly && 'is-write-only')} ref={editorRef}>
       <ByteMdEditor
         plugins={bytemdPluginList}
         mode={mode}

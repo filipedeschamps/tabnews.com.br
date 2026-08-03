@@ -34,6 +34,24 @@
   outline: 2px solid var(--borderColor-danger-emphasis);
 }
 
+/* Overrides the inline widths bytemd gives the panes in the split. A flex basis wins over them
+   and leaves the sidebar with the width it asks for. */
+.is-write-only .bytemd-body {
+  display: flex;
+}
+
+.is-write-only .bytemd-editor {
+  flex: 1;
+}
+
+.is-write-only .bytemd-sidebar {
+  flex: none;
+}
+
+.is-write-only .bytemd-preview {
+  display: none;
+}
+
 .bytemd-fullscreen {
   display: flex;
   flex-direction: column;
