@@ -397,6 +397,16 @@
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
 }
 
+/* The clip above uncovers the handle of the `resize` of `.bytemd-body`, which Gecko lets the reader
+   drag even under the scrollbar of CodeMirror. And a clip path there costs the editor its scroll:
+   Gecko hands the wheel gesture to the root scroller instead of to a scroller inside one, so the
+   page moves and the editor stays put. */
+@supports (-moz-orient: inline) {
+  .bytemd-editor {
+    clip-path: none;
+  }
+}
+
 .bytemd-fullscreen .bytemd-editor {
   clip-path: none;
 }
