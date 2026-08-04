@@ -24,6 +24,7 @@ import {
   katexStylesheetPlugin,
   mermaidPlugin,
   removeDuplicateClobberPrefix,
+  strictInlineMathPlugin,
 } from './plugins';
 import { EditorStyles } from './styles';
 import { Viewer } from './Viewer';
@@ -63,6 +64,7 @@ const bytemdPluginBaseList = [
     locale: mathLocale,
     katexOptions,
   }),
+  strictInlineMathPlugin(),
   breaksPlugin(),
   gemojiPlugin(),
   copyCodeToClipboardPlugin(),
