@@ -6,8 +6,9 @@ import { createRoot } from 'react-dom/client';
 import { MarkdownEditor } from './Markdown';
 import classes from './Markdown.module.css';
 
-// The table of contents, write-only and preview-only icons of the toolbar, in the order bytemd
-// builds them.
+// The icons of the toolbar, in the order bytemd builds them: a dropdown on the left, and the table
+// of contents, write-only and preview-only ones on the right.
+const headingIcon = '.bytemd-toolbar-left [bytemd-tippy-path="0"]';
 const tableOfContentsIcon = '.bytemd-toolbar-right [bytemd-tippy-path="1"]';
 const writeOnlyIcon = '.bytemd-toolbar-right [bytemd-tippy-path="2"]';
 const previewOnlyIcon = '.bytemd-toolbar-right [bytemd-tippy-path="3"]';
@@ -121,6 +122,16 @@ describe('ui', () => {
       expect(byteMd.parentNode).toBeNull();
     });
 
+    it('opens a dropdown inside the toolbar, without tippy complaining about it', async () => {
+      const { container } = await renderEditor();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await hover(container, headingIcon);
+
+      expect(container.querySelector('.bytemd-toolbar .bytemd-dropdown')).not.toBeNull();
+      expect(warn).not.toHaveBeenCalled();
+    });
+
     it('keeps the toolbar actions of the split mode', async () => {
       const { container } = await renderEditor();
 
@@ -150,6 +161,10 @@ function scroll(container) {
 
 function click(container, selector) {
   return userEvent.setup().click(container.querySelector(selector));
+}
+
+function hover(container, selector) {
+  return userEvent.setup().hover(container.querySelector(selector));
 }
 
 async function renderEditor(props) {

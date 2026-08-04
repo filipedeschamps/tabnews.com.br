@@ -1,5 +1,30 @@
 import { Editor } from 'bytemd';
 import { useEffect, useRef } from 'react';
+import tippy from 'tippy.js';
+
+// tippy warns whenever an interactive tooltip is not the next sibling of its reference, since a
+// keyboard would tab past it. Repeating the placement tippy already gives them only tells it the
+// order is deliberate, which it is: the dropdowns of the toolbar are not focusable to begin with,
+// and they cannot leave it, because bytemd delegates the clicks of their items to the toolbar.
+tippy.setDefaultProps({
+  plugins: [
+    ...tippy.defaultProps.plugins,
+    {
+      name: 'appendDropdownToToolbar',
+      // Not on create: bytemd only marks a dropdown as interactive once tippy has built it.
+      fn: (instance) => ({
+        onShow() {
+          const toolbar = instance.reference.closest('.bytemd-toolbar');
+          const untouched = instance.props.appendTo === tippy.defaultProps.appendTo;
+
+          if (toolbar && untouched && instance.props.interactive) {
+            instance.setProps({ appendTo: () => instance.reference.parentNode });
+          }
+        },
+      }),
+    },
+  ],
+});
 
 // bytemd throttles the scroll sync between its panes by a second, and destroying the editor neither
 // cancels the pending call nor unsubscribes it from the scroll. The trailing call then lands after
