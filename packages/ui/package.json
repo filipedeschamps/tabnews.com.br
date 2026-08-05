@@ -1,6 +1,6 @@
 {
   "name": "@tabnews/ui",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "TabNews UI",
   "license": "MIT",
   "private": true,
@@ -14,6 +14,9 @@
     "./markdown": "./src/Markdown/index.js",
     "./primer": "./src/primer-react.js",
     "./css": "./src/ui.css"
+  },
+  "browser": {
+    "./src/Markdown/plugins/katex-math.server.js": "./src/Markdown/plugins/katex-math.browser.js"
   },
   "scripts": {
     "test": "vitest --root ../.. watch \"$PWD\"",
@@ -31,9 +34,13 @@
     "@bytemd/react": "^1.22.0",
     "@primer/octicons-react": "^19.28.0",
     "@primer/react": "^38.26.0",
+    "bytemd": "^1.22.0",
     "clsx": "^2.1.1",
+    "katex": "0.16.22",
+    "mermaid": "^10.9.6",
     "rehype-external-links": "^3.0.0",
-    "rehype-slug": "^6.0.0"
+    "rehype-slug": "^6.0.0",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "6.9.1",

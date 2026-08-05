@@ -10,7 +10,13 @@ export default function Custom500() {
     <DefaultLayout metadata={{ title: '500 - Erro Interno Não Esperado' }}>
       <div className={classes.Wrapper}>
         <div className={classes.Content}>
-          <Image src={botDeadFaceDarkTransparent.src} height={100} width={100} alt="Ícone do Bot desacordado" />
+          <Image
+            src={botDeadFaceDarkTransparent.src}
+            height={100}
+            width={100}
+            alt="Ícone do Bot desacordado"
+            loading="eager"
+          />
           <div className={classes.Divider}></div>
           <h1>500</h1>
         </div>

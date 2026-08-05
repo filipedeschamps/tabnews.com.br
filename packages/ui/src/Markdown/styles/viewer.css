@@ -947,7 +947,9 @@ code.hljs {
   border-radius: 6px;
 }
 
-.markdown-body .math {
+/* `.math` is what the client renders, `.math-display` what the server does. */
+.markdown-body .math,
+.markdown-body .math-display {
   overflow: auto;
 }
 

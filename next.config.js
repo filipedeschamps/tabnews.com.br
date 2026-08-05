@@ -108,6 +108,12 @@ module.exports = {
         headers: securityHeaders,
       },
 
+      // O caminho do KaTeX é versionado, então o conteúdo nunca muda para uma mesma URL
+      {
+        source: '/katex/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+
       // ENABLES CORS
       {
         source: '/api/:path*',

@@ -44,6 +44,16 @@ if (typeof document !== 'undefined') {
   // (`[sheet, ...root.adoptedStyleSheets]`), which throws when the value is undefined.
   document.adoptedStyleSheets ??= [];
 
+  // jsdom doesn't implement ResizeObserver, which bytemd observes the editor container with.
+  window.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+
+  // jsdom doesn't implement scrollTo, which bytemd syncs the scroll of its two panes with.
+  Element.prototype.scrollTo ??= () => {};
+
   // jsdom doesn't implement matchMedia, which @primer/react's useMedia hook relies on.
   window.matchMedia ??= () => {};
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({

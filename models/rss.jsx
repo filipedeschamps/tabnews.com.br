@@ -33,7 +33,11 @@ function generateRss2(contentList, path = '/recentes/rss') {
       link: contentUrl,
       description: removeMarkdown(contentObject.body, { maxLength: 190 }),
       content: renderToStaticMarkup(
-        <Viewer value={contentObject.body} clobberPrefix={`${contentObject.owner_username}-content-`} />,
+        <Viewer
+          value={contentObject.body}
+          clobberPrefix={`${contentObject.owner_username}-content-`}
+          shouldRenderMath={false}
+        />,
       ).replace(/[\r\n]/gm, ''),
       author: [
         {
