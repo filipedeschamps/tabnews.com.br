@@ -184,5 +184,30 @@ describe('GET /recentes/rss', () => {
     </channel>
 </rss>`);
     });
+    test('With 1 relevant content', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const relevantContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Relevant RSS content',
+        body: relevantBody,
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin:credit',
+        recipientId: relevantContent.id,
+        amount: 1,
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/relevantes/rss`);
+      const responseBody = await response.text();
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toContain(`<link>${orchestrator.webserverUrl}/relevantes/rss</link>`);
+      expect(responseBody).toContain('<item>');
+      expect(responseBody).toContain('<title><![CDATA[Relevant RSS content]]></title>');
+      expect(responseBody).toContain(relevantBody);
+    });
   });
 });

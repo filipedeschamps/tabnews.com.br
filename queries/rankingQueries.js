@@ -160,6 +160,7 @@ const rankedContent = `
         contents.parent_id,
         contents.slug,
         contents.title,
+        contents.body,
         contents.status,
         contents.source_url,
         contents.created_at,
