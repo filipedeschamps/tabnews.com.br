@@ -16,9 +16,11 @@ export default createRouter()
 
 async function handleRequest(request, response) {
   const userTryingToList = user.createAnonymous();
+  const feedStrategy = request.query.strategy === 'relevant' ? 'relevant' : 'new';
+  const feedPath = feedStrategy === 'relevant' ? '/relevantes/rss' : '/recentes/rss';
 
   const results = await content.findWithStrategy({
-    strategy: 'new',
+    strategy: feedStrategy,
     where: {
       parent_id: null,
       status: 'published',
@@ -31,7 +33,7 @@ async function handleRequest(request, response) {
   const contentListFound = results.rows;
 
   const secureContentListFound = authorization.filterOutput(userTryingToList, 'read:content:list', contentListFound);
-  const rss2 = rss.generateRss2(secureContentListFound);
+  const rss2 = rss.generateRss2(secureContentListFound, feedPath);
 
   response.setHeader('Content-Type', 'text/xml; charset=utf-8');
   response.status(200).send(rss2);
