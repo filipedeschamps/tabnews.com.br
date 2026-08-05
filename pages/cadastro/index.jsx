@@ -93,7 +93,7 @@ function SignUpForm() {
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
-      <FormField {...getFieldProps('username')} name="name" autoComplete="off" />
+      <FormField {...getFieldProps('username')} name="name" autoComplete="off" autoFocus />
       <FormField {...getFieldProps('email')} autoComplete="username" />
       <FormField {...getFieldProps('password')} autoComplete="new-password" />
       <FormField

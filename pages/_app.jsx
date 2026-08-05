@@ -1,4 +1,5 @@
 import { RevalidateProvider } from 'next-swr';
+import { useEffect } from 'react';
 import { SWRConfig } from 'swr';
 import '@tabnews/ui/css';
 
@@ -20,6 +21,15 @@ async function SWRFetcher(resource, init) {
 const fallbackData = { body: null, headers: {} };
 
 function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    // React never focuses what it hydrates, and leaves the  attribute in the markup for the browser
+    // to honor — which it skips on a reload that restored a focus of its own. Only nodes that came
+    // from the server carry it, so this is the first load.
+    if (document.activeElement === document.body) {
+      document.querySelector('[autofocus]')?.focus({ preventScroll: true });
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <Turnstile />

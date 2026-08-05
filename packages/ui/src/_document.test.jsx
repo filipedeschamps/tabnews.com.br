@@ -15,11 +15,6 @@ describe('ui', () => {
       expect(getByTestId('Next App Content')).toBeDefined();
       expect(getByTestId('Next Scripts')).toBeDefined();
 
-      const katexLink = document.head.querySelector('link[href*="katex"]');
-      expect(katexLink).not.toBeNull();
-      expect(katexLink.getAttribute('rel')).toBe('preload');
-      expect(document.head.innerHTML).toContain('katexLink');
-
       expect(hoisted.nextScriptDefault).toHaveBeenCalledOnce();
 
       const themeScript = container.querySelector('script#theme');

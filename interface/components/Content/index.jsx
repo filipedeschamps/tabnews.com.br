@@ -551,6 +551,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
           <FormControl id="body" required={!contentObject?.parent_id}>
             <FormControl.Label>{contentObject?.parent_id ? 'Seu comentário' : 'Corpo da publicação'}</FormControl.Label>
             <Editor
+              autoFocus={!!contentObject?.parent_id}
               isInvalid={errorObject?.key === 'body' || newData.body.length > BODY_MAX_LENGTH}
               value={newData.body}
               onChange={handleChange}

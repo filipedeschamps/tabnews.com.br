@@ -106,7 +106,7 @@ function LoginForm() {
 
   return (
     <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
-      <FormField {...getFieldProps('email')} />
+      <FormField {...getFieldProps('email')} autoFocus />
       <FormField {...getFieldProps('password')} />
 
       {globalErrorMessage && (

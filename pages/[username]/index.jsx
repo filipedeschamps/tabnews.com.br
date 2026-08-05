@@ -284,6 +284,7 @@ function DescriptionForm({
         {/* Label styled similar to the "read" view so it is in the same position */}
         <FormControl.Label className={classes.FormLabel}>Descrição</FormControl.Label>
         <Editor
+          autoFocus
           isInvalid={errorObject?.key === 'description' || description.length > DESCRIPTION_MAX_LENGTH}
           value={description}
           onChange={handleDescriptionChange}
