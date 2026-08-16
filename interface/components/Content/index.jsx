@@ -143,8 +143,6 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
     const confirmDelete = await confirm({
       title: 'Você tem certeza?',
       content: 'Deseja realmente apagar essa publicação?',
-      cancelButtonContent: 'Cancelar',
-      confirmButtonContent: 'Sim',
     });
 
     if (!confirmDelete) return;
@@ -300,7 +298,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
                   de fazer essa publicação.
                 </Flash>
               ),
-              cancelButtonContent: 'Cancelar',
               confirmButtonContent: 'Publicar',
               confirmButtonType: 'danger',
             })
@@ -436,8 +433,6 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         ? await confirm({
             title: 'Tem certeza que deseja sair da edição?',
             content: 'Os dados não salvos serão perdidos.',
-            cancelButtonContent: 'Cancelar',
-            confirmButtonContent: 'Sim',
           })
         : true;
 
@@ -606,7 +601,6 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
               title: 'Você deseja responder ao seu próprio conteúdo?',
               content:
                 'Ao responder à sua própria publicação, você não acumulará TabCoins. É recomendado editar o conteúdo existente caso precise complementar informações.',
-              cancelButtonContent: 'Cancelar',
               confirmButtonContent: 'Responder',
               confirmButtonType: 'danger',
             })

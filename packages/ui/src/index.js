@@ -1,11 +1,13 @@
 export * from './AutoThemeProvider';
 export { COLOR_MODE_COOKIE } from './constants/public';
+export * from './Dialog';
 export * from './FormField';
 export * from './GoToTopButton';
 export { NotificationList, NotificationMenu, NotificationsProvider, useNotifications } from './Notifications';
 export { PrimerRoot } from './PrimerRoot/PrimerRoot';
 export * from './ThemeProvider';
 export * from './UnderlineNav';
+export * from './useConfirm';
 export {
   ActionList,
   ActionMenu,
@@ -14,7 +16,6 @@ export {
   Button,
   Checkbox,
   CounterLabel,
-  Dialog,
   Flash,
   FormControl,
   Heading,
@@ -30,7 +31,6 @@ export {
   TextInput,
   Tooltip,
   Truncate,
-  useConfirm,
   useTheme,
 } from '@primer/react';
 export { Tooltip as TooltipV1 } from '@primer/react/deprecated';

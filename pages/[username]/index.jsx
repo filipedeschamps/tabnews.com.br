@@ -188,8 +188,6 @@ function DescriptionForm({
               &quot;.
             </span>
           ),
-          cancelButtonContent: 'Cancelar',
-          confirmButtonContent: 'Sim',
         })
       : true;
 
@@ -248,8 +246,6 @@ function DescriptionForm({
         ? await confirm({
             title: 'Tem certeza que deseja sair da edição?',
             content: 'A alteração não foi salva e será perdida.',
-            cancelButtonContent: 'Cancelar',
-            confirmButtonContent: 'Sim',
           })
         : true;
 
@@ -344,8 +340,6 @@ function OptionsMenu({ canUpdate, isAuthenticatedUser, onNuke, setGlobalMessageO
     const confirmDelete1 = await confirm({
       title: `Atenção: Você está realizando um Nuke!`,
       content: `Deseja banir o usuário "${userFound.username}" e desfazer todas as suas ações?`,
-      confirmButtonContent: 'Sim',
-      cancelButtonContent: 'Cancelar',
     });
 
     if (!confirmDelete1) return;
