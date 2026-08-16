@@ -1,5 +1,6 @@
 export * from './AutoThemeProvider';
 export { COLOR_MODE_COOKIE } from './constants/public';
+export * from './Dialog';
 export * from './FormField';
 export * from './GoToTopButton';
 export { NotificationList, NotificationMenu, NotificationsProvider, useNotifications } from './Notifications';
@@ -14,7 +15,6 @@ export {
   Button,
   Checkbox,
   CounterLabel,
-  Dialog,
   Flash,
   FormControl,
   Heading,
