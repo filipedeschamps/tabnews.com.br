@@ -141,6 +141,23 @@ module.exports = defineConfig([
   },
   primerReactRecommended,
   {
+    files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
+    // The wrappers themselves are the only place allowed to reach the Primer components.
+    ignores: ['packages/ui/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: ['@primer/react', '@tabnews/ui/primer'].map((name) => ({
+            name,
+            importNames: ['Dialog', 'useConfirm'],
+            message: 'Import from `@tabnews/ui` instead, which translates the dialog.',
+          })),
+        },
+      ],
+    },
+  },
+  {
     files: ['tests/*', '**/*.test.*', '**/*.spec.*'],
     ignores: ['tests/e2e/**'],
     languageOptions: pluginVitest.environments.env,
