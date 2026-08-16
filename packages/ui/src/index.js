@@ -7,6 +7,7 @@ export { NotificationList, NotificationMenu, NotificationsProvider, useNotificat
 export { PrimerRoot } from './PrimerRoot/PrimerRoot';
 export * from './ThemeProvider';
 export * from './UnderlineNav';
+export * from './useConfirm';
 export {
   ActionList,
   ActionMenu,
@@ -30,7 +31,6 @@ export {
   TextInput,
   Tooltip,
   Truncate,
-  useConfirm,
   useTheme,
 } from '@primer/react';
 export { Tooltip as TooltipV1 } from '@primer/react/deprecated';

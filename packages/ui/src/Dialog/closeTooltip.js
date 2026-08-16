@@ -4,9 +4,14 @@
 const closeTooltipSelector = '[role="dialog"] button ~ span, [role="alertdialog"] button ~ span';
 
 export function translateDialogCloseTooltip() {
+  let translated = false;
+
   document.querySelectorAll(closeTooltipSelector).forEach((span) => {
     if (span.textContent === 'Close') {
       span.textContent = 'Fechar';
+      translated = true;
     }
   });
+
+  return translated;
 }

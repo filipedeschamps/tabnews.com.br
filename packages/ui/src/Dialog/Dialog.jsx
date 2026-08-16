@@ -5,7 +5,9 @@ import { useLayoutEffect } from 'react';
 import { translateDialogCloseTooltip } from './closeTooltip';
 
 export function Dialog(props) {
-  useLayoutEffect(translateDialogCloseTooltip, []);
+  useLayoutEffect(() => {
+    translateDialogCloseTooltip();
+  }, []);
 
   return <PrimerDialog {...props} />;
 }
