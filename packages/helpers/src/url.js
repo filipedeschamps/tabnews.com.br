@@ -1,4 +1,4 @@
-import { isProduction, isServerlessRuntime } from './environment';
+import { isProduction } from './environment';
 
 export const baseUrl = getBaseUrl();
 export const webserverHostname = tryParseUrl(baseUrl).hostname;
@@ -32,21 +32,19 @@ export function getBaseUrl() {
   const NEXT_PUBLIC_WEBSERVER_HOST = process.env.NEXT_PUBLIC_WEBSERVER_HOST;
   const NEXT_PUBLIC_WEBSERVER_PORT = process.env.NEXT_PUBLIC_WEBSERVER_PORT;
 
-  const protocol = isServerlessRuntime ? 'https' : 'http';
-
   // Vercel Production
   if (isProduction && NEXT_PUBLIC_WEBSERVER_HOST) {
-    return `${protocol}://${NEXT_PUBLIC_WEBSERVER_HOST}`;
+    return `https://${NEXT_PUBLIC_WEBSERVER_HOST}`;
   }
 
   // Vercel Preview
   if (NEXT_PUBLIC_VERCEL_URL) {
-    return `${protocol}://${NEXT_PUBLIC_VERCEL_URL}`;
+    return `https://${NEXT_PUBLIC_VERCEL_URL}`;
   }
 
   // Development
   if (NEXT_PUBLIC_WEBSERVER_HOST && NEXT_PUBLIC_WEBSERVER_PORT) {
-    return `${protocol}://${NEXT_PUBLIC_WEBSERVER_HOST}:${NEXT_PUBLIC_WEBSERVER_PORT}`;
+    return `http://${NEXT_PUBLIC_WEBSERVER_HOST}:${NEXT_PUBLIC_WEBSERVER_PORT}`;
   }
 
   // Browser

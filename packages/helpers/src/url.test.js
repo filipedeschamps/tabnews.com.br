@@ -123,6 +123,28 @@ describe('helpers/url', () => {
       });
     });
 
+    describe('Vercel Browser', () => {
+      test('Production', async () => {
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'production');
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_URL', 'tabnews.vercel.app');
+        vi.stubEnv('NEXT_PUBLIC_WEBSERVER_HOST', 'tabnews.com.br');
+        vi.stubEnv('NEXT_PUBLIC_WEBSERVER_PORT', '3000');
+
+        const { baseUrl } = await import('.');
+
+        expect(baseUrl).toBe('https://tabnews.com.br');
+      });
+
+      test('Preview', async () => {
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'preview');
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_URL', 'prev-tabnews.vercel.app');
+
+        const { baseUrl } = await import('.');
+
+        expect(baseUrl).toBe('https://prev-tabnews.vercel.app');
+      });
+    });
+
     describe('Vercel Edge', () => {
       beforeAll(() => {
         vi.stubGlobal('EdgeRuntime', true);
