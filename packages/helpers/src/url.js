@@ -73,6 +73,29 @@ export function getDomain(link) {
 }
 
 /**
+ * Resolves a value into a path of the same origin as the running page.
+ *
+ * In the browser it compares against `location.origin`, which can differ from
+ * `baseUrl` because a deployment is reachable through more than one origin
+ * (deployment URL, branch alias, custom domain, `www` or apex). On the server
+ * it falls back to `baseUrl`.
+ *
+ * @param {string | URL} value - Any value that can potentially be coerced into a URL string.
+ * @returns {string | null} The pathname, search and hash when the value belongs to the same
+ * origin, otherwise `null`.
+ */
+export function getSameOriginPath(value) {
+  if (!value) return null;
+
+  const origin = typeof location !== 'undefined' && location.origin ? location.origin : baseUrl;
+  const url = tryParseUrl(value, origin, 'getSameOriginPath');
+
+  if (url.origin !== origin) return null;
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+/**
  * Checks whether a given link points to an external domain.
  *
  * @param {string | URL} link - The link to check. Can be anything coercible to a URL.
@@ -146,14 +169,15 @@ export function replaceParams(params) {
  * Attempts to parse a value into a valid URL.
  *
  * @param {string | URL} url - Any value that can potentially be coerced into a URL string.
+ * @param {string} [base=baseUrl] - Base used to resolve relative URLs.
  * @param {string} [label='tryParseUrl'] - Label used in development error messages.
  * @returns {URL | Object} A valid URL object if parsing succeeds, otherwise an empty object.
  */
-export function tryParseUrl(url, label = 'tryParseUrl') {
+export function tryParseUrl(url, base = baseUrl, label = 'tryParseUrl') {
   if (!url) return {};
 
   try {
-    return new URL(url, baseUrl);
+    return new URL(url, base);
   } catch {
     console.warn(`[${label}] Invalid URL passed: "${url}"`);
   }

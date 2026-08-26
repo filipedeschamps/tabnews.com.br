@@ -235,6 +235,47 @@ describe('helpers/url', () => {
     });
   });
 
+  describe('getSameOriginPath', () => {
+    let getSameOriginPath;
+
+    beforeAll(async () => {
+      vi.stubEnv('NEXT_PUBLIC_VERCEL_URL', 'base.url');
+      vi.stubGlobal('location', { origin: 'https://page.origin' });
+      vi.resetModules();
+      ({ getSameOriginPath } = await import('.'));
+    });
+
+    afterAll(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('should return the path of relative values', () => {
+      expect(getSameOriginPath('/publicar')).toBe('/publicar');
+      expect(getSameOriginPath('/publicar?tipo=aula#topo')).toBe('/publicar?tipo=aula#topo');
+      expect(getSameOriginPath('publicar')).toBe('/publicar');
+    });
+
+    it('should return the path of absolute values of the same origin', () => {
+      expect(getSameOriginPath('https://page.origin/publicar?tipo=aula')).toBe('/publicar?tipo=aula');
+    });
+
+    it('should compare against the page origin, not `baseUrl`', () => {
+      expect(getSameOriginPath('https://base.url/publicar')).toBeNull();
+    });
+
+    it('should return null for other origins', () => {
+      expect(getSameOriginPath('https://evil.com/publicar')).toBeNull();
+      expect(getSameOriginPath('//evil.com/publicar')).toBeNull();
+      expect(getSameOriginPath('javascript:alert(1)')).toBeNull();
+    });
+
+    it('should return null for empty or invalid values', () => {
+      expect(getSameOriginPath(undefined)).toBeNull();
+      expect(getSameOriginPath('')).toBeNull();
+      expect(getSameOriginPath('http://')).toBeNull();
+    });
+  });
+
   describe('isExternalLink', () => {
     let isExternalLink;
 
@@ -489,7 +530,7 @@ describe('helpers/url', () => {
     });
 
     it('should use the label in the warning message', () => {
-      const result = tryParseUrl('https://bad[url]', 'customLabel');
+      const result = tryParseUrl('https://bad[url]', undefined, 'customLabel');
       expect(result).toStrictEqual({});
       expect(console.warn).toHaveBeenCalledWith('[customLabel] Invalid URL passed: "https://bad[url]"');
     });
