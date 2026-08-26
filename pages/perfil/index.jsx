@@ -57,7 +57,7 @@ function EditProfileForm() {
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
-      router.push(`/login?redirect=${router.asPath}`);
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
     }
 
     if (user && !userIsLoading && !usernameRef.current.value) {

@@ -26,7 +26,7 @@ export default function Login() {
     const url = tryParseUrl(router.query.redirect);
 
     if (url.origin === location?.origin) {
-      router.replace(url.pathname);
+      router.replace(`${url.pathname}${url.search}${url.hash}`);
     } else {
       router.replace('/');
     }

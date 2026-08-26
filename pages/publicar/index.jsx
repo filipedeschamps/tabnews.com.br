@@ -19,7 +19,7 @@ export default function Post() {
 
   useEffect(() => {
     if (router && !user && !isLoading) {
-      router.push(`/login?redirect=${router.asPath}`);
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
     }
   }, [user, router, isLoading]);
 
