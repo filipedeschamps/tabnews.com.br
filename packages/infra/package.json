@@ -1,6 +1,6 @@
 {
   "name": "@tabnews/infra",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "TabNews Infra",
   "license": "MIT",
   "private": true,

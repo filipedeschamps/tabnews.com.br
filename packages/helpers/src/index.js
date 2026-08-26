@@ -11,6 +11,7 @@ export {
   baseUrl,
   getBaseUrl,
   getDomain,
+  getSameOriginPath,
   isExternalLink,
   isTrustedDomain,
   replaceParams,

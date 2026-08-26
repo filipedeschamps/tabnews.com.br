@@ -123,6 +123,28 @@ describe('helpers/url', () => {
       });
     });
 
+    describe('Vercel Browser', () => {
+      test('Production', async () => {
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'production');
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_URL', 'tabnews.vercel.app');
+        vi.stubEnv('NEXT_PUBLIC_WEBSERVER_HOST', 'tabnews.com.br');
+        vi.stubEnv('NEXT_PUBLIC_WEBSERVER_PORT', '3000');
+
+        const { baseUrl } = await import('.');
+
+        expect(baseUrl).toBe('https://tabnews.com.br');
+      });
+
+      test('Preview', async () => {
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'preview');
+        vi.stubEnv('NEXT_PUBLIC_VERCEL_URL', 'prev-tabnews.vercel.app');
+
+        const { baseUrl } = await import('.');
+
+        expect(baseUrl).toBe('https://prev-tabnews.vercel.app');
+      });
+    });
+
     describe('Vercel Edge', () => {
       beforeAll(() => {
         vi.stubGlobal('EdgeRuntime', true);
@@ -210,6 +232,47 @@ describe('helpers/url', () => {
       expect(getDomain('/about')).toBe('base.url');
       expect(getDomain('/about?param=value')).toBe('base.url');
       expect(getDomain('/about#hash')).toBe('base.url');
+    });
+  });
+
+  describe('getSameOriginPath', () => {
+    let getSameOriginPath;
+
+    beforeAll(async () => {
+      vi.stubEnv('NEXT_PUBLIC_VERCEL_URL', 'base.url');
+      vi.stubGlobal('location', { origin: 'https://page.origin' });
+      vi.resetModules();
+      ({ getSameOriginPath } = await import('.'));
+    });
+
+    afterAll(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('should return the path of relative values', () => {
+      expect(getSameOriginPath('/publicar')).toBe('/publicar');
+      expect(getSameOriginPath('/publicar?tipo=aula#topo')).toBe('/publicar?tipo=aula#topo');
+      expect(getSameOriginPath('publicar')).toBe('/publicar');
+    });
+
+    it('should return the path of absolute values of the same origin', () => {
+      expect(getSameOriginPath('https://page.origin/publicar?tipo=aula')).toBe('/publicar?tipo=aula');
+    });
+
+    it('should compare against the page origin, not `baseUrl`', () => {
+      expect(getSameOriginPath('https://base.url/publicar')).toBeNull();
+    });
+
+    it('should return null for other origins', () => {
+      expect(getSameOriginPath('https://evil.com/publicar')).toBeNull();
+      expect(getSameOriginPath('//evil.com/publicar')).toBeNull();
+      expect(getSameOriginPath('javascript:alert(1)')).toBeNull();
+    });
+
+    it('should return null for empty or invalid values', () => {
+      expect(getSameOriginPath(undefined)).toBeNull();
+      expect(getSameOriginPath('')).toBeNull();
+      expect(getSameOriginPath('http://')).toBeNull();
     });
   });
 
@@ -467,7 +530,7 @@ describe('helpers/url', () => {
     });
 
     it('should use the label in the warning message', () => {
-      const result = tryParseUrl('https://bad[url]', 'customLabel');
+      const result = tryParseUrl('https://bad[url]', undefined, 'customLabel');
       expect(result).toStrictEqual({});
       expect(console.warn).toHaveBeenCalledWith('[customLabel] Invalid URL passed: "https://bad[url]"');
     });
