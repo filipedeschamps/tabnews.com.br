@@ -1,5 +1,5 @@
 import { email, password, useForm } from '@tabnews/forms';
-import { tryParseUrl } from '@tabnews/helpers';
+import { getSameOriginPath } from '@tabnews/helpers';
 import { FormField } from '@tabnews/ui';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -23,13 +23,9 @@ export default function Login() {
   useEffect(() => {
     if (!router.isReady || !user?.id) return;
 
-    const url = tryParseUrl(router.query.redirect);
+    const path = getSameOriginPath(router.query.redirect);
 
-    if (url.origin === location?.origin) {
-      router.replace(`${url.pathname}${url.search}${url.hash}`);
-    } else {
-      router.replace('/');
-    }
+    router.replace(path ?? '/');
   }, [user, router]);
 
   return (
