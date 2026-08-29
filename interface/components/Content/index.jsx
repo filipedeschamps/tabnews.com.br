@@ -44,7 +44,14 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
 
 const BODY_MAX_LENGTH = 20_000;
 
-export default function Content({ content, isPageRootOwner, mode = 'view', rootContent, viewFrame = false }) {
+export default function Content({
+  content,
+  isPageRootOwner,
+  mode = 'view',
+  onPublish,
+  rootContent,
+  viewFrame = false,
+}) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -52,10 +59,6 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setContentObject((contentObject) => {
-      // The reply box describes the content being replied to with a placeholder that has no `id`,
-      // and the page rebuilds it on every render, so it must not overwrite a published reply.
-      if (contentObject?.id && !content?.id) return contentObject;
-
       return { ...contentObject, ...content };
     });
   }, [content]);
@@ -100,6 +103,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
         setComponentMode={setComponentMode}
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
+        onPublish={onPublish}
       />
     );
   } else if (componentMode === 'deleted') {
@@ -114,7 +118,6 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
     <div className={classes.ReplyWrapper}>
       <ShareButton content={content} rootContent={rootContent} />
       {modeElement}
-      {componentMode === 'view' && <ShareButton content={contentObject} rootContent={rootContent} />}
     </div>
   );
 }
@@ -257,7 +260,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, onPublish }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
@@ -406,8 +409,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               return;
             }
 
-            setContentObject(responseBody);
-            setComponentMode('view');
+            setComponentMode('compact');
+            onPublish?.(responseBody);
           };
         }
 
@@ -428,7 +431,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         }
       }
     },
-    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
+    [
+      confirm,
+      contentObject,
+      localStorageKey,
+      newData,
+      onPublish,
+      router,
+      setComponentMode,
+      setContentObject,
+      user,
+      fetchUser,
+    ],
   );
 
   const handleChange = useCallback(
@@ -641,9 +655,7 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
 
 function ShareButton({ content, rootContent }) {
   const [isLinkCopied, setCopied] = useState(false);
-  // A published content is identified by its own `id`, while the placeholder of the reply box
-  // points to the content it replies to through `parent_id`.
-  const isRootContent = rootContent.id === (content.id ?? content.parent_id);
+  const isRootContent = rootContent.id === content.parent_id;
 
   const handleShare = async () => {
     const title =

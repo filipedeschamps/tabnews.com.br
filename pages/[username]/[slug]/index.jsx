@@ -1,8 +1,8 @@
-import { findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
+import { addNodeToTree, findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
 import { useTreeCollapse } from '@tabnews/hooks';
 import { clsx } from 'clsx';
 import { getStaticPropsRevalidate } from 'next-swr';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import { AdBanner, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
@@ -22,6 +22,16 @@ const renderIncrement = 50;
 export default function Post({ contentFound, rootContentFound, parentContentFound, contentMetadata }) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [autoExpandPath, setAutoExpandPath] = useState(null);
+  const [publishedReplies, setPublishedReplies] = useState([]);
+
+  // A reply is published without the page being fetched again, so it is added to the tree to be
+  // rendered as any other comment. Replies of another content are dropped by `addNodeToTree`.
+  const contentTree = useMemo(
+    () => publishedReplies.reduce((tree, reply) => addNodeToTree(tree, reply, reply.parent_id), contentFound),
+    [contentFound, publishedReplies],
+  );
+
+  const handlePublish = useCallback((reply) => setPublishedReplies((replies) => [...replies, reply]), []);
 
   const {
     data: { body: adsFound },
@@ -112,6 +122,7 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
               }}
               rootContent={rootContentFound || contentFound}
               mode="compact"
+              onPublish={handlePublish}
             />
           </div>
 
@@ -120,7 +131,8 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
           <RenderChildrenTree
             key={contentFound.id}
             autoExpandPath={autoExpandPath}
-            childrenList={contentFound.children}
+            childrenList={contentTree.children}
+            onPublish={handlePublish}
             pageRootOwnerId={contentFound.owner_id}
             renderIntent={initialRenderIntent}
             rootContent={rootContentFound || contentFound}
@@ -196,7 +208,7 @@ function InReplyToLinks({ content, parentContent, rootContent }) {
   );
 }
 
-function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, renderIntent, rootContent }) {
+function RenderChildrenTree({ autoExpandPath, childrenList, onPublish, pageRootOwnerId, renderIntent, rootContent }) {
   const { nodeStates, handleCollapse, handleExpand } = useTreeCollapse({
     nodes: childrenList,
     totalBudget: renderIntent,
@@ -241,6 +253,7 @@ function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, ren
                 <Content
                   content={{ owner_id, owner_username, parent_id: id, slug }}
                   mode={isPublished ? 'compact' : 'deleted'}
+                  onPublish={onPublish}
                   rootContent={rootContent}
                   viewFrame={true}
                 />
@@ -250,6 +263,7 @@ function RenderChildrenTree({ autoExpandPath, childrenList, pageRootOwnerId, ren
                 <RenderChildrenTree
                   autoExpandPath={autoExpandPath?.[0] === id ? autoExpandPath?.slice(1) : null}
                   childrenList={children}
+                  onPublish={onPublish}
                   pageRootOwnerId={pageRootOwnerId}
                   renderIntent={expandedSize - 1}
                   rootContent={rootContent}

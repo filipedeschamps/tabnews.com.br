@@ -1,6 +1,100 @@
-import { findPathToNode, getSubtreeDepth, getSubtreeSize } from '.';
+import { addNodeToTree, findPathToNode, getSubtreeDepth, getSubtreeSize } from '.';
 
 describe('helpers/tree', () => {
+  describe('addNodeToTree', () => {
+    const newNode = { id: 'new' };
+
+    it('adds the node to the children of the root', () => {
+      const tree = { id: 'root', children: [{ id: '1' }], children_deep_count: 1 };
+
+      expect(addNodeToTree(tree, newNode, 'root')).toStrictEqual({
+        id: 'root',
+        children: [{ id: '1' }, newNode],
+        children_deep_count: 2,
+      });
+    });
+
+    it('adds the node to a root without children', () => {
+      expect(addNodeToTree({ id: 'root' }, newNode, 'root')).toStrictEqual({
+        id: 'root',
+        children: [newNode],
+        children_deep_count: 1,
+      });
+    });
+
+    it('adds the node to a content without any child yet', () => {
+      const tree = { id: 'root', children: [], children_deep_count: 0 };
+
+      expect(addNodeToTree(tree, newNode, 'root')).toStrictEqual({
+        id: 'root',
+        children: [newNode],
+        children_deep_count: 1,
+      });
+    });
+
+    it('adds the node to a nested parent and counts it on every ancestor', () => {
+      const tree = {
+        id: 'root',
+        children: [
+          { id: '1', children_deep_count: 0 },
+          { id: '2', children: [{ id: '3', children_deep_count: 0 }], children_deep_count: 1 },
+        ],
+        children_deep_count: 3,
+      };
+
+      expect(addNodeToTree(tree, newNode, '3')).toStrictEqual({
+        id: 'root',
+        children: [
+          { id: '1', children_deep_count: 0 },
+          {
+            id: '2',
+            children: [{ id: '3', children: [newNode], children_deep_count: 1 }],
+            children_deep_count: 2,
+          },
+        ],
+        children_deep_count: 4,
+      });
+    });
+
+    it('adds the node to the last of a chain of children, counting it on every ancestor', () => {
+      const tree = {
+        id: 'root',
+        children_deep_count: 3,
+        children: [
+          {
+            id: '1',
+            children_deep_count: 2,
+            children: [
+              { id: '2', children_deep_count: 1, children: [{ id: '3', children_deep_count: 0, children: [] }] },
+            ],
+          },
+        ],
+      };
+
+      const newTree = addNodeToTree(tree, newNode, '3');
+      const [first] = newTree.children;
+      const [second] = first.children;
+      const [third] = second.children;
+
+      expect(third.children).toStrictEqual([newNode]);
+      expect([newTree, first, second, third].map((node) => node.children_deep_count)).toStrictEqual([4, 3, 2, 1]);
+    });
+
+    it('returns the same tree when the parent is not found', () => {
+      const tree = { id: 'root', children: [{ id: '1' }] };
+
+      expect(addNodeToTree(tree, newNode, 'other')).toBe(tree);
+    });
+
+    it('adds the node without changing the tree it received', () => {
+      const tree = { id: 'root', children: [{ id: '1' }], children_deep_count: 1 };
+
+      addNodeToTree(tree, newNode, '1');
+
+      expect(tree).toStrictEqual({ id: 'root', children: [{ id: '1' }], children_deep_count: 1 });
+    });
+  });
+
   describe('findPathToNode', () => {
     function isTarget(id) {
       return (node) => node?.id === id;
