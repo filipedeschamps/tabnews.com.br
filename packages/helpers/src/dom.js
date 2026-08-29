@@ -20,6 +20,7 @@ export function isTopLeftInUpperLeftViewport(element) {
  * @typedef {Object} ScrollOptions
  * @property {number} [maxAttempts=10] - Maximum number of attempts to find the element.
  * @property {ScrollBehavior} [behavior='instant'] - Scrolling behavior ('auto', 'smooth', 'instant', etc.).
+ * @property {boolean} [focus=false] - Whether to move keyboard/assistive-tech focus to the element once found.
  * @property {...any} [options] - Additional properties passed to `scrollIntoView`.
  */
 
@@ -33,7 +34,7 @@ export function isTopLeftInUpperLeftViewport(element) {
 export function scrollToElementWithRetry(id, options) {
   if (typeof id !== 'string' || !id) return () => {};
 
-  const { maxAttempts = 10, behavior = 'instant', ...restOptions } = options || {};
+  const { maxAttempts = 10, behavior = 'instant', focus = false, ...restOptions } = options || {};
 
   let attempts = maxAttempts;
   let animationFrameId;
@@ -45,6 +46,7 @@ export function scrollToElementWithRetry(id, options) {
       if (!isTopLeftInUpperLeftViewport(element)) {
         element.scrollIntoView({ behavior, ...restOptions });
       }
+      if (focus) element.focus({ preventScroll: true });
       return;
     }
 

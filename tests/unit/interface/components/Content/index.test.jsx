@@ -75,4 +75,47 @@ describe('Content reply box', () => {
     expect(tooltip('Compartilhar publicação')).toBeInTheDocument();
     expect(screen.queryByText(publishedReply.body)).not.toBeInTheDocument();
   });
+
+  it('should reset the posting state when a 201 response carries an error message', async () => {
+    fetch.mockResolvedValueOnce(new Response(JSON.stringify({ message: 'Algo deu errado' }), { status: 201 }));
+
+    renderReplyBox();
+
+    clickButton('Responder para author');
+    fireEvent.click(screen.getByText('Publicar'));
+
+    await waitFor(() => expect(screen.getByText('Algo deu errado')).toBeInTheDocument());
+
+    expect(screen.getByText('Publicar').closest('button')).not.toBeDisabled();
+  });
+});
+
+describe('Content share button', () => {
+  beforeEach(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  it('has an accessible name that reflects whether the link was just copied', async () => {
+    renderReplyBox();
+
+    const shareButton = within(tooltip('Compartilhar publicação')).getByRole('button');
+    expect(shareButton).toHaveAccessibleName('Compartilhar publicação');
+
+    fireEvent.click(shareButton);
+
+    await waitFor(() => expect(shareButton).toHaveAccessibleName('Link copiado!'));
+    expect(within(tooltip('Compartilhar publicação')).getByRole('status')).toHaveTextContent('Link copiado!');
+  });
+});
+
+describe('Content view mode', () => {
+  it('makes the article focusable so a freshly published reply can receive scroll-and-focus', () => {
+    render(<Content content={{ owner_username: 'author', slug: 'view-slug', body: 'Texto' }} mode="view" />);
+
+    expect(document.getElementById('author-view-slug')).toHaveAttribute('tabindex', '-1');
+  });
 });

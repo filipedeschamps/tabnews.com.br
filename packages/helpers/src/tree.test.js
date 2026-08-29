@@ -1,6 +1,34 @@
-import { addNodeToTree, findPathToNode, getSubtreeDepth, getSubtreeSize } from '.';
+import { addNodeToTree, findPathToNode, getSubtreeDepth, getSubtreeSize, hasNode } from '.';
 
 describe('helpers/tree', () => {
+  describe('hasNode', () => {
+    const tree = {
+      id: 'root',
+      children: [{ id: '1' }, { id: '2', children: [{ id: '3' }] }],
+    };
+
+    it('returns true when the id matches the root', () => {
+      expect(hasNode(tree, 'root')).toBe(true);
+    });
+
+    it('returns true when the id matches a direct child', () => {
+      expect(hasNode(tree, '1')).toBe(true);
+    });
+
+    it('returns true when the id matches a nested descendant', () => {
+      expect(hasNode(tree, '3')).toBe(true);
+    });
+
+    it('returns false when the id is not found', () => {
+      expect(hasNode(tree, 'missing')).toBe(false);
+    });
+
+    it('returns false for a nullish tree', () => {
+      expect(hasNode(null, 'root')).toBe(false);
+      expect(hasNode(undefined, 'root')).toBe(false);
+    });
+  });
+
   describe('addNodeToTree', () => {
     const newNode = { id: 'new' };
 

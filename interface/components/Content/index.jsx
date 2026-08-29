@@ -1,7 +1,7 @@
 import { isTrustedDomain } from '@tabnews/helpers';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   ActionList,
@@ -196,6 +196,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   return (
     <article
       id={`${contentObject.owner_username}-${contentObject.slug}`}
+      tabIndex={-1}
       className={clsx(classes.Article, viewFrame && classes.ArticleFramed)}>
       <div>
         {globalErrorMessage && <ErrorMessage {...globalErrorMessage} className={classes.HeaderError} />}
@@ -400,6 +401,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             if (responseBody.message) {
               setGlobalErrorMessage({ error: responseBody });
               console.error(responseBody);
+              setIsPosting(false);
               return;
             }
 
@@ -655,7 +657,11 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
 
 function ShareButton({ content, rootContent }) {
   const [isLinkCopied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef(null);
   const isRootContent = rootContent.id === content.parent_id;
+  const shareLabel = `Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`;
+
+  useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
 
   const handleShare = async () => {
     const title =
@@ -672,7 +678,8 @@ function ShareButton({ content, rootContent }) {
       try {
         await navigator.clipboard.writeText(url);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        clearTimeout(copiedTimeoutRef.current);
+        copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
       } catch {
         alert('Não foi possível copiar o link. Verifique as permissões e se o navegador suporta a funcionalidade.');
       }
@@ -680,9 +687,15 @@ function ShareButton({ content, rootContent }) {
   };
 
   return (
-    <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
-      <Button onClick={handleShare}>
-        {isLinkCopied ? <span className={classes.LinkCopiedText}>Link copiado!</span> : <ShareIcon size={16} />}
+    <Tooltip text={shareLabel} direction="n" position="absolute">
+      <Button onClick={handleShare} aria-label={isLinkCopied ? 'Link copiado!' : shareLabel}>
+        {isLinkCopied ? (
+          <span className={classes.LinkCopiedText} role="status">
+            Link copiado!
+          </span>
+        ) : (
+          <ShareIcon size={16} aria-hidden="true" />
+        )}
       </Button>
     </Tooltip>
   );

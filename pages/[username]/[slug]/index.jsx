@@ -1,8 +1,8 @@
-import { addNodeToTree, findPathToNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
+import { addNodeToTree, findPathToNode, hasNode, scrollToElementWithRetry, truncate } from '@tabnews/helpers';
 import { useTreeCollapse } from '@tabnews/hooks';
 import { clsx } from 'clsx';
 import { getStaticPropsRevalidate } from 'next-swr';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 
 import { AdBanner, Button, Confetti, Content, DefaultLayout, Link, TabCoinButtons, Tooltip } from '@/TabNewsUI';
@@ -23,15 +23,38 @@ export default function Post({ contentFound, rootContentFound, parentContentFoun
   const [showConfetti, setShowConfetti] = useState(false);
   const [autoExpandPath, setAutoExpandPath] = useState(null);
   const [publishedReplies, setPublishedReplies] = useState([]);
+  const [replyToReveal, setReplyToReveal] = useState(null);
+  const revealedReplyIdRef = useRef(null);
 
   // A reply is published without the page being fetched again, so it is added to the tree to be
-  // rendered as any other comment. Replies of another content are dropped by `addNodeToTree`.
-  const contentTree = useMemo(
-    () => publishedReplies.reduce((tree, reply) => addNodeToTree(tree, reply, reply.parent_id), contentFound),
-    [contentFound, publishedReplies],
-  );
+  // rendered as any other comment. Replies that `contentFound` already carries (e.g. after a
+  // revalidation refetches the page's props) are skipped to avoid rendering them twice.
+  const contentTree = useMemo(() => {
+    const newReplies = publishedReplies.filter((reply) => !hasNode(contentFound, reply.id));
+    return newReplies.reduce((tree, reply) => addNodeToTree(tree, reply, reply.parent_id), contentFound);
+  }, [contentFound, publishedReplies]);
 
-  const handlePublish = useCallback((reply) => setPublishedReplies((replies) => [...replies, reply]), []);
+  const handlePublish = useCallback((reply) => {
+    setPublishedReplies((replies) =>
+      replies.some((existing) => existing.id === reply.id) ? replies : [...replies, reply],
+    );
+    setReplyToReveal(reply);
+  }, []);
+
+  // Expands the branch that leads to a reply right after it's published, and scrolls/focuses it,
+  // since it may land collapsed behind a "Ver mais" button or far from the reply box that created it.
+  useEffect(() => {
+    if (!replyToReveal || revealedReplyIdRef.current === replyToReveal.id) return;
+
+    const pathToReply = findPathToNode(contentTree.children, (node) => node?.id === replyToReveal.id);
+    if (!pathToReply) return;
+
+    revealedReplyIdRef.current = replyToReveal.id;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAutoExpandPath(pathToReply);
+
+    return scrollToElementWithRetry(`${replyToReveal.owner_username}-${replyToReveal.slug}`, { focus: true });
+  }, [contentTree, replyToReveal]);
 
   const {
     data: { body: adsFound },

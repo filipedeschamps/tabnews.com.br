@@ -32,6 +32,19 @@ export function addNodeToTree(node, newNode, parentId) {
 }
 
 /**
+ * Recursively checks whether a tree already contains a node with the given ID.
+ * @param {TreeNode} node - The root node of the tree.
+ * @param {string} id - The ID to look for.
+ * @returns {boolean} `true` when a node with the given ID is found.
+ */
+export function hasNode(node, id) {
+  if (!node) return false;
+  if (node.id === id) return true;
+
+  return !!node.children?.some((child) => hasNode(child, id));
+}
+
+/**
  * Recursively searches a tree structure and returns the path to a node that matches a given predicate.
  * @param {TreeNode[]} nodes - The list of tree nodes to search through.
  * @param {(node: TreeNode) => boolean} isTarget - A predicate function that returns `true` for the target node.

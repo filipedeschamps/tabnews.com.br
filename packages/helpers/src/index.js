@@ -6,7 +6,7 @@ export * from './merge';
 export * from './noop';
 export * from './splitConfig';
 export * from './strings';
-export { addNodeToTree, findPathToNode, getSubtreeDepth, getSubtreeSize } from './tree';
+export { addNodeToTree, findPathToNode, getSubtreeDepth, getSubtreeSize, hasNode } from './tree';
 export {
   baseUrl,
   getBaseUrl,
