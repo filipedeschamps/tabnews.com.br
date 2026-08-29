@@ -76,8 +76,10 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
     }
   }, [localStorageKey, user, contentObject]);
 
+  let modeElement;
+
   if (componentMode === 'view') {
-    return (
+    modeElement = (
       <ViewMode
         setComponentMode={setComponentMode}
         contentObject={contentObject}
@@ -86,9 +88,9 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
       />
     );
   } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} rootContent={rootContent} />;
+    modeElement = <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
   } else if (componentMode === 'edit') {
-    return (
+    modeElement = (
       <EditMode
         contentObject={contentObject}
         setComponentMode={setComponentMode}
@@ -97,8 +99,22 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
       />
     );
   } else if (componentMode === 'deleted') {
-    return <DeletedMode viewFrame={viewFrame} />;
+    modeElement = <DeletedMode viewFrame={viewFrame} />;
   }
+
+  if (mode !== 'compact') return modeElement;
+
+  // The share button belongs to the content being replied to, so it keeps the place the reply
+  // button had, instead of trailing the editor or the reply that was just published.
+  const isCompact = componentMode === 'compact';
+  const shareButton = <ShareButton content={content} rootContent={rootContent} />;
+
+  return (
+    <div className={isCompact ? classes.CompactWrapper : undefined}>
+      {isCompact ? modeElement : shareButton}
+      {isCompact ? shareButton : modeElement}
+    </div>
+  );
 }
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
@@ -585,13 +601,10 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CompactMode({ contentObject, rootContent, setComponentMode }) {
-  const [isLinkCopied, setCopied] = useState(false);
+function CompactMode({ contentObject, setComponentMode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
-
-  const isRootContent = rootContent.id === contentObject.parent_id;
 
   const handleClick = useCallback(async () => {
     if (user && !isLoading) {
@@ -614,14 +627,25 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
     }
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
+  return (
+    <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
+      <Button onClick={handleClick}>Responder</Button>
+    </Tooltip>
+  );
+}
+
+function ShareButton({ content, rootContent }) {
+  const [isLinkCopied, setCopied] = useState(false);
+  const isRootContent = rootContent.id === content.parent_id;
+
   const handleShare = async () => {
     const title =
       isRootContent && rootContent.title
         ? rootContent.title
         : rootContent.title
-          ? `Comentário de "${contentObject.owner_username}" em "${rootContent.title}"`
-          : `Conteúdo de "${contentObject.owner_username}"`;
-    const url = `${webserver.host}/${contentObject.owner_username}/${contentObject.slug}`;
+          ? `Comentário de "${content.owner_username}" em "${rootContent.title}"`
+          : `Conteúdo de "${content.owner_username}"`;
+    const url = `${webserver.host}/${content.owner_username}/${content.slug}`;
 
     try {
       await navigator.share({ title, url });
@@ -637,16 +661,11 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   };
 
   return (
-    <div className={classes.CompactWrapper}>
-      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
-        <Button onClick={handleClick}>Responder</Button>
-      </Tooltip>
-      <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
-        <Button onClick={handleShare}>
-          {isLinkCopied ? <span className={classes.LinkCopiedText}>Link copiado!</span> : <ShareIcon size={16} />}
-        </Button>
-      </Tooltip>
-    </div>
+    <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
+      <Button onClick={handleShare}>
+        {isLinkCopied ? <span className={classes.LinkCopiedText}>Link copiado!</span> : <ShareIcon size={16} />}
+      </Button>
+    </Tooltip>
   );
 }
 
