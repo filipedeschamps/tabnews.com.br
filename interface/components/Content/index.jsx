@@ -52,6 +52,10 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setContentObject((contentObject) => {
+      // The reply box describes the content being replied to with a placeholder that has no `id`,
+      // and the page rebuilds it on every render, so it must not overwrite a published reply.
+      if (contentObject?.id && !content?.id) return contentObject;
+
       return { ...contentObject, ...content };
     });
   }, [content]);
@@ -88,7 +92,7 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
       />
     );
   } else if (componentMode === 'compact') {
-    modeElement = <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} />;
+    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} rootContent={rootContent} />;
   } else if (componentMode === 'edit') {
     modeElement = (
       <EditMode
@@ -104,15 +108,13 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
 
   if (mode !== 'compact') return modeElement;
 
-  // The share button belongs to the content being replied to, so it keeps the place the reply
-  // button had, instead of trailing the editor or the reply that was just published.
-  const isCompact = componentMode === 'compact';
-  const shareButton = <ShareButton content={content} rootContent={rootContent} />;
-
+  // The share button of the replied content keeps the place the reply button had, and a reply that
+  // was just published gets its own, below itself.
   return (
-    <div className={isCompact ? classes.CompactWrapper : undefined}>
-      {isCompact ? modeElement : shareButton}
-      {isCompact ? shareButton : modeElement}
+    <div className={classes.ReplyWrapper}>
+      <ShareButton content={content} rootContent={rootContent} />
+      {modeElement}
+      {componentMode === 'view' && <ShareButton content={contentObject} rootContent={rootContent} />}
     </div>
   );
 }
@@ -601,7 +603,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CompactMode({ contentObject, setComponentMode }) {
+function CompactMode({ contentObject, rootContent, setComponentMode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
@@ -628,15 +630,20 @@ function CompactMode({ contentObject, setComponentMode }) {
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
   return (
-    <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
-      <Button onClick={handleClick}>Responder</Button>
-    </Tooltip>
+    <div className={classes.CompactWrapper}>
+      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
+        <Button onClick={handleClick}>Responder</Button>
+      </Tooltip>
+      <ShareButton content={contentObject} rootContent={rootContent} />
+    </div>
   );
 }
 
 function ShareButton({ content, rootContent }) {
   const [isLinkCopied, setCopied] = useState(false);
-  const isRootContent = rootContent.id === content.parent_id;
+  // A published content is identified by its own `id`, while the placeholder of the reply box
+  // points to the content it replies to through `parent_id`.
+  const isRootContent = rootContent.id === (content.id ?? content.parent_id);
 
   const handleShare = async () => {
     const title =
