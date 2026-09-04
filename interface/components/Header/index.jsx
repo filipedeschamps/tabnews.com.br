@@ -43,7 +43,7 @@ export default function HeaderComponent() {
       ? '/login'
       : pathname.startsWith('/login')
         ? asPath
-        : `/login?redirect=${asPath}`;
+        : `/login?redirect=${encodeURIComponent(asPath)}`;
 
   const canListUsers = user?.features.includes('read:user:list');
 

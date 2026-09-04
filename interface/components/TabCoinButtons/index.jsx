@@ -52,7 +52,7 @@ function ActiveButtons({ content }) {
     setIsPosting(true);
 
     if (!user && !isLoading) {
-      router.push(`/login?redirect=${router.asPath}`);
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 

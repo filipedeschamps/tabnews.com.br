@@ -281,7 +281,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
     async (event) => {
       event.preventDefault();
       if (!user) {
-        router.push(`/login?redirect=${router.asPath}`);
+        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
         return;
       }
 
@@ -610,7 +610,7 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
 
       setComponentMode('edit');
     } else if (router) {
-      router.push(`/login?redirect=${router.asPath}`);
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
     }
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
