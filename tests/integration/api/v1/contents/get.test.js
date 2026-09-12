@@ -29,6 +29,7 @@ describe('GET /api/v1/contents', () => {
 
       const expectedHeaders = {
         'x-dns-prefetch-control': ['on'],
+        'x-powered-by': ['PHP/8.3.0'],
         'strict-transport-security': ['max-age=63072000; includeSubDomains; preload'],
         'x-xss-protection': ['1; mode=block'],
         'x-frame-options': ['SAMEORIGIN'],
