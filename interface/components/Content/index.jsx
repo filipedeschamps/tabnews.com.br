@@ -43,6 +43,7 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
 ];
 
 const BODY_MAX_LENGTH = 20_000;
+const CONFIRM_UNSAVED_CHANGES_MESSAGE = 'Existem dados não salvos. Deseja sair da página e perder as alterações?';
 
 export default function Content({ content, isPageRootOwner, mode = 'view', rootContent, viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
@@ -254,6 +255,54 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   const [titlePlaceholder] = useState(randomTitlePlaceholder);
 
   const confirm = useConfirm();
+  const initialData = useMemo(
+    () => ({
+      title: contentObject?.title || '',
+      body: contentObject?.body || '',
+      source_url: contentObject?.source_url || '',
+      isSponsoredContent: contentObject?.type === 'ad',
+    }),
+    [contentObject?.body, contentObject?.source_url, contentObject?.title, contentObject?.type],
+  );
+  const hasUnsavedChanges = useMemo(() => {
+    if (isPosting) return false;
+
+    return (
+      newData.title !== initialData.title ||
+      newData.body !== initialData.body ||
+      newData.source_url !== initialData.source_url ||
+      newData.isSponsoredContent !== initialData.isSponsoredContent
+    );
+  }, [initialData, isPosting, newData]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const handleRouteChangeStart = (url) => {
+      if (url === router.asPath || window.confirm(CONFIRM_UNSAVED_CHANGES_MESSAGE)) return;
+
+      const error = new Error('Route change aborted due to unsaved content.');
+      router.events.emit('routeChangeError', error, url);
+      throw error;
+    };
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+
+    return () => router.events.off('routeChangeStart', handleRouteChangeStart);
+  }, [hasUnsavedChanges, router]);
 
   useEffect(() => {
     const loadLocalStorage = (oldData) => {
