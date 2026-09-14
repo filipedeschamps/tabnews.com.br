@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-import { Confetti, DefaultLayout, Flash } from '@/TabNewsUI';
+import { Confetti, DefaultLayout, Flash, Link } from '@/TabNewsUI';
 import { createErrorMessage } from 'interface';
 
 import classes from './token.module.css';
@@ -66,7 +66,15 @@ export default function ActiveUser() {
           {isLoading ? (
             <Flash variant="default">Verificando Token de Ativação...</Flash>
           ) : (
-            <Flash variant={isSuccess ? 'success' : 'danger'}>{globalMessage}</Flash>
+            <Flash variant={isSuccess ? 'success' : 'danger'}>
+              {globalMessage}
+              {isSuccess && (
+                <>
+                  {' '}
+                  Agora você já pode <Link href="/login">entrar na sua conta</Link>.
+                </>
+              )}
+            </Flash>
           )}
         </div>
       </DefaultLayout>
