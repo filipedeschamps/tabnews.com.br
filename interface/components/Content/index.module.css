@@ -124,6 +124,12 @@
   flex-wrap: wrap;
 }
 
+.ReplyWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-8);
+}
+
 .LinkCopiedText {
   color: var(--fgColor-muted);
 }

@@ -1,7 +1,7 @@
 import { isTrustedDomain } from '@tabnews/helpers';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   ActionList,
@@ -44,7 +44,14 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
 
 const BODY_MAX_LENGTH = 20_000;
 
-export default function Content({ content, isPageRootOwner, mode = 'view', rootContent, viewFrame = false }) {
+export default function Content({
+  content,
+  isPageRootOwner,
+  mode = 'view',
+  onPublish,
+  rootContent,
+  viewFrame = false,
+}) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -76,8 +83,10 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
     }
   }, [localStorageKey, user, contentObject]);
 
+  let modeElement;
+
   if (componentMode === 'view') {
-    return (
+    modeElement = (
       <ViewMode
         setComponentMode={setComponentMode}
         contentObject={contentObject}
@@ -88,17 +97,29 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
   } else if (componentMode === 'compact') {
     return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} rootContent={rootContent} />;
   } else if (componentMode === 'edit') {
-    return (
+    modeElement = (
       <EditMode
         contentObject={contentObject}
         setComponentMode={setComponentMode}
         setContentObject={setContentObject}
         localStorageKey={localStorageKey}
+        onPublish={onPublish}
       />
     );
   } else if (componentMode === 'deleted') {
-    return <DeletedMode viewFrame={viewFrame} />;
+    modeElement = <DeletedMode viewFrame={viewFrame} />;
   }
+
+  if (mode !== 'compact') return modeElement;
+
+  // The share button of the replied content keeps the place the reply button had, and a reply that
+  // was just published gets its own, below itself.
+  return (
+    <div className={classes.ReplyWrapper}>
+      <ShareButton content={content} rootContent={rootContent} />
+      {modeElement}
+    </div>
+  );
 }
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
@@ -175,6 +196,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   return (
     <article
       id={`${contentObject.owner_username}-${contentObject.slug}`}
+      tabIndex={-1}
       className={clsx(classes.Article, viewFrame && classes.ArticleFramed)}>
       <div>
         {globalErrorMessage && <ErrorMessage {...globalErrorMessage} className={classes.HeaderError} />}
@@ -239,7 +261,7 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, onPublish }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
@@ -379,6 +401,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             if (responseBody.message) {
               setGlobalErrorMessage({ error: responseBody });
               console.error(responseBody);
+              setIsPosting(false);
               return;
             }
 
@@ -388,8 +411,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               return;
             }
 
-            setContentObject(responseBody);
-            setComponentMode('view');
+            setComponentMode('compact');
+            onPublish?.(responseBody);
           };
         }
 
@@ -410,7 +433,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         }
       }
     },
-    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
+    [
+      confirm,
+      contentObject,
+      localStorageKey,
+      newData,
+      onPublish,
+      router,
+      setComponentMode,
+      setContentObject,
+      user,
+      fetchUser,
+    ],
   );
 
   const handleChange = useCallback(
@@ -586,12 +620,9 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 }
 
 function CompactMode({ contentObject, rootContent, setComponentMode }) {
-  const [isLinkCopied, setCopied] = useState(false);
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
-
-  const isRootContent = rootContent.id === contentObject.parent_id;
 
   const handleClick = useCallback(async () => {
     if (user && !isLoading) {
@@ -614,14 +645,32 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
     }
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
+  return (
+    <div className={classes.CompactWrapper}>
+      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
+        <Button onClick={handleClick}>Responder</Button>
+      </Tooltip>
+      <ShareButton content={contentObject} rootContent={rootContent} />
+    </div>
+  );
+}
+
+function ShareButton({ content, rootContent }) {
+  const [isLinkCopied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef(null);
+  const isRootContent = rootContent.id === content.parent_id;
+  const shareLabel = `Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`;
+
+  useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
+
   const handleShare = async () => {
     const title =
       isRootContent && rootContent.title
         ? rootContent.title
         : rootContent.title
-          ? `Comentário de "${contentObject.owner_username}" em "${rootContent.title}"`
-          : `Conteúdo de "${contentObject.owner_username}"`;
-    const url = `${webserver.host}/${contentObject.owner_username}/${contentObject.slug}`;
+          ? `Comentário de "${content.owner_username}" em "${rootContent.title}"`
+          : `Conteúdo de "${content.owner_username}"`;
+    const url = `${webserver.host}/${content.owner_username}/${content.slug}`;
 
     try {
       await navigator.share({ title, url });
@@ -629,7 +678,8 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
       try {
         await navigator.clipboard.writeText(url);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        clearTimeout(copiedTimeoutRef.current);
+        copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
       } catch {
         alert('Não foi possível copiar o link. Verifique as permissões e se o navegador suporta a funcionalidade.');
       }
@@ -637,16 +687,17 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   };
 
   return (
-    <div className={classes.CompactWrapper}>
-      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
-        <Button onClick={handleClick}>Responder</Button>
-      </Tooltip>
-      <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
-        <Button onClick={handleShare}>
-          {isLinkCopied ? <span className={classes.LinkCopiedText}>Link copiado!</span> : <ShareIcon size={16} />}
-        </Button>
-      </Tooltip>
-    </div>
+    <Tooltip text={shareLabel} direction="n" position="absolute">
+      <Button onClick={handleShare} aria-label={isLinkCopied ? 'Link copiado!' : shareLabel}>
+        {isLinkCopied ? (
+          <span className={classes.LinkCopiedText} role="status">
+            Link copiado!
+          </span>
+        ) : (
+          <ShareIcon size={16} aria-hidden="true" />
+        )}
+      </Button>
+    </Tooltip>
   );
 }
 

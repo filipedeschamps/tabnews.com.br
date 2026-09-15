@@ -202,6 +202,24 @@ describe('helpers/dom', () => {
       expect(() => cleanup()).not.toThrow();
       expect(window.cancelAnimationFrame).not.toHaveBeenCalled();
     });
+
+    it('focuses the element without scrolling the page when the focus option is set', () => {
+      const el = createMockElement({ top: 400, left: 500, width: 50, height: 50 }, 'focus-target');
+      vi.spyOn(el, 'focus');
+
+      scrollToElementWithRetry('focus-target', { focus: true });
+
+      expect(el.focus).toHaveBeenCalledWith({ preventScroll: true });
+    });
+
+    it('does not focus the element when the focus option is omitted', () => {
+      const el = createMockElement({ top: 400, left: 500, width: 50, height: 50 }, 'no-focus-target');
+      vi.spyOn(el, 'focus');
+
+      scrollToElementWithRetry('no-focus-target');
+
+      expect(el.focus).not.toHaveBeenCalled();
+    });
   });
 });
 
