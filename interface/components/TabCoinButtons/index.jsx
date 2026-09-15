@@ -5,7 +5,7 @@ import { useReward } from 'react-rewards';
 
 import { IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
-import { createErrorMessage, useUser } from 'interface';
+import { createErrorMessage, getLoginUrl, useUser } from 'interface';
 
 import classes from './index.module.css';
 
@@ -52,7 +52,7 @@ function ActiveButtons({ content }) {
     setIsPosting(true);
 
     if (!user && !isLoading) {
-      router.push(`/login?redirect=${router.asPath}`);
+      router.push(getLoginUrl(router.asPath));
       return;
     }
 

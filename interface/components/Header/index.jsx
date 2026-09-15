@@ -27,23 +27,18 @@ import {
   SignOutIcon,
   ThreeBarsIcon,
 } from '@/TabNewsUI/icons';
-import { useMediaQuery, useUser } from 'interface';
+import { getLoginUrl, useMediaQuery, useUser } from 'interface';
 
 import classes from './index.module.css';
 
 export default function HeaderComponent() {
   const isScreenSmall = useMediaQuery('(max-width: 440px)');
   const { user, isLoading, logout } = useUser();
-  const { asPath, pathname } = useRouter();
+  const { asPath } = useRouter();
   const { SearchBarButton, SearchBarMenuItem, SearchBoxOverlay, SearchIconButton } = useSearchBox();
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
-  const loginUrl =
-    !asPath || user || pathname.startsWith('/cadastro')
-      ? '/login'
-      : pathname.startsWith('/login')
-        ? asPath
-        : `/login?redirect=${asPath}`;
+  const loginUrl = user ? '/login' : getLoginUrl(asPath);
 
   const canListUsers = user?.features.includes('read:user:list');
 

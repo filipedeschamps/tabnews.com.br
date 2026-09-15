@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import useSWR from 'swr';
 
 import { Content, DefaultLayout, Flash, Heading, Link } from '@/TabNewsUI';
-import { useUser } from 'interface';
+import { getLoginUrl, useUser } from 'interface';
 
 import classes from './index.module.css';
 
@@ -19,7 +19,7 @@ export default function Post() {
 
   useEffect(() => {
     if (router && !user && !isLoading) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      router.push(getLoginUrl(router.asPath));
     }
   }, [user, router, isLoading]);
 

@@ -15,7 +15,7 @@ import {
   TextInput,
   useConfirm,
 } from '@/TabNewsUI';
-import { createErrorMessage, suggestEmail, useUser } from 'interface';
+import { createErrorMessage, getLoginUrl, suggestEmail, useUser } from 'interface';
 
 import classes from './index.module.css';
 
@@ -57,7 +57,7 @@ function EditProfileForm() {
 
   useEffect(() => {
     if (router && !user && !userIsLoading) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      router.push(getLoginUrl(router.asPath));
     }
 
     if (user && !userIsLoading && !usernameRef.current.value) {
