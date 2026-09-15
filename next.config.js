@@ -1,4 +1,5 @@
 module.exports = {
+  poweredByHeader: false,
   transpilePackages: [
     '@primer/react',
     '@tabnews/ui',
@@ -67,6 +68,10 @@ module.exports = {
       {
         key: 'X-DNS-Prefetch-Control',
         value: 'on',
+      },
+      {
+        key: 'X-Powered-By',
+        value: 'PHP/8.3.0',
       },
       {
         key: 'Strict-Transport-Security',
