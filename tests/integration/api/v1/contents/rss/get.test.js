@@ -46,6 +46,32 @@ describe('GET /recentes/rss', () => {
 </rss>`);
     });
 
+    test('With 0 relevant contents', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/relevantes/rss`);
+      const responseBody = await response.text();
+
+      const lastBuildDateFromResponseBody = /<lastBuildDate>(.*?)<\/lastBuildDate>/.exec(responseBody)[1];
+
+      expect.soft(response.status).toBe(200);
+
+      expect(responseBody).toBe(`<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>TabNews</title>
+        <link>${orchestrator.webserverUrl}/relevantes/rss</link>
+        <description>Conteúdos para quem trabalha com Programação e Tecnologia</description>
+        <lastBuildDate>${lastBuildDateFromResponseBody}</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <language>pt</language>
+        <image>
+            <title>TabNews</title>
+            <url>${orchestrator.webserverUrl}/favicon-mobile.png</url>
+            <link>${orchestrator.webserverUrl}/relevantes/rss</link>
+        </image>
+    </channel>
+</rss>`);
+    });
     test('With 1 "ad" content`', async () => {
       const defaultUser = await orchestrator.createUser();
 
@@ -157,6 +183,31 @@ describe('GET /recentes/rss', () => {
         </item>
     </channel>
 </rss>`);
+    });
+    test('With 1 relevant content', async () => {
+      const defaultUser = await orchestrator.createUser();
+
+      const relevantContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'Relevant RSS content',
+        body: relevantBody,
+        status: 'published',
+      });
+
+      await orchestrator.createBalance({
+        balanceType: 'content:tabcoin:credit',
+        recipientId: relevantContent.id,
+        amount: 1,
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/relevantes/rss`);
+      const responseBody = await response.text();
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).toContain(`<link>${orchestrator.webserverUrl}/relevantes/rss</link>`);
+      expect(responseBody).toContain('<item>');
+      expect(responseBody).toContain('<title><![CDATA[Relevant RSS content]]></title>');
+      expect(responseBody).toContain(relevantBody);
     });
   });
 });
