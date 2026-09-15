@@ -5,4 +5,5 @@ export { UserProvider, default as useUser } from './hooks/useUser';
 export { default as suggestEmail } from './utils/email-suggestion';
 export { default as createErrorMessage } from './utils/error-message';
 export { default as isValidJsonString } from './utils/is-valid-json-string';
+export { default as getLoginUrl } from './utils/login-url';
 export { default as processNdJsonStream } from './utils/nd-json-stream';
