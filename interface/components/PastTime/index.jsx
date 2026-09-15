@@ -1,5 +1,6 @@
-import { format, formatDistanceToNowStrict } from 'date-fns';
+import { format, formatDistanceStrict } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useTimes } from 'next-swr';
 import { useEffect, useState } from 'react';
 
 import { Tooltip } from '@/TabNewsUI';
@@ -14,8 +15,18 @@ function formatTooltipLabel(date, gmt = false) {
   }
 }
 
+// `clockOffset` is how far the device clock is ahead of the server clock. Measuring from the
+// server's "now" keeps a wrong device clock from skewing the distance or showing a future date.
+function formatDistanceFromServerNow(date, clockOffset) {
+  return formatDistanceStrict(new Date(date), Date.now() - clockOffset, {
+    locale: ptBR,
+  });
+}
+
 export default function PastTime({ date, formatText, ...props }) {
   const [tooltipLabel, setTooltipLabel] = useState(formatTooltipLabel(date, true));
+  const { offset, firstLoad } = useTimes();
+  const clockOffset = firstLoad ? 0 : offset;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -24,9 +35,7 @@ export default function PastTime({ date, formatText, ...props }) {
 
   function getText(date) {
     try {
-      const formattedDate = formatDistanceToNowStrict(new Date(date), {
-        locale: ptBR,
-      });
+      const formattedDate = formatDistanceFromServerNow(date, clockOffset);
 
       return formatText ? formatText(formattedDate) : `${formattedDate} atrás`;
     } catch (e) {
