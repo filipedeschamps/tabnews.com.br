@@ -15,9 +15,8 @@ export default async function reward(request, dbOptions = {}) {
 
   if (!userId || !username || !rewardedAt) return 0;
 
-  const utcZeroHourToday = new Date().setUTCHours(0, 0, 0, 0);
-
-  if (rewardedAt >= utcZeroHourToday) return 0;
+  // Shortcut for the common case; the source of truth is the `WHERE` of the conditional update.
+  if (rewardedAt >= new Date().setUTCHours(0, 0, 0, 0)) return 0;
 
   const prestigeFactor = await prestige.getByUserId(userId, dbOptions);
   const tabcoinsFactor = calcTabcoinsFactor(tabcoins);
@@ -75,17 +74,16 @@ async function saveReward(request, reward, { transaction }) {
 
   try {
     await transaction.query('BEGIN');
-    await transaction.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+    const isFirstRewardToday = await user.updateRewardedAtIfStale(request.context.user.id, { transaction });
+
+    // Without an updated row, a concurrent request already rewarded the user today.
+    if (!isFirstRewardToday) {
+      await transaction.query('ROLLBACK');
+      return 0;
+    }
 
     if (reward > 0) {
-      const currentUser = await user.findOneById(request.context.user.id, { transaction });
-
-      const utcZeroHourToday = new Date().setUTCHours(0, 0, 0, 0);
-
-      if (currentUser.rewarded_at >= utcZeroHourToday) {
-        throw new Error('User already rewarded today');
-      }
-
       const currentEvent = await event.create(
         {
           type: 'reward:user:tabcoins',
@@ -111,23 +109,13 @@ async function saveReward(request, reward, { transaction }) {
       );
     }
 
-    await user.updateRewardedAt(request.context.user.id, { transaction });
-
     await transaction.query('COMMIT');
 
     return reward;
   } catch (error) {
     await transaction.query('ROLLBACK');
 
-    if (
-      error.databaseErrorCode === database.errorCodes.SERIALIZATION_FAILURE ||
-      error.stack?.startsWith('error: could not serialize access due to concurrent update') ||
-      error.message === 'User already rewarded today'
-    ) {
-      return 0;
-    } else {
-      throw error;
-    }
+    throw error;
   } finally {
     await transaction.release();
   }

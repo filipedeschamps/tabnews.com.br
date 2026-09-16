@@ -1,5 +1,6 @@
 import { version as uuidVersion } from 'uuid';
 
+import user from 'models/user';
 import { defaultTabCashForAdCreation, relevantBody } from 'tests/constants-for-tests';
 import orchestrator from 'tests/orchestrator.js';
 import RequestBuilder from 'tests/request-builder';
@@ -345,6 +346,9 @@ describe('GET /api/v1/user', () => {
         expect(postRewardUser.tabcoins).toBe(defaultTestRewardValue);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
+
+        const userInDatabase = await user.findOneById(defaultUser.id);
+        expect(userInDatabase.rewarded_at.getTime()).toBeGreaterThanOrEqual(new Date().setUTCHours(0, 0, 0, 0));
       });
 
       test('Should deduplicate simultaneous rewards', async () => {
@@ -410,6 +414,11 @@ describe('GET /api/v1/user', () => {
         expect(postRewardUser.tabcoins).toBe(0);
         expect(postRewardUser.tabcash).toBe(0);
         expect(postRewardUser.updated_at).toBe(defaultUser.updated_at.toISOString());
+
+        // Even without tabcoins to grant, the user must be marked as rewarded to
+        // avoid recalculating the reward on every request for the rest of the day.
+        const userInDatabase = await user.findOneById(defaultUser.id);
+        expect(userInDatabase.rewarded_at.getTime()).toBeGreaterThanOrEqual(new Date().setUTCHours(0, 0, 0, 0));
       });
 
       test('Should not reward if user has negative prestige', async () => {
