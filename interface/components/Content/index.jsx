@@ -587,16 +587,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 }
 
 function CompactMode({ contentObject, rootContent, setComponentMode }) {
-  const [isLinkCopied, setCopied] = useState(false);
-  const copiedTimeoutRef = useRef(null);
+  return (
+    <div className={classes.CompactWrapper}>
+      <ReplyButton contentObject={contentObject} setComponentMode={setComponentMode} />
+      <ShareButton content={contentObject} rootContent={rootContent} />
+    </div>
+  );
+}
+
+function ReplyButton({ contentObject, setComponentMode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
-
-  const isRootContent = rootContent.id === contentObject.parent_id;
-  const shareLabel = `Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`;
-
-  useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
 
   const handleClick = useCallback(async () => {
     if (user && !isLoading) {
@@ -619,14 +621,29 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
     }
   }, [confirm, contentObject, isLoading, router, setComponentMode, user]);
 
+  return (
+    <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
+      <Button onClick={handleClick}>Responder</Button>
+    </Tooltip>
+  );
+}
+
+function ShareButton({ content, rootContent }) {
+  const [isLinkCopied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef(null);
+  const isRootContent = rootContent.id === content.parent_id;
+  const shareLabel = `Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`;
+
+  useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
+
   const handleShare = async () => {
     const title =
       isRootContent && rootContent.title
         ? rootContent.title
         : rootContent.title
-          ? `Comentário de "${contentObject.owner_username}" em "${rootContent.title}"`
-          : `Conteúdo de "${contentObject.owner_username}"`;
-    const url = `${webserver.host}/${contentObject.owner_username}/${contentObject.slug}`;
+          ? `Comentário de "${content.owner_username}" em "${rootContent.title}"`
+          : `Conteúdo de "${content.owner_username}"`;
+    const url = `${webserver.host}/${content.owner_username}/${content.slug}`;
 
     try {
       await navigator.share({ title, url });
@@ -643,22 +660,17 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
   };
 
   return (
-    <div className={classes.CompactWrapper}>
-      <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
-        <Button onClick={handleClick}>Responder</Button>
-      </Tooltip>
-      <Tooltip text={shareLabel} direction="n" position="absolute">
-        <Button onClick={handleShare} aria-label={isLinkCopied ? 'Link copiado!' : shareLabel}>
-          {isLinkCopied ? (
-            <span className={classes.LinkCopiedText} role="status">
-              Link copiado!
-            </span>
-          ) : (
-            <ShareIcon size={16} aria-hidden="true" />
-          )}
-        </Button>
-      </Tooltip>
-    </div>
+    <Tooltip text={shareLabel} direction="n" position="absolute">
+      <Button onClick={handleShare} aria-label={isLinkCopied ? 'Link copiado!' : shareLabel}>
+        {isLinkCopied ? (
+          <span className={classes.LinkCopiedText} role="status">
+            Link copiado!
+          </span>
+        ) : (
+          <ShareIcon size={16} aria-hidden="true" />
+        )}
+      </Button>
+    </Tooltip>
   );
 }
 
