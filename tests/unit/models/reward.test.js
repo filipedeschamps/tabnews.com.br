@@ -25,9 +25,6 @@ vi.mock('infra/database', () => {
         query: mocks.query,
         release: mocks.release,
       }),
-      errorCodes: {
-        SERIALIZATION_FAILURE: '40001',
-      },
     },
   };
 });
@@ -60,10 +57,7 @@ vi.mock('models/prestige', () => ({
 
 vi.mock('models/user', () => ({
   default: {
-    findOneById: vi.fn().mockResolvedValue({
-      rewarded_at: new Date('2021-01-01'),
-    }),
-    updateRewardedAt: vi.fn(),
+    updateRewardedAtIfStale: vi.fn().mockResolvedValue(true),
   },
 }));
 
@@ -89,7 +83,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if "context" is undefined', async () => {
@@ -99,7 +93,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if "user" is undefined', async () => {
@@ -110,7 +104,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if "tabcoins" is undefined', async () => {
@@ -121,7 +115,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if "userId" is undefined', async () => {
@@ -132,7 +126,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if "username" is undefined', async () => {
@@ -143,7 +137,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if "rewarded_at" is undefined', async () => {
@@ -154,7 +148,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if user has already been rewarded today', async () => {
@@ -166,7 +160,7 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not reward if user has already been rewarded now', async () => {
@@ -178,20 +172,25 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).not.toHaveBeenCalled();
+    expect(user.updateRewardedAtIfStale).not.toHaveBeenCalled();
   });
 
   it('Should not simultaneously reward', async () => {
-    // First "rewarded_at" is in the past (2021-01-01).
     const request = createRequestObj();
-    // Then "rewarded_at" is set to "now" to simulate a concurrent reward.
-    user.findOneById.mockResolvedValueOnce({ rewarded_at: new Date() });
+    // A concurrent request won the race, so the conditional update did not match any row.
+    user.updateRewardedAtIfStale.mockResolvedValueOnce(false);
 
     const result = await reward(request);
 
-    expect(mocks.query).toHaveBeenCalledWith('ROLLBACK');
-    expect(mocks.release).toHaveBeenCalled();
     expect(result).toBe(0);
+    expect(user.updateRewardedAtIfStale).toHaveBeenCalledWith(request.context.user.id, {
+      transaction: expect.any(Object),
+    });
+    expect(event.create).not.toHaveBeenCalled();
+    expect(balance.create).not.toHaveBeenCalled();
+    expect(mocks.query).toHaveBeenCalledWith('ROLLBACK');
+    expect(mocks.query).not.toHaveBeenCalledWith('COMMIT');
+    expect(mocks.release).toHaveBeenCalled();
   });
 
   it('Should not reward if tabcoinsFactor is greater than prestigeFactor', async () => {
@@ -204,7 +203,9 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
+    expect(user.updateRewardedAtIfStale).toHaveBeenCalledWith(request.context.user.id, {
+      transaction: expect.any(Object),
+    });
   });
 
   it('Should not reward if tabcoinsFactor is equal to prestigeFactor', async () => {
@@ -217,7 +218,9 @@ describe('reward model', () => {
 
     expect(result).toBe(0);
     expect(balance.create).not.toHaveBeenCalled();
-    expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
+    expect(user.updateRewardedAtIfStale).toHaveBeenCalledWith(request.context.user.id, {
+      transaction: expect.any(Object),
+    });
   });
 
   it('Should reward if tabcoinsFactor is less than prestigeFactor', async () => {
@@ -234,7 +237,9 @@ describe('reward model', () => {
     expect(mocks.query).toHaveBeenCalledWith('BEGIN');
     expect(mocks.query).toHaveBeenCalledWith('COMMIT');
     expect(mocks.release).toHaveBeenCalled();
-    expect(user.updateRewardedAt).toHaveBeenCalledWith(request.context.user.id, { transaction: expect.any(Object) });
+    expect(user.updateRewardedAtIfStale).toHaveBeenCalledWith(request.context.user.id, {
+      transaction: expect.any(Object),
+    });
 
     expect(balance.create).toHaveBeenCalledWith(
       {

@@ -552,12 +552,14 @@ async function addFeatures(userId, features, options = {}) {
   return Array.isArray(userId) ? results.rows : results.rows[0];
 }
 
-async function updateRewardedAt(userId, options) {
+// Concurrent requests block on the row lock and re-evaluate the `WHERE` after the
+// winner commits, so only one of them updates the row and gets to reward the user.
+async function updateRewardedAtIfStale(userId, options) {
   if (!userId) {
     throw new ValidationError({
       message: `É necessário informar o "id" do usuário.`,
       stack: new Error().stack,
-      errorLocationCode: 'MODEL:USER:UPDATE_REWARDED_AT:USER_ID_REQUIRED',
+      errorLocationCode: 'MODEL:USER:UPDATE_REWARDED_AT_IF_STALE:USER_ID_REQUIRED',
       key: 'userId',
     });
   }
@@ -570,15 +572,16 @@ async function updateRewardedAt(userId, options) {
         rewarded_at = (now() at time zone 'utc')
       WHERE
         id = $1
+        AND rewarded_at < date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
       RETURNING
-        *
+        id
     ;`,
     values: [userId],
   };
 
   const results = await database.query(query, options);
 
-  return results.rows[0];
+  return results.rowCount > 0;
 }
 
 export default Object.freeze({
@@ -592,5 +595,5 @@ export default Object.freeze({
   removeFeatures,
   addFeatures,
   createAnonymous,
-  updateRewardedAt,
+  updateRewardedAtIfStale,
 });

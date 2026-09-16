@@ -8,18 +8,17 @@ import user from 'models/user';
 const tabcoinsBase = 20;
 const contentAgeBase = 604_800_000; // one week in milliseconds
 
-export default async function reward(request, dbOptions = {}) {
+export default async function reward(request) {
   if (request?.context?.user?.tabcoins === undefined) return 0;
 
   const { id: userId, username, tabcoins, rewarded_at: rewardedAt } = request.context.user;
 
   if (!userId || !username || !rewardedAt) return 0;
 
-  const utcZeroHourToday = new Date().setUTCHours(0, 0, 0, 0);
+  // Shortcut for the common case; the source of truth is the `WHERE` of the conditional update.
+  if (rewardedAt >= new Date().setUTCHours(0, 0, 0, 0)) return 0;
 
-  if (rewardedAt >= utcZeroHourToday) return 0;
-
-  const prestigeFactor = await prestige.getByUserId(userId, dbOptions);
+  const prestigeFactor = await prestige.getByUserId(userId);
   const tabcoinsFactor = calcTabcoinsFactor(tabcoins);
 
   let reward = 0;
@@ -29,7 +28,7 @@ export default async function reward(request, dbOptions = {}) {
     reward = calcReward(prestigeFactor, tabcoinsFactor, contentAgeFactor);
   }
 
-  reward = await saveReward(request, reward, dbOptions);
+  reward = await saveReward(request, reward);
 
   return reward;
 }
@@ -70,22 +69,21 @@ function calcReward(prestige, tabcoinsFactor, contentAgeFactor) {
   return reward;
 }
 
-async function saveReward(request, reward, { transaction }) {
-  transaction = transaction || (await database.transaction());
+async function saveReward(request, reward) {
+  const transaction = await database.transaction();
 
   try {
     await transaction.query('BEGIN');
-    await transaction.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+
+    const isFirstRewardToday = await user.updateRewardedAtIfStale(request.context.user.id, { transaction });
+
+    // Without an updated row, a concurrent request already rewarded the user today.
+    if (!isFirstRewardToday) {
+      await transaction.query('ROLLBACK');
+      return 0;
+    }
 
     if (reward > 0) {
-      const currentUser = await user.findOneById(request.context.user.id, { transaction });
-
-      const utcZeroHourToday = new Date().setUTCHours(0, 0, 0, 0);
-
-      if (currentUser.rewarded_at >= utcZeroHourToday) {
-        throw new Error('User already rewarded today');
-      }
-
       const currentEvent = await event.create(
         {
           type: 'reward:user:tabcoins',
@@ -111,23 +109,13 @@ async function saveReward(request, reward, { transaction }) {
       );
     }
 
-    await user.updateRewardedAt(request.context.user.id, { transaction });
-
     await transaction.query('COMMIT');
 
     return reward;
   } catch (error) {
     await transaction.query('ROLLBACK');
 
-    if (
-      error.databaseErrorCode === database.errorCodes.SERIALIZATION_FAILURE ||
-      error.stack?.startsWith('error: could not serialize access due to concurrent update') ||
-      error.message === 'User already rewarded today'
-    ) {
-      return 0;
-    } else {
-      throw error;
-    }
+    throw error;
   } finally {
     await transaction.release();
   }
