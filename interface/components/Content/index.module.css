@@ -28,6 +28,13 @@
   padding: var(--base-size-24);
 }
 
+.ArticleActions {
+  display: flex;
+  gap: var(--base-size-8);
+  flex-wrap: wrap;
+  margin-top: var(--base-size-8);
+}
+
 .HeaderError {
   margin-bottom: var(--base-size-24);
 }
@@ -122,6 +129,13 @@
   display: flex;
   gap: var(--base-size-8);
   flex-wrap: wrap;
+}
+
+.ReplyWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--base-size-16);
 }
 
 .LinkCopiedText {
