@@ -1,7 +1,7 @@
 import { isTrustedDomain } from '@tabnews/helpers';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   ActionList,
@@ -379,6 +379,7 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
             if (responseBody.message) {
               setGlobalErrorMessage({ error: responseBody });
               console.error(responseBody);
+              setIsPosting(false);
               return;
             }
 
@@ -587,11 +588,15 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
 
 function CompactMode({ contentObject, rootContent, setComponentMode }) {
   const [isLinkCopied, setCopied] = useState(false);
+  const copiedTimeoutRef = useRef(null);
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
 
   const isRootContent = rootContent.id === contentObject.parent_id;
+  const shareLabel = `Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`;
+
+  useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
 
   const handleClick = useCallback(async () => {
     if (user && !isLoading) {
@@ -629,7 +634,8 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
       try {
         await navigator.clipboard.writeText(url);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        clearTimeout(copiedTimeoutRef.current);
+        copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
       } catch {
         alert('Não foi possível copiar o link. Verifique as permissões e se o navegador suporta a funcionalidade.');
       }
@@ -641,9 +647,15 @@ function CompactMode({ contentObject, rootContent, setComponentMode }) {
       <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
         <Button onClick={handleClick}>Responder</Button>
       </Tooltip>
-      <Tooltip text={`Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`} direction="n" position="absolute">
-        <Button onClick={handleShare}>
-          {isLinkCopied ? <span className={classes.LinkCopiedText}>Link copiado!</span> : <ShareIcon size={16} />}
+      <Tooltip text={shareLabel} direction="n" position="absolute">
+        <Button onClick={handleShare} aria-label={isLinkCopied ? 'Link copiado!' : shareLabel}>
+          {isLinkCopied ? (
+            <span className={classes.LinkCopiedText} role="status">
+              Link copiado!
+            </span>
+          ) : (
+            <ShareIcon size={16} aria-hidden="true" />
+          )}
         </Button>
       </Tooltip>
     </div>
