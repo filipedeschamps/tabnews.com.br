@@ -44,7 +44,7 @@ const CONTENT_TITLE_PLACEHOLDER_EXAMPLES = [
 
 const BODY_MAX_LENGTH = 20_000;
 
-export default function Content({ content, isPageRootOwner, mode = 'view', rootContent, viewFrame = false }) {
+export default function Content({ children, content, isPageRootOwner, mode = 'view', rootContent, viewFrame = false }) {
   const [componentMode, setComponentMode] = useState(mode);
   const [contentObject, setContentObject] = useState(content);
   const { user } = useUser();
@@ -76,29 +76,46 @@ export default function Content({ content, isPageRootOwner, mode = 'view', rootC
     }
   }, [localStorageKey, user, contentObject]);
 
+  if (componentMode === 'deleted') {
+    return <DeletedMode viewFrame={viewFrame} />;
+  }
+
+  // The reply box keeps its own actions in place while the editor is open and after the reply is
+  // published, so the content being replied to never loses its share button.
+  if (mode === 'compact') {
+    return (
+      <ReplyBox
+        componentMode={componentMode}
+        content={content}
+        contentObject={contentObject}
+        localStorageKey={localStorageKey}
+        rootContent={rootContent}
+        setComponentMode={setComponentMode}
+        setContentObject={setContentObject}
+      />
+    );
+  }
+
   if (componentMode === 'view') {
     return (
       <ViewMode
         setComponentMode={setComponentMode}
         contentObject={contentObject}
         isPageRootOwner={isPageRootOwner}
-        viewFrame={viewFrame}
-      />
+        viewFrame={viewFrame}>
+        {children}
+      </ViewMode>
     );
-  } else if (componentMode === 'compact') {
-    return <CompactMode setComponentMode={setComponentMode} contentObject={contentObject} rootContent={rootContent} />;
-  } else if (componentMode === 'edit') {
-    return (
-      <EditMode
-        contentObject={contentObject}
-        setComponentMode={setComponentMode}
-        setContentObject={setContentObject}
-        localStorageKey={localStorageKey}
-      />
-    );
-  } else if (componentMode === 'deleted') {
-    return <DeletedMode viewFrame={viewFrame} />;
   }
+
+  return (
+    <EditMode
+      contentObject={contentObject}
+      setComponentMode={setComponentMode}
+      setContentObject={setContentObject}
+      localStorageKey={localStorageKey}
+    />
+  );
 }
 
 function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
@@ -134,7 +151,7 @@ function ViewModeOptionsMenu({ onDelete, onComponentModeChange }) {
   );
 }
 
-function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame }) {
+function ViewMode({ children, setComponentMode, contentObject, isPageRootOwner, viewFrame }) {
   const { user, fetchUser } = useUser();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(null);
   const confirm = useConfirm();
@@ -235,11 +252,12 @@ function ViewMode({ setComponentMode, contentObject, isPageRootOwner, viewFrame 
           </p>
         </div>
       )}
+      {children}
     </article>
   );
 }
 
-function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey }) {
+function EditMode({ contentObject, setContentObject, setComponentMode, localStorageKey, onPublish }) {
   const { user, fetchUser } = useUser();
   const router = useRouter();
   const [globalErrorMessage, setGlobalErrorMessage] = useState(false);
@@ -389,8 +407,8 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
               return;
             }
 
-            setContentObject(responseBody);
-            setComponentMode('view');
+            setComponentMode('compact');
+            onPublish(responseBody);
           };
         }
 
@@ -411,7 +429,18 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
         }
       }
     },
-    [confirm, contentObject, localStorageKey, newData, router, setComponentMode, setContentObject, user, fetchUser],
+    [
+      confirm,
+      contentObject,
+      localStorageKey,
+      newData,
+      onPublish,
+      router,
+      setComponentMode,
+      setContentObject,
+      user,
+      fetchUser,
+    ],
   );
 
   const handleChange = useCallback(
@@ -586,16 +615,53 @@ function EditMode({ contentObject, setContentObject, setComponentMode, localStor
   );
 }
 
-function CompactMode({ contentObject, rootContent, setComponentMode }) {
+function ReplyBox({
+  componentMode,
+  content,
+  contentObject,
+  localStorageKey,
+  rootContent,
+  setComponentMode,
+  setContentObject,
+}) {
+  // The published reply is kept here, instead of replacing the content of the reply box, so the box
+  // goes on describing the content being replied to. Only one reply is accepted, since replying
+  // twice at the same level is not something to encourage.
+  const [publishedReply, setPublishedReply] = useState(null);
+
   return (
-    <div className={classes.CompactWrapper}>
-      <ReplyButton contentObject={contentObject} setComponentMode={setComponentMode} />
-      <ShareButton content={contentObject} rootContent={rootContent} />
+    <div className={classes.ReplyWrapper}>
+      <div className={classes.CompactWrapper}>
+        <ReplyButton
+          contentObject={content}
+          isReplying={componentMode === 'edit' || !!publishedReply}
+          setComponentMode={setComponentMode}
+        />
+        <ShareButton content={content} rootContent={rootContent} />
+      </div>
+
+      {componentMode === 'edit' && (
+        <EditMode
+          contentObject={contentObject}
+          setComponentMode={setComponentMode}
+          setContentObject={setContentObject}
+          localStorageKey={localStorageKey}
+          onPublish={setPublishedReply}
+        />
+      )}
+
+      {publishedReply && (
+        <Content content={publishedReply} mode="view" viewFrame={true}>
+          <div className={classes.ArticleActions}>
+            <ShareButton content={publishedReply} rootContent={rootContent} />
+          </div>
+        </Content>
+      )}
     </div>
   );
 }
 
-function ReplyButton({ contentObject, setComponentMode }) {
+function ReplyButton({ contentObject, isReplying, setComponentMode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
   const confirm = useConfirm();
@@ -623,7 +689,9 @@ function ReplyButton({ contentObject, setComponentMode }) {
 
   return (
     <Tooltip text={`Responder para ${contentObject.owner_username}`} direction="n" position="absolute">
-      <Button onClick={handleClick}>Responder</Button>
+      <Button onClick={handleClick} disabled={isReplying} aria-expanded={isReplying}>
+        Responder
+      </Button>
     </Tooltip>
   );
 }
@@ -631,7 +699,9 @@ function ReplyButton({ contentObject, setComponentMode }) {
 function ShareButton({ content, rootContent }) {
   const [isLinkCopied, setCopied] = useState(false);
   const copiedTimeoutRef = useRef(null);
-  const isRootContent = rootContent.id === content.parent_id;
+  // A published content is identified by its own `id`, while the placeholder of the reply box
+  // points to the content it replies to through `parent_id`.
+  const isRootContent = rootContent.id === (content.id ?? content.parent_id);
   const shareLabel = `Compartilhar ${isRootContent ? 'publicação' : 'comentário'}`;
 
   useEffect(() => () => clearTimeout(copiedTimeoutRef.current), []);
