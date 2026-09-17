@@ -200,6 +200,33 @@ describe('ui', () => {
         expect(codeMirror(container).getValue()).toBe('  a\n\n  b');
       });
 
+      it('toggle a list on a line that holds a U+2028 line separator, which CodeMirror keeps inside the line', async () => {
+        const { container } = await renderEditor();
+
+        selectLines(container, 'a b');
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('- a b');
+
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('a b');
+      });
+
+      it('toggle the list of a very long line', async () => {
+        const { container } = await renderEditor();
+        const longLine = 'a'.repeat(50000);
+
+        selectLines(container, longLine);
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe(`- ${longLine}`);
+
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe(longLine);
+      });
+
       it('leave the other buttons that change whole lines as bytemd made them', async () => {
         const { container } = await renderEditor();
 

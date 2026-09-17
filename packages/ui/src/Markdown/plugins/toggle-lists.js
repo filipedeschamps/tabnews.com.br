@@ -44,7 +44,8 @@ export function toggleListsPlugin() {
           filledLines.length > 0 && filledLines.every((line) => findMarker(line.trimStart())?.type === list.type);
 
         replaceLines((line, index) => {
-          const [, indentation, text] = /^(\s*)(.*)$/.exec(line);
+          const [indentation] = /^\s*/.exec(line);
+          const text = line.slice(indentation.length);
           const marker = findMarker(text);
           const content = marker ? text.replace(marker.pattern, '') : text;
 
