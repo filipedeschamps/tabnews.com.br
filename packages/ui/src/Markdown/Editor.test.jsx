@@ -12,6 +12,11 @@ const headingIcon = '.bytemd-toolbar-left [bytemd-tippy-path="0"]';
 const tableOfContentsIcon = '.bytemd-toolbar-right [bytemd-tippy-path="1"]';
 const writeOnlyIcon = '.bytemd-toolbar-right [bytemd-tippy-path="2"]';
 const previewOnlyIcon = '.bytemd-toolbar-right [bytemd-tippy-path="3"]';
+// The list icons: the unordered and ordered ones of bytemd, and the task one of its gfm plugin.
+const quoteIcon = '.bytemd-toolbar-left [bytemd-tippy-path="3"]';
+const unorderedListIcon = '.bytemd-toolbar-left [bytemd-tippy-path="8"]';
+const orderedListIcon = '.bytemd-toolbar-left [bytemd-tippy-path="9"]';
+const taskListIcon = '.bytemd-toolbar-left [bytemd-tippy-path="12"]';
 
 describe('ui', () => {
   describe('MarkdownEditor', () => {
@@ -132,6 +137,80 @@ describe('ui', () => {
       expect(warn).not.toHaveBeenCalled();
     });
 
+    describe('list buttons', () => {
+      withRangeMeasurement();
+
+      it.each([
+        ['unordered', unorderedListIcon, '- a\n- b\n- c'],
+        ['ordered', orderedListIcon, '1. a\n2. b\n3. c'],
+        ['task', taskListIcon, '- [ ] a\n- [ ] b\n- [ ] c'],
+      ])('toggle the %s list of the selected lines', async (_, icon, list) => {
+        const { container } = await renderEditor();
+
+        selectLines(container, 'a\nb\nc');
+        await click(container, icon);
+
+        expect(codeMirror(container).getValue()).toBe(list);
+        expect(codeMirror(container).getSelection()).toBe(list);
+
+        await click(container, icon);
+
+        expect(codeMirror(container).getValue()).toBe('a\nb\nc');
+        expect(codeMirror(container).getSelection()).toBe('a\nb\nc');
+      });
+
+      it('toggle the list of the line of the cursor when nothing is selected', async () => {
+        const { container } = await renderEditor();
+
+        codeMirror(container).setValue('a\n- b\nc');
+        codeMirror(container).setCursor({ line: 1, ch: 1 });
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('a\nb\nc');
+      });
+
+      it('turn a list into another one instead of nesting it', async () => {
+        const { container } = await renderEditor();
+
+        selectLines(container, '- a\n- [x] b\n3. c');
+        await click(container, orderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('1. a\n2. b\n3. c');
+
+        await click(container, taskListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('- [ ] a\n- [ ] b\n- [ ] c');
+      });
+
+      it('complete a selection that is only partly the list, without doubling its markers', async () => {
+        const { container } = await renderEditor();
+
+        selectLines(container, '- a\nb\n- c');
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('- a\n- b\n- c');
+      });
+
+      it('keep the indentation and the blank lines of a list they remove', async () => {
+        const { container } = await renderEditor();
+
+        selectLines(container, '  - a\n\n  * b');
+        await click(container, unorderedListIcon);
+
+        expect(codeMirror(container).getValue()).toBe('  a\n\n  b');
+      });
+
+      it('leave the other buttons that change whole lines as bytemd made them', async () => {
+        const { container } = await renderEditor();
+
+        selectLines(container, 'a');
+        await click(container, quoteIcon);
+        await click(container, quoteIcon);
+
+        expect(codeMirror(container).getValue()).toBe('> > a');
+      });
+    });
+
     it('keeps the toolbar actions of the split mode', async () => {
       const { container } = await renderEditor();
 
@@ -144,6 +223,29 @@ describe('ui', () => {
 // jsdom has no `contentEditable`, the input style of the editor everywhere else, and only focuses
 // what it takes for a focusable area — a textarea being one.
 const focusableEditor = { editorConfig: { inputStyle: 'textarea' } };
+
+// CodeMirror measures the text whenever the cursor moves, and jsdom has no layout to measure a range
+// with.
+function withRangeMeasurement() {
+  beforeEach(() => {
+    Range.prototype.getBoundingClientRect = () => new DOMRect();
+    Range.prototype.getClientRects = () => [];
+  });
+
+  afterEach(() => {
+    delete Range.prototype.getBoundingClientRect;
+    delete Range.prototype.getClientRects;
+  });
+}
+
+function codeMirror(container) {
+  return container.querySelector('.CodeMirror').CodeMirror;
+}
+
+function selectLines(container, value) {
+  codeMirror(container).setValue(value);
+  codeMirror(container).execCommand('selectAll');
+}
 
 function editorWrapper(container) {
   return container.querySelector(`.${classes.Editor}`);
