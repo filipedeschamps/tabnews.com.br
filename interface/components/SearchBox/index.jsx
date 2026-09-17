@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ActionList, Button, Heading, IconButton, Overlay, Spinner } from '@/TabNewsUI';
 import { SearchIcon, XCircleFillIcon } from '@/TabNewsUI/icons';
@@ -79,72 +79,82 @@ export default function useSearchBox() {
     );
   }
 
-  function SearchBoxOverlay() {
-    const [isLoading, setIsLoading] = useState(true);
-    const inputRef = useRef(null);
-    const suggestionsRef = useRef(null);
+  // Memoized so the component keeps a stable identity across re-renders of whatever
+  // consumes useSearchBox() while isOpen doesn't change (e.g. a focus/visibility-triggered
+  // re-render after a bfcache-restored back navigation). Otherwise React would remount
+  // GoogleBox on every unrelated re-render, re-injecting cse.js and wiping the search state.
+  const SearchBoxOverlay = useMemo(
+    () =>
+      function SearchBoxOverlay() {
+        const [isLoading, setIsLoading] = useState(true);
+        const inputRef = useRef(null);
+        const suggestionsRef = useRef(null);
 
-    const onInputRender = (input) => {
-      setIsLoading(false);
-      input.focus();
-      inputRef.current = input;
-      input.setAttribute('enterkeyhint', 'search');
-    };
+        // Stable identities: GoogleBox's mount effect depends on these, so a fresh
+        // function on every SearchBoxOverlay render would re-run it and re-inject cse.js.
+        const onInputRender = useCallback((input) => {
+          setIsLoading(false);
+          input.focus();
+          inputRef.current = input;
+          input.setAttribute('enterkeyhint', 'search');
+        }, []);
 
-    const onSuggestionsRender = (suggestionsBox) => {
-      suggestionsRef.current = suggestionsBox;
-    };
+        const onSuggestionsRender = useCallback((suggestionsBox) => {
+          suggestionsRef.current = suggestionsBox;
+        }, []);
 
-    const handleClose = () => {
-      setIsOpen(false);
-      clearGoogleBox();
-    };
+        const handleClose = () => {
+          setIsOpen(false);
+          clearGoogleBox();
+        };
 
-    if (!isOpen) return null;
+        if (!isOpen) return null;
 
-    return (
-      <Overlay
-        returnFocusRef={returnFocusRef}
-        ignoreClickRefs={[suggestionsRef, returnFocusRef]}
-        onEscape={handleClose}
-        onClickOutside={handleClose}
-        aria-labelledby="Pesquisar com o Google"
-        top={32}
-        left={'50vw'}
-        anchorSide="inside-center"
-        className={classes.Overlay}>
-        <div className={isLoading ? classes.ScrollAreaLoading : classes.ScrollArea}>
-          <div className={classes.Header}>
-            <Heading className={classes.Title}>Pesquisar com o Google</Heading>
-            <IconButton icon={XCircleFillIcon} variant="invisible" onClick={handleClose} />
-          </div>
+        return (
+          <Overlay
+            returnFocusRef={returnFocusRef}
+            ignoreClickRefs={[suggestionsRef, returnFocusRef]}
+            onEscape={handleClose}
+            onClickOutside={handleClose}
+            aria-labelledby="Pesquisar com o Google"
+            top={32}
+            left={'50vw'}
+            anchorSide="inside-center"
+            className={classes.Overlay}>
+            <div className={isLoading ? classes.ScrollAreaLoading : classes.ScrollArea}>
+              <div className={classes.Header}>
+                <Heading className={classes.Title}>Pesquisar com o Google</Heading>
+                <IconButton icon={XCircleFillIcon} variant="invisible" onClick={handleClose} />
+              </div>
 
-          <GoogleBox onInputRender={onInputRender} onSuggestionsRender={onSuggestionsRender} />
+              <GoogleBox onInputRender={onInputRender} onSuggestionsRender={onSuggestionsRender} />
 
-          <div className={classes.SpinnerWrapper}>{isLoading && <Spinner size="medium" />}</div>
-        </div>
+              <div className={classes.SpinnerWrapper}>{isLoading && <Spinner size="medium" />}</div>
+            </div>
 
-        <style jsx global>{`
-          .gsc-input-box {
-            border-radius: 6px !important;
-          }
-          .gsc-search-button-v2 {
-            border-radius: 6px !important;
-            cursor: pointer;
-            padding: 8px !important;
-            background-color: #21262d !important;
-          }
-          .gsc-input {
-            color-scheme: light !important;
-          }
-          .gssb_c {
-            color: #444444;
-            left: max(calc(5vw + 16px), calc(50vw - 434px)) !important;
-          }
-        `}</style>
-      </Overlay>
-    );
-  }
+            <style jsx global>{`
+              .gsc-input-box {
+                border-radius: 6px !important;
+              }
+              .gsc-search-button-v2 {
+                border-radius: 6px !important;
+                cursor: pointer;
+                padding: 8px !important;
+                background-color: #21262d !important;
+              }
+              .gsc-input {
+                color-scheme: light !important;
+              }
+              .gssb_c {
+                color: #444444;
+                left: max(calc(5vw + 16px), calc(50vw - 434px)) !important;
+              }
+            `}</style>
+          </Overlay>
+        );
+      },
+    [isOpen],
+  );
 
   return {
     onClickSearchButton,
