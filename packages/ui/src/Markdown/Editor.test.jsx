@@ -211,6 +211,38 @@ describe('ui', () => {
       });
     });
 
+    describe('touch', () => {
+      withRangeMeasurement();
+
+      it('leaves a tap on the text to the browser, which then shows its caret handle', async () => {
+        const { container } = await renderEditor();
+        const text = container.querySelector('.CodeMirror-code');
+
+        expect(tap(text)).toStrictEqual({ touchend: false, mousedown: false });
+      });
+
+      it('leaves CodeMirror the taps outside the text, where the browser has nothing to place the caret in', async () => {
+        const { container } = await renderEditor();
+
+        expect(tap(container.querySelector('.CodeMirror-scroll'))).toStrictEqual({ touchend: true, mousedown: true });
+      });
+
+      it('leaves CodeMirror a click of the mouse', async () => {
+        const { container } = await renderEditor();
+        const text = container.querySelector('.CodeMirror-code');
+
+        text.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'mouse' }));
+
+        expect(mouseDown(text)).toBe(true);
+      });
+
+      it('leaves CodeMirror the taps of the textarea input style, whose text is not editable', async () => {
+        const { container } = await renderEditor(focusableEditor);
+
+        expect(tap(container.querySelector('.CodeMirror-code'))).toStrictEqual({ touchend: true, mousedown: true });
+      });
+    });
+
     it('keeps the toolbar actions of the split mode', async () => {
       const { container } = await renderEditor();
 
@@ -245,6 +277,44 @@ function codeMirror(container) {
 function selectLines(container, value) {
   codeMirror(container).setValue(value);
   codeMirror(container).execCommand('selectAll');
+}
+
+function dispatchCancelable(target, event) {
+  target.dispatchEvent(event);
+
+  return event.defaultPrevented;
+}
+
+// jsdom leaves `which`, the button CodeMirror reads, at 0 for every button.
+function mouseDown(target) {
+  const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+
+  Object.defineProperty(event, 'which', { value: 1 });
+
+  return dispatchCancelable(target, event);
+}
+
+// What a finger sends, and whether CodeMirror cancelled each event. jsdom cannot build a `Touch`,
+// and a finger has a contact area, without which CodeMirror takes the touch for a mouse.
+function tap(target) {
+  const rect = target.getBoundingClientRect();
+  const touches = [
+    { clientX: rect.left, clientY: rect.top, pageX: rect.left, pageY: rect.top, radiusX: 10, radiusY: 10 },
+  ];
+  const touchstart = new TouchEvent('touchstart', { bubbles: true, cancelable: true });
+
+  Object.defineProperty(touchstart, 'touches', { value: touches });
+  target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
+  target.dispatchEvent(touchstart);
+
+  const touchend = dispatchCancelable(target, new TouchEvent('touchend', { bubbles: true, cancelable: true }));
+
+  // A browser only fires the mouse events of a tap whose `touchend` went through, and CodeMirror
+  // ignores them for a second after a touch it handled.
+  return {
+    touchend,
+    mousedown: touchend || mouseDown(target),
+  };
 }
 
 function editorWrapper(container) {

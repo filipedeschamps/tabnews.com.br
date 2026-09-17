@@ -23,6 +23,7 @@ import {
   katexRawGuardPlugin,
   katexStylesheetPlugin,
   mermaidPlugin,
+  nativeTouchSelectionPlugin,
   removeDuplicateClobberPrefix,
   strictInlineMathPlugin,
   toggleListsPlugin,
@@ -72,7 +73,7 @@ const bytemdPluginBaseList = [
 ];
 
 // Only the editor runs the `editorEffect` of a plugin, so these stay out of the viewer.
-const editorOnlyPluginList = [toggleListsPlugin()];
+const editorOnlyPluginList = [toggleListsPlugin(), nativeTouchSelectionPlugin()];
 
 export function usePlugins({
   areLinksTrusted,
