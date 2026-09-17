@@ -1,9 +1,6 @@
 import { render } from '@testing-library/react';
 
 import ContentList from 'interface/components/ContentList';
-import { routerMock } from 'tests/unit/interface/nextRouterMock';
-
-vi.mock('next/router', () => ({ useRouter: () => routerMock }));
 
 function makeContent(id) {
   return {
@@ -22,8 +19,15 @@ function makeContent(id) {
 
 const pagination = { perPage: 30, currentPage: 1, nextPage: 2 };
 
+let fetchMock;
+
 beforeEach(() => {
-  routerMock.prefetch.mockClear();
+  fetchMock = vi.fn().mockResolvedValue(new Response());
+  vi.stubGlobal('fetch', fetchMock);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('ContentList', () => {
@@ -35,10 +39,10 @@ describe('ContentList', () => {
     );
 
     // A re-render with an equivalent (same ids) list simulates next-swr's own revalidation
-    // resolving with unchanged data — no reason to pre-fetch the next page.
+    // resolving with unchanged data — no reason to warm the next page.
     rerender(<ContentList contentList={[...list]} pagination={pagination} paginationBasePath="/pagina" />);
 
-    expect(routerMock.prefetch).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('warms the next page once the revalidated list differs from what was first rendered', () => {
@@ -51,13 +55,13 @@ describe('ContentList', () => {
 
     rerender(<ContentList contentList={revalidatedList} pagination={pagination} paginationBasePath="/pagina" />);
 
-    expect(routerMock.prefetch).toHaveBeenCalledTimes(1);
-    expect(routerMock.prefetch).toHaveBeenCalledWith('/pagina/2', undefined, { unstable_skipClientCache: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith('/pagina/2');
 
-    // Further changes should not trigger a second pre-fetch of the same next page.
+    // Further changes should not trigger a second warm-up of the same next page.
     rerender(<ContentList contentList={[makeContent('4')]} pagination={pagination} paginationBasePath="/pagina" />);
 
-    expect(routerMock.prefetch).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('does not warm anything when there is no next page', () => {
@@ -73,6 +77,6 @@ describe('ContentList', () => {
       <ContentList contentList={revalidatedList} pagination={lastPagePagination} paginationBasePath="/pagina" />,
     );
 
-    expect(routerMock.prefetch).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

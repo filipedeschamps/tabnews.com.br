@@ -1,14 +1,13 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 import Content from 'interface/components/Content';
-import { routerMock } from 'tests/unit/interface/nextRouterMock';
 
 vi.mock('interface', async (importOriginal) => ({
   ...(await importOriginal()),
   useUser: () => ({ user: { id: 'reader-id' }, fetchUser: () => {} }),
 }));
 
-vi.mock('next/router', () => ({ useRouter: () => routerMock }));
+vi.mock('next/router', () => ({ useRouter: () => ({ push: () => {}, asPath: '/author/post-slug' }) }));
 
 // Publishing a short body asks for a confirmation, which is mounted outside the React tree.
 vi.mock('@/TabNewsUI', async (importOriginal) => ({

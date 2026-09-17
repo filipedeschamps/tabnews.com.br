@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { useEffect, useRef } from 'react';
 
 import { AdBanner, EmptyState, Link, Pagination, PastTime, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
@@ -111,12 +110,16 @@ function EndOfRelevant({ pagination, paginationBasePath }) {
 // next-swr revalidates the current page shortly after mount by re-fetching it with
 // `unstable_skipClientCache`, bypassing the ISR/CDN snapshot that was shown first. When that
 // reveals the list was stale, the same staleness is likely present in the cached snapshot for
-// the next page too, so we warm it up front (once) with the same cache-bypassing fetch. This
-// makes the eventual "Próximo" navigation land on already-fresh data instead of flashing stale
-// content before its own revalidation kicks in. If the current page's data never changes, we
-// never make the extra request.
+// the next page too, so we ping it once with a plain `fetch` — a real (non-prefetch) request is
+// what makes Next.js kick off ISR's background regeneration for that page, the same way visiting
+// it directly would. By the time the reader actually clicks "Próximo", that regeneration has
+// usually finished, so the navigation's own fetch already comes back fresh instead of flashing
+// stale content before its own revalidation kicks in. We deliberately don't use
+// `router.prefetch()` here: Next.js marks prefetch requests with a `purpose: prefetch` header,
+// which the framework's ISR handler treats as a cache read and never revalidates from — it would
+// keep serving the same stale snapshot indefinitely. A plain `fetch` carries no such marker.
+// If the current page's data never changes, we never make the extra request.
 function useWarmNextPageOnceStale(list, nextPage, paginationBasePath) {
-  const router = useRouter();
   const initialSignatureRef = useRef(getListSignature(list));
   const hasWarmedRef = useRef(false);
 
@@ -125,8 +128,8 @@ function useWarmNextPageOnceStale(list, nextPage, paginationBasePath) {
     if (getListSignature(list) === initialSignatureRef.current) return;
 
     hasWarmedRef.current = true;
-    router.prefetch(`${paginationBasePath}/${nextPage}`, undefined, { unstable_skipClientCache: true }).catch(() => {});
-  }, [list, nextPage, paginationBasePath, router]);
+    fetch(`${paginationBasePath}/${nextPage}`).catch(() => {});
+  }, [list, nextPage, paginationBasePath]);
 }
 
 function getListSignature(list) {
