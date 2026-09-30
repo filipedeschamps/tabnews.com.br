@@ -5,10 +5,14 @@ import { Viewer } from '@/TabNewsUI';
 import webserver from 'infra/webserver.js';
 import removeMarkdown from 'models/remove-markdown';
 
+// Characters not allowed in XML 1.0 (C0 controls except \t \n \r, lone surrogates, U+FFFE and U+FFFF)
+// would make the whole feed unreadable, even inside a CDATA section.
+const INVALID_XML_CHARS = /[^\t\n\r\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu;
+
 // `xml-js` (used by `feed`) only escapes the first "]]>" inside a CDATA section,
 // so any further occurrence would close it and inject arbitrary XML into the feed.
 function escapeCdata(text) {
-  return text.replaceAll(']]>', ']]\u200B>');
+  return text.replace(INVALID_XML_CHARS, '').replaceAll(']]>', ']]\u200B>');
 }
 
 function generateRss2(contentList) {

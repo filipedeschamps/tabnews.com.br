@@ -16,6 +16,25 @@ function generateContent(body, title = 'Título') {
   return /<content:encoded><!\[CDATA\[([\s\S]*?)\]\]><\/content:encoded>/.exec(feed)[1];
 }
 
+function parseFeed(title, body) {
+  const feed = rss.generateRss2([
+    {
+      title,
+      body,
+      slug: 'titulo',
+      owner_username: 'rafael',
+      published_at: new Date('2026-08-01T00:00:00.000Z'),
+      updated_at: new Date('2026-08-01T00:00:00.000Z'),
+    },
+  ]);
+
+  const xml = new DOMParser().parseFromString(feed, 'text/xml');
+
+  expect(xml.querySelector('parsererror')).toBeNull();
+
+  return xml;
+}
+
 describe('rss model', () => {
   describe('generateRss2', () => {
     it('should keep the inline math readable, since the feed is read without the KaTeX stylesheet', () => {
@@ -34,25 +53,6 @@ describe('rss model', () => {
     describe('CDATA injection', () => {
       const maliciousText =
         'A]]>B]]><script xmlns="http://www.w3.org/1999/xhtml">alert(document.domain)</script><![CDATA[C';
-
-      function parseFeed(title, body) {
-        const feed = rss.generateRss2([
-          {
-            title,
-            body,
-            slug: 'titulo',
-            owner_username: 'rafael',
-            published_at: new Date('2026-08-01T00:00:00.000Z'),
-            updated_at: new Date('2026-08-01T00:00:00.000Z'),
-          },
-        ]);
-
-        const xml = new DOMParser().parseFromString(feed, 'text/xml');
-
-        expect(xml.querySelector('parsererror')).toBeNull();
-
-        return xml;
-      }
 
       it.each([
         ['one', 'A]]>B'],
@@ -84,6 +84,35 @@ describe('rss model', () => {
         expect(xml.querySelectorAll('script')).toHaveLength(0);
         expect(item.querySelector('description').children).toHaveLength(0);
         expect(item.getElementsByTagName('content:encoded')[0].children).toHaveLength(0);
+      });
+
+      it('should not let a "]]>" formed after removing invalid characters break out of the CDATA section', () => {
+        const title = maliciousText.replaceAll(']]>', ']]\u0001>');
+        const xml = parseFeed(title, title);
+        const item = xml.querySelector('item');
+
+        expect(xml.querySelectorAll('script')).toHaveLength(0);
+        expect(item.querySelector('title').children).toHaveLength(0);
+        expect(item.querySelector('title').textContent.replaceAll('\u200B', '')).toBe(maliciousText);
+        expect(item.querySelector('description').children).toHaveLength(0);
+        expect(item.getElementsByTagName('content:encoded')[0].children).toHaveLength(0);
+      });
+    });
+
+    describe('Characters not allowed in XML', () => {
+      it.each([
+        ['C0 control', '\u0001'],
+        ['vertical tab', '\u000B'],
+        ['noncharacter U+FFFE', '\uFFFE'],
+        ['noncharacter U+FFFF', '\uFFFF'],
+        ['lone surrogate', '\uD800'],
+      ])('should remove %s characters from title and body', (_, char) => {
+        const xml = parseFeed(`A${char}B 🚀`, `Corpo${char}com caractere inválido.`);
+        const item = xml.querySelector('item');
+
+        expect(item.querySelector('title').textContent).toBe('AB 🚀');
+        expect(item.querySelector('description').textContent).not.toContain(char);
+        expect(item.getElementsByTagName('content:encoded')[0].textContent).not.toContain(char);
       });
     });
   });
