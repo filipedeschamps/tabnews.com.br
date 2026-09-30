@@ -5,6 +5,16 @@ import { Viewer } from '@/TabNewsUI';
 import webserver from 'infra/webserver.js';
 import removeMarkdown from 'models/remove-markdown';
 
+// Characters not allowed in XML 1.0 (C0 controls except \t \n \r, lone surrogates, U+FFFE and U+FFFF)
+// would make the whole feed unreadable, even inside a CDATA section.
+const INVALID_XML_CHARS = /[^\t\n\r\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu;
+
+// `xml-js` (used by `feed`) only escapes the first "]]>" inside a CDATA section,
+// so any further occurrence would close it and inject arbitrary XML into the feed.
+function escapeCdata(text) {
+  return text.replace(INVALID_XML_CHARS, '').replaceAll(']]>', ']]\u200B>');
+}
+
 function generateRss2(contentList) {
   const webserverHost = webserver.host;
 
@@ -30,17 +40,19 @@ function generateRss2(contentList) {
     const contentUrl = `${webserverHost}/${contentObject.owner_username}/${contentObject.slug}`;
 
     feed.addItem({
-      title: contentObject.title,
+      title: escapeCdata(contentObject.title),
       id: contentUrl,
       link: contentUrl,
-      description: removeMarkdown(contentObject.body, { maxLength: 190 }),
-      content: renderToStaticMarkup(
-        <Viewer
-          value={contentObject.body}
-          clobberPrefix={`${contentObject.owner_username}-content-`}
-          shouldRenderMath={false}
-        />,
-      ).replace(/[\r\n]/gm, ''),
+      description: escapeCdata(removeMarkdown(contentObject.body, { maxLength: 190 })),
+      content: escapeCdata(
+        renderToStaticMarkup(
+          <Viewer
+            value={contentObject.body}
+            clobberPrefix={`${contentObject.owner_username}-content-`}
+            shouldRenderMath={false}
+          />,
+        ).replace(/[\r\n]/gm, ''),
+      ),
       author: [
         {
           name: contentObject.owner_username,
