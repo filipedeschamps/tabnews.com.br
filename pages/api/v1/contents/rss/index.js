@@ -34,5 +34,6 @@ async function handleRequest(request, response) {
   const rss2 = rss.generateRss2(secureContentListFound);
 
   response.setHeader('Content-Type', 'text/xml; charset=utf-8');
+  response.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
   response.status(200).send(rss2);
 }

@@ -5,6 +5,12 @@ import { Viewer } from '@/TabNewsUI';
 import webserver from 'infra/webserver.js';
 import removeMarkdown from 'models/remove-markdown';
 
+// `xml-js` (used by `feed`) only escapes the first "]]>" inside a CDATA section,
+// so any further occurrence would close it and inject arbitrary XML into the feed.
+function escapeCdata(text) {
+  return text.replaceAll(']]>', ']]\u200B>');
+}
+
 function generateRss2(contentList) {
   const webserverHost = webserver.host;
 
@@ -30,17 +36,19 @@ function generateRss2(contentList) {
     const contentUrl = `${webserverHost}/${contentObject.owner_username}/${contentObject.slug}`;
 
     feed.addItem({
-      title: contentObject.title,
+      title: escapeCdata(contentObject.title),
       id: contentUrl,
       link: contentUrl,
-      description: removeMarkdown(contentObject.body, { maxLength: 190 }),
-      content: renderToStaticMarkup(
-        <Viewer
-          value={contentObject.body}
-          clobberPrefix={`${contentObject.owner_username}-content-`}
-          shouldRenderMath={false}
-        />,
-      ).replace(/[\r\n]/gm, ''),
+      description: escapeCdata(removeMarkdown(contentObject.body, { maxLength: 190 })),
+      content: escapeCdata(
+        renderToStaticMarkup(
+          <Viewer
+            value={contentObject.body}
+            clobberPrefix={`${contentObject.owner_username}-content-`}
+            shouldRenderMath={false}
+          />,
+        ).replace(/[\r\n]/gm, ''),
+      ),
       author: [
         {
           name: contentObject.owner_username,
