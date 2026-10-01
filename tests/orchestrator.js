@@ -13,6 +13,7 @@ import balance from 'models/balance.js';
 import ban from 'models/ban';
 import content from 'models/content.js';
 import event from 'models/event.js';
+import notification from 'models/notification.js';
 import recovery from 'models/recovery.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
@@ -226,6 +227,48 @@ async function createUser(userObject) {
   await activation.create(createdUser);
 
   return createdUser;
+}
+
+async function createNotification(notificationObject) {
+  notificationObject.user_id = notificationObject?.user_id || randomUUID();
+  notificationObject.type = notificationObject?.type || 'content:created';
+  notificationObject.entity_id = notificationObject?.entity_id || randomUUID();
+  notificationObject.created_at = notificationObject?.created_at || new Date();
+  notificationObject.metadata = notificationObject?.metadata || {
+    content_link: 'default-link',
+    content_title: 'Default Title',
+    content_owner: faker.internet.username(),
+    content_slug: 'default-slug',
+    root_content_slug: 'default-root-slug',
+    root_content_title: 'Default Root Title',
+  };
+
+  const query = {
+    text: `
+        INSERT INTO
+          notifications (user_id, type, entity_id, metadata, read, created_at)
+        VALUES
+          ($1, $2, $3, $4, $5, $6)
+        RETURNING
+          *
+        ;`,
+    values: [
+      notificationObject.user_id,
+      notificationObject.type,
+      notificationObject.entity_id,
+      notificationObject.metadata,
+      notificationObject.read || false,
+      notificationObject.created_at || new Date(),
+    ],
+  };
+
+  const results = await database.query(query);
+  const newNotification = results.rows[0];
+  return newNotification;
+}
+
+async function findAllNotification(values) {
+  return await notification.findAll(values);
 }
 
 async function addFeaturesToUser(userObject, features) {
@@ -563,6 +606,8 @@ const orchestrator = {
   createRecoveryToken,
   createSession,
   createUser,
+  createNotification,
+  findAllNotification,
   deleteAllEmails,
   dropAllTables,
   findSessionByToken,

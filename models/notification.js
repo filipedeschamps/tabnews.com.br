@@ -1,11 +1,136 @@
 import { truncate } from '@tabnews/helpers';
 
+import database from 'infra/database';
 import email from 'infra/email.js';
 import webserver from 'infra/webserver.js';
 import authorization from 'models/authorization.js';
 import content from 'models/content.js';
+import pagination from 'models/pagination.js';
 import { FirewallEmail, NotificationEmail } from 'models/transactional';
 import user from 'models/user.js';
+
+async function create(postedNotificationData) {
+  const query = {
+    text: `
+      INSERT INTO
+        notifications (user_id, type, entity_id, metadata, read)
+      VALUES
+        ($1, $2, $3, $4, $5)
+      RETURNING
+        *
+      ;`,
+    values: [
+      postedNotificationData.user_id,
+      postedNotificationData.type,
+      postedNotificationData.entity_id,
+      postedNotificationData.metadata,
+      postedNotificationData.read || false,
+    ],
+  };
+
+  const results = await database.query(query);
+  const newNotification = results.rows[0];
+  return newNotification;
+}
+
+async function findAll(values) {
+  const offset = (values.page - 1) * values.per_page;
+  const where = values.where ?? {};
+  const whereClause = buildWhereClause(where);
+  const query = {
+    text: `
+      SELECT
+        *
+      FROM
+        notifications
+      ${whereClause.text}
+      ORDER BY
+        created_at DESC
+      LIMIT $${whereClause.values.length + 1} OFFSET $${whereClause.values.length + 2};
+    `,
+    values: [...whereClause.values, values.per_page, offset],
+  };
+
+  const queryResults = await database.query(query);
+
+  const results = {
+    rows: queryResults.rows,
+  };
+
+  values.total_rows = await count({ where: where });
+
+  results.pagination = pagination.get(values);
+
+  return results;
+}
+
+async function update(notification, values = {}) {
+  const where = values.where ?? {};
+  const whereClause = buildWhereClause(where);
+  const query = {
+    text: `
+      UPDATE
+        notifications
+      SET
+        read = $${whereClause.values.length + 1},
+        updated_at = (now() at time zone 'utc')
+      ${whereClause.text}
+      ;`,
+    values: [...whereClause.values, notification.read],
+  };
+
+  await database.query(query);
+}
+
+async function markAllAsRead(userId, unread_until = new Date()) {
+  const query = {
+    text: `
+      UPDATE
+        notifications
+      SET
+        read = $2,
+        updated_at = (now() at time zone 'utc')
+      WHERE
+        user_id = $1 and created_at <= $3
+      ;`,
+    values: [userId, true, unread_until],
+  };
+
+  await database.query(query);
+}
+
+async function count(values = {}, options = {}) {
+  const where = values.where ?? {};
+
+  const whereClause = buildWhereClause(where);
+  const query = {
+    text: `
+      SELECT
+        COUNT(1)::integer as count
+      FROM
+        notifications
+        ${whereClause.text}
+      ;`,
+    values: whereClause.values,
+  };
+
+  const results = await database.query(query, options);
+  return results.rows[0].count;
+}
+
+function buildWhereClause(where, nextArgumentIndex = 1) {
+  const values = [];
+  const conditions = Object.entries(where).map(([column, value]) => {
+    values.push(value);
+    return Array.isArray(value) ? `${column} = ANY ($${nextArgumentIndex++})` : `${column} = $${nextArgumentIndex++}`;
+  });
+
+  return {
+    text: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '',
+    values: values,
+    nextArgumentIndex: nextArgumentIndex,
+  };
+}
 
 async function sendReplyEmailToParentUser(createdContent) {
   const anonymousUser = user.createAnonymous();
@@ -50,6 +175,24 @@ async function sendReplyEmailToParentUser(createdContent) {
       username: parentContentUser.username,
       bodyReplyLine: bodyReplyLine,
       contentLink: childContentUrl,
+    });
+
+    create({
+      user_id: parentContent.owner_id,
+      type: 'content:created',
+      entity_id: secureCreatedContent.id,
+      metadata: {
+        content_owner_id: secureCreatedContent.owner_id,
+        content_slug: secureCreatedContent.slug,
+        content_owner: secureCreatedContent.owner_username,
+        content_title: secureCreatedContent.title,
+        parent_owner_id: parentContent.owner_id,
+        parent_title: parentContent.title,
+        root_content_owner_id: secureRootContent.owner_id,
+        root_content_slug: secureRootContent.slug,
+        root_content_title: secureRootContent.title,
+        root_content_owner: secureRootContent.owner_username,
+      },
     });
 
     await email.triggerSend({
@@ -150,6 +293,10 @@ function getFirewallDeletedContentLine(contents) {
 }
 
 export default Object.freeze({
+  findAll,
+  update,
+  markAllAsRead,
+  create,
   sendContentDeletedToUser,
   sendReplyEmailToParentUser,
   sendUserDisabled,
