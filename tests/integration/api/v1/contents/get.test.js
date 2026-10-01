@@ -37,12 +37,11 @@ describe('GET /api/v1/contents', () => {
         'x-content-type-options': ['nosniff'],
         'referrer-policy': ['origin-when-cross-origin'],
         'cross-origin-opener-policy': ['same-origin-allow-popups'],
-        'access-control-allow-credentials': ['true'],
         'access-control-allow-origin': ['*'],
         'cache-control': ['public, s-maxage=10, stale-while-revalidate'],
         'access-control-allow-methods': ['GET,OPTIONS,PATCH,DELETE,POST,PUT'],
         'access-control-allow-headers': [
-          'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+          'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
         ],
         link: [
           `<${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="first", <${orchestrator.webserverUrl}/api/v1/contents?strategy=relevant&page=1&per_page=30>; rel="last"`,
