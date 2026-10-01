@@ -167,5 +167,27 @@ describe('GET /recentes/rss', () => {
     </channel>
 </rss>`);
     });
+
+    test('With content trying to break out of the CDATA section', async () => {
+      const defaultUser = await orchestrator.createUser();
+      const maliciousText =
+        'A]]>B]]\u0001><script xmlns="http://www.w3.org/1999/xhtml">alert(document.domain)</script><![CDATA[C';
+
+      await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: maliciousText,
+        body: `${maliciousText}\n\n\`\`\`\n${maliciousText}\n\`\`\``,
+        status: 'published',
+      });
+
+      const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
+      const responseBody = await response.text();
+      const responseBodyOutsideCdata = responseBody.replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '');
+
+      expect.soft(response.status).toBe(200);
+      expect(responseBody).not.toContain('\u0001');
+      expect(responseBodyOutsideCdata).not.toContain('<script');
+      expect(responseBodyOutsideCdata).not.toContain('<![CDATA[');
+    });
   });
 });
