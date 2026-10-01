@@ -116,14 +116,18 @@ describe('POST /api/v1/contents', () => {
         'Texto corrido no lugar de um JSON',
       );
 
-      expect.soft(response.status).toBe(400);
-      expect.soft(responseBody.status_code).toBe(400);
-      expect(responseBody.name).toBe('ValidationError');
-      expect(responseBody.message).toBe('"body" enviado deve ser do tipo Object.');
-      expect(responseBody.action).toBe('Ajuste os dados enviados e tente novamente.');
+      expect.soft(response.status).toBe(415);
+      expect(responseBody).toStrictEqual({
+        name: 'ValidationError',
+        message: 'O "Content-Type" enviado não é suportado.',
+        action: 'Envie os dados no formato JSON com o header "Content-Type: application/json".',
+        status_code: 415,
+        error_id: responseBody.error_id,
+        request_id: responseBody.request_id,
+        error_location_code: 'MODEL:CONTROLLER:ASSERT_JSON_CONTENT_TYPE:UNSUPPORTED_CONTENT_TYPE',
+      });
       expect(uuidVersion(responseBody.error_id)).toBe(4);
       expect(uuidVersion(responseBody.request_id)).toBe(4);
-      expect(responseBody.error_location_code).toBe('MODEL:VALIDATOR:FINAL_SCHEMA');
     });
 
     test('Content with "owner_id" pointing to another user', async () => {

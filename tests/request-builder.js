@@ -42,7 +42,8 @@ export default class RequestBuilder {
       headers.cookie = `session_id=${this.sessionObject.token}`;
     }
 
-    this.headers = { ...headers, ...customHeaders };
+    const mergedHeaders = { ...headers, ...customHeaders };
+    this.headers = Object.fromEntries(Object.entries(mergedHeaders).filter(([, value]) => value !== undefined));
     return this.headers;
   }
 

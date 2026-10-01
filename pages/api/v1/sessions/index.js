@@ -33,6 +33,8 @@ async function deleteHandler(request, response) {
 }
 
 function postValidationHandler(request, response, next) {
+  controller.assertJsonContentType(request);
+
   const cleanValues = validator(request.body, {
     email: 'required',
     password: 'required',
