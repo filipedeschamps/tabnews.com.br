@@ -19,6 +19,15 @@ describe('GET /recentes/rss', () => {
       expect.soft(response.status).toBe(200);
     });
 
+    test('With restrictive "Content-Security-Policy" header', async () => {
+      const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
+
+      expect.soft(response.status).toBe(200);
+      expect(response.headers.get('Content-Security-Policy')).toBe(
+        "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+      );
+    });
+
     test('With 0 contents', async () => {
       const response = await fetch(`${orchestrator.webserverUrl}/recentes/rss`);
       const responseBody = await response.text();
