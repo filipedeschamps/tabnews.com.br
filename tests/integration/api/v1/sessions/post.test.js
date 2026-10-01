@@ -48,6 +48,7 @@ describe('POST /api/v1/sessions', () => {
       expect(parsedCookiesFromResponse.session_id.maxAge).toBe(60 * 60 * 24 * 30);
       expect(parsedCookiesFromResponse.session_id.path).toBe('/');
       expect(parsedCookiesFromResponse.session_id.httpOnly).toBe(true);
+      expect(parsedCookiesFromResponse.session_id.sameSite).toBe('Lax');
     });
 
     test('Using a valid email and password, but user lost the feature "create:session"', async () => {

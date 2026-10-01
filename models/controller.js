@@ -220,6 +220,21 @@ function injectPaginationHeaders(pagination, endpoint, request, response) {
   response.setHeader('X-Pagination-Total-Rows', pagination.totalRows);
 }
 
+function assertJsonContentType(request) {
+  const contentType = request.headers['content-type'];
+  const mediaType = contentType?.split(';')[0].trim().toLowerCase();
+  const hasBody = Number(request.headers['content-length']) > 0 || !!request.headers['transfer-encoding'];
+
+  if ((mediaType || hasBody) && mediaType !== 'application/json') {
+    throw new ValidationError({
+      message: 'O "Content-Type" enviado não é suportado.',
+      action: 'Envie os dados no formato JSON com o header "Content-Type: application/json".',
+      statusCode: 415,
+      errorLocationCode: 'MODEL:CONTROLLER:ASSERT_JSON_CONTENT_TYPE:UNSUPPORTED_CONTENT_TYPE',
+    });
+  }
+}
+
 const handlerOptions = {
   onNoMatch: onNoMatchHandler,
   onError: onErrorHandler,
@@ -230,4 +245,5 @@ export default Object.freeze({
   injectRequestMetadata,
   logRequest,
   injectPaginationHeaders,
+  assertJsonContentType,
 });

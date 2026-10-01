@@ -28,6 +28,7 @@ function setSessionIdCookieInResponse(sessionToken, response) {
     serialize('session_id', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
       maxAge: SESSION_EXPIRATION_IN_SECONDS,
     }),
@@ -82,6 +83,7 @@ function clearSessionIdCookie(response) {
     serialize('session_id', 'invalid', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
       maxAge: -1,
     }),

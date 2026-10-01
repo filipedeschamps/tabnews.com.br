@@ -14,9 +14,9 @@ describe('OPTIONS /api/v1/contents', () => {
       expect.soft(response.status).toBe(200);
       expect(response.headers.get('access-control-allow-methods')).toBe('GET,OPTIONS,PATCH,DELETE,POST,PUT');
       expect(response.headers.get('access-control-allow-origin')).toBe('*');
-      expect(response.headers.get('access-control-allow-credentials')).toBe('true');
+      expect(response.headers.get('access-control-allow-credentials')).toBeNull();
       expect(response.headers.get('access-control-allow-headers')).toBe(
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+        'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
       );
     });
   });

@@ -1,5 +1,6 @@
 import { ForbiddenError, UnauthorizedError } from 'errors';
 import authorization from 'models/authorization.js';
+import controller from 'models/controller.js';
 import password from 'models/password.js';
 import session from 'models/session.js';
 import user from 'models/user.js';
@@ -23,6 +24,8 @@ async function comparePasswords(providedPassword, passwordHash) {
 
 async function injectAnonymousOrUser(request, response, next, options = {}) {
   if (request.cookies?.session_id) {
+    rejectUnsafeCookieRequest(request);
+
     const cleanCookies = validator(request.cookies, {
       session_id: 'required',
     });
@@ -60,6 +63,42 @@ async function injectAnonymousOrUser(request, response, next, options = {}) {
       ...request.context,
       user: anonymousUser,
     };
+  }
+}
+
+const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+
+// CSRF defense for cookie-authenticated requests. Non-browser clients do not send
+// "Origin" or "Sec-Fetch-Site", so they keep working.
+function rejectUnsafeCookieRequest(request) {
+  if (safeMethods.includes(request.method)) return;
+
+  if (isCrossOriginRequest(request)) {
+    throw new ForbiddenError({
+      message: 'Requisições autenticadas por cookie não podem ser feitas a partir de outra origem.',
+      action: 'Faça a requisição a partir da mesma origem da API.',
+      errorLocationCode: 'MODEL:AUTHENTICATION:REJECT_UNSAFE_COOKIE_REQUEST:CROSS_ORIGIN',
+    });
+  }
+
+  controller.assertJsonContentType(request);
+}
+
+function isCrossOriginRequest(request) {
+  const secFetchSite = request.headers['sec-fetch-site'];
+
+  if (secFetchSite) {
+    return secFetchSite !== 'same-origin' && secFetchSite !== 'none';
+  }
+
+  const origin = request.headers.origin;
+
+  if (!origin) return false;
+
+  try {
+    return new URL(origin).host !== request.headers.host;
+  } catch {
+    return true;
   }
 }
 
