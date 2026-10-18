@@ -1,6 +1,6 @@
 {
   "name": "@tabnews/infra",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "TabNews Infra",
   "license": "MIT",
   "private": true,
@@ -22,7 +22,7 @@
     "pino-abstract-transport": "3.0.0"
   },
   "peerDependencies": {
-    "@tabnews/helpers": "*"
+    "@tabnews/helpers": ">=4.0.0"
   },
   "author": "TabNews",
   "repository": {
