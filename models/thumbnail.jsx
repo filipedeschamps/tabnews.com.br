@@ -62,12 +62,22 @@ export function parseContent(content, parentContent) {
   const date = new Date(content.published_at).toLocaleDateString('pt-BR');
 
   return {
-    title,
-    parentTitle: parent_title,
+    title: narrowSpacesAfterEmoji(title),
+    parentTitle: narrowSpacesAfterEmoji(parent_title),
     username: content.owner_username,
     comments: content.children_deep_count,
     date,
   };
+}
+
+// O Satori desenha o espaço que vem depois de um emoji com a fonte do emoji, e o espaço
+// da NotoEmoji é cinco vezes mais largo que o do Roboto. Um espaço de largura zero
+// (U+200B), que só o Roboto tem, devolve o espaço seguinte para o Roboto.
+const emojiFollowedBySpace =
+  /([\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u{FE0F}\u{20E3}\u{E007F}])(?=\s)/gu;
+
+function narrowSpacesAfterEmoji(text) {
+  return text?.replace(emojiFollowedBySpace, '$1\u200B');
 }
 
 export function renderTemplate({ title, parentTitle, username, comments, date }) {
@@ -76,6 +86,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
       style={{
         display: 'flex',
         flexDirection: 'column',
+        boxSizing: 'border-box',
         width: '100%',
         height: '100%',
         padding: '80px 60px 60px',
@@ -92,6 +103,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
             display: 'flex',
             flex: 1,
             flexDirection: 'column',
+            minWidth: 0,
           }}>
           {!!parentTitle && (
             <div
@@ -113,7 +125,9 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
                   display: 'block',
                   flex: 1,
                   fontSize: 32,
-                  lineClamp: 1,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                   textDecoration: 'underline',
                 }}>
                 {parentTitle}
@@ -128,6 +142,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
               lineHeight: 1.25,
               fontWeight: 'bold',
               lineClamp: 3,
+              overflowWrap: 'break-word',
               color: '#212529',
             }}>
             {title}
