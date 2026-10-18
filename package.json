@@ -24,7 +24,7 @@
     "next-connect": "1.0.0",
     "next-swr": "0.2.0-canary.0",
     "node-pg-migrate": "8.0.4",
-    "nodemailer": "8.0.10",
+    "nodemailer": "10.1.0",
     "nprogress": "0.2.0",
     "parse-link-header": "2.0.0",
     "pg": "8.23.1",
