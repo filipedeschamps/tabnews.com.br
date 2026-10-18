@@ -1,11 +1,11 @@
 import { runner as migrationRunner } from 'node-pg-migrate';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 
 import database from 'infra/database.js';
 import logger from 'infra/logger.js';
 
 const defaultConfigurations = {
-  dir: join(resolve('.'), 'infra', 'migrations'),
+  dir: join(process.cwd(), 'infra', 'migrations'),
   direction: 'up',
   migrationsTable: 'pgmigrations',
   verbose: true,

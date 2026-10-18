@@ -2,7 +2,7 @@
 import { renderAsync } from '@resvg/resvg-js';
 import { truncate } from '@tabnews/helpers';
 import fs from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import satori from 'satori';
 
 import content from 'models/content.js';
@@ -26,19 +26,19 @@ async function asPng(contentObject) {
     fonts: [
       {
         name: 'Roboto',
-        data: fs.readFileSync(join(resolve('.'), 'fonts', 'Roboto-Regular.ttf')),
+        data: fs.readFileSync(join(process.cwd(), 'fonts', 'Roboto-Regular.ttf')),
         weight: 400,
         style: 'normal',
       },
       {
         name: 'Roboto',
-        data: fs.readFileSync(join(resolve('.'), 'fonts', 'Roboto-Bold.ttf')),
+        data: fs.readFileSync(join(process.cwd(), 'fonts', 'Roboto-Bold.ttf')),
         weight: 700,
         style: 'normal',
       },
       {
         name: 'NotoEmoji',
-        data: fs.readFileSync(join(resolve('.'), 'fonts', 'NotoEmoji-Bold.ttf')),
+        data: fs.readFileSync(join(process.cwd(), 'fonts', 'NotoEmoji-Bold.ttf')),
         weight: 700,
         style: 'normal',
       },
