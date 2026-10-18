@@ -186,17 +186,18 @@ function clearContext(context) {
   return cleanContext;
 }
 
-function injectPaginationHeaders(pagination, endpoint, request, response) {
+function injectPaginationHeaders(pagination, acceptedParams, request, response) {
   const links = [];
-  const baseUrl = `${webserver.host}${endpoint}`;
+  const { pathname } = new URL(request.url, webserver.host);
+  const baseUrl = `${webserver.host}${pathname}`;
 
   const searchParams = new URLSearchParams();
 
-  const acceptedParams = ['strategy', 'with_root', 'with_children', 'page', 'per_page'];
+  [...acceptedParams, 'page', 'per_page'].forEach((param) => {
+    const value = request.query[param];
 
-  acceptedParams.forEach((param) => {
-    if (request?.query?.[param] !== undefined) {
-      searchParams.set(param, request.query[param]);
+    if (value !== undefined) {
+      searchParams.set(param, Array.isArray(value) ? value.join(',') : value);
     }
   });
 

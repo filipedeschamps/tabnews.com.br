@@ -49,7 +49,7 @@ async function getHandler(request, response) {
     userObject.description = removeMarkdown(userObject.description, { maxLength: 255 });
   }
 
-  controller.injectPaginationHeaders(results.pagination, '/api/v1/users', request, response);
+  controller.injectPaginationHeaders(results.pagination, [], request, response);
 
   return response.status(200).json(secureOutputValues);
 }
