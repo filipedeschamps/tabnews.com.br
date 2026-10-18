@@ -428,5 +428,141 @@ describe('GET /api/v1/contents/[username]/[slug]/thumbnail', () => {
       expect.soft(response.status).toBe(200);
       expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
     });
+
+    test('"root" content with emojis in "title"', async () => {
+      const defaultUser = await orchestrator.createUser({
+        username: 'EmojiTest',
+      });
+
+      vi.useFakeTimers({
+        now: Date.parse('2026-10-18T12:00:00.000Z'),
+      });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: '🚀 Lançamos o TabNews 2.0 🎉🔥 com 👩‍❤️‍💋‍👨, 👍🏽 e 🇧🇷 no título',
+        status: 'published',
+      });
+
+      vi.useRealTimers();
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
+      );
+
+      const responseBody = Buffer.from(await response.arrayBuffer());
+
+      const benchmarkFile = readFileSync(
+        join(
+          resolve('.'),
+          'tests',
+          'integration',
+          'api',
+          'v1',
+          'contents',
+          '[username]',
+          '[slug]',
+          'thumbnail',
+          'root-emojis-title.png',
+        ),
+      );
+
+      expect.soft(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
+    });
+
+    test('"root" content with long word and URL in "title"', async () => {
+      const defaultUser = await orchestrator.createUser({
+        username: 'LongWordTest',
+      });
+
+      vi.useFakeTimers({
+        now: Date.parse('2026-10-18T12:00:00.000Z'),
+      });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title:
+          'Pneumoultramicroscopicossilicovulcanoconiótico https://www.tabnews.com.br/um/caminho/muito/longo/sem/espacos',
+        status: 'published',
+      });
+
+      vi.useRealTimers();
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${rootContent.slug}/thumbnail`,
+      );
+
+      const responseBody = Buffer.from(await response.arrayBuffer());
+
+      const benchmarkFile = readFileSync(
+        join(
+          resolve('.'),
+          'tests',
+          'integration',
+          'api',
+          'v1',
+          'contents',
+          '[username]',
+          '[slug]',
+          'thumbnail',
+          'root-long-word-and-url-title.png',
+        ),
+      );
+
+      expect.soft(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
+    });
+
+    test('"child" content with URL in "parent_title"', async () => {
+      const defaultUser = await orchestrator.createUser({
+        username: 'LongParentTest',
+      });
+
+      const rootContent = await orchestrator.createContent({
+        owner_id: defaultUser.id,
+        title: 'https://www.tabnews.com.br/um/caminho/muito/longo/sem/espacos',
+        status: 'published',
+      });
+
+      vi.useFakeTimers({
+        now: Date.parse('2026-10-18T12:00:00.000Z'),
+      });
+
+      const childContent = await orchestrator.createContent({
+        parent_id: rootContent.id,
+        owner_id: defaultUser.id,
+        body: 'Resposta',
+        status: 'published',
+      });
+
+      vi.useRealTimers();
+
+      const response = await fetch(
+        `${orchestrator.webserverUrl}/api/v1/contents/${defaultUser.username}/${childContent.slug}/thumbnail`,
+      );
+
+      const responseBody = Buffer.from(await response.arrayBuffer());
+
+      // Com o Satori 0.47.1, o sublinhado de "parent_title" some quando as reticências
+      // caem no início de um segmento de palavra, como acontece nesta URL.
+      const benchmarkFile = readFileSync(
+        join(
+          resolve('.'),
+          'tests',
+          'integration',
+          'api',
+          'v1',
+          'contents',
+          '[username]',
+          '[slug]',
+          'thumbnail',
+          'child-url-parent-title.png',
+        ),
+      );
+
+      expect.soft(response.status).toBe(200);
+      expect(Buffer.compare(benchmarkFile, responseBody)).toBe(0); // has the same bytes
+    });
   });
 });
