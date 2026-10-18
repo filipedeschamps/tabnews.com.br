@@ -1,4 +1,5 @@
 module.exports = {
+  agentRules: false,
   poweredByHeader: false,
   transpilePackages: [
     '@primer/react',
