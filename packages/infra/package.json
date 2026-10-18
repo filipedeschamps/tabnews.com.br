@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@tabnews/helpers": "*",
-    "@vercel/functions": "3.6.1",
-    "pino": "10.3.1",
+    "@vercel/functions": "3.9.11",
+    "pino": "10.4.0",
     "pino-abstract-transport": "3.0.0"
   },
   "author": "TabNews",
