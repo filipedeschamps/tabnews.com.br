@@ -1,4 +1,4 @@
-import { serialize } from 'cookie';
+import { stringifySetCookie } from 'cookie';
 import crypto from 'node:crypto';
 
 import { UnauthorizedError } from 'errors';
@@ -25,7 +25,9 @@ async function create(userId) {
 function setSessionIdCookieInResponse(sessionToken, response) {
   cacheControl.noCache(undefined, response);
   response.setHeader('Set-Cookie', [
-    serialize('session_id', sessionToken, {
+    stringifySetCookie({
+      name: 'session_id',
+      value: sessionToken,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -80,7 +82,9 @@ async function expireAllFromUserId(userId, options = {}) {
 function clearSessionIdCookie(response) {
   cacheControl.noCache(undefined, response);
   response.setHeader('Set-Cookie', [
-    serialize('session_id', 'invalid', {
+    stringifySetCookie({
+      name: 'session_id',
+      value: 'invalid',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
