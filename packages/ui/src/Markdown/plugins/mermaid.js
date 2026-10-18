@@ -66,8 +66,9 @@ function whenLaidOut(element, signal, render) {
 }
 
 /**
- * Same as `@bytemd/plugin-mermaid`, whose `actions` it reuses, except that it waits for layout,
- * renders one diagram at a time, and a pass which lost the race renders nothing.
+ * Same as `@bytemd/plugin-mermaid`, whose `actions` it reuses, except that it reads the source
+ * even while the page is hidden, waits for layout, renders one diagram at a time, and a pass which
+ * lost the race renders nothing.
  * @returns {import('@bytemd/react').ViewerProps['plugins'][0]}
  */
 export function mermaidPlugin({ locale, ...mermaidConfig } = {}) {
@@ -99,7 +100,9 @@ export function mermaidPlugin({ locale, ...mermaidConfig } = {}) {
           if (!pre?.isConnected) return;
 
           whenLaidOut(pre, signal, () => {
-            const source = codeElement.innerText;
+            // `textContent`, not `innerText`: the latter leaves out text under `visibility: hidden`,
+            // which is the whole page while `html[data-no-flash]` is set.
+            const source = codeElement.textContent;
             const container = document.createElement('div');
 
             container.classList.add('bytemd-mermaid');

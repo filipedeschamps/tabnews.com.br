@@ -30,16 +30,6 @@ import { mermaidPlugin } from './mermaid';
 
 describe('ui', () => {
   describe('mermaidPlugin', () => {
-    beforeAll(() => {
-      // The source of a diagram is read from `innerText`, which jsdom does not implement.
-      Object.defineProperty(HTMLElement.prototype, 'innerText', {
-        configurable: true,
-        get() {
-          return this.textContent;
-        },
-      });
-    });
-
     beforeEach(() => {
       renders.length = 0;
       hooks.onRender = null;
@@ -53,6 +43,7 @@ describe('ui', () => {
       vi.useRealTimers();
       vi.restoreAllMocks();
       delete globalThis.IntersectionObserver;
+      delete HTMLElement.prototype.innerText;
     });
 
     it('renders every diagram in place of its code block', async () => {
@@ -68,6 +59,17 @@ describe('ui', () => {
       expect([...diagrams].map((diagram) => diagram.innerHTML)).toStrictEqual(
         renders.map(({ id }) => `<svg data-id="${id}"></svg>`),
       );
+    });
+
+    it('reads the source while the page is still hidden by the no-flash style', async () => {
+      // On a reload with a saved theme, `html[data-no-flash]` is `visibility: hidden` until hydration
+      // ends, and the browser leaves that text out of `innerText`. jsdom does not implement it.
+      Object.defineProperty(HTMLElement.prototype, 'innerText', { configurable: true, get: () => '' });
+
+      mermaidPlugin().viewerEffect({ markdownBody: mountMarkdownBody() });
+      await flush();
+
+      expect(renders.map(({ source }) => source)).toStrictEqual(['graph TD\nA-->B']);
     });
 
     it('waits for a hidden diagram to have layout, and leaves the code block until then', async () => {
