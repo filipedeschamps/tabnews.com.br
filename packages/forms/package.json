@@ -18,11 +18,11 @@
     "format": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
-    "@tabnews/helpers": "*",
-    "@tabnews/hooks": "*",
     "validation-br": "^2.0.0"
   },
   "peerDependencies": {
+    "@tabnews/helpers": "*",
+    "@tabnews/hooks": "*",
     "react": "^18.2.0 || ^19.0.0"
   },
   "author": "TabNews",
