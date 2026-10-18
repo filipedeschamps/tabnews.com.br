@@ -6,3 +6,9 @@ body {
   color: var(--fgColor-default);
   background-color: var(--bgColor-default);
 }
+
+/* Matches the specificity of Primer theme selectors, which set this color to orange. */
+body,
+[data-color-mode][data-light-theme][data-dark-theme] {
+  --underlineNav-borderColor-active: var(--fgColor-accent);
+}

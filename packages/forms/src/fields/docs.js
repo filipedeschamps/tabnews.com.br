@@ -1,5 +1,16 @@
-import { validate as isCnpjValid } from 'validation-br/dist/cnpj';
-import { validate as isCpfValid } from 'validation-br/dist/cpf';
+import { CNPJ } from 'validation-br/cnpj';
+import { CPF } from 'validation-br/cpf';
+
+// The subpath classes throw on invalid values. Importing `isCPF`/`isCNPJ` from the
+// package root would also bundle every other validator (boleto, CEP, phone etc.).
+function isValid(Document, value) {
+  try {
+    new Document(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export const brDocs = {
   value: '',
@@ -7,7 +18,7 @@ export const brDocs = {
   placeholder: 'Informe seu CPF ou CNPJ',
   prepare: (document) => {
     const cpf = document.replace(/\D/g, '').padStart(11, '0');
-    if (isCpfValid(cpf)) {
+    if (isValid(CPF, cpf)) {
       return {
         type: 'CPF',
         number: cpf,
@@ -15,7 +26,7 @@ export const brDocs = {
     }
 
     const cnpj = document.replace(/[^a-zA-Z0-9]/g, '').padStart(14, '0');
-    if (isCnpjValid(cnpj)) {
+    if (isValid(CNPJ, cnpj)) {
       return {
         type: 'CNPJ',
         number: cnpj,

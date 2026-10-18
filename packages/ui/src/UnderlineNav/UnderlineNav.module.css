@@ -1,5 +1,3 @@
 .UnderlineNav {
-  --underlineNav-borderColor-active: var(--fgColor-accent);
-  --control-xlarge-size: var(--control-large-size, 2.5rem);
   padding: 0;
 }

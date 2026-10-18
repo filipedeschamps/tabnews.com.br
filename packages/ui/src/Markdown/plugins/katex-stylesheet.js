@@ -2,13 +2,13 @@ import { preinit } from 'react-dom';
 
 // The version must match the installed `katex`, otherwise the stylesheet and the rendered markup can
 // disagree. `katex-stylesheet.test.jsx` fails when they drift apart.
-export const KATEX_VERSION = '0.16.22';
+export const KATEX_VERSION = '0.19.0';
 
 // The `integrity` has to be recalculated on every version bump, otherwise the browser blocks the
 // stylesheet. `katex-stylesheet.test.jsx` fails when it does not match the installed file.
 export const DEFAULT_STYLESHEET = {
   href: `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/katex.min.css`,
-  integrity: 'sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP',
+  integrity: 'sha384-3rdsX6e5mueWyoweR9NIVmtEsUkokpBT/0ALqKKIBMr9j4qhHkaIkAcGgsE6uVlp',
   crossOrigin: 'anonymous',
 };
 

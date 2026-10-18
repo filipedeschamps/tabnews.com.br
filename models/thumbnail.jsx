@@ -2,7 +2,7 @@
 import { renderAsync } from '@resvg/resvg-js';
 import { truncate } from '@tabnews/helpers';
 import fs from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import satori from 'satori';
 
 import content from 'models/content.js';
@@ -26,19 +26,19 @@ async function asPng(contentObject) {
     fonts: [
       {
         name: 'Roboto',
-        data: fs.readFileSync(join(resolve('.'), 'fonts', 'Roboto-Regular.ttf')),
+        data: fs.readFileSync(join(process.cwd(), 'fonts', 'Roboto-Regular.ttf')),
         weight: 400,
         style: 'normal',
       },
       {
         name: 'Roboto',
-        data: fs.readFileSync(join(resolve('.'), 'fonts', 'Roboto-Bold.ttf')),
+        data: fs.readFileSync(join(process.cwd(), 'fonts', 'Roboto-Bold.ttf')),
         weight: 700,
         style: 'normal',
       },
       {
         name: 'NotoEmoji',
-        data: fs.readFileSync(join(resolve('.'), 'fonts', 'NotoEmoji-Bold.ttf')),
+        data: fs.readFileSync(join(process.cwd(), 'fonts', 'NotoEmoji-Bold.ttf')),
         weight: 700,
         style: 'normal',
       },
@@ -62,12 +62,22 @@ export function parseContent(content, parentContent) {
   const date = new Date(content.published_at).toLocaleDateString('pt-BR');
 
   return {
-    title,
-    parentTitle: parent_title,
+    title: narrowSpacesAfterEmoji(title),
+    parentTitle: narrowSpacesAfterEmoji(parent_title),
     username: content.owner_username,
     comments: content.children_deep_count,
     date,
   };
+}
+
+// O Satori desenha o espaço que vem depois de um emoji com a fonte do emoji, e o espaço
+// da NotoEmoji é cinco vezes mais largo que o do Roboto. Um espaço de largura zero
+// (U+200B), que só o Roboto tem, devolve o espaço seguinte para o Roboto.
+const emojiFollowedBySpace =
+  /([\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u{FE0F}\u{20E3}\u{E007F}])(?=\s)/gu;
+
+function narrowSpacesAfterEmoji(text) {
+  return text?.replace(emojiFollowedBySpace, '$1\u200B');
 }
 
 export function renderTemplate({ title, parentTitle, username, comments, date }) {
@@ -76,6 +86,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
       style={{
         display: 'flex',
         flexDirection: 'column',
+        boxSizing: 'border-box',
         width: '100%',
         height: '100%',
         padding: '80px 60px 60px',
@@ -92,6 +103,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
             display: 'flex',
             flex: 1,
             flexDirection: 'column',
+            minWidth: 0,
           }}>
           {!!parentTitle && (
             <div
@@ -113,7 +125,9 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
                   display: 'block',
                   flex: 1,
                   fontSize: 32,
-                  lineClamp: 1,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                   textDecoration: 'underline',
                 }}>
                 {parentTitle}
@@ -128,6 +142,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
               lineHeight: 1.25,
               fontWeight: 'bold',
               lineClamp: 3,
+              overflowWrap: 'break-word',
               color: '#212529',
             }}>
             {title}
@@ -135,6 +150,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
         </div>
 
         <img
+          alt=""
           src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNjciIHZpZXdCb3g9IjAgMCA4MyA2NyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik03MC4zNzQ2IDAuNUM3Ny4yMDkzIDAuNSA4Mi43NDk2IDYuMDQwNDkgODIuNzQ5NiAxMi44NzVWNTQuMTI1QzgyLjc0OTYgNjAuOTU5NyA3Ny4yMDkzIDY2LjUgNzAuMzc0NiA2Ni41SDEyLjYyNDhDNS43OTAyMSA2Ni41IDAuMjQ5NzU2IDYwLjk1OTcgMC4yNDk3NTYgNTQuMTI1VjEyLjg3NUMwLjI0OTc1NiA2LjA0MDQ5IDUuNzkwMjEgMC41IDEyLjYyNDggMC41SDcwLjM3NDZaTTc0LjQ5OTYgMjMuNzAyM0g0NS42MjVDNDMuMzQ3MiAyMy43MDIzIDQwLjg1NzMgMjEuOTcwOSA0MC4wNjQ1IDE5LjgzNTJMMzUuOTQ4NiA4Ljc1SDEyLjYyNDhDMTAuMzQ2NiA4Ljc1IDguNDk5NzYgMTAuNTk2OCA4LjQ5OTc2IDEyLjg3NVY1NC4xMjVDOC40OTk3NiA1Ni40MDMyIDEwLjM0NjYgNTguMjUgMTIuNjI0OCA1OC4yNUg3MC4zNzQ2QzcyLjY1MjggNTguMjUgNzQuNDk5NiA1Ni40MDMyIDc0LjQ5OTYgNTQuMTI1VjIzLjcwMjNaIiBmaWxsPSIjMjEyNTI5Ii8+Cjwvc3ZnPgo="
           width={82.5}
           height={66}
@@ -180,6 +196,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
             color: '#424C56',
           }}>
           <img
+            alt=""
             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMiAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDAuMzMzMzI4QzcuMTYyNjcgMC4zMzMzMjggMCA2LjQzMDY2IDAgMTMuOTUwN0MwIDE3LjEzNzMgMS4yNDI2NyAyMC4wNzIgMy4yMzYgMjIuMTY5M0wwIDI5LjY2NjdMMTAuMDg0IDI2LjY1MzNDMjIuNzQ0IDMwLjExNzMgMzIgMjIuMzE4NyAzMiAxMy45NTA3QzMyIDYuNDMwNjYgMjQuODM3MyAwLjMzMzMyOCAxNiAwLjMzMzMyOFoiIGZpbGw9IiM4RUExQjQiLz4KPC9zdmc+Cg=="
             width={32}
             height={30}
@@ -189,6 +206,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
           <div></div>
 
           <img
+            alt=""
             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzEiIHZpZXdCb3g9IjAgMCAzMiAzMSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE4LjY2NjcgMTYuMzMzM0gxMy4zMzMzVjExSDE4LjY2NjdWMTYuMzMzM1pNMjYuNjY2NyAxMUgyMS4zMzMzVjE2LjMzMzNIMjYuNjY2N1YxMVpNMTAuNjY2NyAxOUg1LjMzMzMzVjI0LjMzMzNIMTAuNjY2N1YxOVpNMTguNjY2NyAxOUgxMy4zMzMzVjI0LjMzMzNIMTguNjY2N1YxOVpNMTAuNjY2NyAxMUg1LjMzMzMzVjE2LjMzMzNIMTAuNjY2N1YxMVpNMzIgMC4zMzMzMjhWMTguMTgxM0MzMiAyMS4zNjkzIDIzLjEzNiAzMSAxOC45MTg3IDMxSDBWMC4zMzMzMjhIMzJaTTI5LjMzMzMgOC4zMzMzM0gyLjY2NjY3VjI4LjMzMzNIMTcuODE2QzIzLjM1NzMgMjguMzMzMyAyMS4zMzMzIDIwLjMzMzMgMjEuMzMzMyAyMC4zMzMzQzIxLjMzMzMgMjAuMzMzMyAyOS4zMzMzIDIyLjUzMzMgMjkuMzMzMyAxNy4wNTczVjguMzMzMzNaIiBmaWxsPSIjOEVBMUI0Ii8+Cjwvc3ZnPgo="
             width={32}
             height={30}
