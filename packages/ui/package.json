@@ -32,8 +32,8 @@
     "@bytemd/plugin-math": "^1.22.0",
     "@bytemd/plugin-mermaid": "^1.22.0",
     "@bytemd/react": "^1.22.0",
-    "@primer/octicons-react": "^19.28.0",
-    "@primer/react": "^38.26.0",
+    "@primer/octicons-react": "^19.40.0",
+    "@primer/react": "^38.40.1",
     "bytemd": "^1.22.0",
     "clsx": "^2.1.1",
     "katex": "0.16.22",
@@ -46,8 +46,8 @@
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/user-event": "14.6.7",
     "next": "16.4.0",
-    "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "peerDependencies": {
     "next": ">=15.2.2",
