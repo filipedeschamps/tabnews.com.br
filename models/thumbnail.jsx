@@ -135,6 +135,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
         </div>
 
         <img
+          alt=""
           src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNjciIHZpZXdCb3g9IjAgMCA4MyA2NyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik03MC4zNzQ2IDAuNUM3Ny4yMDkzIDAuNSA4Mi43NDk2IDYuMDQwNDkgODIuNzQ5NiAxMi44NzVWNTQuMTI1QzgyLjc0OTYgNjAuOTU5NyA3Ny4yMDkzIDY2LjUgNzAuMzc0NiA2Ni41SDEyLjYyNDhDNS43OTAyMSA2Ni41IDAuMjQ5NzU2IDYwLjk1OTcgMC4yNDk3NTYgNTQuMTI1VjEyLjg3NUMwLjI0OTc1NiA2LjA0MDQ5IDUuNzkwMjEgMC41IDEyLjYyNDggMC41SDcwLjM3NDZaTTc0LjQ5OTYgMjMuNzAyM0g0NS42MjVDNDMuMzQ3MiAyMy43MDIzIDQwLjg1NzMgMjEuOTcwOSA0MC4wNjQ1IDE5LjgzNTJMMzUuOTQ4NiA4Ljc1SDEyLjYyNDhDMTAuMzQ2NiA4Ljc1IDguNDk5NzYgMTAuNTk2OCA4LjQ5OTc2IDEyLjg3NVY1NC4xMjVDOC40OTk3NiA1Ni40MDMyIDEwLjM0NjYgNTguMjUgMTIuNjI0OCA1OC4yNUg3MC4zNzQ2QzcyLjY1MjggNTguMjUgNzQuNDk5NiA1Ni40MDMyIDc0LjQ5OTYgNTQuMTI1VjIzLjcwMjNaIiBmaWxsPSIjMjEyNTI5Ii8+Cjwvc3ZnPgo="
           width={82.5}
           height={66}
@@ -180,6 +181,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
             color: '#424C56',
           }}>
           <img
+            alt=""
             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMiAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDAuMzMzMzI4QzcuMTYyNjcgMC4zMzMzMjggMCA2LjQzMDY2IDAgMTMuOTUwN0MwIDE3LjEzNzMgMS4yNDI2NyAyMC4wNzIgMy4yMzYgMjIuMTY5M0wwIDI5LjY2NjdMMTAuMDg0IDI2LjY1MzNDMjIuNzQ0IDMwLjExNzMgMzIgMjIuMzE4NyAzMiAxMy45NTA3QzMyIDYuNDMwNjYgMjQuODM3MyAwLjMzMzMyOCAxNiAwLjMzMzMyOFoiIGZpbGw9IiM4RUExQjQiLz4KPC9zdmc+Cg=="
             width={32}
             height={30}
@@ -189,6 +191,7 @@ export function renderTemplate({ title, parentTitle, username, comments, date })
           <div></div>
 
           <img
+            alt=""
             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzEiIHZpZXdCb3g9IjAgMCAzMiAzMSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE4LjY2NjcgMTYuMzMzM0gxMy4zMzMzVjExSDE4LjY2NjdWMTYuMzMzM1pNMjYuNjY2NyAxMUgyMS4zMzMzVjE2LjMzMzNIMjYuNjY2N1YxMVpNMTAuNjY2NyAxOUg1LjMzMzMzVjI0LjMzMzNIMTAuNjY2N1YxOVpNMTguNjY2NyAxOUgxMy4zMzMzVjI0LjMzMzNIMTguNjY2N1YxOVpNMTAuNjY2NyAxMUg1LjMzMzMzVjE2LjMzMzNIMTAuNjY2N1YxMVpNMzIgMC4zMzMzMjhWMTguMTgxM0MzMiAyMS4zNjkzIDIzLjEzNiAzMSAxOC45MTg3IDMxSDBWMC4zMzMzMjhIMzJaTTI5LjMzMzMgOC4zMzMzM0gyLjY2NjY3VjI4LjMzMzNIMTcuODE2QzIzLjM1NzMgMjguMzMzMyAyMS4zMzMzIDIwLjMzMzMgMjEuMzMzMyAyMC4zMzMzQzIxLjMzMzMgMjAuMzMzMyAyOS4zMzMzIDIyLjUzMzMgMjkuMzMzMyAxNy4wNTczVjguMzMzMzNaIiBmaWxsPSIjOEVBMUI0Ii8+Cjwvc3ZnPgo="
             width={32}
             height={30}

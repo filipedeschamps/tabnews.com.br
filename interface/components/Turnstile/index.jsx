@@ -75,6 +75,8 @@ export default function Turnstile() {
   }, [confirm]);
 
   return (
+    // Clicking the backdrop is only a shortcut to cancel; the Turnstile widget handles its own interaction.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className={classes.Overlay} style={{ display: isInteractive ? 'block' : 'none' }} onClick={handleCancel}>
       <div className={classes.MessageWrapper}>
         <span className={classes.Message}>Executando verificação de segurança...</span>

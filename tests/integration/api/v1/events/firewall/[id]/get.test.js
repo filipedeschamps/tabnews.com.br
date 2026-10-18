@@ -470,7 +470,9 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
       );
 
-      expect.soft(expectedAffected1).toEqual(expect.arrayContaining(firewall1Get1.responseBody.affected.contents));
+      expect
+        .soft(expectedAffected1)
+        .toStrictEqual(expect.arrayContaining(firewall1Get1.responseBody.affected.contents));
       expect(firewall1Get1.responseBody).toStrictEqual({
         affected: {
           contents: expect.arrayContaining(expectedAffected1),
@@ -479,8 +481,10 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         events: [expectedEvents[0]],
       });
 
-      expect.soft(expectedAllAffected).toEqual(expect.arrayContaining(firewall1Get2.responseBody.affected.contents));
-      expect.soft(expectedEvents).toEqual(expect.arrayContaining(firewall1Get2.responseBody.events));
+      expect
+        .soft(expectedAllAffected)
+        .toStrictEqual(expect.arrayContaining(firewall1Get2.responseBody.affected.contents));
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(firewall1Get2.responseBody.events));
       expect(firewall1Get2.responseBody).toStrictEqual({
         affected: {
           contents: expect.arrayContaining(expectedAllAffected),
@@ -489,8 +493,10 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         events: expect.arrayContaining(expectedEvents),
       });
 
-      expect.soft(expectedAllAffected).toEqual(expect.arrayContaining(firewall2Get.responseBody.affected.contents));
-      expect.soft(expectedEvents).toEqual(expect.arrayContaining(firewall2Get.responseBody.events));
+      expect
+        .soft(expectedAllAffected)
+        .toStrictEqual(expect.arrayContaining(firewall2Get.responseBody.affected.contents));
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(firewall2Get.responseBody.events));
       expect(firewall2Get.responseBody).toStrictEqual({
         affected: {
           contents: expect.arrayContaining(expectedAllAffected),
@@ -620,7 +626,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       expect.soft(response.status).toBe(200);
 
-      expect.soft(expectedEvents).toEqual(expect.arrayContaining(responseBody.events));
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(responseBody.events));
       expect(responseBody).toStrictEqual({
         affected: {
           contents: [mapContentData(content1AfterFirewall), mapContentData(content2AfterFirewall)],
@@ -766,7 +772,7 @@ describe('GET /api/v1/events/firewall/[id]', () => {
 
       expect.soft(response.status).toBe(200);
 
-      expect.soft(expectedEvents).toEqual(expect.arrayContaining(responseBody.events));
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(responseBody.events));
       expect(responseBody).toStrictEqual({
         affected: {
           contents: [mapContentData(content1AfterFirewall), mapContentData(content2AfterFirewall)],
@@ -936,7 +942,9 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         },
       );
 
-      expect.soft(expectedAffected1).toEqual(expect.arrayContaining(firewall1Get1.responseBody.affected.contents));
+      expect
+        .soft(expectedAffected1)
+        .toStrictEqual(expect.arrayContaining(firewall1Get1.responseBody.affected.contents));
       expect(firewall1Get1.responseBody).toStrictEqual({
         affected: {
           contents: expect.arrayContaining(expectedAffected1),
@@ -945,8 +953,10 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         events: [expectedEvents[0]],
       });
 
-      expect.soft(expectedAllAffected).toEqual(expect.arrayContaining(firewall1Get2.responseBody.affected.contents));
-      expect.soft(expectedEvents).toEqual(expect.arrayContaining(firewall1Get2.responseBody.events));
+      expect
+        .soft(expectedAllAffected)
+        .toStrictEqual(expect.arrayContaining(firewall1Get2.responseBody.affected.contents));
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(firewall1Get2.responseBody.events));
       expect(firewall1Get2.responseBody).toStrictEqual({
         affected: {
           contents: expect.arrayContaining(expectedAllAffected),
@@ -955,8 +965,10 @@ describe('GET /api/v1/events/firewall/[id]', () => {
         events: expect.arrayContaining(expectedEvents),
       });
 
-      expect.soft(expectedAllAffected).toEqual(expect.arrayContaining(firewall2Get.responseBody.affected.contents));
-      expect.soft(expectedEvents).toEqual(expect.arrayContaining(firewall2Get.responseBody.events));
+      expect
+        .soft(expectedAllAffected)
+        .toStrictEqual(expect.arrayContaining(firewall2Get.responseBody.affected.contents));
+      expect.soft(expectedEvents).toStrictEqual(expect.arrayContaining(firewall2Get.responseBody.events));
       expect(firewall2Get.responseBody).toStrictEqual({
         affected: {
           contents: expect.arrayContaining(expectedAllAffected),
