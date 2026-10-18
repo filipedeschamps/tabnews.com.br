@@ -56,12 +56,7 @@ async function getHandler(request, response) {
     }
   }
 
-  controller.injectPaginationHeaders(
-    results.pagination,
-    `/api/v1/contents/${request.query.username}`,
-    request,
-    response,
-  );
+  controller.injectPaginationHeaders(results.pagination, ['strategy', 'with_root', 'with_children'], request, response);
 
   return response.status(200).json(secureOutputValues);
 }
