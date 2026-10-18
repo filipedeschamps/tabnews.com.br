@@ -32,7 +32,18 @@ class BaseError extends Error {
 }
 
 export class InternalServerError extends BaseError {
-  constructor({ message, action, requestId, errorId, statusCode, stack, errorLocationCode }) {
+  constructor({
+    message,
+    action,
+    requestId,
+    errorId,
+    statusCode,
+    stack,
+    cause,
+    context,
+    errorLocationCode,
+    databaseErrorCode,
+  }) {
     super({
       name: 'InternalServerError',
       message: message || 'Um erro interno não esperado aconteceu.',
@@ -41,7 +52,10 @@ export class InternalServerError extends BaseError {
       requestId: requestId,
       errorId: errorId,
       stack: stack,
+      cause: cause,
+      context: context,
       errorLocationCode: errorLocationCode,
+      databaseErrorCode: databaseErrorCode,
     });
   }
 }
@@ -63,11 +77,12 @@ export class NotFoundError extends BaseError {
 }
 
 export class ServiceError extends BaseError {
-  constructor({ message, action, stack, context, statusCode, errorLocationCode, databaseErrorCode, cause }) {
+  constructor({ message, action, stack, context, statusCode, errorId, errorLocationCode, databaseErrorCode, cause }) {
     super({
       name: 'ServiceError',
       message: message || 'Serviço indisponível no momento.',
       action: action || 'Verifique se o serviço está disponível.',
+      errorId: errorId,
       stack: stack,
       cause: cause,
       statusCode: statusCode || 503,
