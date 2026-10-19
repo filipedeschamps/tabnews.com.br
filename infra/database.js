@@ -1,6 +1,5 @@
 import retry from 'async-retry';
 import { Client, Pool } from 'pg';
-import snakeize from 'snakeize';
 
 import { ServiceError } from 'errors';
 import logger from 'infra/logger.js';
@@ -158,7 +157,7 @@ async function getNewClient() {
       errorLocationCode: 'INFRA:DATABASE:GET_NEW_CONNECTED_CLIENT',
       stack: new Error().stack,
     });
-    logger.error(snakeize(errorObject));
+    logger.error(errorObject);
     throw errorObject;
   }
 }
@@ -211,7 +210,7 @@ function parseQueryErrorAndLog(error, query) {
   });
 
   if (!expectedErrorsCode.includes(error.code)) {
-    logger.error(snakeize(errorToReturn));
+    logger.error(errorToReturn);
   }
 
   return errorToReturn;

@@ -1,5 +1,3 @@
-import snakeize from 'snakeize';
-
 import { ServiceError } from 'errors';
 import logger from 'infra/logger';
 
@@ -57,7 +55,7 @@ function createUmamiService() {
         errorLocationCode: 'INFRA:ANALYTICS:GET_STATS_BY_PATH',
       });
 
-      logger.error(snakeize(errorObject));
+      logger.error(errorObject);
 
       if (attempt < apiKeys.length) {
         return await getStatsByPath(path, attempt + 1);

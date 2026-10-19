@@ -36,16 +36,15 @@ function onNoMatchHandler(request, response) {
   }
 
   injectRequestMetadata(request);
-  const publicErrorObject = new MethodNotAllowedError({
-    message: `Método "${request.method}" não permitido para "${request.url}".`,
-    action: 'Utilize um método HTTP válido para este recurso.',
-    requestId: request.context?.requestId || uuidV4(),
-  });
 
-  const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
-  logger.info(snakeize(privateErrorObject));
-
-  return errorResponse(response, publicErrorObject.statusCode, snakeize(publicErrorObject));
+  return onErrorHandler(
+    new MethodNotAllowedError({
+      message: `Método "${request.method}" não permitido para "${request.url}".`,
+      action: 'Utilize um método HTTP válido para este recurso.',
+    }),
+    request,
+    response,
+  );
 }
 
 function onErrorHandler(error, request, response) {
@@ -60,8 +59,7 @@ function onErrorHandler(error, request, response) {
   ) {
     const publicErrorObject = { ...error, requestId: request.context.requestId };
 
-    const privateErrorObject = { ...publicErrorObject, context: { ...request.context } };
-    logger.info(snakeize(privateErrorObject));
+    logger.info({ err: error, context: clearContext(request.context) });
 
     return errorResponse(response, error.statusCode, snakeize(publicErrorObject));
   }
@@ -74,22 +72,19 @@ function onErrorHandler(error, request, response) {
   });
 
   const ErrorClass = error instanceof ServiceError ? ServiceError : InternalServerError;
-  const privateErrorObject = {
-    ...new ErrorClass({
-      message: error.message,
-      action: error.action,
-      statusCode: error.statusCode,
-      errorId: error.errorId,
-      errorLocationCode: error.errorLocationCode,
-      databaseErrorCode: error.databaseErrorCode,
-      requestId: request.context?.requestId,
-    }),
+  const privateError = new ErrorClass({
+    message: error.message,
+    action: error.action,
+    statusCode: error.statusCode,
+    errorId: publicErrorObject.errorId,
+    errorLocationCode: error.errorLocationCode,
+    databaseErrorCode: error.databaseErrorCode,
     cause: error.cause,
     stack: error.stack,
-    context: { ...request.context, ...error.context },
-  };
+    context: error.context,
+  });
 
-  logger.error(snakeize(privateErrorObject));
+  logger.error({ err: privateError, context: clearContext(request.context) });
 
   return errorResponse(response, publicErrorObject.statusCode, snakeize(publicErrorObject));
 }
