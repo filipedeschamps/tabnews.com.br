@@ -217,6 +217,14 @@ const schemas = {
     });
   },
 
+  entity_id: function () {
+    return Joi.object({
+      entity_id: schemas
+        .uuidV4()
+        .when('$required.entity_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
   slug: function () {
     return Joi.object({
       slug: Joi.string()
@@ -830,6 +838,66 @@ const schemas = {
         .trim()
         .valid('nuke')
         .when('$required.ban_type', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
+  read: function () {
+    return Joi.object({
+      read: Joi.boolean().when('$required.read', { is: 'required', then: Joi.required(), otherwise: Joi.optional() }),
+    });
+  },
+
+  user_id: function () {
+    return Joi.object({
+      user_id: schemas
+        .uuidV4()
+        .when('$required.user_id', { is: 'required', then: Joi.required(), otherwise: Joi.optional().allow(null) }),
+    });
+  },
+
+  metadata: function () {
+    return Joi.object({
+      metadata: Joi.object().when('$required.metadata', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
+  },
+
+  notification_type: function () {
+    return Joi.object({
+      type: Joi.string().valid('content:created').when('$required.type', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
+    });
+  },
+
+  notification: function () {
+    let notificationSchema = Joi.object({
+      children: Joi.array().optional().items(Joi.link('#notifications')),
+    })
+      .required()
+      .min(1)
+      .id('notifications');
+
+    for (const key of ['id', 'notification_type', 'user_id', 'entity_id', 'read', 'created_at', 'metadata']) {
+      const keyValidationFunction = schemas[key];
+      notificationSchema = notificationSchema.concat(keyValidationFunction());
+    }
+
+    return notificationSchema;
+  },
+
+  unread_until: function () {
+    return Joi.object({
+      unread_until: Joi.date().when('$required.unread_until', {
+        is: 'required',
+        then: Joi.required(),
+        otherwise: Joi.optional(),
+      }),
     });
   },
 };
