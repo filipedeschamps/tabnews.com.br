@@ -24,17 +24,19 @@ async function create(userId) {
 
 function setSessionIdCookieInResponse(sessionToken, response) {
   cacheControl.noCache(undefined, response);
-  response.setHeader('Set-Cookie', [
-    stringifySetCookie({
-      name: 'session_id',
-      value: sessionToken,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: SESSION_EXPIRATION_IN_SECONDS,
-    }),
-  ]);
+  response.setHeader('Set-Cookie', buildSessionCookies(sessionToken, SESSION_EXPIRATION_IN_SECONDS));
+}
+
+// `session_id` is `HttpOnly`, so the frontend relies on `has_session` to know when to fetch
+// `/api/v1/user`. `localStorage` alone is not enough: Safari (ITP) wipes it after 7 days without a
+// visit, but does not cap cookies set by the server through `Set-Cookie`.
+function buildSessionCookies(sessionToken, maxAge) {
+  const options = { secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge };
+
+  return [
+    stringifySetCookie({ name: 'session_id', value: sessionToken, httpOnly: true, ...options }),
+    stringifySetCookie({ name: 'has_session', value: '1', ...options }),
+  ];
 }
 
 async function expireById(id) {
@@ -81,17 +83,7 @@ async function expireAllFromUserId(userId, options = {}) {
 // TODO: mark session as invalid also in Database.
 function clearSessionIdCookie(response) {
   cacheControl.noCache(undefined, response);
-  response.setHeader('Set-Cookie', [
-    stringifySetCookie({
-      name: 'session_id',
-      value: 'invalid',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: -1,
-    }),
-  ]);
+  response.setHeader('Set-Cookie', buildSessionCookies('invalid', -1));
 }
 
 async function findOneValidByToken(sessionToken) {

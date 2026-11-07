@@ -182,6 +182,12 @@ describe('GET /api/v1/user', () => {
       expect(parsedCookiesFromGet.session_id.path).toBe('/');
       expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
       expect(parsedCookiesFromGet.session_id.sameSite).toBe('Lax');
+      expect(parsedCookiesFromGet.has_session.name).toBe('has_session');
+      expect(parsedCookiesFromGet.has_session.value).toBe('1');
+      expect(parsedCookiesFromGet.has_session.maxAge).toBe(-1);
+      expect(parsedCookiesFromGet.has_session.path).toBe('/');
+      expect(parsedCookiesFromGet.has_session.httpOnly).toBeUndefined();
+      expect(parsedCookiesFromGet.has_session.sameSite).toBe('Lax');
 
       const sessionObject = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
       expect(sessionObject).toBeUndefined();
@@ -224,6 +230,12 @@ describe('GET /api/v1/user', () => {
         expect(parsedCookiesFromGet.session_id.path).toBe('/');
         expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
         expect(parsedCookiesFromGet.session_id.sameSite).toBe('Lax');
+        expect(parsedCookiesFromGet.has_session.name).toBe('has_session');
+        expect(parsedCookiesFromGet.has_session.value).toBe('1');
+        expect(parsedCookiesFromGet.has_session.maxAge).toBe(60 * 60 * 24 * 30);
+        expect(parsedCookiesFromGet.has_session.path).toBe('/');
+        expect(parsedCookiesFromGet.has_session.httpOnly).toBeUndefined();
+        expect(parsedCookiesFromGet.has_session.sameSite).toBe('Lax');
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
         expect(sessionObjectBeforeRenew).toStrictEqual(userRequestBuilder.sessionObject);
@@ -270,6 +282,12 @@ describe('GET /api/v1/user', () => {
         expect(parsedCookiesFromGet.session_id.path).toBe('/');
         expect(parsedCookiesFromGet.session_id.httpOnly).toBe(true);
         expect(parsedCookiesFromGet.session_id.sameSite).toBe('Lax');
+        expect(parsedCookiesFromGet.has_session.name).toBe('has_session');
+        expect(parsedCookiesFromGet.has_session.value).toBe('1');
+        expect(parsedCookiesFromGet.has_session.maxAge).toBe(60 * 60 * 24 * 30);
+        expect(parsedCookiesFromGet.has_session.path).toBe('/');
+        expect(parsedCookiesFromGet.has_session.httpOnly).toBeUndefined();
+        expect(parsedCookiesFromGet.has_session.sameSite).toBe('Lax');
 
         const sessionObjectAfterRenew = await orchestrator.findSessionByToken(userRequestBuilder.sessionObject.token);
         expect(sessionObjectAfterRenew.id).toBe(sessionObjectBeforeRenew.id);

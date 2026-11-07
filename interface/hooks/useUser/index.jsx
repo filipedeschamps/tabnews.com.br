@@ -4,6 +4,10 @@ const userEndpoint = '/api/v1/user';
 const sessionEndpoint = '/api/v1/sessions';
 const refreshInterval = 600000; // 10 minutes
 
+function hasSessionCookie() {
+  return document.cookie.split('; ').includes('has_session=1');
+}
+
 const UserContext = createContext({
   user: null,
   isLoading: true,
@@ -53,9 +57,9 @@ export function UserProvider({ children }) {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     (async () => {
-      if (storedUser && isLoading) {
-        setUser(JSON.parse(storedUser));
-        await fetchUser();
+      if (isLoading) {
+        if (storedUser) setUser(JSON.parse(storedUser));
+        if (storedUser || hasSessionCookie()) await fetchUser();
       }
       setIsLoading(false);
     })();

@@ -49,6 +49,12 @@ describe('POST /api/v1/sessions', () => {
       expect(parsedCookiesFromResponse.session_id.path).toBe('/');
       expect(parsedCookiesFromResponse.session_id.httpOnly).toBe(true);
       expect(parsedCookiesFromResponse.session_id.sameSite).toBe('Lax');
+      expect(parsedCookiesFromResponse.has_session.name).toBe('has_session');
+      expect(parsedCookiesFromResponse.has_session.value).toBe('1');
+      expect(parsedCookiesFromResponse.has_session.maxAge).toBe(60 * 60 * 24 * 30);
+      expect(parsedCookiesFromResponse.has_session.path).toBe('/');
+      expect(parsedCookiesFromResponse.has_session.httpOnly).toBeUndefined();
+      expect(parsedCookiesFromResponse.has_session.sameSite).toBe('Lax');
     });
 
     test('Using a valid email and password, but user lost the feature "create:session"', async () => {
