@@ -1,4 +1,5 @@
 import { isTrustedDomain } from '@tabnews/helpers';
+import { Tooltip as PrimerTooltip } from '@tabnews/ui';
 import { clsx } from 'clsx';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -730,8 +731,8 @@ function ShareButton({ content, rootContent }) {
   };
 
   return (
-    <Tooltip text={shareLabel} direction="n" position="absolute">
-      <Button onClick={handleShare} aria-label={isLinkCopied ? 'Link copiado!' : shareLabel}>
+    <PrimerTooltip text={shareLabel} type="label" direction="n">
+      <Button onClick={handleShare}>
         {isLinkCopied ? (
           <span className={classes.LinkCopiedText} role="status">
             Link copiado!
@@ -740,7 +741,7 @@ function ShareButton({ content, rootContent }) {
           <ShareIcon size={16} aria-hidden="true" />
         )}
       </Button>
-    </Tooltip>
+    </PrimerTooltip>
   );
 }
 
