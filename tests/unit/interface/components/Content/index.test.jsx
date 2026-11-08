@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 
 import Content from 'interface/components/Content';
 
@@ -60,15 +61,24 @@ describe('Content reply box', () => {
   it('should keep the share button of the replied content while replying and after publishing', async () => {
     renderReplyBox();
 
-    expect(button('Compartilhar publicação')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Compartilhar publicação' })).toBeInTheDocument();
 
     fireEvent.click(button('Responder para author'));
 
-    expect(button('Compartilhar publicação')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Compartilhar publicação' })).toBeInTheDocument();
 
     await publishReply();
 
-    expect(button('Compartilhar publicação')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Compartilhar publicação' })).toBeInTheDocument();
+  });
+
+  // Without JavaScript, text-mode browsers (Lynx, w3m, ELinks) ignore `aria-label` and CSS, so the label
+  // must be in the server HTML, and only once.
+  it('should render the share button label once as text in the server HTML', () => {
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<Content content={repliedContent} rootContent={rootContent} mode="compact" />);
+
+    expect(within(container).getAllByText('Compartilhar publicação')).toHaveLength(1);
   });
 
   it('should show the published reply carrying its own share button', async () => {
@@ -77,7 +87,9 @@ describe('Content reply box', () => {
     await publishReply();
 
     // Being inside the article is what makes the button follow the reply, including when it is deleted.
-    expect(document.getElementById('reader-reply-slug')).toContainElement(button('Compartilhar comentário'));
+    expect(document.getElementById('reader-reply-slug')).toContainElement(
+      screen.getByRole('button', { name: 'Compartilhar comentário' }),
+    );
   });
 
   it('should disable the reply button while replying and once a reply is published', async () => {

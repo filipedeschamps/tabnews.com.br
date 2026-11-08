@@ -436,6 +436,7 @@ function Menu({ config, setConfig }) {
         </AnchoredOverlay>
       )}
       <IconButton
+        aria-label={config.physics ? 'Pausar simulação' : 'Retomar simulação'}
         onClick={() => setConfig({ ...config, physics: !config.physics })}
         icon={config.physics ? FaPause : FaPlay}
       />
