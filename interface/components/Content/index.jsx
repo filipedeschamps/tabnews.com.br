@@ -24,6 +24,7 @@ import {
   ReadTime,
   TextInput,
   Tooltip,
+  useAlert,
   useConfirm,
   Viewer,
 } from '@/TabNewsUI';
@@ -699,6 +700,7 @@ function ReplyButton({ contentObject, isReplying, setComponentMode }) {
 
 function ShareButton({ content, rootContent }) {
   const [isLinkCopied, setCopied] = useState(false);
+  const alert = useAlert();
   const copiedTimeoutRef = useRef(null);
   // A published content is identified by its own `id`, while the placeholder of the reply box
   // points to the content it replies to through `parent_id`.
@@ -725,7 +727,10 @@ function ShareButton({ content, rootContent }) {
         clearTimeout(copiedTimeoutRef.current);
         copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
       } catch {
-        alert('Não foi possível copiar o link. Verifique as permissões e se o navegador suporta a funcionalidade.');
+        alert({
+          title: 'Não foi possível copiar o link',
+          content: 'Verifique as permissões e se o navegador suporta a funcionalidade.',
+        });
       }
     }
   };

@@ -49,6 +49,7 @@ export {
   TextInput,
   TooltipV1,
   Truncate,
+  useAlert,
   useConfirm,
   useTheme,
 } from '@tabnews/ui';

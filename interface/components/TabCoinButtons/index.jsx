@@ -3,7 +3,7 @@ import { useRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
 
-import { IconButton, TabCoinBalanceTooltip } from '@/TabNewsUI';
+import { IconButton, TabCoinBalanceTooltip, useAlert } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage, getLoginUrl, useUser } from 'interface';
 
@@ -20,6 +20,7 @@ export default function TabCoinButtons({ content }) {
 function ActiveButtons({ content }) {
   const router = useRouter();
   const { user, isLoading, fetchUser } = useUser();
+  const alert = useAlert();
 
   const [contentObject, setContentObject] = useRevalidate(content);
   const [isPosting, setIsPosting] = useState(false);
@@ -84,13 +85,14 @@ function ActiveButtons({ content }) {
         return;
       }
 
-      alert(
-        createErrorMessage(responseBody, {
+      setIsPosting(false);
+
+      alert({
+        title: `Não foi possível ${transactionType === 'credit' ? 'creditar' : 'debitar'} TabCoin`,
+        content: createErrorMessage(responseBody, {
           omitErrorId: response.status == 422,
         }),
-      );
-
-      setIsPosting(false);
+      });
     } catch (error) {
       setIsPosting(false);
     }
