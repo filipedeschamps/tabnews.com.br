@@ -7,6 +7,7 @@ export { NotificationList, NotificationMenu, NotificationsProvider, useNotificat
 export { PrimerRoot } from './PrimerRoot/PrimerRoot';
 export * from './ThemeProvider';
 export * from './UnderlineNav';
+export * from './useAlert';
 export * from './useConfirm';
 export {
   ActionList,
