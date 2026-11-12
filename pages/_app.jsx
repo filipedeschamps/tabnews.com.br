@@ -4,7 +4,7 @@ import { SWRConfig } from 'swr';
 import '@tabnews/ui/css';
 
 import { ThemeProvider, Turnstile } from '@/TabNewsUI';
-import { Analytics, DefaultHead, UserProvider } from 'interface';
+import { Analytics, DefaultHead, UserProvider, useScrollRestorationOnReload } from 'interface';
 
 async function SWRFetcher(resource, init) {
   const response = await fetch(resource, init);
@@ -21,6 +21,8 @@ async function SWRFetcher(resource, init) {
 const fallbackData = { body: null, headers: {} };
 
 function MyApp({ Component, pageProps }) {
+  useScrollRestorationOnReload();
+
   useEffect(() => {
     // React never focuses what it hydrates, and leaves the  attribute in the markup for the browser
     // to honor — which it skips on a reload that restored a focus of its own. Only nodes that came
