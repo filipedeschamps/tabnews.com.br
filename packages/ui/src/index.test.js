@@ -36,6 +36,7 @@ const exportedByIndex = [
   'TooltipV1',
   'Truncate',
   'UnderlineNav',
+  'useAlert',
   'useConfirm',
   'useTheme',
 ];

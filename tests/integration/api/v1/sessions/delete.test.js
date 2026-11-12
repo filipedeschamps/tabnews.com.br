@@ -104,6 +104,16 @@ describe('DELETE /api/v1/sessions', () => {
       expect(responseBody.expires_at < sessionObject.created_at.toISOString()).toBe(true);
       expect(responseBody.updated_at > sessionObject.updated_at.toISOString()).toBe(true);
 
+      const parsedCookiesFromDelete = orchestrator.parseSetCookies(response);
+      expect(parsedCookiesFromDelete.session_id.value).toBe('invalid');
+      expect(parsedCookiesFromDelete.session_id.maxAge).toBe(-1);
+      expect(parsedCookiesFromDelete.has_session.name).toBe('has_session');
+      expect(parsedCookiesFromDelete.has_session.value).toBe('1');
+      expect(parsedCookiesFromDelete.has_session.maxAge).toBe(-1);
+      expect(parsedCookiesFromDelete.has_session.path).toBe('/');
+      expect(parsedCookiesFromDelete.has_session.httpOnly).toBeUndefined();
+      expect(parsedCookiesFromDelete.has_session.sameSite).toBe('Lax');
+
       // Third: test if the session is not working anymore
       const invalidSessionResponse = await fetch(`${orchestrator.webserverUrl}/api/v1/user`, {
         method: 'GET',

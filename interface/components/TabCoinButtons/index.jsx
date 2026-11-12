@@ -3,7 +3,7 @@ import { useRevalidate } from 'next-swr';
 import { useEffect, useState } from 'react';
 import { useReward } from 'react-rewards';
 
-import { IconButton, TabCoinBalanceTooltip, Tooltip } from '@/TabNewsUI';
+import { IconButton, TabCoinBalanceTooltip, useAlert } from '@/TabNewsUI';
 import { ChevronDownIcon, ChevronUpIcon } from '@/TabNewsUI/icons';
 import { createErrorMessage, getLoginUrl, useUser } from 'interface';
 
@@ -20,6 +20,7 @@ export default function TabCoinButtons({ content }) {
 function ActiveButtons({ content }) {
   const router = useRouter();
   const { user, isLoading, fetchUser } = useUser();
+  const alert = useAlert();
 
   const [contentObject, setContentObject] = useRevalidate(content);
   const [isPosting, setIsPosting] = useState(false);
@@ -84,13 +85,14 @@ function ActiveButtons({ content }) {
         return;
       }
 
-      alert(
-        createErrorMessage(responseBody, {
+      setIsPosting(false);
+
+      alert({
+        title: `Não foi possível ${transactionType === 'credit' ? 'creditar' : 'debitar'} TabCoin`,
+        content: createErrorMessage(responseBody, {
           omitErrorId: response.status == 422,
         }),
-      );
-
-      setIsPosting(false);
+      });
     } catch (error) {
       setIsPosting(false);
     }
@@ -100,17 +102,17 @@ function ActiveButtons({ content }) {
 
   return (
     <div className={classes.Wrapper}>
-      <Tooltip text="Achei relevante" direction="ne">
-        <IconButton
-          variant="invisible"
-          aria-label="Creditar TabCoin"
-          icon={ChevronUpIcon}
-          size="small"
-          className={classes.CreditButton}
-          onClick={() => transactTabCoin('credit')}
-          disabled={isInAction}
-        />
-      </Tooltip>
+      <IconButton
+        variant="invisible"
+        aria-label="Creditar TabCoin"
+        description="Achei relevante"
+        tooltipDirection="ne"
+        icon={ChevronUpIcon}
+        size="small"
+        className={classes.CreditButton}
+        onClick={() => transactTabCoin('credit')}
+        disabled={isInAction}
+      />
       <TabCoinBalanceTooltip
         direction="ne"
         className={classes.Balance}
@@ -119,17 +121,17 @@ function ActiveButtons({ content }) {
         <div id={`reward-${contentObject.id}`} style={{ marginLeft: '-10px' }} aria-hidden></div>
         {contentObject.tabcoins}
       </TabCoinBalanceTooltip>
-      <Tooltip text="Não achei relevante" direction="ne">
-        <IconButton
-          variant="invisible"
-          aria-label="Debitar TabCoin"
-          icon={ChevronDownIcon}
-          size="small"
-          className={classes.DebitButton}
-          onClick={() => transactTabCoin('debit')}
-          disabled={isInAction}
-        />
-      </Tooltip>
+      <IconButton
+        variant="invisible"
+        aria-label="Debitar TabCoin"
+        description="Não achei relevante"
+        tooltipDirection="ne"
+        icon={ChevronDownIcon}
+        size="small"
+        className={classes.DebitButton}
+        onClick={() => transactTabCoin('debit')}
+        disabled={isInAction}
+      />
     </div>
   );
 }
