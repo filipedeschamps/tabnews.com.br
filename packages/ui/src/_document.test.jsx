@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { configureDocument, Document } from './_document.jsx';
+import { configureDocument, Document, noFlashScript } from './_document.jsx';
 
 describe('ui', () => {
   describe('_document', () => {
@@ -19,12 +19,39 @@ describe('ui', () => {
 
       const themeScript = container.querySelector('script#theme');
       expect(themeScript).toBeDefined();
-      expect(themeScript.innerHTML).toBe(
-        `if (['auto','night','dark','day','light'].includes(localStorage.getItem('colorMode')))
-document.documentElement.setAttribute('data-no-flash', true)`,
-      );
+      expect(themeScript.innerHTML).toBe(noFlashScript);
 
       expect(container).toMatchSnapshot();
+    });
+
+    describe('noFlashScript', () => {
+      const html = document.documentElement;
+      const runScript = () => new Function(noFlashScript)();
+
+      afterEach(() => {
+        localStorage.clear();
+        html.removeAttribute('data-no-flash');
+      });
+
+      it('does nothing without a cached color mode', () => {
+        runScript();
+
+        expect(html.getAttribute('data-no-flash')).toBeNull();
+      });
+
+      it('ignores an unknown cached color mode', () => {
+        localStorage.setItem('colorMode', 'unknown');
+        runScript();
+
+        expect(html.getAttribute('data-no-flash')).toBeNull();
+      });
+
+      it.each(['auto', 'night', 'dark', 'day', 'light'])('sets "data-no-flash" to the cached "%s"', (mode) => {
+        localStorage.setItem('colorMode', mode);
+        runScript();
+
+        expect(html.getAttribute('data-no-flash')).toBe(mode);
+      });
     });
 
     it('should pass the correct props to the Html component', () => {
