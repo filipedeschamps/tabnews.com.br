@@ -31,6 +31,7 @@ services:
       - '${UMAMI_PORT}:3000'
     environment:
       DATABASE_URL: postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres_dev:5432/$UMAMI_DB
+      APP_SECRET: $UMAMI_APP_SECRET
     depends_on:
       postgres_dev:
         condition: service_healthy
