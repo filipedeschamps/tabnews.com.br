@@ -7,8 +7,15 @@ import { ColorModeCookieSync } from './AutoThemeProvider';
 const COLOR_MODE_COOKIE = 'cm';
 
 vi.mock('@primer/react', () => ({
-  useTheme: vi.fn().mockImplementation(() => ({ resolvedColorMode: 'light' })),
+  useTheme: vi.fn().mockImplementation(() => ({
+    resolvedColorMode: 'light',
+    theme: { colorSchemes: { dark: { colors: { canvas: { default: '#0d1117' } } } } },
+  })),
 }));
+
+const noFlashCss = `html[data-no-flash] { visibility: hidden; }
+:root[data-no-flash='dark'], :root[data-no-flash='night'] { color-scheme: dark; background-color: #0d1117; }
+@media (prefers-color-scheme: dark) { :root[data-no-flash='auto'] { color-scheme: dark; background-color: #0d1117; } }`;
 
 vi.mock('../ThemeProvider', () => ({
   ThemeProvider: ({ children, colorMode, ...props }) => (
@@ -24,7 +31,10 @@ describe('ui', () => {
   });
 
   describe('AutoThemeProvider', () => {
-    afterEach(() => localStorage.clear());
+    afterEach(() => {
+      localStorage.clear();
+      vi.useRealTimers();
+    });
 
     it('renders children correctly', () => {
       const { getByTestId } = render(
@@ -60,11 +70,10 @@ describe('ui', () => {
 
     it('removes data-no-flash attribute after setting color mode', () => {
       vi.useFakeTimers();
-      document.documentElement.setAttribute('data-no-flash', 'true');
+      document.documentElement.setAttribute('data-no-flash', 'dark');
       render(<AutoThemeProvider defaultColorMode="light" />);
 
       vi.runAllTimers();
-      vi.useRealTimers();
 
       expect(document.documentElement.getAttribute('data-no-flash')).toBeNull();
     });
@@ -74,7 +83,7 @@ describe('ui', () => {
       const styleTag = container.querySelector('style');
 
       expect(styleTag).not.toBeNull();
-      expect(styleTag.textContent).toContain("html[data-no-flash='true'] { visibility: hidden; }");
+      expect(styleTag.textContent).toBe(noFlashCss);
     });
 
     it('does not apply NoFlashGlobalStyle when noFlash is false', () => {
@@ -97,7 +106,7 @@ describe('ui', () => {
       const styleTag = container.querySelector('style');
 
       expect(styleTag).not.toBeNull();
-      expect(styleTag.innerHTML).toBe("html[data-no-flash='true'] { visibility: hidden; }");
+      expect(styleTag.innerHTML).toBe(noFlashCss);
     });
   });
 

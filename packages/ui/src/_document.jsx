@@ -1,9 +1,9 @@
 import NextDocument, { Head, Html, Main, NextScript } from 'next/document.js';
 import Script from 'next/script.js';
 
-// Script related to `AutoThemeProvider`
-export const noFlashScript = `if (['auto','night','dark','day','light'].includes(localStorage.getItem('colorMode')))
-document.documentElement.setAttribute('data-no-flash', true)`;
+// Script related to `AutoThemeProvider`, which styles `data-no-flash` with `NoFlashGlobalStyle`
+export const noFlashScript = `var m=localStorage.getItem('colorMode');
+if(['auto','night','dark','day','light'].includes(m))document.documentElement.setAttribute('data-no-flash',m)`;
 
 let documentConfig = {
   htmlProps: {},

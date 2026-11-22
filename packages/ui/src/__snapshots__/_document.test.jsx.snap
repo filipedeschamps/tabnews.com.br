@@ -9,8 +9,8 @@ exports[`ui > _document > renders correctly 1`] = `
     id="theme"
     strategy="beforeInteractive"
   >
-    if (['auto','night','dark','day','light'].includes(localStorage.getItem('colorMode')))
-document.documentElement.setAttribute('data-no-flash', true)
+    var m=localStorage.getItem('colorMode');
+if(['auto','night','dark','day','light'].includes(m))document.documentElement.setAttribute('data-no-flash',m)
   </script>
   <script
     data-testid="Next Scripts"
