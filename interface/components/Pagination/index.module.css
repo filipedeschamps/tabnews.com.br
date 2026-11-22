@@ -8,6 +8,11 @@
   margin-bottom: var(--base-size-8);
 }
 
+.Wrapper > :is(a, span) {
+  display: flex;
+  align-items: center;
+}
+
 .Muted {
   color: var(--fgColor-muted);
 }
