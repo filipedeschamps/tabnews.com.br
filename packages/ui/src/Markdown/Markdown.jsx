@@ -23,8 +23,10 @@ import {
   katexRawGuardPlugin,
   katexStylesheetPlugin,
   mermaidPlugin,
+  nativeTouchSelectionPlugin,
   removeDuplicateClobberPrefix,
   strictInlineMathPlugin,
+  toggleListsPlugin,
 } from './plugins';
 import { EditorStyles } from './styles';
 import { Viewer } from './Viewer';
@@ -69,6 +71,9 @@ const bytemdPluginBaseList = [
   gemojiPlugin(),
   copyCodeToClipboardPlugin(),
 ];
+
+// Only the editor runs the `editorEffect` of a plugin, so these stay out of the viewer.
+const editorOnlyPluginList = [toggleListsPlugin(), nativeTouchSelectionPlugin()];
 
 export function usePlugins({
   areLinksTrusted,
@@ -177,7 +182,8 @@ export function MarkdownEditor({
   ...props
 }) {
   const clobberPrefix = clobberPrefixProp?.toLowerCase();
-  const bytemdPluginList = usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow });
+  const sharedPluginList = usePlugins({ areLinksTrusted, clobberPrefix, katexStylesheetHref, shouldAddNofollow });
+  const bytemdPluginList = useMemo(() => [...sharedPluginList, ...editorOnlyPluginList], [sharedPluginList]);
   const editorRef = useRef();
   // The write-only layout is ours until the reader picks a pane in the toolbar. bytemd only leaves
   // the split on its own when `activeTab` becomes `'write'`, and it focuses the editor whenever
